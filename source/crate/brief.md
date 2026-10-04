@@ -46,6 +46,24 @@ None. Proportions are from the numbers above.
 
 Plank gaps, diagonal braces, bevelled edges, wear, LODs, collision shapes, variants.
 
+## Numbers
+
+Every value in `spec.json`, and the sentence above it comes from. `tools/lint_spec.py` fails if a row and the spec disagree, or if the spec has a value with no row.
+
+| Spec key | Value | From |
+| --- | --- | --- |
+| `objects` | `["crate"]` | Parts: one object |
+| `bounds_m.min` | `[-0.4, -0.4, 0.0]` | Real-world size: 0.8 m cube, origin at the centre of the base |
+| `bounds_m.max` | `[0.4, 0.4, 0.8]` | Real-world size: 0.8 m cube |
+| `bounds_tolerance_m` | `0.001` | 1 mm, far below the 3 cm visibility floor |
+| `max_triangles` | `150` | Budget |
+| `materials.m_crate_frame` | `"#5a3820"` | Style and colour: dark wood |
+| `materials.m_crate_panel` | `"#a87a4a"` | Style and colour: lighter wood |
+| `recess_m.m_crate_panel` | `0.05` | Silhouette: panels recessed 0.05 m |
+| `margin_m.m_crate_panel` | `0.1` | Silhouette: frame members 0.1 m wide |
+| `watertight` | `true` | Parts: one closed mesh |
+| `attributes` | `["POSITION", "NORMAL"]` | Style: flat colour, so no UVs or tangents |
+
 ## Decisions
 
 Chosen by the user on 2026-10-04: supply crate, 0.8 m at third-person distance, one material per colour, frame and inset panels at about 150 triangles. Frame width, recess depth, the two colours and the finished bottom were proposed by the agent and are open to change at the first review. After that review the user deepened the recess from 0.03 m to 0.05 m, because it only read as depth on faces with a cast shadow.

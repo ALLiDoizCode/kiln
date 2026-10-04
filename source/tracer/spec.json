@@ -1,6 +1,5 @@
 {
   "asset": "tracer",
-  "class": "fixture",
   "objects": ["tracer"],
   "bounds_m": { "min": [-0.5, -1.5, 0.0], "max": [1.0, 0.5, 1.0] },
   "bounds_tolerance_m": 0.001,

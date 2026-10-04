@@ -14,7 +14,7 @@ import bmesh
 import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, gltf_bounds, script_args
+from pipeline import Asset, gltf_bounds, linear_rgb, script_args
 
 asset = Asset(script_args()[0])
 spec = asset.spec()
@@ -62,7 +62,8 @@ manifest = {
     "asset": asset.name,
     "nodes": spec["objects"],
     "mesh_count": len({obj.data.name for obj in objects}),
-    "material_count": len({s.material.name for obj in objects for s in obj.material_slots if s.material}),
+    "materials": {name: [round(c, 6) for c in linear_rgb(colour)] for name, colour in spec["materials"].items()},
+    "watertight": spec["watertight"],
     "triangles": triangles,
     "bounds": gltf_bounds(spec["bounds_m"]),
     "bounds_tolerance": spec["bounds_tolerance_m"],

@@ -118,6 +118,18 @@ def shallow_recess(spec):
     edit(push, "crate")
 
 
+def narrow_frame(spec):
+    """Grow every crate panel in its own plane, so the frame around it is narrower."""
+
+    def grow(bm):
+        for face in [f for f in bm.faces if f.material_index == 1]:
+            centre = face.calc_center_median()
+            for vert in face.verts:
+                vert.co = centre + (vert.co - centre) * 1.1
+
+    edit(grow, "crate")
+
+
 def recess_respecified(spec):
     spec["recess_m"]["m_crate_panel"] = 0.03
 
@@ -144,6 +156,7 @@ CASES = [
     (over_budget, "budget.triangles"),
     (shallow_recess, "m_crate_panel.recess", "crate"),
     (recess_respecified, "m_crate_panel.recess", "crate"),
+    (narrow_frame, "m_crate_panel.margin", "crate"),
 ]
 
 

@@ -120,6 +120,7 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Phase**: the point in an asset's life that a contact sheet records, such as blockout or final.
 - **Observation**: a statement about a contact sheet that a second reader could confirm or refute from the same tile. _Avoid_: verdict.
 - **Fixture**: an asset that exists to exercise the pipeline, such as the tracer. It is never shipped in a game.
+- **Margin**: how far a face's edges sit in from the sides of the asset's bounding box, measured in the face's own plane. A crate's frame width is its panels' margin.
 - **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
 
 **Game**

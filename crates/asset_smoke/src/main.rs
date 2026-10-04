@@ -7,7 +7,7 @@
 //! Usage: asset_smoke <asset.glb> <manifest.json> [--report <out.json>]
 
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
     process::ExitCode,
     time::{Duration, Instant},
@@ -26,6 +26,8 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
+/// Per channel, in linear RGB. 8-bit sRGB steps are larger than this.
+const COLOUR_TOLERANCE: f32 = 0.005;
 
 /// Written by `tools/export.py` from the Blender scene. Bounds are in glTF
 /// space (+Y up, metres), over every mesh in the file with node transforms
@@ -34,7 +36,10 @@ const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
 struct Manifest {
     nodes: Vec<String>,
     mesh_count: usize,
-    material_count: usize,
+    /// Material name to base colour, as linear RGB.
+    materials: BTreeMap<String, [f32; 3]>,
+    /// A closed surface: its triangles must enclose a positive volume.
+    watertight: bool,
     triangles: usize,
     bounds: Bounds,
     bounds_tolerance: f32,
@@ -201,17 +206,23 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
     if gltf.meshes.len() != manifest.mesh_count {
         fail(format!("mesh_count {} != manifest {}", gltf.meshes.len(), manifest.mesh_count));
     }
-    if gltf.materials.len() != manifest.material_count {
-        fail(format!(
-            "material_count {} != manifest {}",
-            gltf.materials.len(),
-            manifest.material_count
-        ));
-    }
     let materials = world.resource::<Assets<GltfMaterial>>();
-    for handle in &gltf.materials {
-        if materials.get(handle).is_none() {
-            fail("a material handle did not resolve".into());
+    let found: BTreeSet<&str> = gltf.named_materials.keys().map(|k| &**k).collect();
+    let wanted: BTreeSet<&str> = manifest.materials.keys().map(String::as_str).collect();
+    if found != wanted || gltf.materials.len() != wanted.len() {
+        fail(format!("materials {found:?} != manifest {wanted:?}"));
+    }
+    for (name, want) in &manifest.materials {
+        let Some(material) = gltf.named_materials.get(name.as_str()).and_then(|h| materials.get(h)) else {
+            continue;
+        };
+        let got = material.base_color.to_linear();
+        let got = [got.red, got.green, got.blue];
+        if got.iter().zip(want).any(|(a, b)| (a - b).abs() > COLOUR_TOLERANCE) {
+            fail(format!("{name}: base colour {got:?} != manifest {want:?} (linear)"));
+        }
+        if material.base_color_texture.is_some() {
+            fail(format!("{name}: has a base colour texture; the manifest expects a flat colour"));
         }
     }
 
@@ -230,6 +241,8 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
         .collect();
 
     let mut triangles = 0;
+    let mut volume = 0.0;
+    let mut against_winding = 0;
     let (mut min, mut max) = (Vec3::MAX, Vec3::MIN);
     while let Some((handle, parent)) = stack.pop() {
         let Some(node) = nodes.get(&handle) else {
@@ -252,25 +265,56 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
                 fail(format!("{label}: topology is {:?}", mesh.primitive_topology()));
                 continue;
             }
-            triangles += mesh.indices().map_or(mesh.count_vertices(), |i| i.len()) / 3;
-
             let present: BTreeSet<&str> = mesh.attributes().map(|(a, _)| gltf_semantic(a.name)).collect();
             for wanted in &manifest.attributes {
                 if !present.contains(wanted.as_str()) {
                     fail(format!("{label}: attribute {wanted} missing; has {present:?}"));
                 }
             }
-            match mesh.attribute(Mesh::ATTRIBUTE_POSITION) {
-                Some(VertexAttributeValues::Float32x3(positions)) => {
-                    for p in positions {
-                        let p = world_from_node.transform_point3(Vec3::from(*p));
-                        min = min.min(p);
-                        max = max.max(p);
-                    }
-                }
-                _ => fail(format!("{label}: no float3 positions")),
+            let Some(VertexAttributeValues::Float32x3(positions)) = mesh.attribute(Mesh::ATTRIBUTE_POSITION) else {
+                fail(format!("{label}: no float3 positions"));
+                continue;
+            };
+            let positions: Vec<Vec3> = positions
+                .iter()
+                .map(|p| world_from_node.transform_point3(Vec3::from(*p)))
+                .collect();
+            for p in &positions {
+                min = min.min(*p);
+                max = max.max(*p);
             }
+            let normal_matrix = Mat3::from_mat4(world_from_node).inverse().transpose();
+            let normals: Option<Vec<Vec3>> = match mesh.attribute(Mesh::ATTRIBUTE_NORMAL) {
+                Some(VertexAttributeValues::Float32x3(n)) => {
+                    Some(n.iter().map(|n| normal_matrix * Vec3::from(*n)).collect())
+                }
+                _ => None,
+            };
+            let indices: Vec<usize> = match mesh.indices() {
+                Some(indices) => indices.iter().collect(),
+                None => (0..positions.len()).collect(),
+            };
+            for triangle in indices.chunks_exact(3) {
+                let [a, b, c] = [triangle[0], triangle[1], triangle[2]].map(|i| positions[i]);
+                volume += a.dot(b.cross(c)) / 6.0;
+                // The side a triangle's winding makes its front must be the
+                // side its vertex normals point to, or it lights wrongly.
+                let front = (b - a).cross(c - a);
+                if let Some(normals) = &normals
+                    && triangle.iter().any(|&i| normals[i].dot(front) <= 0.0)
+                {
+                    against_winding += 1;
+                }
+            }
+            triangles += indices.len() / 3;
         }
+    }
+
+    if against_winding > 0 {
+        fail(format!("{against_winding} triangles have vertex normals facing against their winding"));
+    }
+    if manifest.watertight && volume <= 0.0 {
+        fail(format!("signed volume {volume} is not positive: faces are inside out or the mesh is open"));
     }
 
     if triangles != manifest.triangles {

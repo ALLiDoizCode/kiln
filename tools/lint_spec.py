@@ -3,6 +3,7 @@
 Usage: python tools/lint_spec.py <asset>
 """
 
+import json
 import re
 import sys
 
@@ -10,7 +11,6 @@ from pipeline import ROOT, Asset, Checks, conventions
 
 REQUIRED = {
     "asset": str,
-    "class": str,
     "objects": list,
     "bounds_m": dict,
     "bounds_tolerance_m": float,
@@ -43,10 +43,38 @@ if not checks.failed():
         for name, colour in spec["materials"].items()
     )
     checks.check("spec.materials", spec["materials"] and colours_ok, f'need "{prefix}<name>": "#rrggbb" (sRGB, lower case)')
-    recess = spec.get("recess_m", {})
-    recess_ok = all(name in spec["materials"] and isinstance(depth, float) and depth > 0 for name, depth in recess.items())
-    checks.check("spec.recess_m", recess_ok, "optional; maps a material in `materials` to a positive depth in metres")
+    for key in ("recess_m", "margin_m"):
+        ok = all(name in spec["materials"] and isinstance(d, float) and d > 0 for name, d in spec.get(key, {}).items())
+        checks.check(f"spec.{key}", ok, "optional; maps a material in `materials` to a positive distance in metres")
     checks.check("spec.brief", (asset.source / "brief.md").is_file(), "brief.md missing")
+
+# Traceability: every value in the spec has a row in the brief's Numbers table,
+# and every row agrees with the spec. A number the brief never stated cannot
+# reach a check, and a check cannot enforce a number the brief has changed.
+brief = (asset.source / "brief.md").read_text() if (asset.source / "brief.md").is_file() else ""
+rows = dict(re.findall(r"^\| `([^`]+)` \| `([^`]+)` \|", brief, flags=re.M))
+
+
+def leaves(value, path=""):
+    """Dotted paths of every value in the spec; lists are values, not containers."""
+    if isinstance(value, dict):
+        for key, child in value.items():
+            yield from leaves(child, f"{path}.{key}" if path else key)
+    else:
+        yield path, value
+
+
+spec_values = {path: value for path, value in leaves(spec) if path != "asset"}
+untraced = sorted(set(spec_values) - set(rows))
+checks.check("brief.numbers_cover_spec", not untraced, f"no row in brief.md's Numbers table for {untraced}")
+mismatched = []
+for path, text in rows.items():
+    try:
+        if path not in spec_values or json.loads(text) != spec_values[path]:
+            mismatched.append(path)
+    except json.JSONDecodeError:
+        mismatched.append(path)
+checks.check("brief.numbers_match_spec", not mismatched, f"brief.md and spec.json disagree on {mismatched}")
 
 pins = conv["toolchain"]
 installer = (ROOT / "tools" / "install_tools.sh").read_text()

@@ -4,7 +4,14 @@
     "tracer"
   ],
   "mesh_count": 1,
-  "material_count": 1,
+  "materials": {
+    "m_tracer": [
+      0.693872,
+      0.132868,
+      0.027321
+    ]
+  },
+  "watertight": true,
   "triangles": 28,
   "bounds": {
     "min": [

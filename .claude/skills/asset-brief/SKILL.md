@@ -34,8 +34,10 @@ Write `source/<asset>/brief.md`: one short section per leaf above, in the user's
 
 Write `source/<asset>/spec.json`, taking every value from the brief. `source/tracer/spec.json` is the worked example and `tools/lint_spec.py` defines the required keys. Bounds are in Blender space: +Z up, front facing −Y, origin on the ground.
 
+Then add a `## Numbers` table to the brief with one row per spec value: the spec key, the value, and the sentence of the brief it comes from (`source/crate/brief.md` shows the format). A number that matters and has no spec key yet is a missing check: hand it to the `asset-checks` skill before modelling.
+
 Done when `python tools/lint_spec.py <asset>` exits 0.
 
 ## 4. Approve
 
-Show the user the spec's numbers beside the sentence of the brief each one came from, and ask for approval. Modelling starts only on an explicit yes; a changed answer returns to step 1 for that leaf.
+Show the user the Numbers table and ask for approval. Modelling starts only on an explicit yes; a changed answer returns to step 1 for that leaf.

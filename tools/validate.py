@@ -44,6 +44,8 @@ def check_scene(checks, spec, conv):
     tol = spec["bounds_tolerance_m"]
     # material name -> depths of its faces below the spec's bounding box
     recess_depths = {name: [] for name in spec.get("recess_m", {})}
+    # material name -> each face's smallest in-plane distance to the box's sides
+    margins = {name: [] for name in spec.get("margin_m", {})}
 
     for name in sorted(wanted & set(mesh_objects)):
         obj = mesh_objects[name]
@@ -97,6 +99,15 @@ def check_scene(checks, spec, conv):
                 # Distance from the face to the bounding-box plane it faces.
                 box_plane = sum(max(n * a, n * b) for n, a, b in zip(face.normal, want_lo, want_hi))
                 recess_depths[slot.name].append(box_plane - face.normal.dot(face.calc_center_median()))
+            if slot and slot.name in margins:
+                # Only meaningful for faces parallel to a side of the box.
+                axis = max(range(3), key=lambda i: abs(face.normal[i]))
+                if abs(face.normal[axis]) < 0.999:
+                    margins[slot.name].append(None)
+                else:
+                    margins[slot.name].append(
+                        min(min(v.co[i] - want_lo[i], want_hi[i] - v.co[i]) for v in face.verts for i in range(3) if i != axis)
+                    )
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:
@@ -113,6 +124,14 @@ def check_scene(checks, spec, conv):
             f"{name}.recess",
             depths and not off,
             f"{len(off)} of {len(depths)} faces are not {want} m below the bounds; depths {sorted(set(off))}",
+        )
+    for name, found in margins.items():
+        want = spec["margin_m"][name]
+        off = [m if m is None else round(m, 4) for m in found if m is None or abs(m - want) > tol]
+        checks.check(
+            f"{name}.margin",
+            found and not off,
+            f"{len(off)} of {len(found)} faces are not {want} m in from the bounds' sides; found {off[:6]} (None: face not axis-aligned)",
         )
     in_bounds = triangles > 0 and (lo - want_lo).length <= tol and (hi - want_hi).length <= tol
     checks.check("bounds.match_spec", in_bounds, f"{tuple(lo)}..{tuple(hi)} != {tuple(want_lo)}..{tuple(want_hi)}")
