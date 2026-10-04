@@ -16,7 +16,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, conventions, script_args
+from pipeline import VIEW_DIRECTIONS, Asset, conventions, script_args
 
 args = script_args()
 asset = Asset(args[0])
@@ -36,14 +36,8 @@ radius = (hi - lo).length / 2
 
 # Where the camera sits relative to the asset, and (for the top view) which
 # way is up on screen. The asset's front faces -Y.
-VIEWS = {
-    "front": (Vector((0, -1, 0)), "ORTHO"),
-    "right": (Vector((1, 0, 0)), "ORTHO"),
-    "back": (Vector((0, 1, 0)), "ORTHO"),
-    "top": (Vector((0, 0, 1)), "ORTHO"),
-    "three_quarter": (Vector((1, -1, 0.7)).normalized(), "PERSP"),
-    "scale": (Vector((0, -1, 0)), "ORTHO"),
-}
+VIEWS = {name: (Vector(direction).normalized(), "PERSP" if name.startswith("three_quarter") else "ORTHO") for name, direction in VIEW_DIRECTIONS.items()}
+VIEWS["scale"] = VIEWS["front"]
 
 scene.render.engine = "BLENDER_EEVEE"
 scene.eevee.taa_render_samples = review["eevee_samples"]
@@ -161,11 +155,12 @@ for name in spec["objects"]:
     modifier.thickness = asset_radius * 0.012
 tiles += render_pass("clay_wire")
 
-# The asset under the engine's own renderer, taken by the gate before this script runs.
-bevy = out_dir / "bevy.png"
-if not bevy.is_file():
-    raise RuntimeError(f"{bevy} is missing: run tools/gate.sh, which takes the Bevy screenshot first")
-tiles.append(bevy)
+# The asset under the engine's own renderer, from its front right and from the opposite
+# side, taken by the gate before this script runs.
+for bevy in (out_dir / "bevy.png", out_dir / "bevy_back.png"):
+    if not bevy.is_file():
+        raise RuntimeError(f"{bevy} is missing: run tools/gate.sh, which takes the Bevy screenshots first")
+    tiles.append(bevy)
 
 sheet = out_dir / "sheet.png"
 dims = " x ".join(f"{b - a:g}" for a, b in zip(lo, hi))
@@ -173,7 +168,9 @@ subprocess.run(
     ["magick", "montage", "-background", "#202124", "-fill", "white", "-pointsize", "18"]
     + [arg for tile in tiles for arg in ("-label", tile.stem, str(tile))]
     + ["-tile", f"{len(review['views'])}x", "-geometry", f"{review['tile_px']}x{review['tile_px']}+4+4",
-       "-title", f"{asset.name} / {phase} / spec {dims} m (x, y, z)", str(sheet)],
+       "-title", f"{asset.name} / {phase} / spec {dims} m (x, y, z)",
+       # 8 bits and no alpha: a deeper sheet is shown as a palette by some viewers, which bands every gradient (tools/image_lint.py).
+       "-depth", "8", "-alpha", "off", f"PNG24:{sheet}"],
     check=True,
 )
 print(f"review sheet {sheet}")

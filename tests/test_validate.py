@@ -4,6 +4,7 @@ asserts that the matching check, by id, fails.
 Usage: tools/bl tests/test_validate.py
 """
 
+import json
 import runpy
 import sys
 from pathlib import Path
@@ -185,6 +186,20 @@ def no_ledge(spec):
     edit(hull, "rock")
 
 
+def thin_wedge(spec):
+    """The rock the owner rejected on 2026-10-04: seed 2 of the first generator. A wedge with a
+    narrow ridge, one plane across most of the back, and its only ledge a small notch."""
+    data = json.loads((ROOT / "tests" / "fixtures" / "rock_thin_wedge.json").read_text())
+
+    def swap(bm):
+        bm.clear()
+        verts = [bm.verts.new(co) for co in data["vertices"]]
+        for face in data["faces"]:
+            bm.faces.new([verts[i] for i in face])
+
+    edit(swap, "rock")
+
+
 def too_many_planes(spec):
     spec["planes"]["max_count"] = 3
 
@@ -238,6 +253,10 @@ CASES = [
     (even_facets, "rock.planes_size_ratio", "rock"),
     (no_ledge, "rock.planes_ledges", "rock"),
     (too_many_planes, "rock.planes_count", "rock"),
+    (thin_wedge, "rock.fullness", "rock"),
+    (thin_wedge, "rock.crown", "rock"),
+    (thin_wedge, "rock.planes_view_share", "rock"),
+    (thin_wedge, "rock.planes_ledge_views", "rock"),
     (paint_removed, "m_rock.painted", "rock"),
     (painted_at_another_size, "m_rock.painted", "rock"),
     (painted_over_another_colour, "m_rock.base_colour", "rock"),
@@ -262,11 +281,14 @@ def failures_after(mutate, name="tracer"):
 
 
 problems = []
+seen = {}  # one build per mutation, however many checks it must turn red
 for name in sorted({case[2] if len(case) > 2 else "tracer" for case in CASES}):
     if clean := failures_after(None, name):
         problems.append(f"unmodified {name} fails {sorted(clean)}")
 for mutate, expected, *asset_name in CASES:
-    failed = failures_after(mutate, *asset_name)
+    if mutate not in seen:
+        seen[mutate] = failures_after(mutate, *asset_name)
+    failed = seen[mutate]
     status = "ok" if expected in failed else "NOT CAUGHT"
     print(f"{status:10} {mutate.__name__:24} -> {sorted(failed)}")
     if expected not in failed:

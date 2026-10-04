@@ -2,12 +2,17 @@
 //! the loaded triangles, UVs and texels, against the manifest.
 //!
 //! `tools/paint.py` computes the colour at a point as
-//! `material colour * tint(height) * (1 - crevice shadow) * (1 + edge light)`,
+//! `material colour * tint(height) * (1 - side shade) * (1 + blotch) * (1 - crevice shadow) * (1 + edge light)`,
 //! with growth changing hue but not lightness. Here every sampled texel's
-//! luminance is divided by `luminance(material colour * tint(height))`, which
-//! leaves a number that is 1 on an open face, above 1 on an exposed edge and
-//! below 1 in a crevice. Which of those a texel is comes from the geometry
-//! alone, never from the texture.
+//! luminance is divided by `luminance(material colour * tint(height)) * (1 - side shade)`,
+//! which the geometry alone gives. That leaves a number that is 1 on an open
+//! face (give or take its blotches, which average out), above 1 on an exposed
+//! edge and below 1 in a crevice. Which of those a texel is comes from the
+//! geometry alone, never from the texture.
+//!
+//! Growth is measured by hue: a texel divided by the tint, at the material's
+//! lightness, lies somewhere on the line from the material colour to the
+//! growth colour, and how far along is how much growth it shows.
 
 use bevy::{image::Image, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -36,7 +41,44 @@ pub struct Painted {
     colour_tolerance: f32,
     /// The share of `edge_light` and `crevice_shadow` the measured zones must show on average.
     min_effect_share: f32,
+    /// Variation the spec asks for; absent or zero means none, and nothing is asked of it.
+    #[serde(default)]
+    growth: Option<[f32; 3]>,
+    #[serde(default)]
+    growth_height_m: f32,
+    #[serde(default)]
+    growth_up: f32,
+    #[serde(default)]
+    growth_edges: f32,
+    #[serde(default)]
+    blotch: f32,
+    #[serde(default)]
+    side_shade: f32,
+    /// The rules `tools/paint.py` paints by and these checks measure by, from `conventions.toml`.
+    #[serde(default = "side_normal")]
+    side_shade_normal_z: [f32; 2],
+    #[serde(default = "half_band")]
+    side_shade_half_band: f32,
+    #[serde(default = "up_normal")]
+    growth_up_normal_z: [f32; 2],
+    #[serde(default = "cover")]
+    growth_cover: [f32; 2],
+    #[serde(default = "spread")]
+    blotch_spread: [f32; 2],
+    #[serde(default = "grain")]
+    max_blotch_grain: f32,
+    #[serde(default = "level_gap")]
+    max_level_gap: u8,
 }
+
+// Used only by manifests written before these rules existed (the tests' tampered ones).
+fn side_normal() -> [f32; 2] { [0.3, 0.7] }
+fn half_band() -> f32 { 0.35 }
+fn up_normal() -> [f32; 2] { [0.82, 0.94] }
+fn cover() -> [f32; 2] { [0.5, 1.5] }
+fn spread() -> [f32; 2] { [1.0, 2.5] }
+fn grain() -> f32 { 0.2 }
+fn level_gap() -> u8 { 3 }
 
 /// One triangle as Bevy loaded it, in scene space.
 pub struct Triangle {
@@ -63,6 +105,20 @@ pub struct Measured {
     /// Luminance of the lowest quarter of open samples over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
+    /// Largest run of unused 8-bit levels within the range the open faces' green channel spans.
+    level_gap: u8,
+    /// Share of growth, 0 to 1, by hue: low on the asset, on upright open faces high up, on level
+    /// open faces high up, and along upper edges.
+    growth_base: f32,
+    growth_bare_sides: f32,
+    growth_up: f32,
+    growth_edges: f32,
+    /// Open faces: the 10th to 90th percentile spread of tone, and the mean step between neighbouring samples over it.
+    blotch_spread: f32,
+    blotch_grain: f32,
+    /// How much darker upright open faces near mid height are than the tint alone makes them, and the shade asked of them.
+    side_shade: f32,
+    side_shade_expected: f32,
 }
 
 const LUMA: Vec3 = Vec3::new(0.2126, 0.7152, 0.0722);
@@ -74,6 +130,16 @@ const SAMPLE_GRID: u32 = 384;
 const SAME_SURFACE_DEG: f32 = 4.0;
 
 struct Sample {
+    /// Texel position, to find neighbours.
+    at: (u32, u32),
+    /// Metres above the floor, and the upward part of the face's normal.
+    above: f32,
+    up: f32,
+    /// How much of the side shade the paint gives this point, 0 to 1.
+    shade: f32,
+    /// Growth shown, 0 to 1, by hue.
+    growth: f32,
+    green: u8,
     height: f32,
     /// Texel luminance over the luminance the formula gives an open face here.
     ratio: f32,
@@ -227,8 +293,23 @@ pub fn check(
             let linear = texel.to_linear();
             let p = t.positions[0] * w.x + t.positions[1] * w.y + t.positions[2] * w.z;
             let height = ((p.y - floor) / (top - floor)).clamp(0.0, 1.0);
-            let expected = (Vec3::from(colour) * base_tint.lerp(top_tint, height)).dot(LUMA);
-            let luminance = Vec3::new(linear.red, linear.green, linear.blue).dot(LUMA);
+            let tint = base_tint.lerp(top_tint, height);
+            // Upright faces are painted darker near mid height (tools/paint.py, side_shade).
+            let [side, not_side] = want.side_shade_normal_z;
+            let upright = ((not_side - n.y.abs()) / (not_side - side)).clamp(0.0, 1.0);
+            let shade = upright * (1.0 - (height - 0.5).abs() / want.side_shade_half_band).clamp(0.0, 1.0);
+            let expected = (Vec3::from(colour) * tint).dot(LUMA) * (1.0 - want.side_shade * shade);
+            let rgb = Vec3::new(linear.red, linear.green, linear.blue);
+            let luminance = rgb.dot(LUMA);
+            // Growth: the tint taken out and the lightness set to the material's, the texel lies on
+            // the line from the material colour to the growth colour.
+            let growth = want.growth.map_or(0.0, |growth| {
+                let material = Vec3::from(colour);
+                let growth = Vec3::from(growth) * (material.dot(LUMA) / Vec3::from(growth).dot(LUMA));
+                let untinted = rgb / tint;
+                let seen = untinted * (material.dot(LUMA) / untinted.dot(LUMA).max(1e-6));
+                ((seen - material).dot(growth - material) / (growth - material).length_squared()).clamp(0.0, 1.0)
+            });
 
             // Nearest face that turns away (an exposed edge) or rises in front (a crevice).
             let (mut convex, mut concave) = (f32::MAX, f32::MAX);
@@ -259,7 +340,19 @@ pub fn check(
             } else {
                 Zone::Other
             };
-            samples.push(Sample { height, ratio: luminance / expected, luminance, expected, zone });
+            samples.push(Sample {
+                at: (x, y),
+                above: p.y - floor,
+                up: n.y,
+                shade,
+                growth,
+                green: (srgb.green * 255.0).round() as u8,
+                height,
+                ratio: luminance / expected,
+                luminance,
+                expected,
+                zone,
+            });
         });
     }
     measured.texel_range = [darkest, brightest];
@@ -321,6 +414,103 @@ pub fn check(
             crevice / open,
             want.crevice_shadow
         ));
+    }
+
+    // Banding: a smooth gradient uses every 8-bit level it passes through. Levels left unused
+    // inside the range the open faces span are steps the eye sees as bands.
+    let mut greens: Vec<u8> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.green).collect();
+    greens.sort_unstable();
+    let inner = &greens[greens.len() / 50..greens.len() - greens.len() / 50];
+    measured.level_gap = inner.windows(2).map(|pair| (pair[1] - pair[0]).saturating_sub(1)).max().unwrap_or(0);
+    if measured.level_gap > want.max_level_gap {
+        fail(format!(
+            "painted.banding: open faces span 8-bit levels {}..{} of the green channel but leave a run of {} unused; conventions allow {}",
+            inner[0],
+            inner[inner.len() - 1],
+            measured.level_gap,
+            want.max_level_gap
+        ));
+    }
+
+    // Variation, each kind measured where the geometry says it should be and nowhere else.
+    let average = |pick: &dyn Fn(&Sample) -> bool, value: &dyn Fn(&Sample) -> f32| {
+        let values: Vec<f32> = samples.iter().filter(|s| pick(s)).map(value).collect();
+        (values.len(), values.iter().sum::<f32>() / values.len().max(1) as f32)
+    };
+    let upright = |s: &Sample| s.up.abs() <= want.side_shade_normal_z[0];
+    let level = |s: &Sample| s.up >= want.growth_up_normal_z[1];
+    if want.growth.is_some() {
+        // Clear of the ragged top of the growth, which wanders by half its height either way.
+        let (low, high) = (want.growth_height_m * 0.4, want.growth_height_m * 1.6);
+        let (base_count, base) = average(&|s| s.zone != Zone::Crevice && s.above < low, &|s| s.growth);
+        let (bare_count, bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
+        (measured.growth_base, measured.growth_bare_sides) = (base, bare);
+        if base_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || base < 0.7 || bare > 0.15 {
+            fail(format!(
+                "painted.growth_height: growth shows on {base:.2} of the surface below {low:.2} m ({base_count} samples; wanted at least 0.7) and on {bare:.2} of upright open faces above {high:.2} m ({bare_count} samples; wanted at most 0.15); growth_height_m is {}",
+                want.growth_height_m
+            ));
+        }
+        if want.growth_up > 0.0 {
+            let (count, cover) = average(&|s| s.zone == Zone::Open && level(s) && s.above > high, &|s| s.growth);
+            measured.growth_up = cover;
+            let [least, most] = want.growth_cover.map(|share| share * want.growth_up);
+            if count < MIN_SAMPLES || cover < least || cover > most {
+                fail(format!(
+                    "painted.growth_up: growth covers {cover:.2} of level open faces above {high:.2} m ({count} samples); growth_up {} wants {least:.2} to {most:.2}: patches, neither bare nor a carpet",
+                    want.growth_up
+                ));
+            }
+        }
+        if want.growth_edges > 0.0 {
+            let (count, cover) = average(&|s| s.zone == Zone::Edge && upright(s) && s.height > 0.8, &|s| s.growth);
+            measured.growth_edges = cover;
+            let least = want.min_effect_share * want.growth_edges;
+            if count < MIN_SAMPLES || cover < least {
+                fail(format!(
+                    "painted.growth_edges: growth covers {cover:.2} of the exposed edges of upright faces in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}",
+                    want.growth_edges
+                ));
+            }
+        }
+    }
+    if want.blotch > 0.0 {
+        let mut tones: Vec<f32> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.ratio).collect();
+        tones.sort_by(f32::total_cmp);
+        measured.blotch_spread = tones[tones.len() * 9 / 10] - tones[tones.len() / 10];
+        let [least, most] = want.blotch_spread.map(|share| share * want.blotch);
+        if measured.blotch_spread < least || measured.blotch_spread > most {
+            fail(format!(
+                "painted.blotches: the tone of open faces spreads {:.3} from its 10th to its 90th percentile; blotch {} wants {least:.3} to {most:.3}",
+                measured.blotch_spread, want.blotch
+            ));
+        }
+        // Neighbouring samples, a stride apart along a row of the texture.
+        let open: std::collections::HashMap<(u32, u32), f32> =
+            samples.iter().filter(|s| s.zone == Zone::Open).map(|s| (s.at, s.ratio)).collect();
+        let steps: Vec<f32> = open.iter().filter_map(|(&(x, y), ratio)| open.get(&(x + stride, y)).map(|next| (next - ratio).abs())).collect();
+        measured.blotch_grain = steps.iter().sum::<f32>() / steps.len().max(1) as f32 / measured.blotch_spread.max(1e-6);
+        if measured.blotch_grain > want.max_blotch_grain {
+            fail(format!(
+                "painted.blotches_broad: neighbouring samples of open faces differ by {:.2} of the tone spread on average; conventions allow {}: blotches are broad patches, not grain",
+                measured.blotch_grain, want.max_blotch_grain
+            ));
+        }
+    }
+    if want.side_shade > 0.0 {
+        // What the tint alone would give, against what is there, where at least half the shade is due.
+        let side = |s: &Sample| s.zone == Zone::Open && s.shade >= 0.5;
+        let (count, due) = average(&side, &|s| s.shade);
+        let (_, tone) = average(&side, &|s| s.ratio * (1.0 - want.side_shade * s.shade));
+        (measured.side_shade, measured.side_shade_expected) = (1.0 - tone, want.side_shade * due);
+        let least = want.min_effect_share * want.side_shade * due;
+        if count < MIN_SAMPLES || 1.0 - tone < least {
+            fail(format!(
+                "painted.side_shade: upright open faces near mid height are {:.3} darker than the tint alone makes them ({count} samples); side_shade {} wants at least {least:.3}",
+                1.0 - tone,
+                want.side_shade
+            ));
+        }
     }
     measured
 }

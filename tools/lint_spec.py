@@ -28,7 +28,11 @@ PLANES = {
     "min_size_ratio": float,
     "min_ledges": int,
     "ledge_m": float,
+    "max_view_share": float,
+    "min_ledge_views": int,
 }
+# Optional; how much of its bounding box a closed shape fills. Both keys are required once it is present.
+FULLNESS = {"min_volume_share": float, "min_crown_share": float}
 # Optional; painted shading (ADR 10). `growth` and `growth_height_m` come together or not at all.
 PAINTED = {
     "texture_px": int,
@@ -41,6 +45,11 @@ PAINTED = {
     "hidden_underside": bool,
 }
 GROWTH = {"growth": str, "growth_height_m": float}
+# Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
+# needs `growth`; `blotch` and `blotch_size_m` come together.
+GROWTH_WHERE = {"growth_up": float, "growth_edges": float}
+BLOTCH = {"blotch": float, "blotch_size_m": float}
+SIDE_SHADE = {"side_shade": float}
 HEX = "#[0-9a-f]{6}"
 ATTRIBUTES = {"POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0"}
 
@@ -78,16 +87,28 @@ if not checks.failed():
             and planes["large_m2"] > 0
             and 0 < planes["min_area_share"] <= 1
             and planes["min_count"] <= planes["max_count"]
+            and 0 < planes["max_view_share"] <= 1
+            and planes["min_ledge_views"] <= len(conv["planes"]["views"])
         )
-        checks.check("spec.planes", ok, f"optional; needs exactly {sorted(PLANES)}, share in (0, 1], min_count <= max_count")
+        checks.check("spec.planes", ok, f"optional; needs exactly {sorted(PLANES)}, shares in (0, 1], min_count <= max_count, min_ledge_views at most the {len(conv['planes']['views'])} views in conventions.toml")
+    fullness = spec.get("fullness")
+    if fullness is not None:
+        ok = isinstance(fullness, dict) and set(fullness) == set(FULLNESS) and all(type(fullness[key]) is float and 0 < fullness[key] <= 1 for key in FULLNESS)
+        checks.check("spec.fullness", ok and spec["watertight"], f"optional; needs exactly {sorted(FULLNESS)}, each a share in (0, 1], on a watertight asset")
     checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
     painted = spec.get("painted_shading")
     if painted is not None:
         keys = set(painted) if isinstance(painted, dict) else set()
-        wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {})}
+        wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
+        optional = {**SIDE_SHADE, **(GROWTH_WHERE if "growth" in keys else {})}
+        wanted.update({key: kind for key, kind in optional.items() if key in keys})
         ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
         ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
-        checks.check("spec.painted_shading", ok, f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)}; colours as #rrggbb")
+        checks.check(
+            "spec.painted_shading",
+            ok,
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+        )
         if ok:
             size = painted["texture_px"]
             checks.check("spec.painted_texture_px", 64 <= size <= 4096 and size & (size - 1) == 0, f"{size} is not a power of two from 64 to 4096")
@@ -98,7 +119,12 @@ if not checks.failed():
                 f"base_tint {painted['base_tint']} is not darker than top_tint {painted['top_tint']} (ADR 9: darker toward the base)",
             )
             amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted["crevice_shadow"] < 1 and painted["edge_width_m"] > 0 and painted["crevice_width_m"] > 0
-            checks.check("spec.painted_amounts", amounts_ok and painted.get("growth_height_m", 1.0) > 0, "edge_light in 0..1, crevice_shadow in 0..1 (below 1), widths and growth height above 0")
+            strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
+            checks.check(
+                "spec.painted_amounts",
+                amounts_ok and strengths_ok and painted.get("growth_height_m", 1.0) > 0,
+                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow and side_shade in 0..1 (below 1); widths, growth height and blotch size above 0",
+            )
     checks.check(
         "spec.painted_needs_uvs",
         (painted is not None) == ("TEXCOORD_0" in spec["attributes"]),

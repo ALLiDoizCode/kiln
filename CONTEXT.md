@@ -127,7 +127,9 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Painted shading**: colour variation computed from an asset's shape and baked into it: a base-to-top gradient, light along exposed edges, shadow in crevices. Ours is baked into one texture per asset (ADR 10). _Avoid_: baked lighting (no light is involved), vertex paint.
 - **Tint**: a colour the material colour is multiplied by. White leaves it as it is. The gradient of painted shading runs from a base tint at the ground to a top tint at the top of the bounds.
 - **Edge light**: the part of painted shading that lightens exposed (outward, convex) edges. **Crevice shadow**: the part that darkens inside corners.
-- **Growth**: moss, lichen or the like, painted from the ground up to a height, at the material's own lightness so that it changes hue and not value.
+- **Growth**: moss, lichen or the like, painted from the ground up to a height, in patches on faces near level and along upper edges, at the material's own lightness so that it changes hue and not value.
+- **Side shade**: the part of painted shading that darkens upright faces at mid height. **Blotch**: a broad, soft-edged patch of lighter or darker tone within a plane; blotches lighten as much as they darken.
+- **Banding**: a smooth gradient shown as flat steps. In a texture it is too few levels; in a review image it is a viewer reducing a file deeper than 8 bits per channel to a palette.
 - **Open face**: surface far enough from every edge and inside corner that only the material colour and the tint reach it. The checks measure colour there.
 - **Hidden underside**: faces lying on the floor of the bounds and facing down, which nobody sees; they get almost none of the texture and are not measured.
 - **Leaf card**: a small flat piece of geometry showing a painted cluster of leaves with transparent gaps; foliage is many of them on a branch skeleton. _Avoid_: billboard (a card that turns to face the camera), leaf plane.
@@ -137,6 +139,9 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Plane cut**: slicing a solid with one flat cut and capping the hole; how rock is shaped (ADR 9). A **notch** is two cuts that meet, removing only what is in front of both.
 - **Ledge**: an inward (concave) corner between two large planes: a shelf and the wall behind it. _Avoid_: step (also a stair), crevice.
 - **Soft edge**: an edge lit as if rounded, because the faces either side share normals across it. Ours is a narrow bevel strip whose normals blend from one plane to the next. The opposite of a hard edge.
+- **Step, fracture, shoulder**: the three forms cut into a rock, each a ledge. A step is a raised slab above a lower shelf on top; a fracture is a V-shaped groove down a side; a shoulder is a bench part of the way up a side. _Avoid_: step for a stair.
+- **Fullness**: how much of its bounding box a closed shape fills, as a share of the box's volume. **Crown**: the level slice through a shape three quarters of the way up its bounds, as a share of the bounds' footprint; it tells a boulder (broad high up) from a wedge.
+- **Outline**: what a shape covers when seen from one direction with parallel rays. A plane's **view share** is the part of the outline it fills from that direction.
 - **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
 
 **Game**

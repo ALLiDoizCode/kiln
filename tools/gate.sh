@@ -20,7 +20,10 @@ step "L4  Bevy load test";       cargo run -q -p asset_smoke -- "$glb" "assets/m
 step "L4b Bevy screenshot";      mkdir -p "source/$asset/review/$phase"
                                  cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" \
                                    --screenshot "source/$asset/review/$phase/bevy.png" 2> "$reports/L4b-bevy-view.log"
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --back \
+                                   --screenshot "source/$asset/review/$phase/bevy_back.png" 2>> "$reports/L4b-bevy-view.log"
 step "L5  review renders";       tools/bl tools/review_render.py "$asset" "$phase"
+step "L5c review image";         python tools/image_lint.py "source/$asset/review/$phase/sheet.png"
 step "L5b approval baseline";    python tools/baseline.py check "$asset" "$phase"
 
 printf '\nall gates passed: %s\nnow look at source/%s/review/%s/sheet.png\n' "$asset" "$asset" "$phase"

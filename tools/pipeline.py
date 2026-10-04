@@ -12,6 +12,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+# Where a camera sits relative to the asset, by view name (+Z up, the asset's front faces -Y).
+# The review renders and the shape checks both look from these.
+VIEW_DIRECTIONS = {
+    "front": (0, -1, 0),
+    "right": (1, 0, 0),
+    "back": (0, 1, 0),
+    "left": (-1, 0, 0),
+    "top": (0, 0, 1),
+    "three_quarter": (1, -1, 0.7),
+    "three_quarter_back": (-1, 1, 0.7),
+}
+
+
 def script_args():
     """Arguments after `--` when run under Blender, else all arguments."""
     argv = sys.argv

@@ -12,7 +12,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 126,
+  "triangles": 154,
   "bounds": {
     "min": [
       -1.5,
@@ -58,6 +58,36 @@
     "texel_range": [
       30,
       240
-    ]
+    ],
+    "growth_height_m": 0.9,
+    "growth_up": 0.45,
+    "growth_edges": 0.5,
+    "blotch": 0.12,
+    "blotch_size_m": 0.6,
+    "side_shade": 0.22,
+    "growth": [
+      0.194618,
+      0.254152,
+      0.074214
+    ],
+    "side_shade_normal_z": [
+      0.3,
+      0.7
+    ],
+    "side_shade_half_band": 0.35,
+    "growth_up_normal_z": [
+      0.82,
+      0.94
+    ],
+    "growth_cover": [
+      0.5,
+      1.5
+    ],
+    "blotch_spread": [
+      1.0,
+      2.5
+    ],
+    "max_blotch_grain": 0.2,
+    "max_level_gap": 3
   }
 }

@@ -79,6 +79,16 @@ expect_id "painted.gradient"       "L4 catches a missing base-to-top gradient"  
 expect_id "painted.edges_lighter"  "L4 catches missing edge light"                  smoke "$(broken no_edge_light)" "$rock_manifest"
 expect_id "painted.crevices_darker" "L4 catches a missing crevice shadow"           smoke "$(broken no_crevice_shadow)" "$rock_manifest"
 expect_id "painted.range"          "L4 catches texels burnt out to white"           smoke "$(broken burnt_out)" "$rock_manifest"
+expect_id "painted.banding"        "L4 catches a gradient in visible steps"          smoke "$(broken banded)" "$rock_manifest"
+expect_id "painted.growth_height"  "L4 catches a rock with no growth at its base"    smoke "$(broken no_growth)" "$rock_manifest"
+expect_id "painted.growth_height"  "L4 catches growth all the way up the sides"      smoke "$(broken growth_everywhere)" "$rock_manifest"
+expect_id "painted.growth_up"      "L4 catches bare upward-facing surfaces"          smoke "$(broken no_growth_up)" "$rock_manifest"
+expect_id "painted.growth_up"      "L4 catches growth carpeting the top, not patchy" smoke "$(broken growth_carpets_the_top)" "$rock_manifest"
+expect_id "painted.growth_edges"   "L4 catches bare upper edges"                     smoke "$(broken no_growth_edges)" "$rock_manifest"
+expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
+expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
+expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
+expect_id "painted.side_shade"     "L4 catches sides not darker at mid height"       smoke "$(broken no_side_shade)" "$rock_manifest"
 expect_id "painted.open_faces"     "L4 catches an edge width that leaves no open face" smoke "$rock" "$(tamper 'm["painted"]["edge_width_m"] = 5.0' "$rock_manifest")"
 expect_id "uv.no_overlap"          "L4 catches overlapping UVs"                     smoke "$(broken stacked_uvs)" "$rock_manifest"
 expect_id "uv.in_unit_square"      "L4 catches UVs off the texture"                 smoke "$(broken uvs_off_the_texture)" "$rock_manifest"
@@ -92,6 +102,7 @@ expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
 view() { cargo run -q -p asset_view -- "$@"; }
 expect 0 "L4b renders the real asset"       view "$glb" "$manifest" --screenshot "$tmp/shot.png"
 expect 1 "L4b fails on an unloadable file"  view "$tmp/bad.glb" "$manifest" --screenshot "$tmp/bad.png"
+expect 0 "L4b renders the asset's back"     view "$glb" "$manifest" --back --screenshot "$tmp/back.png"
 
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 cat > "$tmp/draco.py" <<PY
@@ -139,6 +150,16 @@ paint_copy 'p["crevice_shadow"] = 1.5'
 expect_id "spec.painted_amounts"     "L0 catches an impossible shadow amount" python tools/lint_spec.py zz_lint
 paint_copy 's["attributes"].remove("TEXCOORD_0")'
 expect_id "spec.painted_needs_uvs"   "L0 catches painted shading with no UVs" python tools/lint_spec.py zz_lint
+paint_copy 'del p["blotch_size_m"]'
+expect_id "spec.painted_shading"     "L0 catches a blotch with no size"       python tools/lint_spec.py zz_lint
+paint_copy 'del p["growth"], p["growth_height_m"]'
+expect_id "spec.painted_shading"     "L0 catches growth placed with no growth colour" python tools/lint_spec.py zz_lint
+paint_copy 'p["side_shade"] = 1.0'
+expect_id "spec.painted_amounts"     "L0 catches a side shade that leaves no light" python tools/lint_spec.py zz_lint
+paint_copy 's["fullness"]["min_volume_share"] = 1.5'
+expect_id "spec.fullness"            "L0 catches a fullness above the whole box" python tools/lint_spec.py zz_lint
+paint_copy 's["planes"]["min_ledge_views"] = 9'
+expect_id "spec.planes"              "L0 catches more ledge views than there are views" python tools/lint_spec.py zz_lint
 paint_copy 'del s["painted_shading"]'
 expect_id "spec.painted_needs_uvs"   "L0 catches UVs on a flat-coloured asset" python tools/lint_spec.py zz_lint
 rm -rf source/zz_lint
@@ -153,6 +174,13 @@ expect 0 "L5b passes an unchanged sheet"    python tools/baseline.py check trace
 magick "$base/sheet.png" -fill red -draw 'rectangle 100,100 700,700' "$base/sheet.png"
 expect 1 "L5b catches a changed sheet"      python tools/baseline.py check tracer zz_base
 rm -rf "$base"
+
+# L5c: a sheet saved as viewers show it, then the same sheet 16 bits deep with alpha, which they band.
+expect 0 "L5c passes the real sheet"        python tools/image_lint.py source/rock/review/final/sheet.png
+magick source/rock/review/final/sheet.png -depth 16 "PNG48:$tmp/deep.png"
+expect_id "image.eight_bit" "L5c catches a 16-bit sheet"        python tools/image_lint.py "$tmp/deep.png"
+magick source/rock/review/final/sheet.png -alpha on "PNG32:$tmp/alpha.png"
+expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/image_lint.py "$tmp/alpha.png"
 
 echo; [[ $failures -eq 0 ]] && echo "all gate tests passed" || echo "$failures gate tests failed"
 exit $((failures > 0))

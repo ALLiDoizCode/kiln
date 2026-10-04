@@ -47,9 +47,38 @@ elif mutation == "burnt_out":
     bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1.0)
 elif mutation == "small_texture":
     want["texture_px"] = 256
+elif mutation == "no_growth":
+    for key in ("growth", "growth_height_m", "growth_up", "growth_edges"):
+        del want[key]
+elif mutation == "growth_everywhere":
+    want["growth_height_m"] = 5.0
+elif mutation == "no_growth_up":
+    want["growth_up"] = 0.0
+elif mutation == "growth_carpets_the_top":
+    want["growth_up"] = 1.0
+elif mutation == "no_growth_edges":
+    want["growth_edges"] = 0.0
+elif mutation == "no_blotches":
+    want["blotch"] = 0.0
+elif mutation == "harsh_blotches":
+    want["blotch"] = 0.5
+elif mutation == "speckle":
+    # Blotches the size of a texel: grain, not broad patches.
+    want["blotch_size_m"] = 0.02
+elif mutation == "no_side_shade":
+    want["side_shade"] = 0.0
 
 if mutation != "unpainted":
-    paint.apply(spec, conventions())
+    image = paint.apply(spec, conventions())
+
+if mutation == "banded":
+    # The gradient in a dozen flat steps per channel, as a texture saved with too few levels would be.
+    import numpy
+
+    texels = numpy.empty(len(image.pixels), dtype=numpy.float32)
+    image.pixels.foreach_get(texels)
+    image.pixels.foreach_set(numpy.round(texels * 12) / 12)
+    image.pack()
 
 # Changed after painting.
 if mutation == "shrunk_uvs":

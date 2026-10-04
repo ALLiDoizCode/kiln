@@ -21,6 +21,14 @@ min_face_area_m2 = 1e-10
 # How flat-surfaced assets (rock, ADR 9) are measured; the amounts wanted are in each spec.
 coplanar_deg = 1.0          # faces within this of their group's mean normal form one plane
 ledge_min_deg = 30.0        # two planes must differ by at least this to form a ledge
+# Where a shape is looked at from when a spec limits what one view may show: the review
+# cameras, the side they leave out, and the three-quarter opposite the Bevy tile's.
+views = ["front", "right", "back", "left", "top", "three_quarter", "three_quarter_back"]
+view_rays = 128             # parallel rays across the wider side of each view
+
+[fullness]
+# The crown is the level slice through an asset this share of the way up its bounds.
+crown_height = 0.75
 
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
@@ -68,4 +76,12 @@ max_uv_overlap = 0.001      # share of used texels claimed by more than one tria
 texel_range_srgb = [30, 240]
 feature_deg = 30.0          # two faces at least this far apart in tilt make an edge or a crevice
 colour_tolerance = 0.08     # open faces: measured over (material colour times tint)
-min_effect_share = 0.5      # share of edge_light and crevice_shadow the measured zones must average
+min_effect_share = 0.5      # share of edge_light, crevice_shadow, side_shade and growth_edges the measured zones must average
+# Variation a spec may ask for. The upward part (z) of a face's normal decides what it gets.
+side_shade_normal_z = [0.3, 0.7]    # at or below the first a face is a side and takes the whole side shade; at the second, none
+side_shade_half_band = 0.35         # the shade is whole at mid height, and gone this share of the height above and below it
+growth_up_normal_z = [0.82, 0.94]   # growth settles on faces within 20 degrees of level, and not on faces past 35
+growth_cover = [0.5, 1.5]           # measured cover of level faces, over the growth_up asked for: patchy, neither bare nor carpeted
+blotch_spread = [1.0, 2.5]          # tone spread of open faces (10th to 90th percentile), over the blotch asked for
+max_blotch_grain = 0.2              # mean tone step between neighbouring samples, over that spread: blotches are broad
+max_level_gap = 3                   # largest run of unused 8-bit levels inside the range open faces span: more is banding

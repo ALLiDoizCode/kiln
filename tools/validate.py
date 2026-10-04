@@ -14,9 +14,10 @@ from pathlib import Path
 import bmesh
 import bpy
 from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, Checks, conventions, linear_rgb, script_args
+from pipeline import VIEW_DIRECTIONS, Asset, Checks, conventions, linear_rgb, script_args
 
 
 def evaluated_bmesh(obj):
@@ -35,7 +36,8 @@ def planes_of(bm, floor_z, tol, conv):
     triangulated. Faces resting on the ground (facing straight down at
     floor_z) are left out, because nobody sees them. Returns (areas of the
     planes, area of everything visible, a function giving the ledges for a
-    given large-plane area and ledge length).
+    given large-plane area and ledge length, a function giving the plane a
+    face belongs to).
     """
     cos_flat = math.cos(math.radians(conv["planes"]["coplanar_deg"]))
     cos_ledge = math.cos(math.radians(conv["planes"]["ledge_min_deg"]))
@@ -68,15 +70,18 @@ def planes_of(bm, floor_z, tol, conv):
         """Pairs of large planes meeting in a concave corner at least ledge_m long.
 
         The corner is either an edge the two planes share, or one soft-edge
-        face (a bevel strip) with an edge on each.
+        face (a bevel strip) with an edge on each. Returns, per pair, the
+        corner's length and the stretches of it: (one end, the other end, the
+        direction out of the corner into the open).
         """
         large = {root for root, (area, _) in planes.items() if area >= large_m2}
         runs = {}
 
-        def add(a, b, length):
+        def add(a, b, length, ends):
             if a is not b and planes[a][1].dot(planes[b][1]) <= cos_ledge:
                 key = tuple(sorted((a.index, b.index)))
-                runs[key] = runs.get(key, 0.0) + length
+                total, stretches = runs.get(key, (0.0, []))
+                runs[key] = (total + length, stretches + [(*ends, (planes[a][1] + planes[b][1]).normalized())])
 
         def midpoint(edge):
             return (edge.verts[0].co + edge.verts[1].co) / 2
@@ -84,7 +89,7 @@ def planes_of(bm, floor_z, tol, conv):
         for edge in bm.edges:
             roots = [find(f) for f in edge.link_faces if f in group]
             if len(roots) == 2 and all(r in large for r in roots) and not edge.is_convex:
-                add(roots[0], roots[1], edge.calc_length())
+                add(roots[0], roots[1], edge.calc_length(), (edge.verts[0].co.copy(), edge.verts[1].co.copy()))
         for face in visible:
             if find(face) in large:
                 continue
@@ -95,23 +100,31 @@ def planes_of(bm, floor_z, tol, conv):
                     across = midpoint(edge_b) - midpoint(edge_a)
                     # Concave: each plane's edge sits in front of the other plane.
                     if a is not b and across.dot(planes[a][1]) > tol and -across.dot(planes[b][1]) > tol:
-                        add(a, b, min(edge_a.calc_length(), edge_b.calc_length()))
-        return {pair: length for pair, length in runs.items() if length >= ledge_m}
+                        shorter = min(edge_a, edge_b, key=lambda e: e.calc_length())
+                        # The strip's own middle line, as long as its shorter side.
+                        ends = tuple(v.co + across * (0.5 if shorter is edge_a else -0.5) for v in shorter.verts)
+                        add(a, b, shorter.calc_length(), ends)
+        return {pair: run for pair, run in runs.items() if run[0] >= ledge_m}
 
-    return [area for area, _ in planes.values()], sum(f.calc_area() for f in visible), ledges
+    def plane_of(face):
+        """The root face of the plane `face` lies in, or None for hidden faces and curved regions."""
+        root = find(face) if face in group else None
+        return root if root in planes else None
+
+    return [area for area, _ in planes.values()], sum(f.calc_area() for f in visible), ledges, plane_of
 
 
 def check_planes(checks, name, bm, spec, conv):
     """The shape is a few large planes with a ledge (ADR 9), not a lump of small faces."""
     want = spec["planes"]
-    areas, visible, ledges = planes_of(bm, spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"], conv)
+    areas, visible, ledges, plane_of = planes_of(bm, spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"], conv)
     large = sorted((a for a in areas if a >= want["large_m2"]), reverse=True)
     share = sum(large) / visible if visible else 0.0
     ratio = large[0] / statistics.median(large) if large else 0.0
     found = ledges(want["large_m2"], want["ledge_m"])
     print(
         f"{name} planes: {len(large)} large (>= {want['large_m2']} m2) holding {share:.3f} of {visible:.2f} m2 visible, "
-        f"largest/median {ratio:.2f}, ledges {sorted(round(v, 2) for v in found.values())} m, areas {[round(a, 2) for a in large]}"
+        f"largest/median {ratio:.2f}, ledges {sorted(round(length, 2) for length, _ in found.values())} m, areas {[round(a, 2) for a in large]}"
     )
     checks.check(
         f"{name}.planes_area_share",
@@ -132,6 +145,82 @@ def check_planes(checks, name, bm, spec, conv):
         f"{name}.planes_ledges",
         len(found) >= want["min_ledges"],
         f"{len(found)} concave corners of at least {want['ledge_m']} m between large planes; spec wants {want['min_ledges']}",
+    )
+
+    # What each view shows: the share of the outline its largest plane fills, and how much
+    # ledge corner can be seen. A view is parallel rays from far off, as the review tiles are.
+    tree = BVHTree.FromBMesh(bm)
+    bm.faces.ensure_lookup_table()
+    views = conv["planes"]["views"]
+    shares, lengths = {}, {}
+    for view in views:
+        toward = Vector(VIEW_DIRECTIONS[view]).normalized()
+        across = toward.cross(Vector((0, 0, 1)) if abs(toward.z) < 0.9 else Vector((0, 1, 0))).normalized()
+        up = across.cross(toward)
+        spans = [[v.co.dot(axis) for v in bm.verts] for axis in (across, up, toward)]
+        cell = max(max(span) - min(span) for span in spans[:2]) / conv["planes"]["view_rays"]
+        hits = {}
+        x = min(spans[0]) + cell / 2
+        while x < max(spans[0]):
+            y = min(spans[1]) + cell / 2
+            while y < max(spans[1]):
+                index = tree.ray_cast(across * x + up * y + toward * (max(spans[2]) + 1.0), -toward)[2]
+                if index is not None:
+                    plane = plane_of(bm.faces[index])
+                    hits[plane] = hits.get(plane, 0) + 1
+                y += cell
+            x += cell
+        shares[view] = max((count for plane, count in hits.items() if plane is not None), default=0) / max(1, sum(hits.values()))
+        seen = 0.0
+        for _, stretches in found.values():
+            for start, end, out in stretches:
+                along = end - start
+                for step in range(8):
+                    # Seen when nothing lies between this piece of the corner and the camera.
+                    piece = start + along * ((step + 0.5) / 8) + out * 0.02
+                    if tree.ray_cast(piece, toward)[2] is None:
+                        seen += along.cross(toward).length / 8
+        lengths[view] = seen
+    print(f"{name} views: largest plane's share of the outline {({v: round(s, 2) for v, s in shares.items()})}; ledge corner seen, m {({v: round(l, 2) for v, l in lengths.items()})}")
+    worst = max(shares, key=shares.get)
+    checks.check(
+        f"{name}.planes_view_share",
+        shares[worst] <= want["max_view_share"],
+        f"from {worst} one plane fills {shares[worst]:.2f} of the outline; spec wants at most {want['max_view_share']} from each of {views}; all {({v: round(s, 2) for v, s in shares.items()})}",
+    )
+    reading = [view for view in views if lengths[view] >= want["ledge_m"]]
+    checks.check(
+        f"{name}.planes_ledge_views",
+        len(reading) >= want["min_ledge_views"],
+        f"at least {want['ledge_m']} m of ledge corner is seen from {len(reading)} of {len(views)} views; spec wants {want['min_ledge_views']}; "
+        f"not from {[v for v in views if v not in reading]}; metres seen {({v: round(l, 2) for v, l in lengths.items()})}",
+    )
+
+
+def check_fullness(checks, name, bm, spec, conv):
+    """The shape fills its bounding box, and is still broad high up: a boulder, not a wedge."""
+    want = spec["fullness"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    size = hi - lo
+    share = bm.calc_volume(signed=True) / (size.x * size.y * size.z)
+    # The crown: the level slice through the shape, as a share of the bounds' footprint.
+    level = lo.z + conv["fullness"]["crown_height"] * size.z
+    lower = bm.copy()
+    cut = bmesh.ops.bisect_plane(lower, geom=lower.verts[:] + lower.edges[:] + lower.faces[:], dist=1e-7, plane_co=(0, 0, level), plane_no=(0, 0, 1), clear_outer=True)
+    before = set(lower.faces)
+    bmesh.ops.holes_fill(lower, edges=[g for g in cut["geom_cut"] if isinstance(g, bmesh.types.BMEdge)])
+    crown = sum(f.calc_area() for f in lower.faces if f not in before) / (size.x * size.y)
+    lower.free()
+    print(f"{name} fullness: {share:.3f} of its bounding box; crown (slice at {conv['fullness']['crown_height']} of the height) {crown:.3f} of the footprint")
+    checks.check(
+        f"{name}.fullness",
+        share >= want["min_volume_share"],
+        f"the shape holds {share:.3f} of its bounding box's volume; spec wants at least {want['min_volume_share']}",
+    )
+    checks.check(
+        f"{name}.crown",
+        crown >= want["min_crown_share"],
+        f"the slice {conv['fullness']['crown_height']} of the way up is {crown:.3f} of the footprint; spec wants at least {want['min_crown_share']}",
     )
 
 
@@ -236,6 +325,8 @@ def check_scene(checks, spec, conv):
 
         if "planes" in spec:
             check_planes(checks, name, bm, spec, conv)
+        if "fullness" in spec and spec["watertight"]:
+            check_fullness(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

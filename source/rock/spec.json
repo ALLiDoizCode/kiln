@@ -15,6 +15,11 @@
     "crevice_width_m": 0.3,
     "growth": "#7a8a4d",
     "growth_height_m": 0.9,
+    "growth_up": 0.45,
+    "growth_edges": 0.5,
+    "blotch": 0.12,
+    "blotch_size_m": 0.6,
+    "side_shade": 0.22,
     "hidden_underside": true
   },
   "planes": {
@@ -22,10 +27,13 @@
     "min_area_share": 0.75,
     "min_count": 6,
     "max_count": 16,
-    "min_size_ratio": 3.0,
+    "min_size_ratio": 2.0,
     "min_ledges": 1,
-    "ledge_m": 0.5
+    "ledge_m": 0.5,
+    "max_view_share": 0.4,
+    "min_ledge_views": 7
   },
+  "fullness": { "min_volume_share": 0.45, "min_crown_share": 0.28 },
   "soft_edges": true,
   "watertight": true,
   "attributes": ["POSITION", "NORMAL", "TEXCOORD_0"]

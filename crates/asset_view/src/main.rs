@@ -5,8 +5,9 @@
 //! slow turntable and reloads the asset whenever the GLB changes on disk.
 //!
 //! `--close` frames the asset alone from about first-person distance, with no figure.
+//! `--back` takes the screenshot from the opposite side, the asset's back left.
 //!
-//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close]
+//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back]
 
 use std::{
     path::{Path, PathBuf},
@@ -52,6 +53,8 @@ struct View {
     centre: Vec3,
     radius: f32,
     screenshot: Option<PathBuf>,
+    /// Where the screenshot's camera stands, as a turn about the vertical from the front right.
+    orbit: f32,
     target: Option<Handle<Image>>,
     settled: u32,
     frames: u32,
@@ -63,19 +66,22 @@ fn main() -> AppExit {
     let mut positional = Vec::new();
     let mut screenshot = None;
     let mut close = false;
+    let mut back = false;
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
         if arg == "--screenshot" {
             screenshot = iter.next().map(PathBuf::from);
         } else if arg == "--close" {
             close = true;
+        } else if arg == "--back" {
+            back = true;
         } else {
             positional.push(PathBuf::from(arg));
         }
     }
     if positional.len() != 2 {
         eprintln!(
-            "usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close]"
+            "usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back]"
         );
         return AppExit::error();
     }
@@ -141,6 +147,7 @@ fn main() -> AppExit {
             // Close up, the asset overfills the frame a little, as it would at arm's length.
             radius: (framed_max - framed_min).length() / 2.0 * if close { 0.8 } else { 1.0 },
             screenshot,
+            orbit: if back { std::f32::consts::PI } else { 0.0 },
             target: None,
             settled: 0,
             frames: 0,
@@ -219,7 +226,7 @@ fn setup(
         ..default()
     });
 
-    let camera = (Camera3d::default(), camera_transform(&view, 0.0));
+    let camera = (Camera3d::default(), camera_transform(&view, view.orbit));
     if view.screenshot.is_some() {
         let mut image = Image::new_target_texture(SIZE, SIZE, TextureFormat::Rgba8UnormSrgb, None);
         image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
