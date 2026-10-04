@@ -1,0 +1,14 @@
+{
+  "asset": "crate",
+  "class": "prop",
+  "objects": ["crate"],
+  "bounds_m": { "min": [-0.4, -0.4, 0.0], "max": [0.4, 0.4, 0.8] },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 150,
+  "materials": {
+    "m_crate_frame": "#5a3820",
+    "m_crate_panel": "#a87a4a"
+  },
+  "watertight": true,
+  "attributes": ["POSITION", "NORMAL"]
+}

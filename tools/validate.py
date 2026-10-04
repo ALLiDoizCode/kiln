@@ -14,7 +14,7 @@ import bpy
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, Checks, conventions, script_args
+from pipeline import Asset, Checks, conventions, linear_rgb, script_args
 
 
 def evaluated_bmesh(obj):
@@ -39,7 +39,7 @@ def check_scene(checks, spec, conv):
 
     triangles = 0
     lo, hi = Vector((float("inf"),) * 3), Vector((float("-inf"),) * 3)
-    materials = set()
+    materials = {}
 
     for name in sorted(wanted & set(mesh_objects)):
         obj = mesh_objects[name]
@@ -74,15 +74,18 @@ def check_scene(checks, spec, conv):
         used = {f.material_index for f in bm.faces}
         checks.check(f"{name}.material_indices_valid", all(i < len(slots) for i in used), f"faces use slots {sorted(used)}")
         for material in filter(None, slots):
-            materials.add(material.name)
-            prefix = conv["naming"]["material_prefix"]
-            checks.check(f"{material.name}.prefix", material.name.startswith(prefix), f"material name must start with {prefix}")
+            materials[material.name] = material
             # The glTF exporter only reads Principled BSDF.
             out = material.node_tree and next(
                 (n for n in material.node_tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output), None
             )
             surface = out and out.inputs["Surface"].links and out.inputs["Surface"].links[0].from_node
-            checks.check(f"{material.name}.principled", surface and surface.type == "BSDF_PRINCIPLED", "surface is not a Principled BSDF")
+            principled = checks.check(f"{material.name}.principled", surface and surface.type == "BSDF_PRINCIPLED", "surface is not a Principled BSDF")
+            want = spec["materials"].get(material.name)
+            if principled and want:
+                got = tuple(surface.inputs["Base Color"].default_value)[:3]
+                close = not surface.inputs["Base Color"].links and all(abs(a - b) <= 0.005 for a, b in zip(got, linear_rgb(want)))
+                checks.check(f"{material.name}.base_colour", close, f"linear {tuple(round(c, 3) for c in got)} != spec {want}")
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:
@@ -91,7 +94,7 @@ def check_scene(checks, spec, conv):
         bm.free()
 
     checks.check("budget.triangles", triangles <= spec["max_triangles"], f"{triangles} > {spec['max_triangles']}")
-    checks.check("budget.materials", len(materials) <= spec["max_materials"], f"{len(materials)} > {spec['max_materials']}")
+    checks.check("materials.match_spec", set(materials) == set(spec["materials"]), f"{sorted(materials)} != spec {sorted(spec['materials'])}")
     tol = spec["bounds_tolerance_m"]
     want_lo, want_hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
     in_bounds = triangles > 0 and (lo - want_lo).length <= tol and (hi - want_hi).length <= tol

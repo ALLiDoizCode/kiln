@@ -4,7 +4,6 @@ asserts that the matching check, by id, fails.
 Usage: tools/bl tests/test_validate.py
 """
 
-import copy
 import runpy
 import sys
 from pathlib import Path
@@ -99,6 +98,15 @@ def emission_material(spec):
     tree.links.new(emission.outputs[0], output.inputs["Surface"])
 
 
+def wrong_colour(spec):
+    bsdf = bpy.data.materials["m_tracer"].node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = (0.1, 0.8, 0.1, 1.0)
+
+
+def extra_material(spec):
+    bpy.data.objects["tracer"].data.materials.append(bpy.data.materials.new("m_extra"))
+
+
 def over_budget(spec):
     spec["max_triangles"] = 10
 
@@ -119,14 +127,16 @@ CASES = [
     (duplicate_vertices, "tracer.no_duplicate_vertices"),
     (no_material, "tracer.materials_assigned"),
     (emission_material, "m_tracer.principled"),
+    (wrong_colour, "m_tracer.base_colour"),
+    (extra_material, "materials.match_spec"),
     (over_budget, "budget.triangles"),
 ]
 
 
 def failures_after(mutate):
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    runpy.run_path(str(TRACER.source / "build.py"))["build"]()
-    spec = copy.deepcopy(TRACER.spec())
+    spec = TRACER.spec()
+    runpy.run_path(str(TRACER.source / "build.py"))["build"](spec)
     if mutate:
         mutate(spec)
     checks = Checks("L1-mesh", "tracer")

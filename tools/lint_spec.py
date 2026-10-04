@@ -15,7 +15,7 @@ REQUIRED = {
     "bounds_m": dict,
     "bounds_tolerance_m": float,
     "max_triangles": int,
-    "max_materials": int,
+    "materials": dict,
     "watertight": bool,
     "attributes": list,
 }
@@ -37,6 +37,12 @@ if not checks.failed():
     checks.check("spec.bounds", len(lo) == len(hi) == 3 and all(a < b for a, b in zip(lo, hi)), "need min < max on 3 axes")
     checks.check("spec.attributes", set(spec["attributes"]) <= ATTRIBUTES and "POSITION" in spec["attributes"], f"allowed: {sorted(ATTRIBUTES)}")
     checks.check("spec.tangents_need_uvs", "TANGENT" not in spec["attributes"] or "TEXCOORD_0" in spec["attributes"], "TANGENT requires TEXCOORD_0")
+    prefix = conv["naming"]["material_prefix"]
+    colours_ok = all(
+        name.startswith(prefix) and pattern.match(name) and isinstance(colour, str) and re.fullmatch("#[0-9a-f]{6}", colour)
+        for name, colour in spec["materials"].items()
+    )
+    checks.check("spec.materials", spec["materials"] and colours_ok, f'need "{prefix}<name>": "#rrggbb" (sRGB, lower case)')
     checks.check("spec.brief", (asset.source / "brief.md").is_file(), "brief.md missing")
 
 pins = conv["toolchain"]

@@ -63,6 +63,14 @@ sun = bpy.data.objects.new("review_sun", sun_data)
 sun.rotation_euler = Vector((0.4, 0.6, -1.0)).to_track_quat("-Z", "Y").to_euler()
 scene.collection.objects.link(sun)
 
+# A weaker light from the opposite side, so the back and right views are readable.
+fill_data = bpy.data.lights.new("review_fill", "SUN")
+fill_data.energy = 1.2
+fill_data.use_shadow = False
+fill = bpy.data.objects.new("review_fill", fill_data)
+fill.rotation_euler = Vector((-0.6, -0.5, -0.4)).to_track_quat("-Z", "Y").to_euler()
+scene.collection.objects.link(fill)
+
 camera_data = bpy.data.cameras.new("review_camera")
 camera = bpy.data.objects.new("review_camera", camera_data)
 scene.collection.objects.link(camera)

@@ -1,0 +1,26 @@
+{
+  "asset": "crate",
+  "nodes": [
+    "crate"
+  ],
+  "mesh_count": 1,
+  "material_count": 2,
+  "triangles": 108,
+  "bounds": {
+    "min": [
+      -0.4,
+      0.0,
+      -0.4
+    ],
+    "max": [
+      0.4,
+      0.8,
+      0.4
+    ]
+  },
+  "bounds_tolerance": 0.001,
+  "attributes": [
+    "POSITION",
+    "NORMAL"
+  ]
+}

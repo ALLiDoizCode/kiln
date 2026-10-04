@@ -5,6 +5,7 @@ Run through tools/build.py, which supplies an empty scene and saves the result.
 
 import bmesh
 import bpy
+from pipeline import linear_rgb
 
 X_MIN, X_MAX = -0.5, 1.0
 
@@ -19,7 +20,7 @@ PROFILE = [
 CAP_QUADS = [(0, 1, 6, 7), (1, 2, 3, 6), (6, 3, 4, 5)]
 
 
-def build():
+def build(spec):
     bm = bmesh.new()
     left = [bm.verts.new((X_MIN, y, z)) for y, z in PROFILE]
     right = [bm.verts.new((X_MAX, y, z)) for y, z in PROFILE]
@@ -39,7 +40,7 @@ def build():
 
     material = bpy.data.materials.new("m_tracer")
     bsdf = material.node_tree.nodes["Principled BSDF"]
-    bsdf.inputs["Base Color"].default_value = (0.80, 0.25, 0.10, 1.0)
+    bsdf.inputs["Base Color"].default_value = (*linear_rgb(spec["materials"]["m_tracer"]), 1.0)
     bsdf.inputs["Roughness"].default_value = 0.7
     bsdf.inputs["Metallic"].default_value = 0.0
     mesh.materials.append(material)

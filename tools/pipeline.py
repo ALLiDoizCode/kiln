@@ -54,6 +54,12 @@ def gltf_bounds(bounds_m):
     return {"min": [x0, z0, -y1], "max": [x1, z1, -y0]}
 
 
+def linear_rgb(srgb_hex):
+    """An sRGB hex colour ("#5a3820") as the linear RGB triple Blender and glTF store."""
+    channels = (int(srgb_hex[i : i + 2], 16) / 255 for i in (1, 3, 5))
+    return tuple(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels)
+
+
 class Checks:
     """Collects named pass/fail results; the exit code is the gate."""
 

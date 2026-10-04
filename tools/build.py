@@ -15,7 +15,7 @@ from pipeline import Asset, script_args
 asset = Asset(script_args()[0])
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-runpy.run_path(str(asset.source / "build.py"))["build"]()
+runpy.run_path(str(asset.source / "build.py"))["build"](asset.spec())
 
 asset.out.mkdir(parents=True, exist_ok=True)
 result = bpy.ops.wm.save_as_mainfile(filepath=str(asset.blend), check_existing=False)
