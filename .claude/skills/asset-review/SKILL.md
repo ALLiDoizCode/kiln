@@ -26,7 +26,9 @@ Is the asset well made, whatever it is? Check each **smell** below against the t
 - **Starved silhouette**: a curve or corner that reads as faceted or crude at the brief's closest viewing distance.
 - **Shading break**: a face lighter or darker than its neighbours with no lighting reason.
 - **Engine mismatch**: the bevy tile differing from the material tiles in colour, contrast or shading by more than lighting explains.
-- **Flat read**: adjacent materials too close in value to tell apart in the bevy tile.
+- **Flat read**: adjacent materials too close in value to tell apart in the bevy tile, or a value map (`_aids.png`) that shows one grey where the brief names separate parts.
+- **Value confetti**: a value map broken into many small scattered patches where the reference shows a few large masses.
+- **Lost at a glance**: a squint view in which the asset no longer reads as what the brief names.
 - **Floating or sunk**: the base above or below the ground in the scale and bevy tiles.
 - **Hidden faces**: geometry no camera could ever see, visible as overdraw in the wireframe.
 - **Material sprawl**: more material slots than colours the eye can tell apart.
@@ -35,17 +37,23 @@ Is the asset well made, whatever it is? Check each **smell** below against the t
 
 Each reviewer returns findings only, each one tied to a named tile or a report line and a measurement. A finding with no evidence is dropped.
 
-## 2. Reconcile
+## 2. Choose between versions blind
+
+When the review is of a change (a new version against the approved one, or two candidate builds), a reviewer who knows which is newer favours it. Render the same view of both, then run `python tools/review_aids.py blind <a.png> <b.png> <out.png>`: it writes the pair side by side in a random order, labelled only left and right, and puts which is which in `<out>.key.txt`. Give a third sub-agent only the sheet and the brief, and ask which side serves the brief better and why, with evidence from the image. Open the key only after its verdict is written into `review.md`.
+
+Use the same sheet for our asset against its benchmark when the question is "is ours clearly worse": the reviewer is not told which is ours.
+
+## 3. Reconcile
 
 Put both reports side by side with your own `observations.md`. For each finding, either show the evidence that it is wrong, or accept it. Every accepted finding becomes one of: a fix to the asset, a change to the brief put to the user, or a question for the user. Write the result to `source/<asset>/review/<phase>/review.md`, findings first, with the reviewer that raised each.
 
 Done when every finding from both reviewers appears in `review.md` with its outcome.
 
-## 3. The user decides
+## 4. The user decides
 
 Give the user the sheet path and the open findings. Approval is theirs: on an explicit yes, run `python tools/baseline.py approve <asset> <phase>`.
 
-## 4. Retrospective
+## 5. Retrospective
 
 After the user's verdict, list everything that was caught by an eye (yours, a reviewer's or the user's) at any point in this asset's life. For each, answer: could a number have caught it? If yes, it is an **escaped defect**: hand it to the `asset-checks` skill. If a smell was missing from the list above, add it. If a term was missing from `CONTEXT.md`, add it.
 

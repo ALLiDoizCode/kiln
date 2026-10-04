@@ -8,6 +8,7 @@ Assets for Bevy, built as code by headless Blender and gated by scripts. Read `C
 - `tools/gate.sh <asset>` — build the asset and run every gate, stopping at the first failure.
 - `python tools/baseline.py approve <asset> [phase]` — record the current contact sheet as approved. Run it only when the user has looked at the sheet and said so in this conversation; a rebuilt sheet that drifts from it then fails the gate.
 - `cargo run -p asset_view -- assets/models/<asset>.glb assets/models/<asset>.manifest.json` — open the asset in a Bevy window with hot reload.
+- `python tools/review_aids.py views <image...>` / `blind <a> <b> <out>` — value map and squint view of a render, and a blind side-by-side of two renders; aids for review, not gates.
 - `tests/run.sh` — prove the gates themselves can fail. Run after changing anything in `tools/` or `crates/asset_smoke`.
 - `tools/bl <script.py> [args]` — the only way to run Blender here. Never call the binary directly.
 

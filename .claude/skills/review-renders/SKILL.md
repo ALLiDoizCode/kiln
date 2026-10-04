@@ -15,7 +15,17 @@ Run `tools/gate.sh <asset> <phase>`; its last two steps take a screenshot in Bev
 
 Read `source/<asset>/review/<phase>/sheet.png` with the Read tool. When a tile needs a closer look, read that tile's own PNG beside it.
 
-## 3. Write observations as measurements
+## 3. Make the aids
+
+Detail hides the two things that decide whether an asset reads: its big light and dark shapes, and what the eye sees at a glance. Run `python tools/review_aids.py views` on the `bevy` tile and the `material_three_quarter` tile, and on the same view of the brief's reference or benchmark when there is one. Each writes an `_aids.png` beside the image with three panels:
+
+- **as rendered**;
+- **value map**: the image in five greys. A sound asset shows three to five large, distinct masses here. Many small scattered patches mean the surface is noise; one grey from top to bottom means it will read as flat.
+- **squint**: the image blurred, which is how it reads from across a room. The asset should still be recognisable as what the brief names, and the eye should land where the brief's silhouette features are.
+
+Read each aid with the Read tool.
+
+## 4. Write observations as measurements
 
 Write `source/<asset>/review/<phase>/observations.md`. Every line names a view and states something a second reader could confirm or refute from the same tile:
 
@@ -32,10 +42,12 @@ Cover, in this order:
 6. **Materials**: each colour against the brief's, and which parts carry it.
 7. **Scale** (scale tiles): the asset's height as a fraction of the figure's, beside the brief's size over the player height in `conventions.toml`.
 8. **In the engine** (bevy tile): what differs from the Blender material tiles in colour, contrast and shading. The game ships what Bevy shows, so where the two disagree, Bevy is right.
-9. **Differences from the brief**: every mismatch found above, each with the number that shows it. Write "none found" only after items 1 to 8 are each written.
+9. **Values** (value maps): how many distinct masses the asset shows and which parts they are, beside the reference's count and layout. Name any part that vanishes into its neighbour or into the ground.
+10. **At a glance** (squint views): what the blurred asset reads as in three words, where the eye lands first, and the same two answers for the reference.
+11. **Differences from the brief**: every mismatch found above, each with the number that shows it. Write "none found" only after items 1 to 10 are each written.
 
 A mismatch that a number could have caught goes to the `asset-checks` skill as an escaped defect.
 
-## 4. Hand over
+## 5. Hand over
 
 Give the user the sheet path and the differences list. At the `blockout` phase, and before an asset is called done, the user looks at the sheet themselves: appeal and style fit are their call, and a clean observations file is the evidence they judge with, never the judgement.

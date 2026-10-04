@@ -118,6 +118,9 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Contact sheet**: one image of an asset from the fixed review cameras and passes. _Avoid_: screenshot, preview.
 - **Pass**: one way of rendering every review view, such as material or clay with wireframe.
 - **Phase**: the point in an asset's life that a contact sheet records, such as blockout or final.
+- **Value**: how light or dark a colour is, with hue set aside. **Value map**: a render reduced to a few greys, to show its big light and dark masses.
+- **Squint view**: a render blurred until detail is gone, to show how it reads at a glance.
+- **Blind comparison**: two renders shown side by side in a random order with the labels hidden, so the judge cannot favour the one they expect to be better.
 - **Observation**: a statement about a contact sheet that a second reader could confirm or refute from the same tile. _Avoid_: verdict.
 - **Fixture**: an asset that exists to exercise the pipeline, such as the tracer. It is never shipped in a game.
 - **Margin**: how far a face's edges sit in from the sides of the asset's bounding box, measured in the face's own plane. A crate's frame width is its panels' margin.
