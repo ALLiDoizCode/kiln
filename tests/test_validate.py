@@ -10,6 +10,7 @@ from pathlib import Path
 
 import bmesh
 import bpy
+from mathutils import Vector, noise
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
@@ -134,6 +135,59 @@ def recess_respecified(spec):
     spec["recess_m"]["m_crate_panel"] = 0.03
 
 
+def fit_to_bounds(bm, spec):
+    """Stretch a mesh to the spec's bounds, so only its shape differs from the asset's."""
+    want_lo, want_hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    lo = [min(v.co[i] for v in bm.verts) for i in range(3)]
+    hi = [max(v.co[i] for v in bm.verts) for i in range(3)]
+    for vert in bm.verts:
+        vert.co = Vector(want_lo[i] + (vert.co[i] - lo[i]) / (hi[i] - lo[i]) * (want_hi[i] - want_lo[i]) for i in range(3))
+
+
+def replace_shape(spec, make):
+    """Swap the rock's geometry for make(bm)'s, at the same bounds and with the same material."""
+
+    def swap(bm):
+        bm.clear()
+        make(bm)
+        fit_to_bounds(bm, spec)
+
+    edit(swap, "rock")
+
+
+def noise_lump(spec):
+    """The shape ADR 9 rules out: a 320-triangle ball pushed about by fractal noise."""
+
+    def lump(bm):
+        bmesh.ops.create_icosphere(bm, subdivisions=3, radius=1.0)
+        for vert in bm.verts:
+            vert.co += vert.co.normalized() * noise.fractal(vert.co * 1.3, 1.0, 2.0, 4) * 0.35
+
+    replace_shape(spec, lump)
+
+
+def even_facets(spec):
+    """Twenty flat faces of one size: planes, but a faceted ball and not a boulder."""
+    replace_shape(spec, lambda bm: bmesh.ops.create_icosphere(bm, subdivisions=1, radius=1.0))
+
+
+def no_ledge(spec):
+    """Shrink-wrap the rock in its convex hull: every plane survives except the inward corners."""
+
+    def hull(bm):
+        result = bmesh.ops.convex_hull(bm, input=bm.verts)
+        inside = set(result["geom_interior"]) | set(result["geom_unused"])
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if v in inside], context="VERTS")
+        hull_faces = {g for g in result["geom"] if isinstance(g, bmesh.types.BMFace)}
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f not in hull_faces], context="FACES")
+
+    edit(hull, "rock")
+
+
+def too_many_planes(spec):
+    spec["planes"]["max_count"] = 3
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -157,6 +211,10 @@ CASES = [
     (shallow_recess, "m_crate_panel.recess", "crate"),
     (recess_respecified, "m_crate_panel.recess", "crate"),
     (narrow_frame, "m_crate_panel.margin", "crate"),
+    (noise_lump, "rock.planes_area_share", "rock"),
+    (even_facets, "rock.planes_size_ratio", "rock"),
+    (no_ledge, "rock.planes_ledges", "rock"),
+    (too_many_planes, "rock.planes_count", "rock"),
 ]
 
 

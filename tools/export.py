@@ -68,6 +68,7 @@ manifest = {
     "bounds": gltf_bounds(spec["bounds_m"]),
     "bounds_tolerance": spec["bounds_tolerance_m"],
     "attributes": spec["attributes"],
+    "soft_edges": spec.get("soft_edges", False),
 }
 with open(asset.manifest, "w") as f:
     json.dump(manifest, f, indent=2)

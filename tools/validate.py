@@ -5,7 +5,9 @@ Expected values come from the spec, never from the build script.
 Usage: tools/bl tools/validate.py <asset>
 """
 
+import math
 import re
+import statistics
 import sys
 from pathlib import Path
 
@@ -23,6 +25,114 @@ def evaluated_bmesh(obj):
     bm.from_object(obj, bpy.context.evaluated_depsgraph_get())
     bm.transform(obj.matrix_world)
     return bm
+
+
+def planes_of(bm, floor_z, tol, conv):
+    """Group a mesh's faces into planes, and find the ledges between large ones.
+
+    A plane is a connected set of faces whose normals all lie within
+    `coplanar_deg` of their area-weighted mean: flat to the eye, however it is
+    triangulated. Faces resting on the ground (facing straight down at
+    floor_z) are left out, because nobody sees them. Returns (areas of the
+    planes, area of everything visible, a function giving the ledges for a
+    given large-plane area and ledge length).
+    """
+    cos_flat = math.cos(math.radians(conv["planes"]["coplanar_deg"]))
+    cos_ledge = math.cos(math.radians(conv["planes"]["ledge_min_deg"]))
+    visible = [f for f in bm.faces if not (f.normal.z < -cos_flat and all(abs(v.co.z - floor_z) <= tol for v in f.verts))]
+    group = {f: f for f in visible}
+
+    def find(face):
+        while group[face] is not face:
+            group[face] = group[group[face]]
+            face = group[face]
+        return face
+
+    for edge in bm.edges:
+        faces = [f for f in edge.link_faces if f in group]
+        if len(faces) == 2 and faces[0].normal.dot(faces[1].normal) >= cos_flat:
+            group[find(faces[0])] = find(faces[1])
+    members = {}
+    for face in visible:
+        members.setdefault(find(face), []).append(face)
+
+    # region root -> (area, normal), only for regions that are flat as a whole:
+    # a finely tessellated curve chains neighbour to neighbour and is not a plane.
+    planes = {}
+    for root, faces in members.items():
+        normal = sum((f.normal * f.calc_area() for f in faces), Vector()).normalized()
+        if all(f.normal.dot(normal) >= cos_flat for f in faces):
+            planes[root] = (sum(f.calc_area() for f in faces), normal)
+
+    def ledges(large_m2, ledge_m):
+        """Pairs of large planes meeting in a concave corner at least ledge_m long.
+
+        The corner is either an edge the two planes share, or one soft-edge
+        face (a bevel strip) with an edge on each.
+        """
+        large = {root for root, (area, _) in planes.items() if area >= large_m2}
+        runs = {}
+
+        def add(a, b, length):
+            if a is not b and planes[a][1].dot(planes[b][1]) <= cos_ledge:
+                key = tuple(sorted((a.index, b.index)))
+                runs[key] = runs.get(key, 0.0) + length
+
+        def midpoint(edge):
+            return (edge.verts[0].co + edge.verts[1].co) / 2
+
+        for edge in bm.edges:
+            roots = [find(f) for f in edge.link_faces if f in group]
+            if len(roots) == 2 and all(r in large for r in roots) and not edge.is_convex:
+                add(roots[0], roots[1], edge.calc_length())
+        for face in visible:
+            if find(face) in large:
+                continue
+            # (large plane across this edge, the edge) for each side of the strip
+            sides = [(find(other), e) for e in face.edges for other in e.link_faces if other is not face and other in group and find(other) in large]
+            for i, (a, edge_a) in enumerate(sides):
+                for b, edge_b in sides[i + 1 :]:
+                    across = midpoint(edge_b) - midpoint(edge_a)
+                    # Concave: each plane's edge sits in front of the other plane.
+                    if a is not b and across.dot(planes[a][1]) > tol and -across.dot(planes[b][1]) > tol:
+                        add(a, b, min(edge_a.calc_length(), edge_b.calc_length()))
+        return {pair: length for pair, length in runs.items() if length >= ledge_m}
+
+    return [area for area, _ in planes.values()], sum(f.calc_area() for f in visible), ledges
+
+
+def check_planes(checks, name, bm, spec, conv):
+    """The shape is a few large planes with a ledge (ADR 9), not a lump of small faces."""
+    want = spec["planes"]
+    areas, visible, ledges = planes_of(bm, spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"], conv)
+    large = sorted((a for a in areas if a >= want["large_m2"]), reverse=True)
+    share = sum(large) / visible if visible else 0.0
+    ratio = large[0] / statistics.median(large) if large else 0.0
+    found = ledges(want["large_m2"], want["ledge_m"])
+    print(
+        f"{name} planes: {len(large)} large (>= {want['large_m2']} m2) holding {share:.3f} of {visible:.2f} m2 visible, "
+        f"largest/median {ratio:.2f}, ledges {sorted(round(v, 2) for v in found.values())} m, areas {[round(a, 2) for a in large]}"
+    )
+    checks.check(
+        f"{name}.planes_area_share",
+        share >= want["min_area_share"],
+        f"planes of at least {want['large_m2']} m2 hold {share:.3f} of the visible surface ({sum(large):.2f} of {visible:.2f} m2); spec wants {want['min_area_share']}",
+    )
+    checks.check(
+        f"{name}.planes_count",
+        want["min_count"] <= len(large) <= want["max_count"],
+        f"{len(large)} planes of at least {want['large_m2']} m2; spec wants {want['min_count']} to {want['max_count']}",
+    )
+    checks.check(
+        f"{name}.planes_size_ratio",
+        ratio >= want["min_size_ratio"],
+        f"largest large plane is {ratio:.2f} times the median one; spec wants {want['min_size_ratio']}",
+    )
+    checks.check(
+        f"{name}.planes_ledges",
+        len(found) >= want["min_ledges"],
+        f"{len(found)} concave corners of at least {want['ledge_m']} m between large planes; spec wants {want['min_ledges']}",
+    )
 
 
 def check_scene(checks, spec, conv):
@@ -108,6 +218,9 @@ def check_scene(checks, spec, conv):
                     margins[slot.name].append(
                         min(min(v.co[i] - want_lo[i], want_hi[i] - v.co[i]) for v in face.verts for i in range(3) if i != axis)
                     )
+
+        if "planes" in spec:
+            check_planes(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

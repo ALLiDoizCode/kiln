@@ -28,6 +28,8 @@ use serde::{Deserialize, Serialize};
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
 /// Per channel, in linear RGB. 8-bit sRGB steps are larger than this.
 const COLOUR_TOLERANCE: f32 = 0.005;
+/// Cosine of 1 degree: normals closer than this light the same.
+const SAME_NORMAL_COS: f32 = 0.99985;
 
 /// Written by `tools/export.py` from the Blender scene. Bounds are in glTF
 /// space (+Y up, metres), over every mesh in the file with node transforms
@@ -45,6 +47,10 @@ struct Manifest {
     bounds_tolerance: f32,
     /// glTF attribute semantics every primitive must carry, e.g. "NORMAL".
     attributes: Vec<String>,
+    /// Every edge above the ground is lit round: no position off the floor of
+    /// the bounds carries two different normals.
+    #[serde(default)]
+    soft_edges: bool,
 }
 
 #[derive(Deserialize, Serialize, Clone, Copy)]
@@ -243,6 +249,8 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
     let mut triangles = 0;
     let mut volume = 0.0;
     let mut against_winding = 0;
+    // (position, normal) of every vertex, to find positions lit as a hard edge.
+    let mut lit: Vec<(Vec3, Vec3)> = Vec::new();
     let (mut min, mut max) = (Vec3::MAX, Vec3::MIN);
     while let Some((handle, parent)) = stack.pop() {
         let Some(node) = nodes.get(&handle) else {
@@ -290,6 +298,9 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
                 }
                 _ => None,
             };
+            if let Some(normals) = &normals {
+                lit.extend(positions.iter().zip(normals).map(|(p, n)| (*p, n.normalize_or_zero())));
+            }
             let indices: Vec<usize> = match mesh.indices() {
                 Some(indices) => indices.iter().collect(),
                 None => (0..positions.len()).collect(),
@@ -312,6 +323,26 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
 
     if against_winding > 0 {
         fail(format!("{against_winding} triangles have vertex normals facing against their winding"));
+    }
+    if manifest.soft_edges {
+        // Two vertices at one place with different normals are a hard edge.
+        // The edge where the asset meets the ground is allowed to be one.
+        let tolerance = manifest.bounds_tolerance;
+        let floor = manifest.bounds.min[1] + tolerance;
+        let above: Vec<&(Vec3, Vec3)> = lit.iter().filter(|(p, _)| p.y > floor).collect();
+        let hard = above
+            .iter()
+            .enumerate()
+            .filter(|(i, (p, n))| {
+                above[..*i].iter().any(|(q, m)| p.abs_diff_eq(*q, tolerance) && n.dot(*m) < SAME_NORMAL_COS)
+            })
+            .count();
+        if lit.is_empty() || hard > 0 {
+            fail(format!(
+                "soft_edges: {hard} of {} vertices above the ground share a position with a differently lit vertex",
+                above.len()
+            ));
+        }
     }
     if manifest.watertight && volume <= 0.0 {
         fail(format!("signed volume {volume} is not positive: faces are inside out or the mesh is open"));

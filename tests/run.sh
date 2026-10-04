@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail.
-# Needs a passing `tools/gate.sh tracer` first (uses its exported GLB).
+# Needs a passing `tools/gate.sh` for tracer, crate and rock first (uses their builds and exports).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 glb=assets/models/tracer.glb
@@ -43,6 +43,20 @@ bpy.ops.export_scene.gltf(filepath="$tmp/inside_out.glb", export_format="GLB")
 PY
 tools/bl "$tmp/inside_out.py" > /dev/null 2>&1
 expect 1 "L4 catches an inside-out mesh"    smoke "$tmp/inside_out.glb" "$manifest"
+# The rock with every face lit flat: the same triangles, but no soft edges.
+cat > "$tmp/hard_edges.py" <<PY
+import bmesh, bpy
+bpy.ops.wm.open_mainfile(filepath="source/rock/out/rock.blend")
+rock = bpy.data.objects["rock"]
+bm = bmesh.new(); bm.from_mesh(rock.data)
+for face in bm.faces: face.smooth = False
+flat = bpy.data.meshes.new("rock_flat"); bm.to_mesh(flat); flat.materials.append(rock.data.materials[0])
+rock.data = flat
+bpy.ops.export_scene.gltf(filepath="$tmp/hard_edges.glb", export_format="GLB")
+PY
+tools/bl "$tmp/hard_edges.py" > /dev/null 2>&1
+expect 0 "L4 passes the real rock"          smoke assets/models/rock.glb assets/models/rock.manifest.json
+expect 1 "L4 catches hard edges on a soft-edged asset" smoke "$tmp/hard_edges.glb" assets/models/rock.manifest.json
 printf 'not a glb' > "$tmp/bad.glb"
 expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
 

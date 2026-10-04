@@ -17,6 +17,11 @@ max_face_sides = 4          # no n-gons in delivery meshes
 merge_distance_m = 0.00001  # vertices closer than this are duplicates
 min_face_area_m2 = 1e-10
 
+[planes]
+# How flat-surfaced assets (rock, ADR 9) are measured; the amounts wanted are in each spec.
+coplanar_deg = 1.0          # faces within this of their group's mean normal form one plane
+ledge_min_deg = 30.0        # two planes must differ by at least this to form a ledge
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 

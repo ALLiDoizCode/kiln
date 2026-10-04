@@ -19,6 +19,16 @@ REQUIRED = {
     "watertight": bool,
     "attributes": list,
 }
+# Optional; all of its keys are required once it is present.
+PLANES = {
+    "large_m2": float,
+    "min_area_share": float,
+    "min_count": int,
+    "max_count": int,
+    "min_size_ratio": float,
+    "min_ledges": int,
+    "ledge_m": float,
+}
 ATTRIBUTES = {"POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0"}
 
 asset = Asset(sys.argv[1])
@@ -46,6 +56,18 @@ if not checks.failed():
     for key in ("recess_m", "margin_m"):
         ok = all(name in spec["materials"] and isinstance(d, float) and d > 0 for name, d in spec.get(key, {}).items())
         checks.check(f"spec.{key}", ok, "optional; maps a material in `materials` to a positive distance in metres")
+    planes = spec.get("planes")
+    if planes is not None:
+        ok = (
+            isinstance(planes, dict)
+            and set(planes) == set(PLANES)
+            and all(type(planes[key]) is kind and planes[key] >= 0 for key, kind in PLANES.items())
+            and planes["large_m2"] > 0
+            and 0 < planes["min_area_share"] <= 1
+            and planes["min_count"] <= planes["max_count"]
+        )
+        checks.check("spec.planes", ok, f"optional; needs exactly {sorted(PLANES)}, share in (0, 1], min_count <= max_count")
+    checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
     checks.check("spec.brief", (asset.source / "brief.md").is_file(), "brief.md missing")
 
 # Traceability: every value in the spec has a row in the brief's Numbers table,

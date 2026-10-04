@@ -34,5 +34,6 @@
   "attributes": [
     "POSITION",
     "NORMAL"
-  ]
+  ],
+  "soft_edges": false
 }

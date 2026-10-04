@@ -125,6 +125,10 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Leaf card**: a small flat piece of geometry showing a painted cluster of leaves with transparent gaps; foliage is many of them on a branch skeleton. _Avoid_: billboard (a card that turns to face the camera), leaf plane.
 - **Branch skeleton**: the trunk and branches of a tree as connected tapering tubes, before foliage is added.
 - **Benchmark**: a professional asset run through the gates and viewer to compare ours against. It is never shipped.
+- **Plane**: a connected set of faces that lie in one flat surface, however they are triangulated. A **large plane** is one at or above the area a spec's `planes.large_m2` gives. _Avoid_: facet (a plane too small to be deliberate), face (one polygon of the mesh).
+- **Plane cut**: slicing a solid with one flat cut and capping the hole; how rock is shaped (ADR 9). A **notch** is two cuts that meet, removing only what is in front of both.
+- **Ledge**: an inward (concave) corner between two large planes: a shelf and the wall behind it. _Avoid_: step (also a stair), crevice.
+- **Soft edge**: an edge lit as if rounded, because the faces either side share normals across it. Ours is a narrow bevel strip whose normals blend from one plane to the next. The opposite of a hard edge.
 - **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
 
 **Game**
