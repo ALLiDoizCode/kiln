@@ -121,6 +121,10 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Observation**: a statement about a contact sheet that a second reader could confirm or refute from the same tile. _Avoid_: verdict.
 - **Fixture**: an asset that exists to exercise the pipeline, such as the tracer. It is never shipped in a game.
 - **Margin**: how far a face's edges sit in from the sides of the asset's bounding box, measured in the face's own plane. A crate's frame width is its panels' margin.
+- **Painted shading**: colour variation computed from an asset's shape and baked into it: a base-to-top gradient, light along exposed edges, shadow in crevices.
+- **Leaf card**: a small flat piece of geometry showing a painted cluster of leaves with transparent gaps; foliage is many of them on a branch skeleton. _Avoid_: billboard (a card that turns to face the camera), leaf plane.
+- **Branch skeleton**: the trunk and branches of a tree as connected tapering tubes, before foliage is added.
+- **Benchmark**: a professional asset run through the gates and viewer to compare ours against. It is never shipped.
 - **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
 
 **Game**

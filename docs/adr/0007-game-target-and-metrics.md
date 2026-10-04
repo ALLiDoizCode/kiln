@@ -7,7 +7,7 @@ From that target:
 - **Camera**: first-person. Assets are seen from as close as 0.5 m, so briefs assume close viewing unless they say otherwise.
 - **Player**: 1.8 m tall. Every contact sheet shows the asset beside a figure of that height.
 - **Building grid**: 3 m square foundations and 3 m wall height. Every building kit piece is a multiple of the grid. This is the hardest number here to change: once kit pieces exist, changing it means rebuilding all of them.
-- **Style**: flat-colour low-poly with bevels, and a strict palette per layer. Atmosphere comes from lighting and fog in the engine, not from textures.
+- **Style**: superseded by ADR 9 (soft-edged shapes with painted shading; leaf-card foliage). Still true from the original: a strict palette per layer, and atmosphere from lighting and fog in the engine.
 - **Minimum hardware**: a GTX 1660 or RX 5600 class GPU at 60 frames per second. Triangle and material budgets per asset class are to be derived from this with a stress scene; until then budgets in specs are estimates.
 - **Data assets carry**: a climbable flag and collision shapes. Neither is implemented yet.
 - **Out of scope for the pipeline** for now: first-person arms, player bodies and creatures. Held items are rigid props and are in scope.
