@@ -2,6 +2,8 @@
 //!
 //! Loads one GLB through the real `bevy_gltf` loader with no window and no
 //! renderer, then compares what Bevy sees against the asset's manifest.
+//! Images are loaded too (PNG only), so a painted texture is measured as
+//! Bevy decoded it; see `painted.rs`.
 //! Exit code is the only signal: 0 pass, 1 check failed, 2 usage or I/O error.
 //!
 //! Usage: asset_smoke <asset.glb> <manifest.json> [--report <out.json>]
@@ -17,13 +19,15 @@ use bevy::{
     app::TaskPoolPlugin,
     asset::{AssetPlugin, RecursiveDependencyLoadState, UnapprovedPathMode},
     gltf::{Gltf, GltfMaterial, GltfMesh, GltfNode, GltfPlugin},
-    image::{CompressedImageFormatSupport, CompressedImageFormats},
+    image::{CompressedImageFormatSupport, CompressedImageFormats, Image, ImagePlugin},
     log::LogPlugin,
     mesh::{Mesh, MeshPlugin, PrimitiveTopology, VertexAttributeValues},
     prelude::*,
     world_serialization::WorldSerializationPlugin,
 };
 use serde::{Deserialize, Serialize};
+
+mod painted;
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
 /// Per channel, in linear RGB. 8-bit sRGB steps are larger than this.
@@ -51,6 +55,10 @@ struct Manifest {
     /// the bounds carries two different normals.
     #[serde(default)]
     soft_edges: bool,
+    /// Painted shading: the materials take their colour from one texture, and
+    /// the texture does what this says. Absent: every material is one flat colour.
+    #[serde(default)]
+    painted: Option<painted::Painted>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Copy)]
@@ -69,6 +77,8 @@ struct Report {
     material_count: usize,
     triangles: usize,
     bounds: Option<Bounds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    painted: Option<painted::Measured>,
 }
 
 fn main() -> ExitCode {
@@ -158,6 +168,8 @@ fn load(glb: &Path) -> Result<App, String> {
         },
         WorldSerializationPlugin,
         MeshPlugin,
+        // The image asset type; the PNG decoder comes from the `png` cargo feature.
+        ImagePlugin::default(),
         GltfPlugin::default(),
     ));
     // Normally set by the renderer; without it the loader warns on every file.
@@ -194,7 +206,9 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
     let nodes = world.resource::<Assets<GltfNode>>();
     let gltf_meshes = world.resource::<Assets<GltfMesh>>();
     let meshes = world.resource::<Assets<Mesh>>();
-    let mut fail = |message: String| report.failures.push(message);
+    let images = world.resource::<Assets<Image>>();
+    let mut failures = Vec::new();
+    let mut fail = |message: String| failures.push(message);
 
     let node_names: BTreeSet<String> = gltf.named_nodes.keys().map(|k| k.to_string()).collect();
     for name in &manifest.nodes {
@@ -222,15 +236,46 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
         let Some(material) = gltf.named_materials.get(name.as_str()).and_then(|h| materials.get(h)) else {
             continue;
         };
+        // Painted: the manifest's colour is what the texture was painted from; painted.rs measures it.
+        if manifest.painted.is_some() {
+            continue;
+        }
         let got = material.base_color.to_linear();
         let got = [got.red, got.green, got.blue];
         if got.iter().zip(want).any(|(a, b)| (a - b).abs() > COLOUR_TOLERANCE) {
             fail(format!("{name}: base colour {got:?} != manifest {want:?} (linear)"));
         }
         if material.base_color_texture.is_some() {
-            fail(format!("{name}: has a base colour texture; the manifest expects a flat colour"));
+            fail(format!("flat.no_texture: {name}: has a base colour texture; the manifest expects a flat colour"));
         }
     }
+    // Painted: the texture alone gives the colour, so the factor it is multiplied by must be white.
+    let mut textures: Vec<Handle<Image>> = Vec::new();
+    if manifest.painted.is_some() {
+        for name in manifest.materials.keys() {
+            let Some(material) = gltf.named_materials.get(name.as_str()).and_then(|h| materials.get(h)) else {
+                continue;
+            };
+            let factor = material.base_color.to_linear();
+            if [factor.red, factor.green, factor.blue].iter().any(|c| (c - 1.0).abs() > COLOUR_TOLERANCE) {
+                fail(format!("painted.factor: {name}: base colour factor {factor:?} is not white, so it would tint the painted texture"));
+            }
+            match &material.base_color_texture {
+                Some(texture) if !textures.contains(texture) => textures.push(texture.clone()),
+                Some(_) => {}
+                None => {}
+            }
+        }
+        if textures.len() != 1 {
+            fail(format!("painted.present: {} base colour textures; a painted asset has exactly one", textures.len()));
+        }
+    }
+    let colour_of = |handle: &Option<Handle<GltfMaterial>>| {
+        let handle = handle.as_ref()?;
+        let name = gltf.named_materials.iter().find(|(_, h)| h.id() == handle.id())?.0;
+        manifest.materials.get(&**name).copied()
+    };
+    let mut painted_triangles: Vec<painted::Triangle> = Vec::new();
 
     // Walk from scene roots so bounds are in scene space, not mesh-local space.
     let children: BTreeSet<_> = gltf
@@ -305,8 +350,18 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
                 Some(indices) => indices.iter().collect(),
                 None => (0..positions.len()).collect(),
             };
+            let uvs: Option<Vec<Vec2>> = match mesh.attribute(Mesh::ATTRIBUTE_UV_0) {
+                Some(VertexAttributeValues::Float32x2(uvs)) => Some(uvs.iter().map(|uv| Vec2::from(*uv)).collect()),
+                _ => None,
+            };
+            let colour = colour_of(&primitive.material);
             for triangle in indices.chunks_exact(3) {
                 let [a, b, c] = [triangle[0], triangle[1], triangle[2]].map(|i| positions[i]);
+                painted_triangles.push(painted::Triangle {
+                    positions: [a, b, c],
+                    uvs: uvs.as_ref().map(|uvs| [triangle[0], triangle[1], triangle[2]].map(|i| uvs[i])),
+                    colour,
+                });
                 volume += a.dot(b.cross(c)) / 6.0;
                 // The side a triangle's winding makes its front must be the
                 // side its vertex normals point to, or it lights wrongly.
@@ -362,6 +417,26 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
         report.bounds = Some(Bounds { min: min.into(), max: max.into() });
     }
 
+    if let Some(want) = &manifest.painted
+        && let [texture] = textures.as_slice()
+    {
+        match images.get(texture) {
+            Some(image) => {
+                report.painted = Some(painted::check(
+                    want,
+                    &painted_triangles,
+                    image,
+                    manifest.bounds.min[1],
+                    manifest.bounds.max[1],
+                    manifest.bounds_tolerance,
+                    &mut fail,
+                ));
+            }
+            None => fail("painted.present: the base colour texture did not load".into()),
+        }
+    }
+
+    report.failures.extend(failures);
     report.nodes = node_names.into_iter().collect();
     report.mesh_count = gltf.meshes.len();
     report.material_count = gltf.materials.len();

@@ -37,6 +37,8 @@ allowed_extensions = [
   "KHR_texture_transform",
 ]
 max_joints = 256
+# Image decoders compiled into crates/asset_smoke and crates/asset_view.
+image_mime_types = ["image/png"]
 
 [metrics]
 # From the game target (ADR 7).
@@ -49,3 +51,21 @@ eevee_samples = 32
 views = ["front", "right", "back", "top", "three_quarter", "scale"]
 # Largest RMSE (0..1) between a rebuilt contact sheet and its approved baseline.
 baseline_rmse = 0.01
+
+[painted_shading]
+# How tools/paint.py unwraps and bakes, and what the Bevy load test holds the
+# result to (ADR 10). What an asset wants painted is in its spec.
+unwrap_angle_deg = 66.0     # faces within this of each other unwrap as one island
+island_gap_px = 8           # between islands; half of it is filled with bled colour
+bake_samples = 16           # Cycles samples per texel
+# Seen from 0.5 m (ADR 7) a texel at this density is 1 cm, about 1 degree across. Painted
+# shading has no detail finer than an edge-light band a few centimetres wide, and the
+# sampler blends neighbouring texels, so 1 cm texels do not show as blocks.
+min_texels_per_m = 100
+min_uv_coverage = 0.4       # share of the texture the triangles use; the box packer reaches 0.43 on the rock
+max_uv_overlap = 0.001      # share of used texels claimed by more than one triangle
+# Brightest channel of any texel, 8-bit sRGB. Outside this a surface clips to black or white once lit.
+texel_range_srgb = [30, 240]
+feature_deg = 30.0          # two faces at least this far apart in tilt make an edge or a crevice
+colour_tolerance = 0.08     # open faces: measured over (material colour times tint)
+min_effect_share = 0.5      # share of edge_light and crevice_shadow the measured zones must average

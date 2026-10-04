@@ -7,7 +7,7 @@ import json
 import re
 import sys
 
-from pipeline import ROOT, Asset, Checks, conventions
+from pipeline import ROOT, Asset, Checks, conventions, linear_rgb
 
 REQUIRED = {
     "asset": str,
@@ -29,6 +29,19 @@ PLANES = {
     "min_ledges": int,
     "ledge_m": float,
 }
+# Optional; painted shading (ADR 10). `growth` and `growth_height_m` come together or not at all.
+PAINTED = {
+    "texture_px": int,
+    "base_tint": str,
+    "top_tint": str,
+    "edge_light": float,
+    "edge_width_m": float,
+    "crevice_shadow": float,
+    "crevice_width_m": float,
+    "hidden_underside": bool,
+}
+GROWTH = {"growth": str, "growth_height_m": float}
+HEX = "#[0-9a-f]{6}"
 ATTRIBUTES = {"POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0"}
 
 asset = Asset(sys.argv[1])
@@ -49,7 +62,7 @@ if not checks.failed():
     checks.check("spec.tangents_need_uvs", "TANGENT" not in spec["attributes"] or "TEXCOORD_0" in spec["attributes"], "TANGENT requires TEXCOORD_0")
     prefix = conv["naming"]["material_prefix"]
     colours_ok = all(
-        name.startswith(prefix) and pattern.match(name) and isinstance(colour, str) and re.fullmatch("#[0-9a-f]{6}", colour)
+        name.startswith(prefix) and pattern.match(name) and isinstance(colour, str) and re.fullmatch(HEX, colour)
         for name, colour in spec["materials"].items()
     )
     checks.check("spec.materials", spec["materials"] and colours_ok, f'need "{prefix}<name>": "#rrggbb" (sRGB, lower case)')
@@ -68,6 +81,29 @@ if not checks.failed():
         )
         checks.check("spec.planes", ok, f"optional; needs exactly {sorted(PLANES)}, share in (0, 1], min_count <= max_count")
     checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
+    painted = spec.get("painted_shading")
+    if painted is not None:
+        keys = set(painted) if isinstance(painted, dict) else set()
+        wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {})}
+        ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
+        ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
+        checks.check("spec.painted_shading", ok, f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)}; colours as #rrggbb")
+        if ok:
+            size = painted["texture_px"]
+            checks.check("spec.painted_texture_px", 64 <= size <= 4096 and size & (size - 1) == 0, f"{size} is not a power of two from 64 to 4096")
+            luma = lambda colour: sum(c * w for c, w in zip(linear_rgb(colour), (0.2126, 0.7152, 0.0722)))
+            checks.check(
+                "spec.painted_base_darker",
+                luma(painted["base_tint"]) < luma(painted["top_tint"]),
+                f"base_tint {painted['base_tint']} is not darker than top_tint {painted['top_tint']} (ADR 9: darker toward the base)",
+            )
+            amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted["crevice_shadow"] < 1 and painted["edge_width_m"] > 0 and painted["crevice_width_m"] > 0
+            checks.check("spec.painted_amounts", amounts_ok and painted.get("growth_height_m", 1.0) > 0, "edge_light in 0..1, crevice_shadow in 0..1 (below 1), widths and growth height above 0")
+    checks.check(
+        "spec.painted_needs_uvs",
+        (painted is not None) == ("TEXCOORD_0" in spec["attributes"]),
+        "painted_shading needs TEXCOORD_0 in attributes, and a flat-colour asset carries no UVs (ADR 4)",
+    )
     checks.check("spec.brief", (asset.source / "brief.md").is_file(), "brief.md missing")
 
 # Traceability: every value in the spec has a row in the brief's Numbers table,

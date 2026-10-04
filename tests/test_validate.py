@@ -14,6 +14,7 @@ from mathutils import Vector, noise
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
+import paint
 from pipeline import Asset, Checks, conventions
 from validate import check_scene
 
@@ -188,6 +189,28 @@ def too_many_planes(spec):
     spec["planes"]["max_count"] = 3
 
 
+def paint_removed(spec):
+    """The rock back to its flat colour: the texture is no longer what colours it."""
+    socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
+    bpy.data.materials["m_rock"].node_tree.links.remove(socket.links[0])
+
+
+def painted_at_another_size(spec):
+    spec["painted_shading"]["texture_px"] *= 2
+
+
+def painted_over_another_colour(spec):
+    spec["materials"]["m_rock"] = "#806040"
+
+
+def textured(spec):
+    """A flat-coloured asset whose colour comes from an image instead."""
+    tree = bpy.data.materials["m_tracer"].node_tree
+    image = tree.nodes.new("ShaderNodeTexImage")
+    image.image = bpy.data.images.new("stray", 8, 8)
+    tree.links.new(image.outputs["Color"], tree.nodes["Principled BSDF"].inputs["Base Color"])
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -215,6 +238,10 @@ CASES = [
     (even_facets, "rock.planes_size_ratio", "rock"),
     (no_ledge, "rock.planes_ledges", "rock"),
     (too_many_planes, "rock.planes_count", "rock"),
+    (paint_removed, "m_rock.painted", "rock"),
+    (painted_at_another_size, "m_rock.painted", "rock"),
+    (painted_over_another_colour, "m_rock.base_colour", "rock"),
+    (textured, "m_tracer.base_colour"),
 ]
 
 
@@ -223,6 +250,10 @@ def failures_after(mutate, name="tracer"):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     spec = asset.spec()
     runpy.run_path(str(asset.source / "build.py"))["build"](spec)
+    if "painted_shading" in spec:
+        # As tools/build.py does. A small texture is enough for L1, which reads no texels.
+        spec["painted_shading"]["texture_px"] = 64
+        paint.apply(spec, conventions())
     if mutate:
         mutate(spec)
     checks = Checks("L1-mesh", name)

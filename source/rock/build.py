@@ -247,6 +247,11 @@ def build(spec, seed=SEED):
     fit(bm, lo, hi)
     tag = soften(bm)
     fit(bm, lo, hi)
+    # Triangulation hands its faces back in an order that changes from run to run. The
+    # shape is the same, but the exported file is not; put the faces in a fixed order.
+    for index, face in enumerate(sorted(bm.faces, key=lambda face: tuple(round(c, 5) for c in face.calc_center_median()))):
+        face.index = index
+    bm.faces.sort()
     normals = plane_normals(bm, tag)
     bm.faces.layers.int.remove(tag)
 

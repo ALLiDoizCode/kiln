@@ -14,6 +14,7 @@ Assets for Bevy, built as code by headless Blender and gated by scripts. Read `C
 ## Rules
 
 - An asset is `source/<asset>/{brief.md, spec.json, build.py}`. `out/` and `assets/models/*.glb` are outputs; never edit them by hand.
+- A build script gives each material one flat colour. Painted shading is asked for in the spec (`painted_shading`) and added by `tools/paint.py` during the build (ADR 10); a build script never unwraps or bakes.
 - Expected values (bounds, budgets) go in `spec.json` from the brief, never copied from what the build produced.
 - Every asset is for the game described in `docs/adr/0007-game-target-and-metrics.md`; questions about how the game works belong in the `pit` repo (ADR 8).
 - A gate passing means the asset is well-formed, not that it is good. After the gates pass, read `source/<asset>/review/<phase>/sheet.png` and describe what it shows as measurements before calling anything done.

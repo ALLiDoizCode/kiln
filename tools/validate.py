@@ -199,9 +199,24 @@ def check_scene(checks, spec, conv):
             principled = checks.check(f"{material.name}.principled", surface and surface.type == "BSDF_PRINCIPLED", "surface is not a Principled BSDF")
             want = spec["materials"].get(material.name)
             if principled and want:
-                got = tuple(surface.inputs["Base Color"].default_value)[:3]
-                close = not surface.inputs["Base Color"].links and all(abs(a - b) <= 0.005 for a, b in zip(got, linear_rgb(want)))
-                checks.check(f"{material.name}.base_colour", close, f"linear {tuple(round(c, 3) for c in got)} != spec {want}")
+                # Flat: the socket's own value is the colour. Painted: it is the colour the
+                # texture was painted from, kept on the socket under the link (tools/paint.py).
+                socket = surface.inputs["Base Color"]
+                got = tuple(socket.default_value)[:3]
+                close = all(abs(a - b) <= 0.005 for a, b in zip(got, linear_rgb(want)))
+                painted = spec.get("painted_shading")
+                if painted:
+                    source = socket.links[0].from_node if socket.links else None
+                    image = source.image if source and source.type == "TEX_IMAGE" else None
+                    checks.check(
+                        f"{material.name}.painted",
+                        image is not None and tuple(image.size) == (painted["texture_px"],) * 2 and image.packed_file is not None and len(obj.data.uv_layers) == 1,
+                        f"base colour is fed by {source.bl_idname if source else 'nothing'}, image {tuple(image.size) if image else None}, "
+                        f"{len(obj.data.uv_layers)} UV layers; spec wants one packed {painted['texture_px']} px texture and one UV layer",
+                    )
+                else:
+                    close = close and not socket.links
+                checks.check(f"{material.name}.base_colour", close, f"linear {tuple(round(c, 3) for c in got)} != spec {want}, or a flat colour has something linked to it")
 
         for face in bm.faces:
             slot = slots[face.material_index] if face.material_index < len(slots) else None

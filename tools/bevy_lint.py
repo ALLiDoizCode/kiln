@@ -38,6 +38,10 @@ checks.check("nodes.named", all(names), f"{names.count(None)} unnamed nodes")
 repeated = [n for n, count in Counter(names).items() if n and count > 1]
 checks.check("nodes.unique_names", not repeated, f"repeated: {repeated}")
 
+images = [i.get("mimeType") for i in gltf.get("images", [])]
+undecodable = sorted({str(m) for m in images if m not in profile["image_mime_types"]})
+checks.check("images.decodable", not undecodable, f"image types {undecodable}; the Bevy crates decode only {profile['image_mime_types']}")
+
 primitives = [p for m in gltf.get("meshes", []) for p in m["primitives"]]
 checks.check("primitives.triangles", all(p.get("mode", TRIANGLES) == TRIANGLES for p in primitives), "non-triangle primitive mode")
 checks.check("primitives.indexed", all("indices" in p for p in primitives), "unindexed primitive")

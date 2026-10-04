@@ -28,7 +28,36 @@
   "bounds_tolerance": 0.001,
   "attributes": [
     "POSITION",
-    "NORMAL"
+    "NORMAL",
+    "TEXCOORD_0"
   ],
-  "soft_edges": true
+  "soft_edges": true,
+  "painted": {
+    "texture_px": 1024,
+    "base_tint": [
+      0.262251,
+      0.262251,
+      0.323143
+    ],
+    "top_tint": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "edge_light": 0.3,
+    "edge_width_m": 0.08,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.3,
+    "hidden_underside": true,
+    "min_texels_per_m": 100,
+    "min_uv_coverage": 0.4,
+    "max_uv_overlap": 0.001,
+    "feature_deg": 30.0,
+    "colour_tolerance": 0.08,
+    "min_effect_share": 0.5,
+    "texel_range": [
+      30,
+      240
+    ]
+  }
 }

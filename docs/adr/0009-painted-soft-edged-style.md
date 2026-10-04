@@ -9,7 +9,7 @@ This replaces the style line of ADR 7 ("flat-colour low-poly with bevels ... not
 
 The owner rejected the faceted references on the first style board as "too low poly", then chose bevelled and detailed shapes over faceted ones, and the painted treatment over plain colour, realistic texture and brush patches, in side-by-side throwaways (pit `look-tests/style-variants`). Nine reference scenes were then recreated by script (pit `look-tests/recreations`): composition, palette and haze worked every time, and solid-lump foliage, noise rock and untextured near surfaces failed every time. A professional stylised pack used as a benchmark builds its rocks and trees the way this record describes.
 
-Baked into a texture, the painted treatment looked the same in Bevy as in Blender. Baked into vertex colours it came out washed pale in Bevy; that route stays open until someone finds out why.
+Baked into a texture, the painted treatment looked the same in Bevy as in Blender. Baked into vertex colours it came out washed pale in Bevy; ADR 10 found out why and chose the texture.
 
 Costs accepted: UV unwrapping, a bake step, texture and transparency support in the gates, and larger files.
 

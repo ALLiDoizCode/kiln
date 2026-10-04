@@ -6,4 +6,4 @@ Valid glTF is a superset of what `bevy_gltf` loads, so the Khronos validator is 
 
 `KHR_materials_clearcoat`, `anisotropy` and `specular` are loadable only with extra Bevy cargo features and are left out until an asset needs them.
 
-Exporter options are set explicitly in `tools/export.py`. Tangents and UVs are exported only when the asset's spec lists them: flat-colour assets carry neither.
+Exporter options are set explicitly in `tools/export.py`. Tangents and UVs are exported only when the asset's spec lists them: flat-colour assets carry neither. Textures are PNG, the one image format the Bevy crates here decode (ADR 10).

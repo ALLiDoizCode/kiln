@@ -14,7 +14,7 @@ import bmesh
 import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, gltf_bounds, linear_rgb, script_args
+from pipeline import Asset, conventions, gltf_bounds, linear_rgb, script_args
 
 asset = Asset(script_args()[0])
 spec = asset.spec()
@@ -36,7 +36,12 @@ result = bpy.ops.export_scene.gltf(
     export_texcoords="TEXCOORD_0" in spec["attributes"],
     export_extras=True,
     export_materials="EXPORT",
+    # AUTO keeps a PNG as PNG, the one format the Bevy crates decode (conventions.toml).
     export_image_format="AUTO",
+    # Bevy multiplies COLOR_0 into the base colour, so it is written only when the spec lists it.
+    export_vertex_color="ACTIVE" if "COLOR_0" in spec["attributes"] else "NONE",
+    export_all_vertex_colors=False,
+    export_active_vertex_color_when_no_material=False,
     export_cameras=False,
     export_lights=False,
     export_animations=False,
@@ -70,6 +75,17 @@ manifest = {
     "attributes": spec["attributes"],
     "soft_edges": spec.get("soft_edges", False),
 }
+if "painted_shading" in spec:
+    # What the texture must do, from the spec, and how strictly, from the conventions.
+    want, rules = spec["painted_shading"], conventions()["painted_shading"]
+    manifest["painted"] = {
+        "texture_px": want["texture_px"],
+        "base_tint": [round(c, 6) for c in linear_rgb(want["base_tint"])],
+        "top_tint": [round(c, 6) for c in linear_rgb(want["top_tint"])],
+        **{key: want[key] for key in ("edge_light", "edge_width_m", "crevice_shadow", "crevice_width_m", "hidden_underside")},
+        **{key: rules[key] for key in ("min_texels_per_m", "min_uv_coverage", "max_uv_overlap", "feature_deg", "colour_tolerance", "min_effect_share")},
+        "texel_range": rules["texel_range_srgb"],
+    }
 with open(asset.manifest, "w") as f:
     json.dump(manifest, f, indent=2)
     f.write("\n")
