@@ -1,0 +1,16 @@
+# pinned toolchain downloads (tools/install_blender.sh)
+/.tools/
+# Rust
+/target/
+# Bevy asset processor output
+/imported_assets/
+# per-asset build outputs; rebuildable from build.py
+/source/*/out/
+# Blender user dir used for hermetic runs
+/.blender-user/
+__pycache__/
+*.blend1
+node_modules/
+# review tiles are rebuildable; only the contact sheet is kept
+/source/*/review/*/*.png
+!/source/*/review/*/sheet.png

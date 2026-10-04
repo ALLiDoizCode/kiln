@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# The one way to run a Blender script in this repo: pinned binary, no UI,
+# no user preferences or add-ons, no network, non-zero exit on any exception.
+# Usage: tools/bl <script.py> [script args...]
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+script="$1"; shift
+export BLENDER_USER_RESOURCES="$root/.blender-user"
+mkdir -p "$BLENDER_USER_RESOURCES"
+exec "$root/.tools/blender/blender" --background --factory-startup --offline-mode --quiet \
+  --python-exit-code 1 --python "$script" -- "$@"

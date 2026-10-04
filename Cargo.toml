@@ -1,0 +1,14 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.dependencies]
+# Exact pin: Bevy minors break APIs. See docs/adr/0002-bevy-version.md.
+bevy = { version = "=0.19.1", default-features = false }
+
+# Bevy is slow unoptimised; keep our own crates quick to rebuild.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

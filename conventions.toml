@@ -1,0 +1,39 @@
+# Machine-readable project standards. Scripts in tools/ read this file; prose
+# rationale lives in docs/adr/. Only put a value here if a script consumes it.
+
+[toolchain]
+# Must match tools/install_tools.sh and Cargo.toml.
+blender = "5.2.2"
+bevy = "0.19.1"
+gltf_validator = "2.0.0-dev.3.10"
+
+[naming]
+# Objects, mesh data and materials. Blender's "Cube.001"-style defaults fail this.
+pattern = "^[a-z][a-z0-9_]*$"
+material_prefix = "m_"
+
+[mesh]
+max_face_sides = 4          # no n-gons in delivery meshes
+merge_distance_m = 0.00001  # vertices closer than this are duplicates
+min_face_area_m2 = 1e-10
+
+[transform]
+tolerance = 0.00001         # rotation must be 0 and scale 1 within this
+
+[gltf_profile]
+# What bevy_gltf 0.19.1 can load; re-derive at every Bevy upgrade (ADR 0004).
+allowed_extensions = [
+  "KHR_lights_punctual",
+  "KHR_materials_emissive_strength",
+  "KHR_materials_ior",
+  "KHR_materials_transmission",
+  "KHR_materials_unlit",
+  "KHR_materials_volume",
+  "KHR_texture_transform",
+]
+max_joints = 256
+
+[review]
+tile_px = 512
+eevee_samples = 32
+views = ["front", "right", "back", "top", "three_quarter"]
