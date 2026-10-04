@@ -33,7 +33,14 @@ allowed_extensions = [
 ]
 max_joints = 256
 
+[metrics]
+# From the game target (ADR 7).
+player_height_m = 1.8
+
 [review]
 tile_px = 512
 eevee_samples = 32
-views = ["front", "right", "back", "top", "three_quarter"]
+# "scale" is the front view pulled back to include a player-height figure.
+views = ["front", "right", "back", "top", "three_quarter", "scale"]
+# Largest RMSE (0..1) between a rebuilt contact sheet and its approved baseline.
+baseline_rmse = 0.01

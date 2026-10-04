@@ -46,6 +46,10 @@ expect 1 "L4 catches an inside-out mesh"    smoke "$tmp/inside_out.glb" "$manife
 printf 'not a glb' > "$tmp/bad.glb"
 expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
 
+view() { cargo run -q -p asset_view -- "$@"; }
+expect 0 "L4b renders the real asset"       view "$glb" "$manifest" --screenshot "$tmp/shot.png"
+expect 1 "L4b fails on an unloadable file"  view "$tmp/bad.glb" "$manifest" --screenshot "$tmp/bad.png"
+
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 cat > "$tmp/draco.py" <<PY
 import bpy
@@ -70,6 +74,17 @@ expect 1 "L0 catches a brief/spec mismatch" python tools/lint_spec.py zz_lint
 lint_copy 's/`\["crate"\]`/`["zz_lint"]`/; /`max_triangles`/d'
 expect 1 "L0 catches an untraced spec number" python tools/lint_spec.py zz_lint
 rm -rf source/zz_lint
+
+# L5b: an approved sheet, then the same sheet with something drawn on it.
+base=source/tracer/review/zz_base
+trap 'rm -rf "$tmp" source/zz_lint "$base"' EXIT
+mkdir -p "$base"; cp source/tracer/review/final/sheet.png "$base/sheet.png"
+expect 0 "L5b passes when never approved"   python tools/baseline.py check tracer zz_base
+python tools/baseline.py approve tracer zz_base > /dev/null
+expect 0 "L5b passes an unchanged sheet"    python tools/baseline.py check tracer zz_base
+magick "$base/sheet.png" -fill red -draw 'rectangle 100,100 700,700' "$base/sheet.png"
+expect 1 "L5b catches a changed sheet"      python tools/baseline.py check tracer zz_base
+rm -rf "$base"
 
 echo; [[ $failures -eq 0 ]] && echo "all gate tests passed" || echo "$failures gate tests failed"
 exit $((failures > 0))

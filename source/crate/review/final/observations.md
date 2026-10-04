@@ -35,6 +35,17 @@ From `sheet.png`, rendered with the recess at 0.05 m and colours `#5a3820` / `#a
 - The recess walls carry the frame colour, as the brief asks (front and top, under the top frame member).
 - The first version of this sheet used linear RGB values from the brief and the frame rendered as mid tan, not dark wood. That mismatch led to ADR 6 and the `base_colour` check.
 
+## Scale
+
+- scale: the crate's top is at about 45% of the figure's height. Brief: 0.8 m beside a 1.8 m player, 44%. It reads as waist-high.
+
+## In the engine (bevy tile)
+
+- Lit faces are lighter than in the Blender material tiles: the frame reads as mid brown and the panel as light tan. The shaded right face is much darker, with its frame close to black. Contrast between lit and shaded faces is higher in Bevy than in Blender.
+- Frame and panel stay distinguishable on all three visible faces, including the shaded one.
+- The recess shows as a dark line along the inner top and left edges of the front and top panels, and the crate casts a shadow on the ground; its base sits on the ground with no gap.
+- Colours in this tile depend on the viewer's own light and exposure, which are placeholders until the game's lighting exists (pit issue #1). The brief's "dark wood" holds in shade and not in direct light.
+
 ## Differences from the brief
 
 None found in geometry, proportions or colour assignment.
@@ -42,4 +53,5 @@ None found in geometry, proportions or colour assignment.
 For the user to judge, since no number settles them:
 
 1. The recess still reads as depth only on faces with a cast shadow (front, top, three_quarter); the right and back views are unchanged by the deeper recess. This is a limit of the shadowless fill light, and in game it depends on the scene's lighting.
-2. With no bevels and no plank gaps the faces are flat colour fields. That matches the brief's scope, and is the first thing to revisit if the crate looks too plain beside other assets.
+2. In Bevy the lit frame is lighter than "dark wood" suggests. Whether to darken `#5a3820` should wait for the game's real lighting.
+3. With no bevels and no plank gaps the faces are flat colour fields. That matches the brief's scope, and is the first thing to revisit if the crate looks too plain beside other assets.

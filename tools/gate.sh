@@ -17,6 +17,10 @@ step "L2  glTF validator";       .tools/gltf_validator -a -o "$glb" > "$reports/
 step "L2b Bevy profile lint";    python tools/bevy_lint.py "$glb"
 step "L4  Bevy load test";       cargo run -q -p asset_smoke -- "$glb" "assets/models/$asset.manifest.json" \
                                    --report "$reports/L4-bevy.json" > /dev/null
+step "L4b Bevy screenshot";      mkdir -p "source/$asset/review/$phase"
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" \
+                                   --screenshot "source/$asset/review/$phase/bevy.png" 2> "$reports/L4b-bevy-view.log"
 step "L5  review renders";       tools/bl tools/review_render.py "$asset" "$phase"
+step "L5b approval baseline";    python tools/baseline.py check "$asset" "$phase"
 
 printf '\nall gates passed: %s\nnow look at source/%s/review/%s/sheet.png\n' "$asset" "$asset" "$phase"

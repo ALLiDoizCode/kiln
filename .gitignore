@@ -11,6 +11,9 @@
 __pycache__/
 *.blend1
 node_modules/
-# review tiles are rebuildable; only the contact sheet is kept
+# review tiles are rebuildable; only the contact sheet and its approved baseline are kept
 /source/*/review/*/*.png
 !/source/*/review/*/sheet.png
+!/source/*/review/*/approved.png
+# third-party reference images (copyrighted; never commit)
+/docs/style/refs/

@@ -9,7 +9,7 @@ Gates prove an asset is well-formed. The **contact sheet** is where you find out
 
 ## 1. Render
 
-Run `tools/bl tools/review_render.py <asset> <phase>` (the last step of `tools/gate.sh` does this). The phase names the stage being reviewed: `blockout`, `final`. Views are named from the asset's point of view: `front` looks at its front.
+Run `tools/gate.sh <asset> <phase>`; its last two steps take a screenshot in Bevy and render the sheet in Blender. The phase names the stage being reviewed: `blockout`, `final`. Views are named from the asset's point of view: `front` looks at its front. The `scale` view and the `bevy` tile show the asset beside a player-height figure.
 
 ## 2. Read the sheet
 
@@ -30,7 +30,9 @@ Cover, in this order:
 4. **Topology** (clay_wire tiles): where edges are dense or sparse relative to the silhouette they support, and any edge that supports nothing.
 5. **Shading** (material tiles): faces darker or lighter than their neighbours with no lighting reason, which is the sign of a flipped or split normal.
 6. **Materials**: each colour against the brief's, and which parts carry it.
-7. **Differences from the brief**: every mismatch found above, each with the number that shows it. Write "none found" only after items 1 to 6 are each written.
+7. **Scale** (scale tiles): the asset's height as a fraction of the figure's, beside the brief's size over the player height in `conventions.toml`.
+8. **In the engine** (bevy tile): what differs from the Blender material tiles in colour, contrast and shading. The game ships what Bevy shows, so where the two disagree, Bevy is right.
+9. **Differences from the brief**: every mismatch found above, each with the number that shows it. Write "none found" only after items 1 to 8 are each written.
 
 A mismatch that a number could have caught goes to the `asset-checks` skill as an escaped defect.
 
