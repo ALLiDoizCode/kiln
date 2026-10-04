@@ -17,3 +17,5 @@ node_modules/
 !/source/*/review/*/approved.png
 # third-party reference images (copyrighted; never commit)
 /docs/style/refs/
+# third-party packs used only as benchmarks; never shipped or committed
+/benchmarks/
