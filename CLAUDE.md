@@ -1,6 +1,6 @@
 # kiln
 
-Assets for Bevy, built as code by headless Blender and gated by scripts. Read `GLOSSARY.md` for vocabulary and `docs/adr/` for the decisions (units, axes, facing, format) before touching an asset.
+Assets for Bevy, built as code by headless Blender and gated by scripts. Read `CONTEXT.md` for vocabulary and `docs/adr/` for the decisions (units, axes, facing, format) before touching an asset.
 
 ## Commands
 
@@ -17,3 +17,17 @@ Assets for Bevy, built as code by headless Blender and gated by scripts. Read `G
 - A new check is not finished until a case in `tests/` shows it failing on a broken input.
 - In Blender scripts prefer the data API (`bpy.data`, `bmesh`) over `bpy.ops`; operators report failure by return value, so check it and raise.
 - Project standards live in `conventions.toml`; add a value there only when a script reads it.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues, through the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default triage labels, unchanged. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

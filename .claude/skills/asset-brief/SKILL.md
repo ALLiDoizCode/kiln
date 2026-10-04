@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 A **brief** says what the asset is and why; a **spec** is the brief's numbers, which the gates enforce. Both are written before any geometry, so every later check compares the asset against what was asked for instead of against itself.
 
-Read `GLOSSARY.md` and `docs/adr/` first; use their terms and stay inside their decisions.
+Read `CONTEXT.md` and `docs/adr/` first; use their terms and stay inside their decisions.
 
 ## 1. Grill
 
@@ -17,7 +17,7 @@ Call the Skill tool with `grilling` and work this design tree with the user. Eve
 - **Purpose**: what the asset does in the game, and whether anything interacts with it (stood on, pushed, opened, destroyed).
 - **Viewing**: the closest the camera gets, and the typical distance. This sets how much detail is visible and so the triangle budget.
 - **Real-world size**: width, depth, height in metres, and where the origin sits. Name a real object of that size as a sanity check.
-- **Silhouette**: the two or three features that make it read as this object from the typical distance. Everything else is optional detail.
+- **Silhouette**: the two or three features that make it read as this object from the typical distance, each with the dimension that defines it (a frame's width, a recess's depth). Everything else is optional detail.
 - **Style and colour**: which existing asset it must sit beside, and each material's name and base colour as an sRGB hex value.
 - **Parts**: which pieces are separate objects (anything that moves or is swapped), and which are one mesh.
 - **Budget**: triangles and material slots, argued from viewing distance and how many instances appear on screen.

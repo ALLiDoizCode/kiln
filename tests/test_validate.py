@@ -16,12 +16,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 from pipeline import Asset, Checks, conventions
 from validate import check_scene
 
-TRACER = Asset("tracer")
-
-
-def edit(fn):
-    """Apply fn(bm) to the tracer mesh."""
-    mesh = bpy.data.objects["tracer"].data
+def edit(fn, name="tracer"):
+    """Apply fn(bm) to the named object's mesh."""
+    mesh = bpy.data.objects[name].data
     bm = bmesh.new()
     bm.from_mesh(mesh)
     bm.faces.ensure_lookup_table()
@@ -111,7 +108,22 @@ def over_budget(spec):
     spec["max_triangles"] = 10
 
 
-# mutation -> the check id that must fail because of it
+def shallow_recess(spec):
+    """Push every crate panel 0.02 m outward, leaving the frame where it is."""
+
+    def push(bm):
+        for face in [f for f in bm.faces if f.material_index == 1]:
+            bmesh.ops.translate(bm, verts=face.verts, vec=face.normal * 0.02)
+
+    edit(push, "crate")
+
+
+def recess_respecified(spec):
+    spec["recess_m"]["m_crate_panel"] = 0.03
+
+
+# mutation -> the check id that must fail because of it. Cases break the
+# tracer unless they name another asset.
 CASES = [
     (delete_face, "tracer.manifold"),
     (flip_all, "tracer.normals_outward"),
@@ -130,25 +142,29 @@ CASES = [
     (wrong_colour, "m_tracer.base_colour"),
     (extra_material, "materials.match_spec"),
     (over_budget, "budget.triangles"),
+    (shallow_recess, "m_crate_panel.recess", "crate"),
+    (recess_respecified, "m_crate_panel.recess", "crate"),
 ]
 
 
-def failures_after(mutate):
+def failures_after(mutate, name="tracer"):
+    asset = Asset(name)
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    spec = TRACER.spec()
-    runpy.run_path(str(TRACER.source / "build.py"))["build"](spec)
+    spec = asset.spec()
+    runpy.run_path(str(asset.source / "build.py"))["build"](spec)
     if mutate:
         mutate(spec)
-    checks = Checks("L1-mesh", "tracer")
+    checks = Checks("L1-mesh", name)
     check_scene(checks, spec, conventions())
     return {r["id"] for r in checks.failed()}
 
 
 problems = []
-if clean := failures_after(None):
-    problems.append(f"unmodified tracer fails {sorted(clean)}")
-for mutate, expected in CASES:
-    failed = failures_after(mutate)
+for name in sorted({case[2] if len(case) > 2 else "tracer" for case in CASES}):
+    if clean := failures_after(None, name):
+        problems.append(f"unmodified {name} fails {sorted(clean)}")
+for mutate, expected, *asset_name in CASES:
+    failed = failures_after(mutate, *asset_name)
     status = "ok" if expected in failed else "NOT CAUGHT"
     print(f"{status:10} {mutate.__name__:24} -> {sorted(failed)}")
     if expected not in failed:
@@ -156,5 +172,5 @@ for mutate, expected in CASES:
 
 for problem in problems:
     print("FAIL", problem)
-print(f"{len(CASES) + 1 - len(problems)}/{len(CASES) + 1} validate tests passed")
+print(f"{len(CASES) - len(problems)}/{len(CASES)} mutations caught" if not problems else f"{len(problems)} problems")
 sys.exit(1 if problems else 0)

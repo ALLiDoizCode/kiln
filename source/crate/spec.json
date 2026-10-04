@@ -9,6 +9,7 @@
     "m_crate_frame": "#5a3820",
     "m_crate_panel": "#a87a4a"
   },
+  "recess_m": { "m_crate_panel": 0.05 },
   "watertight": true,
   "attributes": ["POSITION", "NORMAL"]
 }

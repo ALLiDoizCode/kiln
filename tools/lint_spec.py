@@ -43,6 +43,9 @@ if not checks.failed():
         for name, colour in spec["materials"].items()
     )
     checks.check("spec.materials", spec["materials"] and colours_ok, f'need "{prefix}<name>": "#rrggbb" (sRGB, lower case)')
+    recess = spec.get("recess_m", {})
+    recess_ok = all(name in spec["materials"] and isinstance(depth, float) and depth > 0 for name, depth in recess.items())
+    checks.check("spec.recess_m", recess_ok, "optional; maps a material in `materials` to a positive depth in metres")
     checks.check("spec.brief", (asset.source / "brief.md").is_file(), "brief.md missing")
 
 pins = conv["toolchain"]

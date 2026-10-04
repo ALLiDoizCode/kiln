@@ -12,7 +12,7 @@ From `sheet.png`, rendered with the recess at 0.05 m and colours `#5a3820` / `#a
 
 - front: the crate fills 52% of the tile width, and the tile is framed at 1.52 m, so the crate is about 0.79 m wide. Brief: 0.8 m.
 - right (no cast shadow): each frame member is 12 to 13% of the side. Brief: 0.1 m of 0.8 m, 12.5%.
-- Recess depth cannot be measured from this sheet: the recess walls are edge-on in the four orthographic views, and the band visible there is cast shadow, whose length depends on the light angle. three_quarter shows the walls on all three faces, visibly narrower than the frame members. The 0.05 m depth is covered by the build constant and the bounds check only, so no gate would catch a wrong depth.
+- Recess depth cannot be measured from this sheet: the recess walls are edge-on in the four orthographic views, and the band visible there is cast shadow, whose length depends on the light angle. three_quarter shows the walls on all three faces, visibly narrower than the frame members. The depth is gated instead: `m_crate_panel.recess` in the L1 mesh checks compares every panel face against the spec's `recess_m` of 0.05 m.
 
 ## Facing and grounding
 

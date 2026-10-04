@@ -40,6 +40,10 @@ def check_scene(checks, spec, conv):
     triangles = 0
     lo, hi = Vector((float("inf"),) * 3), Vector((float("-inf"),) * 3)
     materials = {}
+    want_lo, want_hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    tol = spec["bounds_tolerance_m"]
+    # material name -> depths of its faces below the spec's bounding box
+    recess_depths = {name: [] for name in spec.get("recess_m", {})}
 
     for name in sorted(wanted & set(mesh_objects)):
         obj = mesh_objects[name]
@@ -87,6 +91,13 @@ def check_scene(checks, spec, conv):
                 close = not surface.inputs["Base Color"].links and all(abs(a - b) <= 0.005 for a, b in zip(got, linear_rgb(want)))
                 checks.check(f"{material.name}.base_colour", close, f"linear {tuple(round(c, 3) for c in got)} != spec {want}")
 
+        for face in bm.faces:
+            slot = slots[face.material_index] if face.material_index < len(slots) else None
+            if slot and slot.name in recess_depths:
+                # Distance from the face to the bounding-box plane it faces.
+                box_plane = sum(max(n * a, n * b) for n, a, b in zip(face.normal, want_lo, want_hi))
+                recess_depths[slot.name].append(box_plane - face.normal.dot(face.calc_center_median()))
+
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:
             lo = Vector(map(min, lo, v.co))
@@ -95,8 +106,14 @@ def check_scene(checks, spec, conv):
 
     checks.check("budget.triangles", triangles <= spec["max_triangles"], f"{triangles} > {spec['max_triangles']}")
     checks.check("materials.match_spec", set(materials) == set(spec["materials"]), f"{sorted(materials)} != spec {sorted(spec['materials'])}")
-    tol = spec["bounds_tolerance_m"]
-    want_lo, want_hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    for name, depths in recess_depths.items():
+        want = spec["recess_m"][name]
+        off = [round(d, 4) for d in depths if abs(d - want) > tol]
+        checks.check(
+            f"{name}.recess",
+            depths and not off,
+            f"{len(off)} of {len(depths)} faces are not {want} m below the bounds; depths {sorted(set(off))}",
+        )
     in_bounds = triangles > 0 and (lo - want_lo).length <= tol and (hi - want_hi).length <= tol
     checks.check("bounds.match_spec", in_bounds, f"{tuple(lo)}..{tuple(hi)} != {tuple(want_lo)}..{tuple(want_hi)}")
     return triangles

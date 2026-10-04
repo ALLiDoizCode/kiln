@@ -102,3 +102,31 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Grid**: the snapping unit the kit is built on.
 - **Greybox (whitebox)**: a playable level built from blockout geometry.
 - **Navmesh**: the walkable surface used for pathfinding. **Occluder**: geometry that hides things behind it from rendering.
+
+**Pipeline**
+
+- **Asset**: one deliverable thing, made from a brief, a spec and a build script, and shipped as one GLB. _Avoid_: model, object (an object is one Blender object inside an asset).
+- **Brief**: the words that say what an asset is, what it is for, and the decisions behind it.
+- **Spec**: the brief's numbers, in a form the checks read. _Avoid_: config, requirements.
+- **Build script**: the code that constructs an asset's geometry and materials from nothing.
+- **Check**: one measurement of an asset compared with one value from the spec or the conventions, with a stable id. _Avoid_: test (a test proves a check can fail), rule.
+- **Gate**: a script that runs checks and decides, by exit code, whether the asset moves on. _Avoid_: layer, stage.
+- **Mutation**: a deliberate way of breaking a known-good asset, used to prove that a check goes red.
+- **Escaped defect**: something wrong with an asset that every gate passed.
+- **Manifest**: what the engine must see when it loads an asset, written at export.
+- **Profile**: the subset of glTF that the pinned Bevy version can load.
+- **Contact sheet**: one image of an asset from the fixed review cameras and passes. _Avoid_: screenshot, preview.
+- **Pass**: one way of rendering every review view, such as material or clay with wireframe.
+- **Phase**: the point in an asset's life that a contact sheet records, such as blockout or final.
+- **Observation**: a statement about a contact sheet that a second reader could confirm or refute from the same tile. _Avoid_: verdict.
+- **Fixture**: an asset that exists to exercise the pipeline, such as the tracer. It is never shipped in a game.
+- **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
+
+**Game**
+
+- **Pit**: the vertical world the game takes place in, in place of an island. _Avoid_: abyss (the source of inspiration, not our name), map.
+- **Layer**: one depth band of the pit, with its own biome, look, and balance of risk and reward. A player can live out a whole life on any layer. _Avoid_: level (already means a playable map, and level of detail), floor, zone.
+- **Descent**: moving down to a deeper layer; risk and reward both rise.
+- **Ascent**: moving up toward the rim; it triggers the curse.
+- **Curse**: the harm a player takes while ascending, worse the deeper the ascent starts.
+- **Life**: one character's persistent existence, from spawn to death, including what they build and keep.
