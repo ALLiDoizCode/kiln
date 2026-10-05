@@ -46,6 +46,9 @@ expect 0 "L1 mutation tests: slab_1" l1 slab_1
 # A pebble (source/pebble): made too tall for its width, and cut into a block with one big steep face.
 uses pebble_2 validate paint
 expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
+# A boulder (source/boulder): drawn in to a trunk on a spread foot, notched into roots, and stretched into a column.
+uses boulder_2 validate paint
+expect 0 "L1 mutation tests: boulder_2" l1 boulder_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
@@ -332,6 +335,12 @@ expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at
 expect_id "spec.painted_joins"       "L0 catches overlapping pieces with no crevice shadow to hide their joins" lint_slab 'del s["painted_shading"]["crevice_shadow"], s["painted_shading"]["crevice_width_m"]'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+# L0, a boulder (source/boulder): one mass, each limit a share below 1.
+uses boulder_2 lint_spec
+expect 0 "L0 passes a boulder variant's spec" lint_boulder 'pass'
+expect_id "spec.mass"                "L0 catches a boulder allowed to fill none of its hull" lint_boulder 's["mass"]["min_hull_share"] = 0.0'
+expect_id "spec.mass"                "L0 catches a boulder with no limit on its walls" lint_boulder 'del s["mass"]["max_steep_share"]'
+expect_id "brief.numbers_match_spec" "L0 catches a boulder's spec without the family's limits on its mass" lint_boulder 'del s["mass"]'
 # L0, a pebble (source/pebble): low and rounded, each a share below 1.
 uses pebble_2 lint_spec
 expect 0 "L0 passes a pebble variant's spec" lint_pebble 'pass'

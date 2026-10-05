@@ -75,6 +75,8 @@ ARCH_SPANS = ("lintel", "wedged")
 # Optional; a near-cuboid with big chamfers (a block), and, with it, the cracks across it. Every key of a block is required once it is present.
 BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
 CRACKS = {"count": int, "depth_m": float, "width_m": float, "min_span": float}
+# Optional; one convex mass with sloping flanks (a boulder, source/boulder). Every key is required once it is present.
+MASS = {"min_hull_share": float, "min_outline_share": float, "max_steep_share": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -196,6 +198,10 @@ if not checks.failed():
         if wanted_block is not None:
             ok = isinstance(wanted_block, dict) and set(wanted_block) == set(keys) and all(type(wanted_block[key]) is float and 0 < wanted_block[key] < 1 for key in keys)
             checks.check(f"spec.{block}", ok and spec["watertight"], f"optional; needs exactly {sorted(keys)}, a share above 0 and below 1, on a watertight asset")
+    mass = spec.get("mass")
+    if mass is not None:
+        ok = isinstance(mass, dict) and set(mass) == set(MASS) and all(type(mass[key]) is float and 0 < mass[key] < 1 for key in MASS)
+        checks.check("spec.mass", ok and spec["watertight"], f"optional; needs exactly {sorted(MASS)}, each a share above 0 and below 1, on a watertight asset")
     overlap = spec.get("overlap")
     if overlap is not None:
         ok = (
