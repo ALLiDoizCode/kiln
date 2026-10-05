@@ -18,7 +18,8 @@ The colour at a point, in linear RGB, is
 
 The growth mask is the largest of three: below `growth_height_m`, with a ragged
 top; patches covering about `growth_up` of the faces that are near level; and
-patches along about `growth_edges` of the exposed edges in the upper part.
+patches along about `growth_edges` of the exposed edges in the upper part,
+reaching `growth_edge_m` in from an edge.
 Growth changes hue, and the blotch pattern averages nothing. Where a spec gives
 `growth_darker`, the patches on level faces and along edges are that much darker
 than the surface round them as well, as moss is on pale lit rock; the growth
@@ -77,7 +78,6 @@ NOISE_SPREAD = 0.2
 # With `growth_patch_m`: a second pattern, GROWTH_BREAK_SCALE times finer, knocks holes in the
 # patches and leaves GROWTH_BREAK_KEEP of each, and the patches are that much commoner to make up for it.
 GROWTH_BREAK_SCALE, GROWTH_BREAK_KEEP = 2.5, 0.7
-GROWTH_EDGE_M = 0.2  # how far in from an upper edge its growth reaches
 GROWTH_EDGES_FROM = (0.5, 0.75)  # share of the height over which edge growth comes in
 BLOTCH_EDGE = 0.1  # how much of the noise's range a blotch's border takes: soft, but a patch and not a haze
 # The crevice shadow is full where a fifth of the sky is hidden, as in the corner of a
@@ -380,8 +380,8 @@ def paint_nodes(tree, colour_rgb, spec, conv):
             # On faces near level, where it would settle.
             settled = math_node("MULTIPLY", ramp(up, *rules["growth_up_normal_z"]), patches(paint["growth_up"], 11.0))
         if paint.get("growth_edges"):
-            # Along exposed edges, in the upper part of the asset.
-            rim = math_node("DIVIDE", hidden(True, GROWTH_EDGE_M), FULL_EDGE_OCCLUSION, clamp=True)
+            # Along exposed edges, in the upper part of the asset, as far in from an edge as the spec says (`growth_edge_m`).
+            rim = math_node("DIVIDE", hidden(True, paint["growth_edge_m"]), FULL_EDGE_OCCLUSION, clamp=True)
             upper = ramp(z, *(z0 + share * (z1 - z0) for share in GROWTH_EDGES_FROM))
             settled = math_node("MAXIMUM", settled, math_node("MULTIPLY", math_node("MULTIPLY", rim, upper), patches(paint["growth_edges"], 23.0)))
         mask = math_node("MAXIMUM", mask, settled)

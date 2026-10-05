@@ -24,5 +24,6 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `painted_shading.growth_height_m` | `0.9` | Family brief, Covers: how far up from the ground the moss reaches |
 | `painted_shading.growth_up` | `0.25` | Family brief, Covers: the share of near-level faces under patches |
 | `painted_shading.growth_edges` | `0.4` | Family brief, Covers: the share of the exposed upper edges under patches |
+| `painted_shading.growth_edge_m` | `0.13` | Family brief, Covers: how far in from an edge the growth along it reaches |
 | `painted_shading.growth_darker` | `0.5` | Family brief, Covers: how much darker than the stone the patches are |
 | `painted_shading.growth_patch_m` | `0.13` | Family brief, Covers: how large a patch is |

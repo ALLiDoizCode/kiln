@@ -50,6 +50,8 @@ GROWTH = {"growth": str, "growth_height_m": float}
 # Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
 # needs `growth`; `blotch` and `blotch_size_m` come together.
 GROWTH_WHERE = {"growth_up": float, "growth_edges": float}
+# With `growth_edges`, and only then: how far in from an exposed edge its growth reaches, metres.
+GROWTH_EDGE = {"growth_edges": float, "growth_edge_m": float}
 # Optional, with `growth`: how much darker than the surface its patches are (0 to below 1), and how large they are, metres.
 GROWTH_LOOK = {"growth_darker": float, "growth_patch_m": float}
 # Optional; the habits of a designed rock (docs/style/rock-shapes.md). Every key of a block is required once the block is present.
@@ -310,13 +312,14 @@ if not checks.failed():
         wanted = {**PAINTED, **(CREVICE if keys & set(CREVICE) else {}), **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
         optional = {**SIDE_SHADE, **({**GROWTH_WHERE, **GROWTH_LOOK} if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
+        wanted.update(GROWTH_EDGE if "growth" in keys and keys & set(GROWTH_EDGE) else {})
         wanted.update({**(GRAIN if keys & set(GRAIN) else {}), **(CLOSE if keys & set(CLOSE) else {})})
         ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
         ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
         checks.check(
             "spec.painted_shading",
             ok,
-            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}; {sorted(GROWTH_EDGE)} together), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
         )
         if ok:
             size = painted["texture_px"]
@@ -331,11 +334,11 @@ if not checks.failed():
             if "overlap" in spec:
                 checks.check("spec.painted_joins", "crevice_shadow" in painted, "overlapping pieces are joined by what the crevice shadow hides (ADR 13): painted_shading needs crevice_shadow and crevice_width_m")
             strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
-            strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0
+            strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0 and painted.get("growth_edge_m", 1.0) > 0
             checks.check(
                 "spec.painted_amounts",
                 amounts_ok and strengths_ok and painted.get("growth_height_m", 1.0) > 0,
-                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow, side_shade and growth_darker in 0..1 (below 1); widths, growth height, growth patch size and blotch size above 0",
+                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow, side_shade and growth_darker in 0..1 (below 1); widths, growth height, growth patch size, growth_edge_m and blotch size above 0",
             )
     if painted is not None and all(type(painted.get(key, 0.0)) is float for key in (*GRAIN, *CLOSE)):
         checks.check("spec.painted_grain", 0 <= painted.get("grain", 0.0) <= 1 and painted.get("grain_width_m", 1.0) > 0, "grain in 0..1 and grain_width_m above 0")

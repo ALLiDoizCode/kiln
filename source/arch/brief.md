@@ -85,6 +85,7 @@ Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground u
 
 - **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
 - **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+- **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
 
 An arch's moss is the wash round the feet of both piers and over the low blocks, and patches on the tops of the span and the piers where they are near level and along their upper edges. The underside of the span faces down and gets none. `arch_3_mossy`: 3.9 m tall, so the wash reaches 0.9 m (the cap); 1.7 m on its narrower side, so patches of 0.13 m.
 
