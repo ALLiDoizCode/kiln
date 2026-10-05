@@ -48,9 +48,9 @@ One object and one mesh per variant, with two materials. The stems are the close
 
 ## Budget
 
-At most 1,500 triangles and two materials, on one 512 px texture. The benchmark's bush is 900 triangles of leaf cards (1,368 with flowers); ours pays four triangles a piece, as the tree does, and the tree came to a little over half its benchmark's count. Bushes are commoner on screen than trees, so the ceiling is well under half a tree's 4,000. The largest variant is expected near 1,300 and the smallest near 400.
+At most 1,500 triangles and two materials, on one 512 px texture. The benchmark's bush is 900 triangles of leaf cards (1,368 with flowers); ours pays four triangles a piece, as the tree does, and the tree came to a little over half its benchmark's count. Bushes are commoner on screen than trees, so the ceiling is well under half a tree's 4,000. As built the variants are 944, 1,432 and 664 triangles; the largest is close to the ceiling.
 
-The texture holds only the stems (about 0.4 m2) and the palette strip, 16 px tall. It is 512 px for the layout's sake, not for sharpness: the stems unroll into about twenty small islands with an 8 px gap round each, and at 256 px the gaps left the islands 0.25 of the texture, where the conventions ask for 0.4. At 512 px they take a little over 0.4, at about 500 texels per metre. The file is about 150 kB.
+The texture holds only the stems (about 0.4 m2) and the palette strip, 16 px tall. It is 512 px for the layout's sake, not for sharpness: the stems unroll into about twenty small islands with an 8 px gap round each, and at 256 px the gaps left the islands 0.25 of the texture, where the conventions ask for 0.4. At 512 px they take a little over 0.4, at about 500 texels per metre. A variant's file is 105 to 140 kB.
 
 ## References
 
