@@ -289,6 +289,11 @@ expect 0 "L4b renders the asset's back"     view "$glb" "$manifest" --back --scr
 # Both cases read one run of the viewer (`away_view`).
 expect_id "asset.in_picture" "L4b fails when the asset is not in the picture" away_view
 expect 1 "L4b saves no picture without the asset in it" away_picture_exists
+# An asset stands on the ground, and where the foot of its sides lies in the ground's plane the two have one depth: the viewer
+# draws the ground a hair behind, or which of them a pixel shows goes by an order that changes from run to run and the contact
+# sheet drifts (reeds_1's picture came out two ways, 3 runs to 7; eight alike by chance is then one in seventeen).
+uses reeds_1 view
+expect 0 "L4b takes the same picture of an asset standing on the ground every time" same_picture reeds_1 8
 
 # L4c: bark seen from 0.5 m, as the gate takes it, with and without its grain.
 uses tree_1 view_checks

@@ -248,6 +248,15 @@ view() {
   fi
   return $code
 }
+# L4b: the same view of one asset taken several times; every picture must have the same pixels.
+same_picture() { # <asset> <times>
+  local i; for i in $(seq 1 "$2"); do
+    view "assets/models/$1.glb" "assets/models/$1.manifest.json" --screenshot "$tmp/same_$i.png" || return 3
+    magick "$tmp/same_$i.png" -depth 8 rgb:- | sha256sum | cut -c1-12
+  done > "$tmp/same.txt"
+  sort "$tmp/same.txt" | uniq -c
+  [[ $(sort -u "$tmp/same.txt" | wc -l) == 1 ]]
+}
 view_checks() { tools/bl tools/view_checks.py "$@"; }
 shade_check() { python tools/shade_check.py "$@"; }
 under_checks() { tools/bl tools/under_checks.py "$@"; }
