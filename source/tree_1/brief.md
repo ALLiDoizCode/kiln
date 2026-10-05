@@ -8,7 +8,7 @@ Variant 1 of the broadleaf tree. Everything about it is in the family's brief, `
 
 ## Seed
 
-Seed 1. Of seeds 1 to 12 at this size, the generator keeps a tree for 7 (1, 2, 4, 5, 8, 9, 10) and refuses the rest with its reasons; a kept tree meets every shape check of the family brief with room to spare, as the gate measures it. Seed 1 was picked from two looked at under Bevy (1, 2) for its lean and its five pads at five heights, and because its first tree is the one kept, so it builds quickly. It measures: fork at 2.4 m (brief 2.0 to 3.5), taper 0.80 (at most 0.9), lean 0.33 m (0.15 to 0.8), bark seen 0.04 to 0.08 (at least 0.02), sky 0.29 to 0.41 (0.2 to 0.5). The 2.4 m fork is the measure closest to its limit; the generator would have refused it under 2.2 m.
+Seed 1. Of seeds 1 to 12 at this size, the generator keeps a tree for 7 (1, 2, 4, 5, 8, 9, 10) and refuses the rest with its reasons; a kept tree meets every shape check of the family brief with room to spare, as the gate measures it. Seed 1 was picked from two looked at under Bevy (1, 2) for its lean and its five pads on three levels (one at the top, a pair below it and a pair lower still), and because its first tree is the one kept, so it builds quickly. It measures: fork at 2.4 m (brief 2.0 to 3.5), taper 0.80 (at most 0.9), lean 0.33 m (0.15 to 0.8), bark seen 0.04 to 0.08 (at least 0.02), sky 0.29 to 0.41 (0.2 to 0.5). The 2.4 m fork is the measure closest to its limit; the generator would have refused it under 2.2 m.
 
 ## Numbers
 

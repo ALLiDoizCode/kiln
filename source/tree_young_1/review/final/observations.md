@@ -12,3 +12,7 @@ Read from `sheet.png` and `benchmarks/out/tree_stages.png`. Written by the agent
 8. **In the engine**: `bevy_trunk`: the trunk fills about a fifth of the tile's width (mature: about a third) and grain shows as dark streaks along it; `bevy_under`: one limb and the underside of one pad, dark green with points against the sky.
 9. **Beside the mature tree** (`tree_stages.png`): shorter by about a fifth, thinner in the trunk, three pads to five.
 10. **Differences from the brief**: the crescent of pads in `top` (the brief does not ask for pads all round, and no check measures it); 1,850 triangles of 2,500.
+
+## After the fixes of 2026-10-05
+
+Not looked at tile by tile after the change; only measured. L4e, from 1 m beside the trunk looking 78 degrees up: pale leaf samples 0.00005 of the leaf samples (at most 0.001); foliage over the limbs among it 1.55 (at least 1.25). The underside and core tints are about twice as light as when the lines above were written.

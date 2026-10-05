@@ -71,9 +71,14 @@ PILE = {"max_sink": float, "max_thickness": float, "max_size_step": float}
 TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
 # Optional, with `overlap`: tiers stacked like a telescope on a fluted base (a stepped spire).
 SPIRE = {"tiers": list, "max_width_step": float, "min_ledge_share": float, "min_flutes": int, "min_tier_offset": float, "min_lean_deg": float, "min_step_spread": float}
+# Optional, with `overlap`: two piers that reach the ground and a span resting on both, with open air right through under it (an arch).
+ARCH = {"span": str, "min_opening_m": float, "min_clear_m": float, "min_bearing_m2": float, "max_box_share": float, "min_side_step": float, "max_level_share": float}
+ARCH_SPANS = ("lintel", "wedged")
 # Optional; a near-cuboid with big chamfers (a block), and, with it, the cracks across it. Every key of a block is required once it is present.
 BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
 CRACKS = {"count": int, "depth_m": float, "width_m": float, "min_span": float}
+# Optional; one convex mass with sloping flanks (a boulder, source/boulder). Every key is required once it is present.
+MASS = {"min_hull_share": float, "min_outline_share": float, "max_steep_share": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -96,6 +101,7 @@ SKELETON = {
     "min_seen_views": int,
     "min_view_tone": float,
     "min_view_grain": float,
+    "min_canopy_over_limbs": float,
 }
 # Optional; foliage of leaf pieces in pads, coloured from a palette (ADR 11). All keys are required once it is present.
 FOLIAGE = {
@@ -194,6 +200,10 @@ if not checks.failed():
         if wanted_block is not None:
             ok = isinstance(wanted_block, dict) and set(wanted_block) == set(keys) and all(type(wanted_block[key]) is float and 0 < wanted_block[key] < 1 for key in keys)
             checks.check(f"spec.{block}", ok and spec["watertight"], f"optional; needs exactly {sorted(keys)}, a share above 0 and below 1, on a watertight asset")
+    mass = spec.get("mass")
+    if mass is not None:
+        ok = isinstance(mass, dict) and set(mass) == set(MASS) and all(type(mass[key]) is float and 0 < mass[key] < 1 for key in MASS)
+        checks.check("spec.mass", ok and spec["watertight"], f"optional; needs exactly {sorted(MASS)}, each a share above 0 and below 1, on a watertight asset")
     overlap = spec.get("overlap")
     if overlap is not None:
         ok = (
@@ -270,6 +280,24 @@ if not checks.failed():
             and spire["tiers"][0] < overlap.get("min_count", 0)
         )
         checks.check("spec.spire", ok, f"optional; needs exactly {sorted(SPIRE)}: tiers as [least, most], 3 or 4 (a base and two or three on it) and fewer than the pieces `overlap` asks (the foot is pieces too), max_width_step, min_ledge_share and min_tier_offset in 0..1 (above 0, below 1), min_lean_deg in 0..45, min_step_spread above 1, at least 1 flute, on an asset of overlapping pieces (`overlap`)")
+    arch = spec.get("arch")
+    if arch is not None:
+        size = [hi - lo for lo, hi in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]
+        ok = (
+            isinstance(arch, dict)
+            and set(arch) == set(ARCH)
+            and all(type(arch[key]) is kind for key, kind in ARCH.items())
+            and arch["span"] in ARCH_SPANS
+            and 0 < arch["min_opening_m"] < size[0]
+            and 0 < arch["min_clear_m"] < size[2]
+            and arch["min_bearing_m2"] > 0
+            and 0 < arch["max_box_share"] < 1
+            and 0 < arch["min_side_step"] < 1
+            and 0 < arch["max_level_share"] < 1
+            and isinstance(overlap, dict)
+            and overlap.get("min_count", 0) >= 3
+        )
+        checks.check("spec.arch", ok, f"optional; needs exactly {sorted(ARCH)}: span one of {ARCH_SPANS}, min_opening_m above 0 and below the bounds' width (x), min_clear_m above 0 and below the bounds' height, min_bearing_m2 above 0, max_box_share, min_side_step and max_level_share each above 0 and below 1 (at 1, 0 and 1 they ask nothing), on an asset of at least 3 overlapping pieces (`overlap`): two piers and a span")
     box = spec.get("block")
     if box is not None:
         ok = (
@@ -378,8 +406,8 @@ if not checks.failed():
     if skeleton:
         checks.check(
             "spec.skeleton_view",
-            0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1,
-            "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it",
+            0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1 and skeleton["min_canopy_over_limbs"] > 1,
+            "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it; min_canopy_over_limbs above 1: seen from below the foliage is the lighter of the two",
         )
     bladed = "blades" in spec
     blades = block("blades", BLADES)

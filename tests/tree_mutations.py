@@ -26,7 +26,7 @@ import foliage
 import paint
 from pipeline import Asset, conventions, script_args, share_textures
 
-AFTER_PAINT = ("none", "single_sided", "gradient_within_piece", "no_cores", "core_open", "bark_inside_out", "two_textures")
+AFTER_PAINT = ("none", "single_sided", "gradient_within_piece", "no_cores", "core_open", "bark_inside_out", "two_textures", "glossy_leaves")
 
 mutation, out, *painted = script_args()
 asset = Asset("tree_1")
@@ -61,6 +61,9 @@ elif mutation == "wrong_leaf_colour":
 elif mutation == "light_core":
     # The solid under the leaves as light as the leaves on top of it.
     want["core_tint"] = "#ffffff"
+elif mutation == "dark_underside":
+    # The underside of a pad, and its core, as dark as the bark: limbs seen from below are lost against the leaves.
+    want["under_tint"], want["core_tint"] = "#6f96a6", "#527a86"
 elif mutation == "no_grain":
     # Bark with its gradient, edge light and blotches, and no grain: flat brown planes at arm's length.
     spec["painted_shading"]["grain"] = 0.0
@@ -101,6 +104,10 @@ elif mutation in ("no_cores", "core_open"):
     bmesh.ops.delete(bm, geom=[f for core in cores for f in (core if mutation == "no_cores" else core[:1])], context="FACES")
     bm.to_mesh(tree.data)
     bm.free()
+elif mutation == "glossy_leaves":
+    # The leaf material with the gloss every material has unless told otherwise: a piece the sun grazes, seen
+    # from under it, shows the sun's glare and none of its own colour (near-white among dark neighbours).
+    leaf.node_tree.nodes["Principled BSDF"].inputs["Specular IOR Level"].default_value = 0.5
 elif mutation == "bark_inside_out":
     bm = bmesh.new()
     bm.from_mesh(tree.data)

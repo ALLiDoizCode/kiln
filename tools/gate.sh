@@ -46,6 +46,7 @@ if grep -q '"skeleton"' "source/$asset/spec.json"; then
                                  cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --stand 0.5 --pitch 0 \
                                    --screenshot "source/$asset/review/$phase/bevy_trunk.png" 2>> "$reports/L4b-bevy-view.log"
 step "L4c bark seen from 0.5 m"; tools/bl tools/view_checks.py "$asset" "source/$asset/review/$phase/bevy_trunk.png"
+step "L4e canopy seen from below"; tools/bl tools/under_checks.py "$asset" "source/$asset/review/$phase/bevy_under.png"
 fi
 stood_under="$(python -c "import json,sys,tomllib; t=json.load(open(sys.argv[1])).get('table'); print('yes' if t and t['min_clear_m'] >= tomllib.load(open('conventions.toml','rb'))['metrics']['player_height_m'] else '')" "source/$asset/spec.json")"
 if [[ -n $stood_under ]]; then

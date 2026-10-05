@@ -15,5 +15,5 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `season` | `"winter"` | Family brief, Seasons |
 | `palette_of` | `"tree_1"` | The asset whose mesh this is |
 | `materials.m_tree_leaf` | `"#d8dcde"` | Family brief, Seasons: the colour at the top of a pad |
-| `foliage.under_tint` | `"#507359"` | Family brief, Seasons: the underside |
-| `foliage.core_tint` | `"#3a5442"` | Family brief, Seasons: the core, darker than the darkest piece |
+| `foliage.under_tint` | `"#6f9f7b"` | Family brief, Seasons: the underside |
+| `foliage.core_tint` | `"#51755c"` | Family brief, Seasons: the core, darker than the darkest piece |

@@ -3,13 +3,13 @@
 # One case per line, and nothing else but comments and `uses` lines. A case is
 #   expect <exit code> "<name>" <command...>      the command must exit with that code
 #   expect_id "<check id>" "<name>" <command...>  the command must exit 1 and name that check
-# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c) and is unique.
+# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L4e, L5b, L5c) and is unique.
 # `uses <tag...>` says what the cases below it depend on, until the next `uses`: the assets they
 # read, and the tools behind them (see `tags_of_file` in tests/run.sh). Selection goes by these.
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # The build's bake, when it is done on the graphics card (KILN_BAKE=gpu): a card out of memory leaves a wrong
@@ -46,6 +46,9 @@ expect 0 "L1 mutation tests: slab_1" l1 slab_1
 # A pebble (source/pebble): made too tall for its width, and cut into a block with one big steep face.
 uses pebble_2 validate paint
 expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
+# A boulder (source/boulder): drawn in to a trunk on a spread foot, notched into roots, and stretched into a column.
+uses boulder_2 validate paint
+expect 0 "L1 mutation tests: boulder_2" l1 boulder_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
@@ -64,6 +67,9 @@ expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
 # A stepped spire (source/spire): its tiers taken away, pushed off, widened and pinched, and its base cut into bands.
 uses spire_1 validate paint
 expect 0 "L1 mutation tests: spire_1" l1 spire_1
+# An arch (source/arch): its span, a pier and its rubble moved one way at a time.
+uses arch_1 validate paint
+expect 0 "L1 mutation tests: arch_1" l1 arch_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -205,6 +211,14 @@ expect_id "view.shade_value" "L4d catches paint so dark the shaded sides are los
 uses slab_1 shade_check
 expect_id "view.shade_seen" "L4d catches a picture with no shaded side in it" shade_check slab_1 "$(shade_report 'r["away"]["pixels"] = 3')"
 
+# L4e: the canopy seen from under it, as the gate takes it: leaf pieces lit where the sun cannot reach, and limbs lost against the leaves.
+uses tree_1 under_checks
+expect 0 "L4e passes the real tree seen from below" under_checks tree_1 source/tree_1/review/final/bevy_under.png
+expect_id "view.under_seen"  "L4e catches a picture that is not the view from below" under_checks tree_1 source/tree_1/review/final/bevy_trunk.png
+uses tree_1 under_checks view paint tree_mutations
+expect_id "view.under_pale"  "L4e catches glossy leaf pieces glaring under the canopy" under_checks tree_1 "$(under_shot glossy_leaves)"
+expect_id "view.under_limbs" "L4e catches leaf undersides as dark as the bark" under_checks tree_1 "$(under_shot dark_underside)"
+
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 uses tracer bevy_lint
 expect 0 "L2b passes the real export"       python tools/bevy_lint.py "$glb"
@@ -266,7 +280,7 @@ expect_id "spec.skeleton"            "L0 catches a missing skeleton key"       l
 expect_id "spec.skeleton_amounts"    "L0 catches a fork range given backwards" lint_tree 's["skeleton"]["fork_m"] = [3.5, 2.0]'
 expect_id "spec.variants_amounts"    "L0 catches a variant listed as its own sibling" lint_tree 's["variants"]["siblings"] = [name]'
 # The core, the lobes, the view from below and the bark's grain (ADR 9 as amended, ADR 12).
-expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" lint_tree 's["foliage"]["core_tint"] = "#9fc0c8"'
+expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" lint_tree 's["foliage"]["core_tint"] = "#c8e6f0"'
 expect_id "spec.foliage_core"        "L0 catches a lobe count given backwards" lint_tree 's["foliage"]["lobes"] = [4, 2]'
 expect_id "spec.foliage_core"        "L0 catches more core seen than there is foliage" lint_tree 's["foliage"]["max_core_seen"] = 1.5'
 expect_id "spec.foliage"             "L0 catches a missing limit on the view from below" lint_tree 'del s["foliage"]["max_seen_into"]'
@@ -275,6 +289,8 @@ expect_id "spec.painted_grain"       "L0 catches an impossible grain"          l
 expect_id "spec.painted_shading"     "L0 catches close texels with no height"  lint_tree 'del s["painted_shading"]["close_height_m"]'
 expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" lint_tree 's["painted_shading"]["close_texels_per_m"] = 50.0'
 expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" lint_tree 's["skeleton"]["min_view_grain"] = 0.5'
+expect_id "spec.skeleton_view"       "L0 catches limbs asked to be lighter than the canopy" lint_tree 's["skeleton"]["min_canopy_over_limbs"] = 0.8'
+expect_id "spec.skeleton"            "L0 catches a missing limit on limbs seen from below" lint_tree 'del s["skeleton"]["min_canopy_over_limbs"]'
 # Species and growth stage (ADR 13): a tree's spec names a recipe and says how grown the tree is.
 expect_id "spec.species"             "L0 catches a species with no recipe"     lint_tree 's["species"] = "zz_nope"'
 expect_id "spec.species"             "L0 catches a tree with no species"       lint_tree 'del s["species"]'
@@ -322,6 +338,12 @@ expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at
 expect_id "spec.painted_joins"       "L0 catches overlapping pieces with no crevice shadow to hide their joins" lint_slab 'del s["painted_shading"]["crevice_shadow"], s["painted_shading"]["crevice_width_m"]'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+# L0, a boulder (source/boulder): one mass, each limit a share below 1.
+uses boulder_2 lint_spec
+expect 0 "L0 passes a boulder variant's spec" lint_boulder 'pass'
+expect_id "spec.mass"                "L0 catches a boulder allowed to fill none of its hull" lint_boulder 's["mass"]["min_hull_share"] = 0.0'
+expect_id "spec.mass"                "L0 catches a boulder with no limit on its walls" lint_boulder 'del s["mass"]["max_steep_share"]'
+expect_id "brief.numbers_match_spec" "L0 catches a boulder's spec without the family's limits on its mass" lint_boulder 'del s["mass"]'
 # L0, a pebble (source/pebble): low and rounded, each a share below 1.
 uses pebble_2 lint_spec
 expect 0 "L0 passes a pebble variant's spec" lint_pebble 'pass'
@@ -390,3 +412,14 @@ expect_id "spec.spire"               "L0 catches a spire asked for no ledge at a
 expect_id "spec.spire"               "L0 catches a spire block with a key missing" lint_spire 'del s["spire"]["min_flutes"]'
 expect_id "spec.spire"               "L0 catches tiers asked of one closed skin" lint_spire 'del s["overlap"]'
 expect_id "spec.spire"               "L0 catches a spire with as many tiers as pieces, and no foot" lint_spire 's["overlap"]["min_count"] = 3; s["overlap"]["max_count"] = 3'
+# L0, arches: arch_1's spec with one thing wrong in what it asks of its opening and its span (`arch`).
+uses arch_1 lint_spec
+expect 0 "L0 passes an arch variant's spec" lint_arch 'pass'
+expect_id "spec.arch"                "L0 catches an opening wider than the arch's own bounds" lint_arch 's["arch"]["min_opening_m"] = 7.0'
+expect_id "spec.arch"                "L0 catches an opening taller than the arch's own bounds" lint_arch 's["arch"]["min_clear_m"] = 5.0'
+expect_id "spec.arch"                "L0 catches an arch block with a key missing" lint_arch 'del s["arch"]["min_bearing_m2"]'
+expect_id "spec.arch"                "L0 catches a kind of span the generator does not know" lint_arch 's["arch"]["span"] = "vault"'
+expect_id "spec.arch"                "L0 catches piers and a span asked of one closed skin" lint_arch 'del s["overlap"]'
+expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
+expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
+expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'

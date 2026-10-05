@@ -79,6 +79,11 @@ flute_shown = 0.5           # and at least this share of it is outside every oth
 flute_samples = 24          # points along the base's height where a side is tested for being shown
 head_height = 0.85          # a tier's head is the level cut this share of the way up what shows of it: under its chamfers
 
+[mass]
+# A boulder: one convex mass with sloping flanks (source/boulder). The amounts wanted are in each spec.
+grid = 64                   # upright columns across the wider side of the bounds, where the solid is measured
+steep_deg = 20.0            # a side within this of vertical is a wall; the benchmark's three rocks have 0.54 to 0.83 of their sides there, the first boulder (source/rock) 0.95
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 
@@ -88,6 +93,7 @@ allowed_extensions = [
   "KHR_lights_punctual",
   "KHR_materials_emissive_strength",
   "KHR_materials_ior",
+  "KHR_materials_specular",  # its factor only: its textures need the cargo feature pbr_specular_textures (ADR 4)
   "KHR_materials_transmission",
   "KHR_materials_unlit",
   "KHR_materials_volume",
@@ -165,6 +171,16 @@ seen_into_m = 0.6           # a piece met this far above a pad's underside is th
 hole_m = 0.15               # gaps in a pad's outline up to this wide are holes in it, not its edge
 rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
+
+[under_view]
+# A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the
+# gate's `bevy_under` tile; tools/gate.sh takes it from the same place.
+stand_m = 1.0               # the eye's distance from the trunk
+pitch_deg = 78.0            # and how far above level it looks
+min_samples = 300           # samples of sky, of leaf pieces and of bark the view must hold to be measured
+min_agree = 0.9             # share of the samples at which the picture and the rays agree on sky or tree
+pale_light = 2.0            # a leaf sample is pale when it is this many times lighter than the typical unlit piece, and nearer grey than the palette allows
+max_pale_share = 0.0002     # share of the leaf samples that may be pale: glare, not a leaf's colour
 
 [palette]
 # Variants that are a change of palette on their base asset's mesh (ADR 11, ADR 13).
