@@ -623,19 +623,171 @@ def check_blades(checks, name, bm, slots, spec, conv):
     return found
 
 
-def check_clump(checks, name, bm, slots, spec, conv, blades):
+def check_stalks(checks, name, bm, slots, spec, conv):
+    """The foliage is a bed of stalks that carry leaves (source/reeds/brief.md): round stalks standing apart on the ground, leaves on them that bend out of their plane, and thick heads on a share of them.
+
+    Stalks and leaves are both open pieces of the foliage material, told apart
+    by shape: a stalk is a tube closed to a point, so its open edge is a small
+    ring round its foot, shorter than the stalk is long; a leaf is a strip,
+    whose open edge is its whole outline. Returns the stalks' measurements,
+    for check_clump."""
+    want, size = spec["stalks"], spec["foliage"]
+    leaf = slots.index(size["material"])
+    ground, top = spec["bounds_m"]["min"][2], spec["bounds_m"]["max"][2]
+    up = Vector((0, 0, 1))
+    stalks, leaves = [], []
+    for piece in foliage.pieces_of(bm, leaf):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        open_edges = [e for e in {e for face in piece for e in face.edges} if sum(1 for f in e.link_faces if f in inside) == 1]
+        rim = list({v for e in open_edges for v in e.verts})
+        if sum(e.calc_length() for e in open_edges) < max((a.co - b.co).length for a in verts for b in verts):
+            foot = sum((v.co for v in rim), Vector()) / len(rim)
+            tip = max(verts, key=lambda v: (v.co - foot).length).co
+            along = (tip - foot).normalized()
+            # The ring round its foot, seen along the stalk: its width each way across.
+            side = along.orthogonal().normalized()
+            flat = [((v.co - foot).dot(side), (v.co - foot).dot(along.cross(side))) for v in rim]
+            widths = [max(x * math.cos(a) + y * math.sin(a) for x, y in flat) - min(x * math.cos(a) + y * math.sin(a) for x, y in flat) for a in (math.radians(d) for d in range(0, 180, 10))]
+            stalks.append({
+                "faces": piece, "foot": foot, "length": (tip - foot).length, "width": max(widths), "round": min(widths) / max(max(widths), 1e-9),
+                "up": min(v.co.z for v in verts) - ground, "lean": math.degrees((tip - foot).angle(up)), "leaves": 0,
+            })
+        else:
+            corners = []
+            for v in rim:
+                edges = [e for e in open_edges if v in e.verts]
+                if len(edges) == 2:
+                    corners.append((math.degrees((edges[0].other_vert(v).co - v.co).angle(edges[1].other_vert(v).co - v.co)), v))
+            point, tip = min(corners, key=lambda corner: corner[0]) if corners else (180.0, verts[0])
+            # Its middle line: the middles of the edges across it, from the one furthest from its tip, and the tip. Seen from above.
+            middles = sorted(((e.verts[0].co + e.verts[1].co) / 2 for e in {e for face in piece for e in face.edges} if e not in open_edges), key=lambda at: -(at - tip.co).length)
+            line = [Vector((at.x, at.y)) for at in middles + [tip.co]]
+            chord = line[-1] - line[0]
+            sweep = max((abs((at - line[0]).cross(chord)) for at in line), default=0.0) / max(chord.length_squared, 1e-9) if len(line) > 2 else 0.0
+            length = max((v.co - tip.co).length for v in verts)
+            leaves.append({"verts": verts, "length": length, "width": sum(f.calc_area() for f in piece) / max(length * length, 1e-9), "point": point, "sweep": sweep, "on": None})
+
+    def span(found, key):
+        values = [one[key] for one in found]
+        return f"{min(values, default=0):.3f} to {max(values, default=0):.3f}"
+
+    low, high = want["length_m"]
+    odd = sum(1 for stalk in stalks if not low <= stalk["length"] <= high)
+    checks.check(
+        f"{name}.stalks",
+        want["count"][0] <= len(stalks) <= want["count"][1] and not odd,
+        f"{len(stalks)} stalks (tubes of the foliage closed to a point), {odd} of them not {low} to {high} m from foot to tip (they run {span(stalks, 'length')} m); spec wants {want['count'][0]} to {want['count'][1]}, all of that length",
+    )
+    low, high = want["width_m"]
+    wide = sum(1 for stalk in stalks if not low <= stalk["width"] <= high)
+    flat = sum(1 for stalk in stalks if stalk["round"] < want["min_round"])
+    checks.check(
+        f"{name}.stalk_shape",
+        stalks and not wide and not flat,
+        f"of {len(stalks)} stalks, {wide} are not {low} to {high} m across at the foot (they run {span(stalks, 'width')}), and {flat} are less than {want['min_round']} as thick one way as the other (they run {span(stalks, 'round')}): a stalk is round",
+    )
+    feet = [Vector((stalk["foot"].x, stalk["foot"].y)) for stalk in stalks]
+    off = sum(1 for stalk in stalks if stalk["up"] > want["foot_m"])
+    nearest = [min((a - b).length for j, b in enumerate(feet) if j != i) for i, a in enumerate(feet)] if len(feet) > 1 else [0.0]
+    spread = [(max(at[i] for at in feet) - min(at[i] for at in feet)) / (spec["bounds_m"]["max"][i] - spec["bounds_m"]["min"][i]) for i in range(2)] if feet else [0.0, 0.0]
+    checks.check(
+        f"{name}.stalks_bed",
+        stalks and not off and min(nearest) >= want["min_apart_m"] and min(spread) >= want["min_bed"],
+        f"{off} of {len(stalks)} stalks start more than {want['foot_m']} m above the ground; the nearest two feet are {min(nearest):.3f} m apart, and the feet span {spread[0]:.2f} of the bounds' width and {spread[1]:.2f} of its depth; "
+        f"spec wants every stalk on the ground, {want['min_apart_m']} m from its nearest neighbour, and the feet across {want['min_bed']} of each: a bed, not one point",
+    )
+    over = sum(1 for stalk in stalks if stalk["lean"] > want["max_lean_deg"])
+    checks.check(
+        f"{name}.stalks_lean",
+        stalks and not over,
+        f"{over} of {len(stalks)} stalks lean more than {want['max_lean_deg']} degrees from upright, foot to tip (they run {span(stalks, 'lean')})",
+    )
+
+    # Leaves: each on a stalk, a corner of it within a stalk's width of that stalk.
+    reach = want["width_m"][1]
+    trees = []
+    for stalk in stalks:
+        index = {v: i for i, v in enumerate({v for f in stalk["faces"] for v in f.verts})}
+        trees.append(BVHTree.FromPolygons([tuple(v.co) for v in index], [[index[v] for v in f.verts] for f in stalk["faces"]]))
+    for found in leaves:
+        gaps = [min(tree.find_nearest(v.co)[3] for v in found["verts"]) for tree in trees]
+        if gaps and min(gaps) <= reach:
+            found["on"] = gaps.index(min(gaps))
+            stalks[found["on"]]["leaves"] += 1
+    adrift = sum(1 for found in leaves if found["on"] is None)
+    low, high = want["leaves"]
+    carried = sorted(stalk["leaves"] for stalk in stalks)
+    checks.check(
+        f"{name}.leaves",
+        leaves and not adrift and stalks and low <= carried[0] and carried[-1] <= high,
+        f"{len(leaves)} leaves (strips of the foliage), {adrift} of them with no corner within {reach} m of a stalk; the stalks carry {carried} leaves; spec wants every leaf on a stalk and {low} to {high} on every stalk",
+    )
+    low, high = size["piece_m"]
+    odd = sum(1 for found in leaves if not low <= found["length"] <= high)
+    thin, thick = want["leaf_width_share"]
+    pointed = conv["foliage"]["pointed_deg"]
+    wide = sum(1 for found in leaves if not thin <= found["width"] <= thick)
+    blunt = sum(1 for found in leaves if found["point"] > pointed)
+    checks.check(
+        f"{name}.leaf_shape",
+        leaves and not (odd or wide or blunt) and len(stalks) + len(leaves) >= size["min_pad_pieces"],
+        f"of {len(leaves)} leaves, {odd} are not {low} to {high} m long (they run {span(leaves, 'length')}), {wide} have a mean width that is not {thin} to {thick} of their length (they run {span(leaves, 'width')}), "
+        f"and {blunt} end in a corner wider than {pointed} degrees (they run {span(leaves, 'point')}); with the {len(stalks)} stalks the spec wants at least {size['min_pad_pieces']} pieces",
+    )
+    sweep = statistics.median(found["sweep"] for found in leaves) if leaves else 0.0
+    checks.check(
+        f"{name}.leaves_bend",
+        sweep >= want["min_leaf_sweep"],
+        f"seen from above, the median leaf stands {sweep:.3f} of the straight line from its foot to its tip off that line (leaves run {span(leaves, 'sweep')}); spec wants at least {want['min_leaf_sweep']}: "
+        f"a leaf turns as it bends, and a bed is not a star of straight lines from above",
+    )
+
+    # Heads: thick, a sausage and not a spindle, and on a share of the stalks.
+    heads = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        if min(v.co.z for v in verts) > ground + spec["bounds_tolerance_m"]:
+            a, b = max(((a, b) for a in verts for b in verts), key=lambda pair: (pair[0].co - pair[1].co).length)
+            axis, length = (b.co - a.co).normalized(), (b.co - a.co).length
+            width = 2 * max(((v.co - a.co) - axis * (v.co - a.co).dot(axis)).length for v in verts)
+            heads.append({"width": width, "full": abs(signed_volume(piece)) / max(math.pi * (width / 2) ** 2 * length, 1e-12)})
+    low, high = want["head_width_m"]
+    odd = sum(1 for one in heads if not low <= one["width"] <= high)
+    hollow = sum(1 for one in heads if one["full"] < want["min_head_fullness"])
+    checks.check(
+        f"{name}.heads_thick",
+        heads and not odd and not hollow,
+        f"of {len(heads)} heads, {odd} are not {low} to {high} m thick (they run {span(heads, 'width')}), and {hollow} fill less than {want['min_head_fullness']} of the cylinder round them (they run {span(heads, 'full')}): a head is a sausage, not a spindle",
+    )
+    low, high = want["head_share"]
+    share = len(heads) / max(len(stalks), 1)
+    print(f"{name} stalks: {len(stalks)}, {span(stalks, 'length')} m long, {span(stalks, 'width')} m across, round {span(stalks, 'round')}, lean {span(stalks, 'lean')} degrees, nearest feet {min(nearest):.3f} m apart, "
+          f"feet across {spread[0]:.2f} by {spread[1]:.2f} of the bounds; {len(leaves)} leaves, {carried} to a stalk, {span(leaves, 'length')} m long, width {span(leaves, 'width')} of the length, "
+          f"sweep {span(leaves, 'sweep')} (median {sweep:.3f}); {len(heads)} heads on {share:.2f} of the stalks, {span(heads, 'width')} m thick, fullness {span(heads, 'full')}")
+    checks.check(
+        f"{name}.heads_share",
+        stalks and low <= share <= high,
+        f"{len(heads)} heads to {len(stalks)} stalks ({share:.2f}); spec wants a head on {low} to {high} of the stalks: some carry one, not all",
+    )
+    return stalks
+
+
+def check_clump(checks, name, bm, slots, spec, conv, blades, what="blades"):
     """The blades are a clump (source/tall_grass/brief.md): part of it stands near upright, and from the side it is more blade than sky.
 
-    `blades` are check_blades' measurements. The grass tufts, which read as
-    spikes, have at most one blade in twenty within 15 degrees of upright and
-    show 0.68 to 0.80 of their outline as sky."""
+    `blades` are check_blades' measurements, or check_stalks' of a bed of
+    stalks (`what` names them in the message): what stands is then counted
+    over the stalks. The grass tufts, which read as spikes, have at most one
+    blade in twenty within 15 degrees of upright and show 0.68 to 0.80 of
+    their outline as sky."""
     want, rules = spec["clump"], conv["foliage"]
     standing = sum(1 for blade in blades if blade["lean"] <= want["upright_deg"])
     share = standing / max(len(blades), 1)
     checks.check(
         f"{name}.clump_upright",
         share >= want["min_upright_share"],
-        f"{standing} of {len(blades)} blades ({share:.2f}) lean {want['upright_deg']} degrees or less from upright, foot to tip; spec wants at least {want['min_upright_share']} of them: part of a clump stands",
+        f"{standing} of {len(blades)} {what} ({share:.2f}) lean {want['upright_deg']} degrees or less from upright, foot to tip; spec wants at least {want['min_upright_share']} of them: part of a clump stands",
     )
     leaf = slots.index(spec["foliage"]["material"])
     points = [v.co.copy() for piece in foliage.pieces_of(bm, leaf) for face in piece for v in face.verts]
@@ -645,7 +797,7 @@ def check_clump(checks, name, bm, slots, spec, conv, blades):
         tree = BVHTree.FromBMesh(bm)
         sky = {view: round(foliage.sky_and_bark(tree, bm.faces, -1, points, VIEW_DIRECTIONS[view], rules["view_rays"], float("inf"))[0], 3) for view in rules["views"]}
     mean = sum(sky.values()) / len(sky) if sky else 1.0
-    print(f"{name} clump: {standing} of {len(blades)} blades within {want['upright_deg']} degrees of upright ({share:.2f}); sky through its outline {sky}, mean {mean:.3f}")
+    print(f"{name} clump: {standing} of {len(blades)} {what} within {want['upright_deg']} degrees of upright ({share:.2f}); sky through its outline {sky}, mean {mean:.3f}")
     checks.check(
         f"{name}.clump_dense",
         mean <= want["max_sky_share"],
@@ -1928,6 +2080,13 @@ def check_scene(checks, spec, conv):
                 blades = check_blades(checks, name, bm, slot_names, spec, conv)
                 if "clump" in spec:
                     check_clump(checks, name, bm, slot_names, spec, conv, blades)
+                if "heads" in spec:
+                    check_heads(checks, name, bm, slot_names, spec, conv)
+            elif "stalks" in spec:
+                # Or, where it has `stalks`, a bed of stalks that carry leaves.
+                stalks = check_stalks(checks, name, bm, slot_names, spec, conv)
+                if "clump" in spec:
+                    check_clump(checks, name, bm, slot_names, spec, conv, stalks, "stalks")
                 if "heads" in spec:
                     check_heads(checks, name, bm, slot_names, spec, conv)
             else:

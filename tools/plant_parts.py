@@ -1,7 +1,7 @@
 """The parts small plants are built from: leaf pieces, cores, stems, blades and heads, as plain lists.
 
 Shared by the generators of the small-plant families (source/dome_bush,
-source/blade_plant, source/grass_tuft, source/tall_grass). A generator draws its plant into a
+source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds). A generator draws its plant into a
 `Parts`, fits it to the spec's bounds and turns it into one Blender object of
 two materials: a closed one (stems, a crown) and the open foliage material
 (leaf pieces and blades, with the cores under them).
@@ -238,25 +238,56 @@ def head(parts, base, top, radius, sides, rings=((0.35, 1.0),), spin=0.0):
     parts.seams += list(zip(line, line[1:]))
 
 
-def blade(parts, spine, widths, front, fold=0.0):
+def stalk(parts, spine, radii, sides=3, spin=0.0):
+    """One stalk (a reed's): a thin tube along `spine` that tapers to its tip, open at its foot, as one open piece of the foliage.
+
+    `spine` is the points along its middle, from its foot to its tip; `radii`
+    the tube's radius at each, the last a few millimetres. It is round, where a
+    blade is a strip: seen at the same width from every side, and lit smooth
+    round itself. Its tip is a ring closed by a cap and not one corner: one
+    corner shared by sides that long would be lit along the stalk, square to
+    every face it belongs to, and the load test finds such normals against their faces."""
+    piece = parts.piece(Z, None)
+    rings = []
+    for k, (point, radius) in enumerate(zip(spine, radii)):
+        tangent = (spine[min(k + 1, len(spine) - 1)] - spine[max(k - 1, 0)]).normalized()
+        across = (Vector((1, 0, 0)) - tangent * tangent.x).normalized()
+        along = tangent.cross(across).normalized()
+        rings.append([parts.vert(point + (across * math.cos(spin + 2 * math.pi * j / sides) + along * math.sin(spin + 2 * math.pi * j / sides)) * radius) for j in range(sides)])
+    for lower, upper in zip(rings, rings[1:]):
+        for i in range(sides):
+            j = (i + 1) % sides
+            parts.face((lower[i], lower[j], upper[j], upper[i]), LEAF, piece)
+    parts.face(tuple(rings[-1]), LEAF, piece)
+    return piece
+
+
+def blade(parts, spine, widths, front, fold=0.0, across=None):
     """One blade: a strip along `spine` that tapers to a point, as one open piece.
 
     `spine` is the points along its middle, from its foot to its tip; `widths`
     the blade's whole width at each but the tip. `front` is the side its upper
     face looks to at the foot. With `fold` the blade is a shallow V along its
-    middle: its edges are raised by that share of its half width."""
+    middle: its edges are raised by that share of its half width. With `across`,
+    one direction for each row, the strip lies that way across its spine at each
+    row and not square to `front`: a leaf that turns as it goes."""
     piece = parts.piece(front, None)  # lit smooth, not as one flat thing
     rows = []
     for k, (point, width) in enumerate(zip(spine[:-1], widths)):
         tangent = (spine[k + 1] - spine[max(k - 1, 0)]).normalized()
-        across = tangent.cross(front)
-        across = (across if across.length > 1e-6 else tangent.orthogonal()).normalized()
-        up = across.cross(tangent).normalized()
+        if across is not None:
+            lies = across[k] - tangent * across[k].dot(tangent)
+            lies = (lies if lies.length > 1e-6 else tangent.orthogonal()).normalized()
+        else:
+            lies = tangent.cross(front)
+            lies = (lies if lies.length > 1e-6 else tangent.orthogonal()).normalized()
+        across_row = lies
+        up = across_row.cross(tangent).normalized()
         half = width / 2
-        row = [parts.vert(point - across * half + up * half * fold)]
+        row = [parts.vert(point - across_row * half + up * half * fold)]
         if fold:
             row.append(parts.vert(point))
-        row.append(parts.vert(point + across * half + up * half * fold))
+        row.append(parts.vert(point + across_row * half + up * half * fold))
         rows.append(row)
     for lower, upper in zip(rows, rows[1:]):
         for i in range(len(lower) - 1):

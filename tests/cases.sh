@@ -43,6 +43,10 @@ expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 # A clump of tall grass (source/tall_grass): thinned out, splayed, and its seed heads taken off, swollen, slid down and set adrift.
 uses tall_grass_1 tall_grass_2 tall_grass_3 validate paint
 expect 0 "L1 mutation tests: tall_grass_1" l1 tall_grass_1
+# A bed of reeds (source/reeds): its stalks flattened, gathered to one point, tipped over, lifted and thinned out, its leaves taken off,
+# set adrift and drawn flat, and its heads taken off, thinned and put on every stalk.
+uses reeds_1 reeds_2 reeds_3 validate paint
+expect 0 "L1 mutation tests: reeds_1" l1 reeds_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
@@ -339,6 +343,15 @@ expect_id "spec.clump_amounts"       "L0 catches a clump that is not of blades" 
 expect_id "spec.heads"               "L0 catches a missing heads key"          lint_grass 'del s["heads"]["min_height"]'
 expect_id "spec.heads_amounts"       "L0 catches a head count given backwards" lint_grass 's["heads"]["count"] = [6, 3]'
 expect_id "spec.heads_amounts"       "L0 catches heads asked above the plant's top" lint_grass 's["heads"]["min_height"] = 1.2'
+# L0, a bed of stalks: reeds_1's spec with one thing wrong. `lint_reeds <python>` lints a copy of reeds_1 after that has changed its spec `s`.
+uses reeds_1 lint_spec
+expect 0 "L0 passes a reed bed's spec"     lint_reeds 'pass'
+expect_id "spec.stalks"              "L0 catches a missing stalks key"         lint_reeds 'del s["stalks"]["min_round"]'
+expect_id "spec.stalks_amounts"      "L0 catches a stalk count given backwards" lint_reeds 's["stalks"]["count"] = [14, 6]'
+expect_id "spec.stalks_amounts"      "L0 catches heads asked on more than every stalk" lint_reeds 's["stalks"]["head_share"] = [0.2, 1.5]'
+expect_id "spec.stalks_amounts"      "L0 catches stalks asked of a plant of blades" lint_reeds 's["blades"] = {"width_share": [0.008, 0.05], "root_m": 0.25, "max_gap_deg": 60.0, "lean_deg": [0.0, 60.0], "min_arch": 0.05}'
+expect_id "spec.clump_amounts"       "L0 catches a clump of neither blades nor stalks" lint_reeds 'del s["stalks"]'
+expect_id "spec.stalks_amounts"      "L0 catches stalks with no clump to stand in" lint_reeds 'del s["clump"]'
 uses tree_1 lint_spec
 expect_id "spec.foliage"             "L0 catches blades asked of a canopy"     lint_tree 's["blades"] = {"width_share": [0.08, 0.25], "root_m": 0.15, "max_gap_deg": 100.0, "lean_deg": [15.0, 85.0], "min_arch": 0.08}'
 

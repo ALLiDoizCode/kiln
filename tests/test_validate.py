@@ -1126,6 +1126,161 @@ def fat_heads(spec):
     each_head(spec, swell)
 
 
+# A bed of reeds (source/reeds): stalks that stand apart and carry leaves and heads.
+
+
+def reed_pieces(bm, slot):
+    """(stalks, leaves): the foliage's open pieces, told apart as tools/validate.py tells them: a stalk's open edge is a small ring, a leaf's its whole outline."""
+    import foliage
+
+    stalks, leaves = [], []
+    for piece in foliage.pieces_of(bm, slot):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        rim = sum(e.calc_length() for e in {e for face in piece for e in face.edges} if sum(1 for f in e.link_faces if f in inside) == 1)
+        (stalks if rim < max((a.co - b.co).length for a in verts for b in verts) else leaves).append(verts)
+    return stalks, leaves
+
+
+def each_reed(spec, change_stalk=None, change_leaf=None):
+    """Apply change_stalk(vertices, foot, bm) to every stalk and change_leaf(vertices, bm) to every leaf of a bed of reeds."""
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def run(bm):
+        stalks, leaves = reed_pieces(bm, slot)
+        for verts in stalks if change_stalk else []:
+            low = min(v.co.z for v in verts)
+            ring = [v.co for v in verts if v.co.z < low + 0.02]
+            change_stalk(verts, sum(ring, Vector()) / len(ring), bm)
+        for verts in leaves if change_leaf else []:
+            change_leaf(verts, bm)
+
+    edit(run, name)
+
+
+def redrawn_reeds(spec, **constants):
+    """The bed drawn again with some of its generator's constants changed."""
+    from plant_parts import family_generator
+
+    generator = family_generator("reeds")
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    saved = {key: getattr(generator, key) for key in constants}
+    try:
+        for key, value in constants.items():
+            setattr(generator, key, value)
+        generator.build_bed(spec)
+    finally:
+        for key, value in saved.items():
+            setattr(generator, key, value)
+
+
+def flat_stalks(spec):
+    """Every stalk pressed flat about its foot: a strip, seen edge on from one side."""
+    def press(verts, foot, bm):
+        for v in verts:
+            v.co.x = foot.x + (v.co.x - foot.x) * 0.1
+
+    each_reed(spec, press)
+
+
+def gathered_stalks(spec):
+    """Every stalk moved to stand at the origin: a rosette from one point, not a bed."""
+    def gather(verts, foot, bm):
+        for v in verts:
+            v.co -= Vector((foot.x, foot.y, 0)) * 0.97
+
+    each_reed(spec, gather)
+
+
+def floating_stalks(spec):
+    """Every stalk lifted 0.2 m off the ground."""
+    def lift(verts, foot, bm):
+        for v in verts:
+            v.co.z += 0.2
+
+    each_reed(spec, lift)
+
+
+def leaning_stalks(spec):
+    """Every stalk tipped 15 degrees over about its foot, all one way: a bed blown flat."""
+    turn = Matrix.Rotation(math.radians(15), 3, "X")
+
+    def tip_over(verts, foot, bm):
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_reed(spec, tip_over)
+
+
+def swaying_stalks(spec):
+    """Every stalk tipped 7.5 degrees about its foot, each its own way: none far over, and few upright."""
+    turns = iter(range(1000))
+
+    def sway(verts, foot, bm):
+        turn = Matrix.Rotation(math.radians(7.5), 3, Matrix.Rotation(next(turns) * 2.4, 3, "Z") @ Vector((1, 0, 0)))
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_reed(spec, sway)
+
+
+def few_stalks(spec):
+    """All but three stalks taken out."""
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def thin(bm):
+        stalks, _ = reed_pieces(bm, slot)
+        bmesh.ops.delete(bm, geom=[v for verts in stalks[3:] for v in verts], context="VERTS")
+
+    edit(thin, name)
+
+
+def bare_stalks(spec):
+    """Every leaf taken off."""
+    each_reed(spec, change_leaf=lambda verts, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS"))
+
+
+def leaves_adrift(spec):
+    """Every leaf moved 0.25 m up and to one side of its stalk: on nothing."""
+    def move(verts, bm):
+        for v in verts:
+            v.co += Vector((0.12, 0.12, 0.25))
+
+    each_reed(spec, change_leaf=move)
+
+
+def broad_leaves(spec):
+    """The bed drawn again with leaves five times as wide: paddles."""
+    redrawn_reeds(spec, LEAF_WIDTH=(0.2, 0.25))
+
+
+def planar_leaves(spec):
+    """The bed drawn again with every leaf bending in one upright plane, as a tall grass blade does: a star of straight lines from above."""
+    redrawn_reeds(spec, LEAF_TURN=(0.0, 0.0), LEAF_ROLL=0.0)
+
+
+def thin_heads(spec):
+    """Every head made a third as thick: a swelling of the stalk, not a cattail."""
+    def thin(verts, piece, bm):
+        middle = sum((v.co for v in verts), Vector()) / len(verts)
+        for v in verts:
+            v.co.x, v.co.y = middle.x + (v.co.x - middle.x) * 0.33, middle.y + (v.co.y - middle.y) * 0.33
+
+    each_head(spec, thin)
+
+
+def spindle_heads(spec):
+    """The bed drawn again with every head a spindle pointed at both ends, as a grass's seed head is: not a sausage."""
+    redrawn_reeds(spec, HEAD_RINGS=((0.35, 1.0),))
+
+
+def every_stalk_headed(spec):
+    """The bed drawn again with a head on every stalk but one."""
+    redrawn_reeds(spec, HEADS=(0.9, 0.9), HEAD_COUNT=(2, 8), STALKS_PER_M=(10.0, 10.0), HEAD_STALK=(0.9, 1.0))
+
+
 # The table rock (source/table_rock): a cap held off the ground on narrow necks.
 
 
@@ -1462,6 +1617,24 @@ CASES = [
     (fat_heads, "tall_grass_1.heads", "tall_grass_1"),
     (heads_low, "tall_grass_1.heads_high", "tall_grass_1"),
     (heads_adrift, "tall_grass_1.heads_carried", "tall_grass_1"),
+    (few_stalks, "reeds_1.stalks", "reeds_1"),
+    (flat_stalks, "reeds_1.stalk_shape", "reeds_1"),
+    (gathered_stalks, "reeds_1.stalks_bed", "reeds_1"),
+    (floating_stalks, "reeds_1.stalks_bed", "reeds_1"),
+    (leaning_stalks, "reeds_1.stalks_lean", "reeds_1"),
+    (swaying_stalks, "reeds_1.clump_upright", "reeds_1"),
+    (sparse_clump, "reeds_1.clump_dense", "reeds_1"),
+    (bare_stalks, "reeds_1.leaves", "reeds_1"),
+    (leaves_adrift, "reeds_1.leaves", "reeds_1"),
+    (broad_leaves, "reeds_1.leaf_shape", "reeds_1"),
+    (planar_leaves, "reeds_1.leaves_bend", "reeds_1"),
+    (thin_heads, "reeds_1.heads_thick", "reeds_1"),
+    (spindle_heads, "reeds_1.heads_thick", "reeds_1"),
+    (every_stalk_headed, "reeds_1.heads_share", "reeds_1"),
+    (no_heads, "reeds_1.heads", "reeds_1"),
+    (fat_heads, "reeds_1.heads", "reeds_1"),
+    (heads_low, "reeds_1.heads_high", "reeds_1"),
+    (heads_adrift, "reeds_1.heads_carried", "reeds_1"),
 ]
 
 
