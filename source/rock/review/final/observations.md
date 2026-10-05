@@ -1,81 +1,110 @@
 # rock / final: observations
 
-From `sheet.png`, seed 2, 154 triangles, colour `#a1a7a1` under painted shading in one 1024 px texture, 454 kB. Orthographic tiles are framed at 4.90 m across 512 px (104 px per metre); pixel figures are read by eye and good to about 2%. Numbers marked L1 are printed by `tools/validate.py` for this build, and numbers marked L4 are in `out/reports/L4-bevy.json`, measured by the Bevy load test on the exported texture. The benchmark comparison uses `benchmarks/out/rock_vs_benchmark.png` (both rendered by `asset_view`: standard, `--close` and `--back`). The sheet now has two Bevy tiles, `bevy` from the front right and `bevy_back` from the back left.
+From `sheet.png`: seed 5 of the third generator (several pieces), 322 triangles, colour `#a1a7a1` under painted shading in one 1024 px texture, 551 kB. Orthographic tiles are framed at 4.90 m across 512 px (104 px per metre); pixel figures are read by eye and good to about 2%. Numbers marked L1 are printed by `tools/validate.py` for this build, and numbers marked L4 are in `out/reports/L4-bevy.json`, measured by the Bevy load test on the exported texture. The benchmark comparison uses `benchmarks/out/rock_v3_vs_benchmark.png` (both rendered by `asset_view`: standard, `--close` and `--back`); the second rock is still in `rock_vs_benchmark.png`.
 
 ## Silhouette
 
-- Fullness (brief: at least 45% of the bounding box). L1: 56.2%. front: the outline is a block about 1.9 m tall at both ends, with one corner missing at the lower right; nothing tapers to a ridge.
-- Crown (brief: the slice three quarters up is at least 28% of the footprint). L1: 38.4%. top: the raised slab and the shelf together cover about two thirds of the outline.
-- Planes (brief: 6 to 16 large, at least 75% of the surface, largest at least 2 times the median). L1: 16 large planes holding 89.0% of 19.63 m2; largest 2.13 m2, median 0.78 m2, ratio 2.73. There is no plane under 0.4 m2: everything that is not a large plane is soft edge.
-- No plane dominates (brief: at most 40% of the outline from each of seven directions). L1: front 33%, right 38%, back 30%, left 34%, top 34%, three_quarter 30%, three_quarter_back 17%. right: the wall behind the shoulder is the largest thing in the tile, about 1.6 m wide and 0.9 m tall. bevy: the same wall is the largest plane, about a third of the rock's outline.
-- Step (brief: a raised slab above a lower shelf). back: a level band about 0.4 m tall and 1.5 m long, 0.4 m below the top edge, with the shelf in front of it. top: the straight line from upper left to lower right, left of centre. bevy_back: the riser is the dark band across the upper part, the shelf the pale surface below it. It does not show in front, right or bevy: the slab hides it.
-- Fracture (brief: a V-shaped groove down one side, widest at the top). front: a dark slanted band from the top edge to the ground, left of centre, about 0.35 m wide at the top and 0.25 m at the ground, with a lit wall beside it. top: the notch in the outline at the upper right. It does not show in right or back. In bevy it is the vertical dark gap at the far left edge of the rock, about one twentieth of its width: present, and easy to miss.
-- Shoulder (brief: a bench at about half height). front: the missing corner at the lower right, shelf at about 1.0 m. right: a shelf across the middle two thirds of the tile at about 0.95 m with a wall behind it. back: the low block at the far left. bevy: the shelf across the lower right of the rock; it is the form that reads first.
-- Every side shows a form. L1: ledge corner in plain sight from front 2.71 m, right 1.50 m, back 1.74 m, left 0.73 m, top 3.68 m, three_quarter 1.58 m, three_quarter_back 1.79 m (brief: at least 0.5 m from each). The outline has an inward corner in front, right and back. There is no left tile on the sheet; left is the weakest direction by this number.
-- No face reads as part of a sphere: in every material tile each plane is one flat tone under its paint; tone changes only across the narrow strips between planes.
-- Sides lean in from a wide base: front and back show the outline about 0.2 m narrower at the top than at the ground on each side. The leans are slight (L1 does not measure them; the script draws 2 to 13 degrees), so in bevy the rock reads as a block with near-upright walls.
+- Fullness (brief: at least 45% of the bounding box). L1: 46.0%. front, right, back: one mass about 2.0 m tall whose top is 1.5 to 1.9 m wide, with lower blocks against it. The second rock held 56.2%.
+- Crown (brief: at least 28% of the footprint three quarters up). L1: 34.8%. top: the cap is an eight-sided area about 1.9 m by 1.6 m.
+- Pieces and size order (brief: at least 5 showing 0.2 m2, the dominant at least 3 times the next, each at least 1.15 times the next). L1: six pieces showing 10.24, 1.37, 1.03, 0.83, 0.42 and 0.27 m2; steps 7.5, 1.33, 1.23, 1.98, 1.55. The record and the mesh differ over 1.0% of the space they fill, and 80.7% of the visible surface lies on a recorded piece (the rest is soft edge). top: the dominant piece is the octagon; five blocks stand out from it, two on the left edge of the tile, two on the lower edge and one at the upper right. back: the tall secondary is the slab in the middle, 0.8 m wide at the ground and about 1.35 m tall. The dominant piece is 7.5 times the next, so in every tile this is one large mass with small things against it; none of the secondary pieces reads as a second mass.
+- Foot (brief: 0.15 m2 of low near-level surface on at least 2 sides). L1: right 0.30 m2, left 0.17 m2, back 0.11 m2, front 0.01 m2. front: a block 0.5 m tall at each lower corner. right: two blocks, 0.3 and 0.5 m tall, across the lower middle. bevy: the two feet at the lower right are the nearest things to the camera.
+- Nothing upright (brief: at most 15% of side surface within 8 degrees of vertical). L1: 0.0%. front: the left side leans in about 0.35 m over 2.0 m (10 degrees) and the right side about 0.4 m. Every side leans by about the same amount, 9 to 12 degrees, so the outline in front, right and back is a symmetrical trapezoid.
+- Summit off-centre (brief: at least 0.15 of the half extents). L1: 0.187. front: the cap's high edge is at the upper left and it falls about 0.25 m to the right. top: the pale cap sits a little above and left of the middle of the tile.
+- Chamfers (brief: at least 3 of 0.1 to 0.4 m2, 0.2 m wide, between large planes). L1: 3, of 0.11, 0.18 and 0.37 m2. back, bevy: the cap's rim is cut at the right of back and toward the camera in bevy; the largest is about 0.6 m wide. Seen from 3 m they are narrow beside 2 m2 walls: they read as a broken rim, not as faces of their own.
+- Planes (brief: 6 to 16 large, at least 60% of the surface, largest at least 2 times the median). L1: 11 large planes holding 62.2% of 17.56 m2; largest 1.92 m2, median 0.86 m2, ratio 2.23.
+- No plane dominates (brief: at most 40% of the outline). L1: front 40%, right 18%, back 19%, left 20%, top 28%, three_quarter 22%, three_quarter_back 16%. front: one wall, about 1.6 m wide and 1.9 m tall, is most of the tile's rock. It is at the limit.
+- A form on every side (brief: 0.5 m of ledge corner in sight from each of seven directions). L1: front 0.84 m, right 1.29 m, back 2.70 m, left 2.20 m, top 1.10 m, three_quarter 0.84 m, three_quarter_back 2.64 m. The corners are where the secondary pieces' flanks meet the dominant piece's walls (five of 0.57 to 1.35 m). front has the least: the tall secondary shows there only as a 0.25 m wide strip at the left edge.
+- Flat caps: every piece's top is one plane; the dominant piece's tips 6 to 10 degrees. Long vertical edges: right and back each show three or four edges running from the ground to the rim, 0.5 to 1.0 m apart.
+- No face reads as part of a sphere: each plane is one flat tone under its paint in every material tile.
 
 ## Proportions
 
 - front: 61% of the tile wide and 41% tall, so 3.0 m by 2.0 m. Brief: 3.0 m, 2.0 m.
 - right: 53% of the tile wide, so 2.6 m. Brief: 2.6 m.
-- The step's riser is about 0.4 m of the 2.0 m height (one fifth); the shoulder's shelf is at about half height; the fracture runs the full height.
+- The tall secondary is about two thirds of the height (1.35 of 2.0 m), the low secondary under half (0.95 m), the feet a quarter or less (0.5, 0.45 and 0.3 m). Each stands out from the dominant piece by 0.3 to 0.45 m.
 
 ## Facing and grounding
 
 - front, right, back, scale: the base is a straight line on the lower edge of the spec's frame, with no gap.
-- The brief names no front. front shows the fracture on the left and the shoulder on the right; top shows the step's line running from upper left to lower right.
+- The brief names no front. The dominant piece stands toward the back right of the bounds (top: its octagon touches the right and upper sides of the outline); the pieces gather on the left and front.
 
 ## Topology (clay_wire)
 
-- Every plane boundary is a pair of close parallel lines, the bevel strip. They follow the silhouette everywhere.
-- Inside each plane, diagonals fan from one corner (front: seven across the large plane right of the fracture). They support nothing: the plane is flat. They exist because the gate allows no face with more than four sides.
-- clay_wire front, right, back and scale each show one thin line rising about 0.5 m above the top of the rock. It is not in any material tile or in either bevy tile, and L1 finds the bounds exact to a millimetre, so it is not in the mesh: it is made by the review pass's wireframe modifier. It is listed under Differences.
-- The sharpest face corners are slivers of 0.5 to 2 degrees where a bevel strip runs out at the ground edge, which is left hard. They are at z = 0 and do not show.
+- Every plane boundary is a pair of close parallel lines, the bevel strip, now 0.05 m. They follow the silhouette everywhere.
+- Inside each plane, diagonals fan from one corner (front: six across the large wall). They support nothing; they exist because the gate allows no face with more than four sides.
+- The stray line above the rock that the previous sheet showed in the clay_wire tiles is not in this one.
+- top: the five attached pieces have between 12 and 20 triangles each; the cap has 12.
 
 ## Shading (material)
 
-- No plane is darker or lighter than its lighting and its paint explain.
-- The UV seams do not show: no line of a different tone crosses a plane in any material tile. L4: no texel is claimed by two triangles, and the islands use 44.5% of the texture.
-- There is no banding in any tile: tone changes without visible steps. L4: the open faces use every 8-bit level in the range they span (largest unused run 0; the gate allows 3).
+- No plane is darker or lighter than its lighting and its paint explain. L4: no triangle has normals against its winding, and no position above the ground carries two normals.
+- UV seams do not show. L4: no texel is claimed by two triangles, the islands use 44.3% of the texture, and the sparsest face has 139 texels per metre.
+- No banding. L4: largest unused run of levels 0.
 
 ## Materials
 
-- Colour and gradient (brief: `#a1a7a1` at the top, about 27% of the light at the ground). front, right, back: tone falls from the top to the ground on every side. L4: open faces average 0.993 times what the tint and side shade give (allowed 1 +/- 0.08); the lowest quarter is 0.412 times as light as the highest, expected 0.397.
-- Growth by height (brief: olive from the ground to about 0.9 m, ragged and patchy at its top). front, right, back: green from the ground to between a third and a half of the height; its upper edge rises and falls by about 0.3 m along each side and is lobed, not level. L4: growth shows on 100% of the surface below 0.36 m and on 0.5% of upright open faces above 1.44 m.
-- Growth on level faces (brief: patches over about 45%). top: the slab and the shelf are each about half green, in five or six separate patches 0.3 to 0.9 m across with soft borders a few centimetres wide. L4: 52% (allowed 23% to 68%).
-- Growth along upper edges (brief: about half of them). front, right, back: green along parts of the top edge, in stretches of 0.3 to 0.8 m with gaps between. L4: 57% of the edge zone of upright faces in the top fifth.
-- Side shade (brief: upright faces up to 22% darker at mid height). front, back: each side has a darker grey band between the green and the paler top. L4: 15.3% darker than the tint alone, where 16.5% is due.
-- Blotches (brief: up to 12% lighter and darker, about 0.6 m across). right, bevy: the wall behind the shoulder shows four or five soft lighter and darker patches. In front and back they are faint under the growth. L4: tone spread 0.240 between the 10th and 90th percentile (allowed 0.12 to 0.30); neighbouring samples differ by 2.6% of that, so they are broad.
-- Edge light (brief: up to 30% lighter). top, front: each boundary between planes carries a light line about as wide as the strip. L4: 1.257 times open faces.
-- Crevice shadow (brief: 45% in the corner, fading over 0.3 m). top, back, bevy_back: a dark line in the corner of the step and of the shoulder, widening onto the shelf; the fracture's inside is the darkest part of front. L4: 0.636 times open faces.
-- Range. L4: the brightest channel of every texel is between 65 and 205 of 255 (allowed 30 to 240).
+- Colour and gradient (brief: `#a1a7a1`, 58% of the light at the top, 27% at the ground). L4: open faces average 0.974 times what the paint formula gives (allowed 1 +/- 0.08); the lowest quarter is 0.662 times as light as the highest, expected 0.629.
+- Growth at the base (brief: olive from the ground to about 0.9 m, at the rock's lightness). front, right, back: green from the ground to between a third and a half of the height, with a soft lobed upper edge; every foot is green all over. L4: growth on 99.7% of the surface below 0.36 m and on 0.5% of upright open faces above 1.44 m.
+- Growth patches (brief: about 0.2 m, broken, over about 25% of level faces and 40% of upper edges, 50% darker than the rock). top: the cap carries some forty separate dark olive flecks and clusters, 0.05 to 0.4 m across, thicker toward the rim; the bare rock between them is one pale area. L4: cover of level faces 19.9% (allowed 12.5% to 37.5%); 51.8% of the edge zone of upright faces in the top fifth; patches 48.4% darker than the bare rock beside them (0.5 +/- 0.08); growth starts or stops 1.32 times per 0.2 m (at least 0.9).
+- Side shade (22% at mid height). L4: 19.4% darker, where 16.8% is due.
+- Blotches. right, bevy: two or three soft lighter and darker areas on each wall above the green. L4: spread 0.234 (allowed 0.12 to 0.30), grain 3.0% of it.
+- Edge light. L4: 1.231 times open faces. Crevice shadow. back, bevy_back: a dark line where each block meets the wall. L4: 0.699 times open faces.
+- Range. L4: brightest channel between 67 and 154 of 255 (allowed 30 to 240).
 
 ## Scale
 
-- scale: the rock's top is at about 1.12 times the figure's height. Brief: 2.0 m beside 1.8 m, 1.11. The shoulder's shelf is at about 0.55 of the figure's height, hip level.
+- scale: the rock's top is at about 1.12 times the figure's height. Brief: 2.0 m beside 1.8 m, 1.11. The tall secondary's top is at about 0.75 of the figure's height, the feet at knee height.
 
 ## In the engine (bevy, bevy_back)
 
-- The same layers as in Blender: green at the base, grey sides, a paler top with green patches.
-- Colour differs from the Blender tiles. In Bevy the growth on the lit top and shelf is a light yellow green (`#b7c487` sampled on the slab in `--close`, beside `#6a6d6b` on the wall below it), much lighter than the olive of the base in shadow; in Blender's top tile it is the same light yellow green. The brief paints growth at the rock's own lightness, so on a pale lit top it is pale. The benchmark's moss is darker than the rock it sits on (`#48533d` sampled on a fleck in its `--close`).
-- bevy: the slab's notch, the wall and the shoulder's shelf read at once. The fracture is at the left edge, nearly edge-on.
-- bevy_back: the step reads as a dark band with a shelf; the faces toward the camera are in the sun's shade and the paint on them is hard to read, as before.
-- Soft edges survive: the load test finds no hard edge above the ground.
-- The base meets the ground with a cast shadow and no gap.
+- The same layers as in Blender. The cap is the lightest part, the green base the middle tone, and the wall away from the sun the darkest.
+- Sampled in the `--close` view (9 px squares, linear luminance): bare cap 0.37 to 0.38 (`#a0a4a0`), moss on the cap 0.21 (`#788358`), lit side 0.20 to 0.28, base 0.15 to 0.18 (`#656f4b`). On the second rock the moss on the cap was `#b7c487`, lighter than the rock.
+- bevy: the feet and the low block read at once, as separate things in front of the mass. bevy_back: the wall toward the camera is in the sun's shade and its paint is hard to read, as before.
+- Soft edges survive, and the base meets the ground with a cast shadow and no gap.
+
+## Values (value maps)
+
+- bevy: three masses. The cap (lightest, broken into about fifteen fragments by the moss), the lit walls with the green base (one mid grey, which the value map does not separate from the ground), and the shaded wall with its cast shadow (dark). The feet on the lit side vanish into the mid grey; the two on the shaded side read as dark notches.
+- Benchmark, same view: also three, but the cap is one unbroken light shape with a light rim, and the lit wall carries a dark diagonal groove.
+- material_three_quarter: one dark mass on a mid ground; in Blender's light the whole rock is a single value and only the cap's flecks differ.
+- The cap's moss is the one place where this rock is many small scattered patches. That is the reading the skill warns is noise.
+
+## At a glance (squint views)
+
+- Ours, bevy: "stump with moss". The eye lands on the dark wall at the right, then on the pale cap. The pieces at the foot blur into the base; the low block at the left survives as a green lump.
+- Benchmark: "mossy rounded boulder". The eye lands on the pale cap and follows the groove down the front.
+- Ours is recognisably a rock, and the brief's features that survive the blur are the off-centre tilted cap and the widening base. The pieces do not survive it.
 
 ## Beside the benchmark
 
-Both in Bevy, same cameras and light (`benchmarks/out/rock_vs_benchmark.png`, three rows: standard, close, back; the earlier rock is kept as `rock_painted_v1_vs_benchmark.png`).
+Both in Bevy, same cameras and light (`benchmarks/out/rock_v3_vs_benchmark.png`).
 
-- Mass: ours is now the fuller of the two. Volume share 0.562 against the benchmark's 0.450 (tightest box); crown 0.384 against 0.28 to 0.30. In the standard view ours stands as tall and as wide as the benchmark in its frame; before, it was a wedge beside it.
-- Largest plane: ours 30% of the standard view's outline, the benchmark's largest flat region 34% to 36%. Before: 45%.
-- Secondary form: both have a slab on top and a groove. The benchmark shows both in the standard view; ours shows the shoulder and the slab's notch there and keeps the step and most of the fracture for other sides.
-- Character: the benchmark's sides lean in visibly more than ours (in the standard view its outline is about two thirds as wide at the top as at the ground; ours is about nine tenths) and its faces differ more in size. Ours has near-upright walls, nine sides of similar width and level shelves, and reads as a cut block: more architectural than weathered. This is the largest remaining difference in shape.
-- Growth: the benchmark has small dark-green flecks on the top and upper edges, a few centimetres to 0.2 m across, darker than the rock. Ours has patches several times larger and much lighter and yellower. Ours is present where the benchmark's is; it is not as believable.
-- Blotches and sides: the benchmark's sides have soft darker and lighter areas and a darker middle; ours now has both, at lower contrast. Close up they are comparable.
-- Edges: the benchmark's edges carry a thin warm highlight; ours a broader pale one. Unchanged.
-- Cost: 154 triangles and 454 kB, against 342 triangles and a shared 2048 px texture.
+- Mass: about level. Volume share 0.460 against the benchmark's 0.450 (tightest box) and 0.412 (axis-aligned, as ours is measured); crown 0.348 against 0.28 to 0.30.
+- Lean: ours has no upright surface (0% within 8 degrees) against the benchmark's 14.5%, but ours leans evenly and inward only. The benchmark bulges: 13% of its side surface overhangs, and its widest level is above the ground. Ours is widest at the ground on every side, which is what makes it a frustum, a stump, where the benchmark is a lump.
+- Foot: measured the same way, ours 0.30 and 0.17 m2 on two sides, the benchmark 0.26 and 0.15 m2. Ours is separate blocks; the benchmark's is a low collar that is part of the mass.
+- Pieces: ours shows six. The benchmark is one sculpted mass with a groove and a slab; it has no pieces to count.
+- Moss: now the same kind of thing. Both have dark flecks on the cap and a wash at the base. Ours has more of it (20% of level faces and half of the upper rim; the benchmark's is perhaps a tenth) and its flecks are more alike in size.
+- Colour: within about 10% of the benchmark in every region sampled (brief, Painted shading).
+- Cost: 322 triangles and 551 kB, against 342 triangles and a shared 2048 px texture.
+
+## Against each habit of rock-shapes.md
+
+1. Several pieces: met by number (six), and seen in top, back and both bevy tiles. Weak in the squint view.
+2. A clear size order: met by number. The order is lopsided: one piece of 10 m2 and five of 0.3 to 1.4 m2. The reference's boulders have secondary pieces a third to a half the size of the dominant one; ours are a seventh at most.
+3. Nothing upright: met (0%), but uniformly: every side 9 to 12 degrees. "Pieces in one group lean roughly the same way" is not what this is; nothing leans as a whole.
+4. The tallest part off-centre: met (0.187), by the cap's tilt and chamfers more than by where the mass stands.
+5. A foot: met on two sides (0.30, 0.17 m2), a third near (0.11).
+6. Flat caps: met. One plane per top.
+7. Long vertical edges: met; the walls are folded and every piece adds two.
+8. Big chamfers: met by number (three), not by eye: the largest is 0.37 m2 beside walls of 1 to 2 m2.
+
+## Seeds 1 to 40
+
+Each seed was taken through the build, painting, L1, the glTF validator, the Bevy profile lint and the Bevy load test, as the gate does it.
+
+- 2 of 40 pass the build: seeds 5 and 37, in 5 and 4 seconds. The other 38 draw their 200 rocks and fail, each with the list of why every rock was refused, in 60 to 90 seconds.
+- 2 of those 2 pass every gate. The second generator passed the build on 39 of 40 and every gate on 32; the seven it lost at the load test (UV layout, growth cover, a triangle lit from behind) have no counterpart here: the build now refuses a rock lit from behind or left with a hard edge, the smaller growth patches no longer miss a cap, and UV cover was 0.443 on both.
+- So the gap between the build and the gate is closed on this sample, and the generator has become a poor one: one seed in twenty. With the brief's numbers for the foot, the summit and the size steps relaxed a little (0.42 fullness, 0.1 summit, a size ratio of 1.5), 9 of 12 seeds built. What refuses most rocks, in that run's order: the foot on a second side, a ledge in sight from all seven directions, twins among the pieces, the size ratio of 2, and fullness. They pull against each other: a dominant piece big enough for 45% fullness leaves a strip of 0.3 to 0.45 m for everything else.
 
 ## Differences from the brief
 
@@ -83,17 +112,18 @@ None found against the brief's numbers: every value in the Numbers table measure
 
 Found on the sheet and not caught by any gate:
 
-1. clay_wire tiles show a thin line rising above the rock. It comes from the review pass's wireframe modifier, not from the asset. No check covers the review pass itself.
+1. The dominant piece is a regular frustum: eight sides with nearly the same lean. No check measures how much the leans differ, or whether the shape is widest above the ground.
+2. The secondary pieces are thin: 0.3 to 0.45 m out from the dominant piece. `pieces.min_dominant_ratio` has a floor (3.0) and no ceiling, so a dominant piece 7.5 times the next passes.
+3. The moss on the cap reads as scatter in the value map. `painted.growth_up` allows 12.5% to 37.5% cover for the 25% asked; nothing limits how many separate patches there are.
 
 Caught by number during this work:
 
-1. The banding reported in the previous side-by-side was in that image, not in the texture or in Bevy: it was saved 16 bits deep with alpha, and viewers reduce such a file to a palette. The sheet and the side-by-side are now 8-bit and opaque, and `image.eight_bit` and `image.opaque` gate them. The texture has its own guard, `painted.banding`.
-2. A texture reduced to twelve levels, and a rock with no growth at all, both passed every gate before this work.
+1. The second rock, unchanged, passed every gate while having one piece, no foot, no chamfers and 46% of its sides upright. It is now the red case of four checks (`tests/fixtures/rock_single_block.json`).
+2. A rock painted with moss as light as the rock, and one with patches three times too large, both passed every gate before `painted.growth_darker` and `painted.growth_patches` existed.
+3. Turning a soft edge's normal toward its face to stop it being lit from behind gives that vertex two normals. Four seeds built that way then failed `soft_edges` in the load test. The build now refuses such a rock instead.
 
 For the owner to judge, since no number in the brief settles them:
 
-1. The growth's lightness on lit, level faces (above).
-2. The blockiness: near-upright walls and nine similar sides. `docs/style/rock-shapes.md` asks for several pieces in a clear size order, a foot, and wide chamfers; this rock has none of those.
-3. `planes.min_size_ratio` was lowered from 3.0 to 2.0 (brief, Decisions).
-4. From the standard view the fracture is nearly edge-on.
-5. "Clearly different tilts" still has no check.
+1. Whether a stump-like dominant piece with small pieces against it is the composed boulder that was asked for. It follows the habits by number; from across a room it is one mass.
+2. The three existing numbers that changed (brief, Decisions): the large-plane share 0.75 to 0.6, a ledge against a plane of 0.15 m2, and the soft edge 0.07 to 0.05 m.
+3. How much moss: 25% of level faces and 40% of upper edges are the agent's numbers.

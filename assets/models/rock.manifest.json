@@ -12,7 +12,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 154,
+  "triangles": 322,
   "bounds": {
     "min": [
       -1.5,
@@ -40,9 +40,9 @@
       0.323143
     ],
     "top_tint": [
-      1.0,
-      1.0,
-      1.0
+      0.57758,
+      0.57758,
+      0.57758
     ],
     "edge_light": 0.3,
     "edge_width_m": 0.08,
@@ -60,8 +60,10 @@
       240
     ],
     "growth_height_m": 0.9,
-    "growth_up": 0.45,
-    "growth_edges": 0.5,
+    "growth_up": 0.25,
+    "growth_edges": 0.4,
+    "growth_darker": 0.5,
+    "growth_patch_m": 0.2,
     "blotch": 0.12,
     "blotch_size_m": 0.6,
     "side_shade": 0.22,
@@ -83,6 +85,7 @@
       0.5,
       1.5
     ],
+    "growth_patch_edges": 0.9,
     "blotch_spread": [
       1.0,
       2.5

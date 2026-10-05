@@ -3,16 +3,25 @@
 //!
 //! `tools/paint.py` computes the colour at a point as
 //! `material colour * tint(height) * (1 - side shade) * (1 + blotch) * (1 - crevice shadow) * (1 + edge light)`,
-//! with growth changing hue but not lightness. Here every sampled texel's
-//! luminance is divided by `luminance(material colour * tint(height)) * (1 - side shade)`,
-//! which the geometry alone gives. That leaves a number that is 1 on an open
-//! face (give or take its blotches, which average out), above 1 on an exposed
-//! edge and below 1 in a crevice. Which of those a texel is comes from the
+//! with growth changing hue. Here every sampled texel's luminance is divided
+//! by `luminance(material colour * tint(height)) * (1 - side shade)`, which
+//! the geometry alone gives. That leaves a number that is 1 on an open face
+//! (give or take its blotches, which average out), above 1 on an exposed edge
+//! and below 1 in a crevice. Which of those a texel is comes from the
 //! geometry alone, never from the texture.
 //!
 //! Growth is measured by hue: a texel divided by the tint, at the material's
 //! lightness, lies somewhere on the line from the material colour to the
 //! growth colour, and how far along is how much growth it shows.
+//!
+//! Where the spec gives `growth_darker`, patches of growth above the reach of
+//! the growth at the base are that much darker than the surface round them.
+//! The darkening is a multiply, so it does not move the hue, and the growth a
+//! texel shows is still read from its hue. Above that reach, the luminance a
+//! texel is held to is then lowered by `growth_darker` times the growth it
+//! shows. So the colour, gradient, blotch, edge and side-shade checks still
+//! compare each texel with what the formula gives for it, moss and all, and
+//! `painted.growth_darker` alone asks whether the moss is as dark as specified.
 
 use bevy::{image::Image, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -50,6 +59,12 @@ pub struct Painted {
     growth_up: f32,
     #[serde(default)]
     growth_edges: f32,
+    /// How much darker than the surface round them the patches of growth are; absent or zero, growth only changes hue.
+    #[serde(default)]
+    growth_darker: f32,
+    /// How large a patch of growth is, metres; absent or zero, nothing is asked of their size.
+    #[serde(default)]
+    growth_patch_m: f32,
     #[serde(default)]
     blotch: f32,
     #[serde(default)]
@@ -63,6 +78,8 @@ pub struct Painted {
     growth_up_normal_z: [f32; 2],
     #[serde(default = "cover")]
     growth_cover: [f32; 2],
+    #[serde(default = "patch_edges")]
+    growth_patch_edges: f32,
     #[serde(default = "spread")]
     blotch_spread: [f32; 2],
     #[serde(default = "grain")]
@@ -76,6 +93,7 @@ fn side_normal() -> [f32; 2] { [0.3, 0.7] }
 fn half_band() -> f32 { 0.35 }
 fn up_normal() -> [f32; 2] { [0.82, 0.94] }
 fn cover() -> [f32; 2] { [0.5, 1.5] }
+fn patch_edges() -> f32 { 0.9 }
 fn spread() -> [f32; 2] { [1.0, 2.5] }
 fn grain() -> f32 { 0.2 }
 fn level_gap() -> u8 { 3 }
@@ -113,6 +131,10 @@ pub struct Measured {
     growth_bare_sides: f32,
     growth_up: f32,
     growth_edges: f32,
+    /// How much darker open faces are where they show growth than where they show none, above the reach of the growth at the base.
+    growth_darker: f32,
+    /// Level open faces above that reach: how often growth starts or stops along the surface, per `growth_patch_m` metres.
+    growth_patch_edges: f32,
     /// Open faces: the 10th to 90th percentile spread of tone, and the mean step between neighbouring samples over it.
     blotch_spread: f32,
     blotch_grain: f32,
@@ -143,6 +165,10 @@ struct Sample {
     height: f32,
     /// Texel luminance over the luminance the formula gives an open face here.
     ratio: f32,
+    /// The same, before any darkening by growth is allowed for.
+    bare_ratio: f32,
+    /// Metres along the surface between this sample and the next one in the texture.
+    step_m: f32,
     luminance: f32,
     expected: f32,
     zone: Zone,
@@ -281,8 +307,13 @@ pub fn check(
     let (base_tint, top_tint) = (Vec3::from(want.base_tint), Vec3::from(want.top_tint));
     let mut samples = Vec::new();
     let (mut darkest, mut brightest) = (u8::MAX, u8::MIN);
+    // Above this, growth is patches only: clear of the ragged top of the growth at the base, which wanders by half its height either way.
+    let above_base = want.growth_height_m * 1.6;
     for (t, n, _) in &faces {
         let Some(colour) = t.colour else { continue };
+        let uv = t.uvs.unwrap();
+        let texels = (uv[1] - uv[0]).perp_dot(uv[2] - uv[0]).abs() / 2.0 * px * px;
+        let step_m = stride as f32 / (texels / (normal(t).length() / 2.0)).sqrt().max(1e-6);
         texels_in(t, stride, &mut |x, y, w| {
             // A format with no readable texels leaves no samples, and fails painted.open_faces.
             let Ok(texel) = image.get_color_at(x, y) else { return };
@@ -298,7 +329,7 @@ pub fn check(
             let [side, not_side] = want.side_shade_normal_z;
             let upright = ((not_side - n.y.abs()) / (not_side - side)).clamp(0.0, 1.0);
             let shade = upright * (1.0 - (height - 0.5).abs() / want.side_shade_half_band).clamp(0.0, 1.0);
-            let expected = (Vec3::from(colour) * tint).dot(LUMA) * (1.0 - want.side_shade * shade);
+            let undarkened = (Vec3::from(colour) * tint).dot(LUMA) * (1.0 - want.side_shade * shade);
             let rgb = Vec3::new(linear.red, linear.green, linear.blue);
             let luminance = rgb.dot(LUMA);
             // Growth: the tint taken out and the lightness set to the material's, the texel lies on
@@ -310,6 +341,10 @@ pub fn check(
                 let seen = untinted * (material.dot(LUMA) / untinted.dot(LUMA).max(1e-6));
                 ((seen - material).dot(growth - material) / (growth - material).length_squared()).clamp(0.0, 1.0)
             });
+
+            // Patches of growth are darker than the surface they grow on (tools/paint.py, growth_darker).
+            let darkened = if want.growth.is_some() && p.y - floor > above_base { want.growth_darker * growth } else { 0.0 };
+            let expected = undarkened * (1.0 - darkened);
 
             // Nearest face that turns away (an exposed edge) or rises in front (a crevice).
             let (mut convex, mut concave) = (f32::MAX, f32::MAX);
@@ -349,6 +384,8 @@ pub fn check(
                 green: (srgb.green * 255.0).round() as u8,
                 height,
                 ratio: luminance / expected,
+                bare_ratio: luminance / undarkened,
+                step_m,
                 luminance,
                 expected,
                 zone,
@@ -441,7 +478,7 @@ pub fn check(
     let level = |s: &Sample| s.up >= want.growth_up_normal_z[1];
     if want.growth.is_some() {
         // Clear of the ragged top of the growth, which wanders by half its height either way.
-        let (low, high) = (want.growth_height_m * 0.4, want.growth_height_m * 1.6);
+        let (low, high) = (want.growth_height_m * 0.4, above_base);
         let (base_count, base) = average(&|s| s.zone != Zone::Crevice && s.above < low, &|s| s.growth);
         let (bare_count, bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
         (measured.growth_base, measured.growth_bare_sides) = (base, bare);
@@ -470,6 +507,39 @@ pub fn check(
                 fail(format!(
                     "painted.growth_edges: growth covers {cover:.2} of the exposed edges of upright faces in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}",
                     want.growth_edges
+                ));
+            }
+        }
+        if want.growth_darker > 0.0 {
+            // Open faces above the base's growth: where they show growth against where they show none.
+            // The tint and the side shade are already divided out, and blotches average out.
+            let (grown_count, grown) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth >= 0.8, &|s| s.bare_ratio);
+            let (bare_count, bare) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth <= 0.2, &|s| s.bare_ratio);
+            measured.growth_darker = 1.0 - grown / bare.max(1e-6);
+            if grown_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || (measured.growth_darker - want.growth_darker).abs() > want.colour_tolerance {
+                fail(format!(
+                    "painted.growth_darker: open faces above {high:.2} m are {:.3} darker where they show growth ({grown_count} samples) than where they show none ({bare_count} samples); growth_darker {} wants that within {}",
+                    measured.growth_darker, want.growth_darker, want.colour_tolerance
+                ));
+            }
+        }
+        if want.growth_patch_m > 0.0 {
+            // How often growth starts or stops between neighbouring samples of level open faces, per patch length:
+            // small, broken patches have a lot of outline for their area, and broad ones little.
+            let grown: std::collections::HashMap<(u32, u32), (bool, f32)> =
+                samples.iter().filter(|s| s.zone == Zone::Open && level(s) && s.above > high).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
+            let (mut edges, mut metres) = (0usize, 0.0f32);
+            for (&(x, y), &(here, step)) in &grown {
+                if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
+                    edges += usize::from(here != next);
+                    metres += step;
+                }
+            }
+            measured.growth_patch_edges = edges as f32 / metres.max(1e-6) * want.growth_patch_m;
+            if metres < 1.0 || measured.growth_patch_edges < want.growth_patch_edges {
+                fail(format!(
+                    "painted.growth_patches: on level open faces above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
+                    measured.growth_patch_edges, want.growth_patch_m, want.growth_patch_edges, want.growth_patch_m
                 ));
             }
         }

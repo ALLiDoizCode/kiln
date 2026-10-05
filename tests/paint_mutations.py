@@ -43,12 +43,13 @@ elif mutation == "no_crevice_shadow":
 elif mutation == "wrong_colour":
     bsdf.inputs["Base Color"].default_value = (0.2, 0.2, 0.2, 1.0)
 elif mutation == "burnt_out":
-    # Paler than any rock, with a strong edge light on top: lit, its edges would clip to white.
+    # Paler than any rock and untinted at the top, with a strong edge light over that: lit, its edges would clip to white.
     bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1.0)
+    want["top_tint"] = "#ffffff"
 elif mutation == "small_texture":
     want["texture_px"] = 256
 elif mutation == "no_growth":
-    for key in ("growth", "growth_height_m", "growth_up", "growth_edges"):
+    for key in ("growth", "growth_height_m", "growth_up", "growth_edges", "growth_darker", "growth_patch_m"):
         del want[key]
 elif mutation == "growth_everywhere":
     want["growth_height_m"] = 5.0
@@ -58,6 +59,12 @@ elif mutation == "growth_carpets_the_top":
     want["growth_up"] = 1.0
 elif mutation == "no_growth_edges":
     want["growth_edges"] = 0.0
+elif mutation == "growth_not_darker":
+    # Growth at the rock's own lightness, as it was painted before growth had a value of its own.
+    want["growth_darker"] = 0.0
+elif mutation == "growth_broad_patches":
+    # Growth in patches three times the size asked for.
+    want["growth_patch_m"] *= 3
 elif mutation == "no_blotches":
     want["blotch"] = 0.0
 elif mutation == "harsh_blotches":

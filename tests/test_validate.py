@@ -205,6 +205,74 @@ def too_many_planes(spec):
     spec["planes"]["max_count"] = 3
 
 
+# The habits of docs/style/rock-shapes.md: several pieces in a size order, a foot, big chamfers, nothing upright.
+
+
+def record_pieces(pieces):
+    """Replace what the build recorded the rock as being made of."""
+    text = bpy.data.texts.get("rock.pieces") or bpy.data.texts.new("rock.pieces")
+    text.clear()
+    text.write(json.dumps(pieces))
+
+
+def box(lo, hi):
+    """A box as a recorded piece: its corners and its six faces, wound outward."""
+    corners = [[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
+    return {"vertices": corners, "faces": [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]}
+
+
+def single_block(spec):
+    """The rock the owner called a cut block on 2026-10-04: seed 2 of the second generator. One
+    piece with near-upright walls and nine similar sides, no foot and no chamfers. Whatever the
+    build recorded is left as it is, so the record describes a rock that is no longer there."""
+    data = json.loads((ROOT / "tests" / "fixtures" / "rock_single_block.json").read_text())
+
+    def swap(bm):
+        bm.clear()
+        verts = [bm.verts.new(co) for co in data["vertices"]]
+        for face in data["faces"]:
+            bm.faces.new([verts[i] for i in face])
+
+    edit(swap, "rock")
+
+
+def phantom_pieces(spec):
+    """The single block again, with a record written to pass: the block's own hull as the
+    dominant piece, and five more pieces that are nowhere on its surface."""
+    single_block(spec)
+    mesh = bpy.data.objects["rock"].data
+    hull = bmesh.new()
+    hull.from_mesh(mesh)
+    result = bmesh.ops.convex_hull(hull, input=hull.verts)
+    kept = {g for g in result["geom"] if isinstance(g, bmesh.types.BMFace)}
+    bmesh.ops.delete(hull, geom=[f for f in hull.faces if f not in kept], context="FACES")
+    bmesh.ops.delete(hull, geom=[v for v in hull.verts if not v.link_faces], context="VERTS")
+    bmesh.ops.recalc_face_normals(hull, faces=hull.faces)
+    hull.verts.index_update()
+    pieces = [{"vertices": [list(v.co) for v in hull.verts], "faces": [[v.index for v in f.verts] for f in hull.faces]}]
+    hull.free()
+    for i in range(5):
+        size = 0.5 - 0.07 * i
+        pieces.append(box((-0.6 + 0.2 * i, -0.3, 0.0), (-0.6 + 0.2 * i + size, -0.3 + size, size)))
+    record_pieces(pieces)
+
+
+def twin_pieces(spec):
+    """Two blocks of one size side by side, recorded truthfully: pieces, but no size order."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    halves = [box(lo, (-0.1, hi[1], hi[2])), box((0.1, lo[1], lo[2]), hi)]
+
+    def swap(bm):
+        bm.clear()
+        for half in halves:
+            verts = [bm.verts.new(co) for co in half["vertices"]]
+            for face in half["faces"]:
+                bm.faces.new([verts[i] for i in face])
+
+    edit(swap, "rock")
+    record_pieces(halves)
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -469,6 +537,13 @@ CASES = [
     (even_facets, "rock.planes_size_ratio", "rock"),
     (no_ledge, "rock.planes_ledges", "rock"),
     (too_many_planes, "rock.planes_count", "rock"),
+    (single_block, "rock.pieces_match", "rock"),
+    (single_block, "rock.foot", "rock"),
+    (single_block, "rock.chamfers", "rock"),
+    (single_block, "rock.lean", "rock"),
+    (phantom_pieces, "rock.pieces_count", "rock"),
+    (twin_pieces, "rock.pieces_size_order", "rock"),
+    (even_facets, "rock.summit_off_centre", "rock"),
     (thin_wedge, "rock.fullness", "rock"),
     (thin_wedge, "rock.crown", "rock"),
     (thin_wedge, "rock.planes_view_share", "rock"),

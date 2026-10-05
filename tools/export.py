@@ -106,9 +106,9 @@ if "painted_shading" in spec:
         **{key: rules[key] for key in ("min_texels_per_m", "min_uv_coverage", "max_uv_overlap", "feature_deg", "colour_tolerance", "min_effect_share")},
         "texel_range": rules["texel_range_srgb"],
         # Variation the spec asks for (absent: none), and the rules tools/paint.py and the load test share.
-        **{key: want[key] for key in ("growth_height_m", "growth_up", "growth_edges", "blotch", "blotch_size_m", "side_shade") if key in want},
+        **{key: want[key] for key in ("growth_height_m", "growth_up", "growth_edges", "growth_darker", "growth_patch_m", "blotch", "blotch_size_m", "side_shade") if key in want},
         **({"growth": [round(c, 6) for c in linear_rgb(want["growth"])]} if "growth" in want else {}),
-        **{key: rules[key] for key in ("side_shade_normal_z", "side_shade_half_band", "growth_up_normal_z", "growth_cover", "blotch_spread", "max_blotch_grain", "max_level_gap")},
+        **{key: rules[key] for key in ("side_shade_normal_z", "side_shade_half_band", "growth_up_normal_z", "growth_cover", "growth_patch_edges", "blotch_spread", "max_blotch_grain", "max_level_gap")},
     }
     if "grain" in want or "close_texels_per_m" in want:
         # Grain and close-range texels the spec asks for (ADR 12), and how the load test measures the grain.
