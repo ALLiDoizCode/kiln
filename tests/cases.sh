@@ -61,6 +61,10 @@ expect 0 "L1 mutation tests: block_2" l1 block_2
 uses table_rock_1 validate paint
 expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
 
+# An arch (source/arch): its span, a pier and its rubble moved one way at a time.
+uses arch_1 validate paint
+expect 0 "L1 mutation tests: arch_1" l1 arch_1
+
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
 expect 1 "L4 catches a triangle mismatch"   smoke "$glb" "$(tamper 'm["triangles"] += 1')"
@@ -372,3 +376,15 @@ expect_id "spec.table"               "L0 catches necks allowed to fill the outli
 expect_id "spec.table"               "L0 catches a table block with a key missing" lint_table 'del s["table"]["min_overhang_m"]'
 expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
 expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'
+
+# L0, arches: arch_1's spec with one thing wrong in what it asks of its opening and its span (`arch`).
+uses arch_1 lint_spec
+expect 0 "L0 passes an arch variant's spec" lint_arch 'pass'
+expect_id "spec.arch"                "L0 catches an opening wider than the arch's own bounds" lint_arch 's["arch"]["min_opening_m"] = 7.0'
+expect_id "spec.arch"                "L0 catches an opening taller than the arch's own bounds" lint_arch 's["arch"]["min_clear_m"] = 5.0'
+expect_id "spec.arch"                "L0 catches an arch block with a key missing" lint_arch 'del s["arch"]["min_bearing_m2"]'
+expect_id "spec.arch"                "L0 catches a kind of span the generator does not know" lint_arch 's["arch"]["span"] = "vault"'
+expect_id "spec.arch"                "L0 catches piers and a span asked of one closed skin" lint_arch 'del s["overlap"]'
+expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
+expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
+expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
