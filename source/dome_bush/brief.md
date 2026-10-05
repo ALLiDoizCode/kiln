@@ -48,9 +48,9 @@ One object and one mesh per variant, with two materials. The stems are the close
 
 ## Budget
 
-At most 1,500 triangles and two materials, on one 512 px texture. The benchmark's bush is 900 triangles of leaf cards (1,368 with flowers); ours pays four triangles a piece, as the tree does, and the tree came to a little over half its benchmark's count. Bushes are commoner on screen than trees, so the ceiling is well under half a tree's 4,000. As built the variants are 944, 1,432 and 664 triangles; the largest is close to the ceiling.
+At most 1,500 triangles and two materials, on one 256 px texture. The benchmark's bush is 900 triangles of leaf cards (1,368 with flowers); ours pays four triangles a piece, as the tree does, and the tree came to a little over half its benchmark's count. Bushes are commoner on screen than trees, so the ceiling is well under half a tree's 4,000. As built the variants are 944, 1,432 and 664 triangles; the largest is close to the ceiling.
 
-The texture holds only the stems (about 0.4 m2) and the palette strip, 16 px tall. It is 512 px for the layout's sake, not for sharpness: the stems unroll into about twenty small islands with an 8 px gap round each, and at 256 px the gaps left the islands 0.25 of the texture, where the conventions ask for 0.4. At 512 px they take a little over 0.4, at about 500 texels per metre. A variant's file is 105 to 140 kB.
+The texture holds only the stems (about 0.4 m2) and the palette strip, 16 px tall. It is 256 px: the stems unroll into about twenty small islands, and packed by their outlines (`pack` in `tools/paint.py`) they take 0.51 to 0.56 of it where the conventions ask for 0.4, at 313 to 435 texels per metre on the sparsest triangle (100 asked). It was 512 px while the painter packed islands as boxes two gaps apart, for the layout's sake and not for sharpness: at 256 px the islands were then left 0.25 of the texture. A variant's file is 67 to 106 kB (105 to 140 kB at 512 px).
 
 ## References
 
@@ -74,7 +74,7 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `max_triangles` | `1500` | Budget |
 | `materials.m_bush_stem` | `"#6b5540"` | Style and colour: stem |
 | `materials.m_bush_leaf` | `"#9ab552"` | Style and colour: leaf, the colour at the top of the dome |
-| `painted_shading.texture_px` | `512` | Budget |
+| `painted_shading.texture_px` | `256` | Budget |
 | `painted_shading.base_tint` | `"#a89c94"` | Style and colour: stems darker toward the ground |
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | Style and colour: light along the corners, as the tree's bark |

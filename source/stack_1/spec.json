@@ -23,7 +23,7 @@
     "m_stack": "#a1a7a1"
   },
   "painted_shading": {
-    "texture_px": 1024,
+    "texture_px": 512,
     "base_tint": "#8c8c9a",
     "top_tint": "#c8c8c8",
     "edge_light": 0.3,
