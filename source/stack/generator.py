@@ -29,7 +29,7 @@ from pipeline import conventions
 
 STACKS = 40  # how many whole stacks one seed may draw before it is given up
 SOFT = (0.006, 0.03)  # the least and most a soft edge eats into each plane beside it, metres
-SOFT_SHARE = 0.035  # and the most as a share of the stack's height: a small stack has small chamfers for it to eat
+SOFT_SHARE = 0.02  # and the most as a share of the stack's height: a small stack has small chamfers for it to eat
 SIDES = ((6, 7), (5, 6))  # how many sides the lowest stone's outline has, and the others'
 LEAN = (12.0, 22.0)  # how far a side leans in from its stone's upright, degrees
 TILT = (2.0, 5.0)  # how far a cap tips from its stone's level, degrees

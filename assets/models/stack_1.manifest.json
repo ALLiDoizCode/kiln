@@ -46,9 +46,9 @@
       0.57758
     ],
     "edge_light": 0.3,
-    "edge_width_m": 0.02,
+    "edge_width_m": 0.027,
     "crevice_shadow": 0.45,
-    "crevice_width_m": 0.04,
+    "crevice_width_m": 0.08,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,

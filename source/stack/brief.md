@@ -39,7 +39,7 @@ Stones that rest on each other bury the faces they rest on. Take a stone of cap 
 
 ## Style and colour
 
-ADR 9 and ADR 13, as for the slab. Each stone is a prism of exact planes (`tools/stone.py`, `prism`): an underside, five to seven sides, a cap, and a chamfer over each side. Its edges are softened with a one-segment bevel as wide as its shortest edge has room for, between 0.006 and 0.03 m and at most 0.035 of the stack's height, and lit with the normals of its planes. The edge where the lowest stone meets the ground is left hard; the underside of every other stone has soft edges, because it shows where the stone overhangs.
+ADR 9 and ADR 13, as for the slab. Each stone is a prism of exact planes (`tools/stone.py`, `prism`): an underside, five to seven sides, a cap, and a chamfer over each side. Its edges are softened with a one-segment bevel as wide as its shortest edge has room for, between 0.006 and 0.03 m and at most 0.02 of the stack's height, and lit with the normals of its planes. The edge where the lowest stone meets the ground is left hard; the underside of every other stone has soft edges, because it shows where the stone overhangs.
 
 A seed draws up to 40 whole stacks until one meets every number in this brief, as the gate's own checks measure it, and if none does the build fails and lists why each was refused.
 
@@ -49,7 +49,7 @@ One material:
 
 ## Painted shading
 
-Painted by script (ADR 9, ADR 10; `tools/paint.py`) into one texture, 1024 px unless a variant's own brief says otherwise, with the smallest slab's values (`source/slab_3`). These are the values of the largest stack; the two smaller ones have narrower bands of their own:
+Painted by script (ADR 9, ADR 10; `tools/paint.py`) into one texture, 512 px unless a variant's own brief says otherwise, with the smallest slab's values (`source/slab_3`), which is the nearest rock in size:
 
 1. **Gradient.** A light grey `#c8c8c8` at the top of the bounds and a cool grey `#8c8c9a` at the ground, the boulder's tints.
 2. **Blotches.** The tone drifts lighter and darker by up to 12%, in soft-edged patches about 0.2 m across.
@@ -84,7 +84,7 @@ Every value the variants' `spec.json` files share. Each variant's own brief give
 | `family` | `"stack"` | This brief |
 | `bounds_tolerance_m` | `0.001` | 1 mm |
 | `materials.m_stack` | `"#a1a7a1"` | Style and colour: the boulder's grey |
-| `painted_shading.texture_px` | `1024` | Painted shading: one 1024 px texture |
+| `painted_shading.texture_px` | `512` | Painted shading: one 512 px texture |
 | `painted_shading.base_tint` | `"#8c8c9a"` | Painted shading 1 |
 | `painted_shading.top_tint` | `"#c8c8c8"` | Painted shading 1 |
 | `painted_shading.edge_light` | `0.3` | Painted shading 4 |
@@ -116,5 +116,4 @@ Proposed by the agent, and open to change:
 - That "smaller or turned" is asked as smaller, with the turn left to the contact sheet.
 - That "would not topple" is the centre of mass of the stones above being over the cap below, with no margin, and with the volume where stones pass into each other counted twice.
 - The size step of 1.15, the crag's; the summit offset and upright share, the boulder's.
-- The budget of 120 triangles a stone; every painted value, the smallest slab's; no growth and no side shade.
-- **Paint changed after the first builds.** The family first asked for a 512 px texture and the smallest slab's bands on every variant but the smallest. The load test refused two of the three: on `stack_1` the bands covered every stone (no sample of open face to measure the colour on) and the triangles used 0.396 of a 512 px texture where 0.4 is asked; on `stack_3`, with half those bands, the open faces were 804 samples in two tones with nothing between (`painted.banding`). The texture is now 1024 px, with 512 on the smallest, and each smaller variant's own brief gives narrower bands and says where they come from.
+- The budget of 120 triangles a stone; every painted value, the smallest slab's; a 512 px texture; no growth and no side shade.

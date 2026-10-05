@@ -14,9 +14,13 @@ Five.
 
 At most 600 triangles: 120 a stone.
 
+## Paint
+
+A 1024 px texture: this is the largest stack, with about four times the surface of `stack_3`, and it is the one walked up to with its upper stones nearest the eye.
+
 ## Seed
 
-Seed 2. It was not picked from several.
+Seed 2. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (151 s), with 488 to 568 triangles; none needs more than eight stacks. Only seed 2 was painted and taken through the later gates. It was not picked from several. It measures: 528 triangles; 0.281 buried; size steps of the surface shown 2.42, 1.54, 1.64 and 1.41; each stone covers 0.61, 0.60, 0.55 and 0.59 of the one below; thickness over width 0.26 to 0.32; sunk 0.14 to 0.19; summit 0.455 off the middle. Seeds 1 to 12 are seen side by side in `benchmarks/out/stack_2_candidates.png`.
 
 ## Numbers
 
@@ -31,3 +35,4 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `max_triangles` | `600` | Budget |
 | `overlap.min_count` | `5` | Stones |
 | `overlap.max_count` | `5` | Stones |
+| `painted_shading.texture_px` | `1024` | Paint |

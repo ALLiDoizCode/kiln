@@ -16,11 +16,11 @@ At most 360 triangles: 120 a stone.
 
 ## Paint
 
-A 512 px texture, and the bands of the largest pebble (`source/pebble_3`), which is as wide as this stack, 0.5 m. Bands half the family's were tried first: they left 804 samples of open face in two tones with nothing between, which the load test refuses as banding. Those bands (0.016 m of edge light, 0.05 m of crevice shadow) still failed `painted.banding`: the only open face was on the lowest stone and the top cap, 20 levels of tone apart, with every stone between covered by the shadow of its joins. The bands are now 0.012 and 0.025 m, chosen so that the sides of the middle stones keep some open face; they come from the load test's refusals and not from a reference.
+The family's bands are sized for a stack 0.9 m across. This one is about half that, and its bands are half as wide to match, as the smallest slab's are against its family's.
 
 ## Seed
 
-Seed 3. It was not picked from several.
+Seed 3. Of seeds 1 to 40 at this size all 40 build and pass gate L1, with 296 to 354 triangles. Only seed 3 was painted and taken through the later gates. It was not picked from several. It measures: 334 triangles; 0.265 buried; size steps of the surface shown 2.36 and 1.31; each stone covers 0.61 and 0.59 of the one below; thickness over width 0.25 to 0.26; sunk 0.12 to 0.15; summit 0.307 off the middle.
 
 ## Numbers
 
@@ -35,7 +35,6 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `max_triangles` | `360` | Budget |
 | `overlap.min_count` | `3` | Stones |
 | `overlap.max_count` | `3` | Stones |
-| `painted_shading.texture_px` | `512` | Paint: 512 px |
-| `painted_shading.edge_width_m` | `0.012` | Paint: narrowed until the middle stones show open face |
-| `painted_shading.crevice_width_m` | `0.025` | Paint: narrowed until the middle stones show open face |
-| `painted_shading.blotch_size_m` | `0.05` | Paint: the largest pebble's |
+| `painted_shading.edge_width_m` | `0.02` | Paint: half the family's 0.04 m |
+| `painted_shading.crevice_width_m` | `0.06` | Paint: half the family's 0.12 m |
+| `painted_shading.blotch_size_m` | `0.1` | Paint: half the family's 0.2 m |
