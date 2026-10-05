@@ -228,8 +228,9 @@ expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run acro
 expect_id "spec.species"             "L0 catches a species with no recipe"     lint_tree 's["species"] = "zz_nope"'
 expect_id "spec.species"             "L0 catches a tree with no species"       lint_tree 'del s["species"]'
 expect_id "spec.growth_stage"        "L0 catches a growth stage older than the recipe draws" lint_tree 's["growth_stage"] = 5.0'
+expect_id "spec.growth_stage"        "L0 catches a growth stage younger than the recipe draws" lint_tree 's["growth_stage"] = 0.3'
 expect_id "spec.growth_stage"        "L0 catches a tree with no growth stage"  lint_tree 'del s["growth_stage"]'
-expect_id "spec.growth_height"       "L0 catches a mature tree's height called a sapling" lint_tree 's["growth_stage"] = 0.8'
+expect_id "spec.growth_height"       "L0 catches a mature tree's height called a sapling" lint_tree 's["growth_stage"] = 0.5'
 # Seasons (ADR 11, ADR 13): a season is another palette on its base asset's mesh, so its spec is the base's but for the palette.
 # `lint_season <python>` lints a copy of tree_1_autumn after that has changed its spec `s`.
 uses tree_1 tree_1_autumn lint_spec

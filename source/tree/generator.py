@@ -5,7 +5,8 @@ each call `build_tree(spec)`. A spec gives a `species`, a `growth_stage`, a
 `seed` and bounds. The species is a recipe, species/<name>.toml: every number
 below that says how the trunk forks, where the pads sit and what a leaf piece
 is. The growth stage is the tree's height over a mature tree's; the recipe
-says how girth, lean, fork, pad count and pad width follow it (`grown`).
+says how girth, lean, fork, pad count, pad width and leaf length follow it
+(`grown`).
 Everything else is drawn from `random.Random(seed)`, in a fixed order, and
 built as plain lists of vertices and faces, so the same spec gives the same
 mesh. A new tree is a new spec; a new species is a new recipe.
@@ -79,7 +80,8 @@ def inside(low, high):
 
 
 # A value is the stricter limit itself, or a function of the spec's own limit where the brief gives
-# each growth stage its own (for the mature tree: 3,800 triangles, a fork between 2.2 and 3.3 m, a lean of 0.22 to 0.7 m).
+# each growth stage its own (for the mature tree: 3,800 triangles, a fork between 2.2 and 3.3 m, a lean of 0.22 to 0.7 m,
+# bark 0.028 of what is seen above the fork).
 MARGINS = {
     "max_triangles": lambda most: round(most * 0.95),
     "skeleton.fork_m": inside(2 / 15, 2 / 15),
@@ -87,9 +89,9 @@ MARGINS = {
     "skeleton.max_taper": 0.85,
     "skeleton.max_branch_taper": 0.72,
     "skeleton.min_flare": 2.3,
-    "skeleton.min_seen_share": 0.028,
+    "skeleton.min_seen_share": lambda least: round(least * 1.4, 3),
     "skeleton.min_seen_views": 7,
-    "foliage.piece_m": [0.38, 0.87],
+    "foliage.piece_m": lambda span: [round(span[0] + 0.03, 3), round(span[1] - 0.03, 3)],
     "foliage.min_pointing_out": 0.84,
     "foliage.min_pointing_down": 0.75,
     "foliage.sky_share": [0.23, 0.46],
@@ -144,6 +146,13 @@ def grown(recipe, stage):
         scale("branches", key, by["fork"])
     for key in ("largest", "smallest"):
         scale("pads", key, by["pad_width"])
+    for table, key in (("leaf", "length"), ("skirt", "drop"), ("pads", "reach")):
+        scale(table, key, by["leaf"])
+    for table, key in (("leaf", "spacing"), ("skirt", "spacing"), ("skirt", "under_spacing")):
+        scale(table, key, by["leaf_spacing"])
+    scale("pads", "floor", by["pad_floor"])
+    scale("leaf", "foot", by["leaf_foot"])
+    scale("trunk", "rings", by["trunk_rings"])
     recipe["pads"]["count_share"] = by["pad_count"]
     return SimpleNamespace(**{name: SimpleNamespace(**table) for name, table in recipe.items()})
 
@@ -332,30 +341,41 @@ def draw_lobes(r, rng, toward):
 def place_pads(r, rng, lo, hi, fork_z):
     """Pads inside the bounds, staggered in height, with clear air between every pair."""
     count = rng.choices([c for c, _ in r.pads.counts], [w for _, w in r.pads.counts])[0]
-    # The mature tree's count, scaled by the growth stage: a sapling has three pads, an old tree five or six.
+    # The mature tree's count, scaled by the growth stage: a sapling has two pads, an old tree five or six.
     count = min(r.pads.most, max(r.pads.fewest, math.floor(count * r.pads.count_share + 0.5)))
     middle = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, 0))
     half = Vector(((hi.x - lo.x) / 2, (hi.y - lo.y) / 2, 0))
-    floor, top = fork_z + 0.25, hi.z
+    floor, top = fork_z + r.pads.floor, hi.z
+    # Two pads are a row, not a ring: they lie along the longer side of the bounds, one toward each end.
+    row = count == 2
+
+    def room(azimuth):
+        """How far the bounds reach from their middle, for a pad that way: the shorter half, or for a row the ellipse's radius there."""
+        if not row:
+            return min(half.x, half.y)
+        return 1.0 / math.hypot(math.cos(azimuth) / half.x, math.sin(azimuth) / half.y)
 
     def pad(azimuth, level, radius):
         # The main lobe on the outer side, so the canopy reaches the bounds there.
         new = Pad(r, Vector(), radius, draw_lobes(r, rng, azimuth))
         # Its outer edge on the ellipse the bounds allow; its height a share of the crown's.
-        out = max(0.0, 1.0 - radius / min(half.x, half.y))
+        out = max(0.0, 1.0 - (radius + (r.pads.reach if row else 0.0)) / room(azimuth))
         new.centre = middle + Vector((half.x * out * math.cos(azimuth), half.y * out * math.sin(azimuth), 0))
         low, high = floor + new.below(), top - new.above()
         new.centre.z = low + (high - low) * level
         return new
 
     start = rng.uniform(0, 2 * math.pi)
+    if row:
+        start = (0.0 if half.x >= half.y else math.pi / 2) + math.pi * rng.randrange(2) + rng.uniform(-0.15, 0.15)
     # The crown pad is the widest and one pad is much narrower; the others fall between, in any order.
     radii = [rng.uniform(*r.pads.largest), rng.uniform(*r.pads.smallest)] + [rng.uniform(r.pads.smallest[1], r.pads.largest[0]) for _ in range(count - 2)]
     radii[1:] = rng.sample(radii[1:], count - 1)
-    # The highest pad sits over the middle; the rest go round it, low and high by turns.
+    # The highest pad sits over the middle; the rest go round it, low and high by turns. In a row it keeps its end.
     crown = pad(start, 1.0, radii[0])
     lean = rng.uniform(0.0, 0.35)
-    crown.centre = Vector((middle.x + half.x * lean * math.cos(start), middle.y + half.y * lean * math.sin(start), crown.centre.z))
+    if not row:
+        crown.centre = Vector((middle.x + half.x * lean * math.cos(start), middle.y + half.y * lean * math.sin(start), crown.centre.z))
     pads = [crown]
     levels = [0.0, 0.5, 0.12, 0.62, 0.3]
     rng.shuffle(levels)
@@ -380,7 +400,7 @@ def place_pads(r, rng, lo, hi, fork_z):
         for p in pads:
             p.centre.z = min(max(p.centre.z, floor + p.below()), top - p.above())
             offset = p.centre - middle
-            limit = max(0.0, 1.0 - p.radius / min(half.x, half.y))
+            limit = max(0.0, 1.0 - p.radius / room(math.atan2(offset.y, offset.x)))
             share = math.hypot(offset.x / half.x, offset.y / half.y)
             if share > limit:
                 scale = limit / share
@@ -411,7 +431,8 @@ def grow_trunk(r, tree, rng, hi, fork_z, crown):
             return breast * (1.0 + 0.22 * (1.0 - z / 1.3) ** 2)
         return breast * (1.0 - (1.0 - r.trunk.top) * (z - 1.3) / (fork_z - 1.3))
 
-    heights = [0.0, r.trunk.root_rise, 0.85, 1.6, (1.6 + fork_z) / 2, fork_z]
+    low, high = r.trunk.rings
+    heights = [0.0, r.trunk.root_rise, low, high, (high + fork_z) / 2, fork_z]
     points = [trunk_at(z) for z in heights]
     radii = [radius_at(z) for z in heights]
     # The leader: on from the fork, turning toward the crown pad and thinning at once.

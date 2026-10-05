@@ -17,6 +17,7 @@ bend = [0.07, 0.14]            # how far the trunk bows out of the straight line
 roots = [3, 4]                 # corners pulled out into roots
 root_reach = [2.3, 3.0]        # a root's tip from the trunk's axis, over the radius there
 root_rise = 0.34               # height at which a root has all but joined the trunk
+rings = [0.85, 1.6]            # heights of the trunk's two rings between its roots and the stretch below the fork
 leader = 0.72                  # radius of the leader just above the fork, over the trunk's just below
 tip_radius = 0.035
 
@@ -31,7 +32,8 @@ twig_radius = 0.04             # a twig runs from the end of a pad's limb into e
 
 [pads]
 counts = [[3, 0.3], [4, 0.5], [5, 0.2]]  # (count, how often), drawn per tree
-fewest = 3                     # however young the tree
+floor = 0.25                   # the lowest a pad's underside hangs, above the fork
+fewest = 2                     # however young the tree: a sapling's two tufts
 most = 6                       # or old
 largest = [1.5, 1.75]          # half the width of a tree's widest pad, before the fit
 smallest = [0.8, 0.92]         # and of its narrowest; the rest fall between
@@ -83,11 +85,17 @@ under_droop = [35.0, 70.0]
 [growth]
 # A spec's `growth_stage` is the tree's height over a mature tree's: 1.0 is mature. Everything
 # above is the mature tree; these say what else changes with the stage, each as a multiplier at
-# the stages named in `stage`, read off in straight lines between them. Leaf pieces do not grow.
+# the stages named in `stage`, read off in straight lines between them. From young to old, leaf pieces
+# do not grow; a sapling's are shorter, and it carries two tufts (source/tree/brief.md, Growth stages).
 mature_height_m = [6.0, 8.0]   # a mature tree's height; a spec's bounds must be its stage times this
-stage     = [0.8, 1.0, 1.25]    # young, mature, old; a sapling is not drawn yet (source/tree/brief.md, Growth stages)
-girth     = [0.7, 1.0, 1.3]     # the trunk's radius; roots rise with it, and tips and twigs thin by its square root
-lean      = [0.88, 1.0, 1.1]    # lean and bend
-fork      = [0.9, 1.0, 1.0]     # the lowest height a branch leaves at, and how far below the fork branches leave
-pad_count = [0.85, 1.0, 1.5]    # how many pads, rounded, from `pads.fewest` to `pads.most`
-pad_width = [0.8, 1.0, 1.15]    # half-widths of the pads
+stage     = [0.5, 0.8, 1.0, 1.25]   # sapling, young, mature, old
+girth     = [0.5, 0.7, 1.0, 1.3]    # the trunk's radius; roots rise with it, and tips and twigs thin by its square root
+lean      = [0.5, 0.88, 1.0, 1.1]   # lean and bend
+fork      = [0.74, 0.9, 1.0, 1.0]   # the lowest height a branch leaves at, and how far below the fork branches leave
+pad_count = [0.45, 0.85, 1.0, 1.5]  # how many pads, rounded, from `pads.fewest` to `pads.most`
+pad_width = [0.5, 0.8, 1.0, 1.15]  # half-widths of the pads
+trunk_rings = [0.8125, 1.0, 1.0, 1.0] # `trunk.rings`: a sapling's upper ring is 1.3 m up, where its girth is taken, so that it tapers from there to its fork
+pad_floor = [0.0, 1.0, 1.0, 1.0]   # `pads.floor`: below nought a pad may hang past the fork, as a sapling's lower tuft does
+leaf      = [0.84, 1.0, 1.0, 1.0]    # a leaf piece's length, the skirt's drop and how far tips stand off a pad
+leaf_spacing = [0.84, 1.0, 1.0, 1.0] # the spacing between pieces, on a lobe, round its rim and under it
+leaf_foot = [0.625, 1.0, 1.0, 1.0]  # `leaf.foot`: how much of a shell piece lies behind the lobe's surface; half of a sapling's, whose lobes are no wider than a piece is long
