@@ -100,6 +100,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/cover_mutations.py) echo cover_mutations ;;
     tests/plant_mutations.py) echo plant_mutations ;;
     tests/log_mutations.py) echo log_mutations ;;
+    tests/rubble_mutations.py) echo rubble_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -385,6 +386,7 @@ mutated_plant() { tools/bl tests/plant_mutations.py "$1" "$2" "$3"; }  # <asset>
 mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 broken_log() { fixture --key "$(key_of tests/log_mutations.py source/log_3/build.py source/log_3/spec.json source/log/*.py)" "log_3_$1.glb" mutated tests/log_mutations.py "$1"; }
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
+broken_rubble() { fixture --key "$(key_of tests/rubble_mutations.py source/rubble_1/build.py source/rubble_1/spec.json source/rubble/*.py)" "rubble_1_$1.glb" mutated tests/rubble_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 

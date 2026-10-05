@@ -9,7 +9,7 @@
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `broken_rubble`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # The build's bake, when it is done on the graphics card (KILN_BAKE=gpu): a card out of memory leaves a wrong
@@ -268,6 +268,10 @@ uses pebble_1 smoke
 expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
 uses rock smoke
 expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+# Stones of a group that touch (source/rubble; `[scatter] touch_m`) shade each other where they nearly meet, as overlapping pieces do at a join.
+# rubble_1 painted with nothing dark between its one touching pair, 7 mm apart (tests/rubble_mutations.py).
+uses rubble_1 smoke paint rubble_mutations
+expect_id "painted.crevices_darker" "L4 catches stones that touch with no shadow between them" smoke "$(broken_rubble no_contact_shadow)" assets/models/rubble_1.manifest.json
 # A plant is held to the same rule as a stone: blades and stems that lie apart have no inside corner, the painter's shadow
 # paints nothing on them (no texel of five plants differs by 2 levels with it and without), and a spec that asks it is refused.
 uses grass_tuft_1 smoke

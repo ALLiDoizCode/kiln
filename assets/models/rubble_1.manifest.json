@@ -46,6 +46,8 @@
     ],
     "edge_light": 0.3,
     "edge_width_m": 0.006,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.025,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -80,6 +82,7 @@
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
+    "max_level_gap": 3,
+    "touch_m": 0.01
   }
 }

@@ -42,6 +42,10 @@ pub struct Painted {
     crevice_shadow: Option<f32>,
     #[serde(default)]
     crevice_width_m: Option<f32>,
+    /// A group of separate stones (`scatter`): two stones touch when their surfaces come this near (`[scatter] touch_m`
+    /// in conventions.toml), and where a face of one rises that near in front of the other, the two are an inside corner.
+    #[serde(default)]
+    touch_m: Option<f32>,
     /// Faces lying on the floor of the bounds and facing down are never seen, and are not measured.
     hidden_underside: bool,
     min_texels_per_m: f32,
@@ -389,7 +393,10 @@ pub fn check(
     // Overlapping pieces (ADR 13): which piece each face is of. Surface inside another piece is
     // never seen, and what the paint did there is not measured.
     let corners: Vec<[Vec3; 3]> = faces.iter().map(|(t, _, _)| t.positions).collect();
-    let (piece_of, piece_count) = if overlap { crate::pieces::split(&corners) } else { (vec![0; corners.len()], 1) };
+    // A group of separate stones is read back the same way: its stones pass into nothing, so none of their surface
+    // is buried, and a face of another stone counts only where it stands in front of a point, as a face of its own does.
+    let touch_m = want.touch_m.unwrap_or(0.0);
+    let (piece_of, piece_count) = if overlap || want.touch_m.is_some() { crate::pieces::split(&corners) } else { (vec![0; corners.len()], 1) };
     let mut samples = Vec::new();
     let (mut darkest, mut brightest) = (u8::MAX, u8::MIN);
     // Above this, growth is patches only: clear of the ragged top of the growth at the base, which wanders by half its height either way.
@@ -408,7 +415,7 @@ pub fn check(
             brightest = brightest.max(peak);
             let linear = texel.to_linear();
             let p = t.positions[0] * w.x + t.positions[1] * w.y + t.positions[2] * w.z;
-            if piece_count > 1 && crate::pieces::buried(p + *n * BURIED_IN_FRONT_M, piece_of[index], &corners, &piece_of, piece_count) {
+            if overlap && piece_count > 1 && crate::pieces::buried(p + *n * BURIED_IN_FRONT_M, piece_of[index], &corners, &piece_of, piece_count) {
                 measured.buried_samples += 1;
                 return;
             }
@@ -438,6 +445,8 @@ pub fn check(
             // Nearest face that turns away (an exposed edge) or rises in front (a crevice).
             let (mut convex, mut concave) = (f32::MAX, f32::MAX);
             let (mut any_convex, mut any_concave) = (f32::MAX, f32::MAX);
+            // Stones that touch: the nearest face of another stone that rises in front of this point.
+            let mut contact = f32::MAX;
             for (other_index, (other, m, centre)) in faces.iter().enumerate() {
                 let cos = n.dot(*m);
                 if cos > same_cos {
@@ -448,7 +457,8 @@ pub fn check(
                 // of this one or standing against it: a join, whichever side its middle lies. Only
                 // a point's own piece can turn away from it and make an exposed edge there.
                 let other_piece = piece_of[other_index] != piece_of[index];
-                let rises = (*centre - p).dot(*n) > 0.0 || other_piece;
+                let joined = overlap && other_piece;
+                let rises = (*centre - p).dot(*n) > 0.0 || joined;
                 let (near, any) = if rises { (&mut concave, &mut any_concave) } else { (&mut convex, &mut any_convex) };
                 *any = any.min(distance);
                 // An exposed edge is two faces `feature_deg` apart. A crevice is a fold the paint gives its whole
@@ -459,16 +469,19 @@ pub fn check(
                 // lies in front of the other. Round a tube that bends, a face of the next length may reach a hair in
                 // front of this one's plane while turning away from it: the same exposed edge, carried round the bend,
                 // and no inside corner (a bush's stems had 51 samples "in" such corners, all lit as the edges they are).
-                let faces_back = !rises || other_piece || (p - *centre).dot(*m) > 0.0;
+                let faces_back = !rises || joined || (p - *centre).dot(*m) > 0.0;
                 if cos <= sharp && faces_back {
                     *near = near.min(distance);
+                    if rises && other_piece && !overlap {
+                        contact = contact.min(distance);
+                    }
                 }
             }
             // The edge an asset stands on is not exposed, and is not painted as one.
             let on_ground = want.hidden_underside && p.y - floor < want.edge_width_m * 2.0;
             let zone = if on_ground {
                 if p.y - floor < want.edge_width_m * FOOT_EDGE_WIDTHS && any_concave > crevice_width_m * 1.25 { Zone::Foot } else { Zone::Other }
-            } else if concave <= crevice_width_m * 0.25 {
+            } else if concave <= crevice_width_m * 0.25 || contact <= touch_m {
                 Zone::Crevice
             } else if convex <= want.edge_width_m * 0.5 && any_concave > crevice_width_m {
                 Zone::Edge

@@ -82,6 +82,7 @@
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
+    "max_level_gap": 3,
+    "touch_m": 0.01
   }
 }
