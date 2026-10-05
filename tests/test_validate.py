@@ -279,6 +279,104 @@ def twin_pieces(spec):
     record_pieces(halves)
 
 
+# Overlapping pieces (ADR 13): a shape may be several closed pieces that pass into each other.
+# The tracer is one closed piece; these add a second, and the spec opts in as a rock's would.
+
+OVERLAP = {"min_count": 2, "max_count": 2, "max_buried_share": 0.3, "min_step_ratio": 1.2}
+
+
+def add_piece(spec, lo, hi, inside_out=False):
+    """A box as a second closed piece of the tracer, and a spec that says the tracer is two overlapping pieces."""
+    spec["overlap"] = dict(OVERLAP)
+    piece = box(lo, hi)
+
+    def add(bm):
+        verts = [bm.verts.new(co) for co in piece["vertices"]]
+        faces = [bm.faces.new([verts[i] for i in face]) for face in piece["faces"]]
+        if inside_out:
+            bmesh.ops.reverse_faces(bm, faces=faces)
+
+    edit(add)
+
+
+def piece_inside_out(spec):
+    """A small second piece pushed into the tracer's leg, inside out. The two together still enclose a positive volume."""
+    add_piece(spec, (0.0, 0.3, 0.5), (0.4, 0.5, 0.9), inside_out=True)
+    # A sixth of the box is inside the leg; this mutation is about its facing, not about how much is buried.
+    spec["overlap"]["max_buried_share"] = 0.9
+
+
+def piece_floats(spec):
+    """A second piece in the air above the tracer's toe, touching nothing."""
+    add_piece(spec, (0.0, -1.2, 0.6), (0.4, -0.8, 0.9))
+
+
+def piece_buried(spec):
+    """A second piece nine tenths the tracer's size, wholly inside it: nearly half of all the surface is never seen."""
+    spec["overlap"] = dict(OVERLAP)
+    about = Vector((0.25, 0.1, 0.2))  # a point every part of the boot can be seen from, so the copy stays inside
+
+    def add(bm):
+        copy = bmesh.ops.duplicate(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:])["geom"]
+        for vert in (g for g in copy if isinstance(g, bmesh.types.BMVert)):
+            vert.co = about + (vert.co - about) * 0.9
+
+    edit(add)
+
+
+def one_piece(spec):
+    """The tracer as it is, with a spec that says it is two overlapping pieces."""
+    spec["overlap"] = dict(OVERLAP)
+
+
+def twin_overlapping_pieces(spec):
+    """A copy of the tracer pushed 5 cm along from it: two pieces of one size, neither clearly the larger."""
+    spec["overlap"] = dict(OVERLAP)
+    spec["overlap"]["max_buried_share"] = 0.9
+
+    def add(bm):
+        copy = bmesh.ops.duplicate(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:])["geom"]
+        bmesh.ops.translate(bm, verts=[g for g in copy if isinstance(g, bmesh.types.BMVert)], vec=(0.05, 0.0, 0.0))
+
+    edit(add)
+
+
+# The slab (source/slab): overlapping plates with nearly flat tops.
+
+
+def slab_pieces(bm):
+    """The slab's pieces as lists of vertices, largest first."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(pieces, key=len, reverse=True)
+
+
+def tipped_tops(spec):
+    """The whole slab sheared so that every cap tips 27 degrees: nothing left level to stand on."""
+
+    def shear(bm):
+        for vert in bm.verts:
+            vert.co.z += 0.5 * (vert.co.x - spec["bounds_m"]["min"][0])
+
+    edit(shear, "slab_1")
+
+
+def plate_lifted(spec):
+    """The smaller plate lifted clear of the other: it floats."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=slab_pieces(bm)[-1], vec=(0, 0, 2.0)), "slab_1")
+
+
+def plate_inside_out(spec):
+    """The smaller plate turned inside out; the two together still enclose a positive volume."""
+
+    def flip(bm):
+        verts = set(slab_pieces(bm)[-1])
+        bmesh.ops.reverse_faces(bm, faces=[f for f in bm.faces if f.verts[0] in verts])
+
+    edit(flip, "slab_1")
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -630,6 +728,11 @@ CASES = [
     (wrong_colour, "m_tracer.base_colour"),
     (extra_material, "materials.match_spec"),
     (over_budget, "budget.triangles"),
+    (piece_inside_out, "tracer.normals_outward"),
+    (piece_floats, "tracer.overlap_touch"),
+    (piece_buried, "tracer.overlap_buried"),
+    (one_piece, "tracer.overlap_count"),
+    (twin_overlapping_pieces, "tracer.overlap_size_order"),
     (shallow_recess, "m_crate_panel.recess", "crate"),
     (recess_respecified, "m_crate_panel.recess", "crate"),
     (narrow_frame, "m_crate_panel.margin", "crate"),
@@ -652,6 +755,9 @@ CASES = [
     (painted_at_another_size, "m_rock.painted", "rock"),
     (painted_over_another_colour, "m_rock.base_colour", "rock"),
     (textured, "m_tracer.base_colour"),
+    (tipped_tops, "slab_1.top_level", "slab_1"),
+    (plate_lifted, "slab_1.overlap_touch", "slab_1"),
+    (plate_inside_out, "slab_1.normals_outward", "slab_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),

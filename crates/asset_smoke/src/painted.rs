@@ -113,6 +113,8 @@ pub struct Measured {
     uv_overlap: f32,
     min_texels_per_m: f32,
     texel_range: [u8; 2],
+    /// Samples left out because they lie inside another piece (overlapping pieces only).
+    buried_samples: usize,
     open_samples: usize,
     edge_samples: usize,
     crevice_samples: usize,
@@ -150,6 +152,8 @@ const MIN_SAMPLES: usize = 50;
 const SAMPLE_GRID: u32 = 384;
 /// Faces closer in tilt than this are one surface.
 const SAME_SURFACE_DEG: f32 = 4.0;
+/// A point of a surface is buried when the space this far in front of it is inside another piece (as `[overlap] in_front_m` in conventions.toml).
+const BURIED_IN_FRONT_M: f32 = 0.0001;
 
 struct Sample {
     /// Texel position, to find neighbours.
@@ -185,6 +189,7 @@ enum Zone {
 pub fn check(
     want: &Painted,
     triangles: &[Triangle],
+    overlap: bool,
     image: &Image,
     floor: f32,
     top: f32,
@@ -305,11 +310,15 @@ pub fn check(
         .map(|t| (*t, normal(t).normalize_or_zero(), (t.positions[0] + t.positions[1] + t.positions[2]) / 3.0))
         .collect();
     let (base_tint, top_tint) = (Vec3::from(want.base_tint), Vec3::from(want.top_tint));
+    // Overlapping pieces (ADR 13): which piece each face is of. Surface inside another piece is
+    // never seen, and what the paint did there is not measured.
+    let corners: Vec<[Vec3; 3]> = faces.iter().map(|(t, _, _)| t.positions).collect();
+    let (piece_of, piece_count) = if overlap { crate::pieces::split(&corners) } else { (vec![0; corners.len()], 1) };
     let mut samples = Vec::new();
     let (mut darkest, mut brightest) = (u8::MAX, u8::MIN);
     // Above this, growth is patches only: clear of the ragged top of the growth at the base, which wanders by half its height either way.
     let above_base = want.growth_height_m * 1.6;
-    for (t, n, _) in &faces {
+    for (index, (t, n, _)) in faces.iter().enumerate() {
         let Some(colour) = t.colour else { continue };
         let uv = t.uvs.unwrap();
         let texels = (uv[1] - uv[0]).perp_dot(uv[2] - uv[0]).abs() / 2.0 * px * px;
@@ -323,6 +332,10 @@ pub fn check(
             brightest = brightest.max(peak);
             let linear = texel.to_linear();
             let p = t.positions[0] * w.x + t.positions[1] * w.y + t.positions[2] * w.z;
+            if piece_count > 1 && crate::pieces::buried(p + *n * BURIED_IN_FRONT_M, piece_of[index], &corners, &piece_of, piece_count) {
+                measured.buried_samples += 1;
+                return;
+            }
             let height = ((p.y - floor) / (top - floor)).clamp(0.0, 1.0);
             let tint = base_tint.lerp(top_tint, height);
             // Upright faces are painted darker near mid height (tools/paint.py, side_shade).
@@ -349,13 +362,16 @@ pub fn check(
             // Nearest face that turns away (an exposed edge) or rises in front (a crevice).
             let (mut convex, mut concave) = (f32::MAX, f32::MAX);
             let (mut any_convex, mut any_concave) = (f32::MAX, f32::MAX);
-            for (other, m, centre) in &faces {
+            for (other_index, (other, m, centre)) in faces.iter().enumerate() {
                 let cos = n.dot(*m);
                 if cos > same_cos {
                     continue;
                 }
                 let distance = distance_to_triangle(p, &other.positions);
-                let rises = (*centre - p).dot(*n) > 0.0;
+                // A face of another piece near a point that is not buried is that piece coming out
+                // of this one or standing against it: a join, whichever side its middle lies. Only
+                // a point's own piece can turn away from it and make an exposed edge there.
+                let rises = (*centre - p).dot(*n) > 0.0 || piece_of[other_index] != piece_of[index];
                 let (near, any) = if rises { (&mut concave, &mut any_concave) } else { (&mut convex, &mut any_convex) };
                 *any = any.min(distance);
                 if cos <= feature_cos {

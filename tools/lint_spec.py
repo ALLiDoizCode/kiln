@@ -56,6 +56,8 @@ PIECES = {"min_count": int, "min_shown_m2": float, "min_dominant_ratio": float, 
 FOOT = {"min_sides": int, "min_side_m2": float}
 CHAMFERS = {"min_count": int, "min_m2": float, "min_width_m": float}
 LEAN = {"max_upright_share": float, "min_summit_offset": float}
+# Optional; a shape of several closed pieces that pass into each other (ADR 13). Every key is required once it is present.
+OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -171,6 +173,25 @@ if not checks.failed():
         # Chamfers are measured against what counts as a large plane, and all four against a closed shape.
         ok = ok and spec["watertight"] and (block != "chamfers" or (isinstance(planes, dict) and wanted_block["min_m2"] < planes.get("large_m2", 0)))
         checks.check(f"spec.{block}", ok, f"optional; needs exactly {sorted(keys)}, none negative, shares at most 1, ratios at least 1, on a watertight asset (chamfers: with `planes`, and min_m2 below planes.large_m2)")
+    overlap = spec.get("overlap")
+    if overlap is not None:
+        ok = (
+            isinstance(overlap, dict)
+            and set(overlap) == set(OVERLAP)
+            and all(type(overlap[key]) is kind for key, kind in OVERLAP.items())
+            and 2 <= overlap["min_count"] <= overlap["max_count"]
+            and 0 < overlap["max_buried_share"] < 1
+            and overlap["min_step_ratio"] >= 1
+        )
+        checks.check("spec.overlap", ok and spec["watertight"], f"optional; needs exactly {sorted(OVERLAP)}: at least 2 pieces, min_count <= max_count, max_buried_share in 0..1 (below 1), min_step_ratio at least 1, on a watertight asset")
+        # These two measure one closed skin: the volume of overlapping pieces counts their overlaps twice,
+        # and a piece record is held against a surface with nothing inside it.
+        one_skin = sorted(block for block in ("fullness", "pieces") if block in spec)
+        checks.check("spec.one_skin_checks", not one_skin, f"{one_skin} measure one closed skin and cannot be asked of overlapping pieces (`overlap`)")
+    top = spec.get("top")
+    if top is not None:
+        ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
+        checks.check("spec.top", ok, "optional; needs exactly min_level_share, a share in (0, 1]: how much of what is seen from above is near level")
     checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
     painted = spec.get("painted_shading")
     if painted is not None:

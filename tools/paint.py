@@ -75,6 +75,8 @@ BLOTCH_EDGE = 0.1  # how much of the noise's range a blotch's border takes: soft
 # the face is missing, as beside the bevel strip of a right-angled corner.
 FULL_SHADE_OCCLUSION = 0.2
 FULL_EDGE_OCCLUSION = 0.06
+# Where pieces overlap (ADR 13), the shadow at a join is full where another piece hides a sixteenth of the sky.
+FULL_JOIN_OCCLUSION = 0.06
 # Faces within this of straight down, at the floor of the bounds, are the hidden underside.
 UNDERSIDE_COS = 0.999
 UNDERSIDE_UV_SCALE = 0.05  # texel density of an underside nobody sees, beside the rest
@@ -97,6 +99,9 @@ KNOT_SHARE = 0.22  # share of those places that have one
 KNOT_RADIUS_M = 0.035
 KNOT_DEPTH = 1.3  # how dark a knot's middle is, over `grain`
 CLOSE_PASSES = 5  # how many times the layout is repacked to give close faces their texels
+# Overlapping pieces are baked apart, so that a piece's edge light comes from its own shape (`paint_nodes`, hidden).
+# tests/slab_mutations.py turns this off to paint a slab as one solid, joins lit as edges.
+SPLIT_PIECES = True
 
 
 def luminance(rgb):
@@ -320,8 +325,14 @@ def paint_nodes(tree, colour_rgb, spec, conv):
         whole = above(scale, 3.0, min(0.95, cover / GROWTH_BREAK_KEEP), shift)
         return math_node("MULTIPLY", whole, above(scale * GROWTH_BREAK_SCALE, 2.0, GROWTH_BREAK_KEEP, shift + 5.0))
 
-    def hidden(inside, distance):
-        occlusion = node("ShaderNodeAmbientOcclusion", samples=16, only_local=True, inside=inside)
+    # Overlapping pieces (ADR 13) are baked as an object each (`apply`). What hides the sky above
+    # a face may then be another piece: that is the crevice at a join. What is missing of the
+    # solid behind a face is asked of its own piece alone: another piece passing through it takes
+    # nothing away, and would otherwise light every join as an exposed edge.
+    apart = SPLIT_PIECES and "overlap" in spec
+
+    def hidden(inside, distance, own_piece=None):
+        occlusion = node("ShaderNodeAmbientOcclusion", samples=16, only_local=(inside or not apart) if own_piece is None else own_piece, inside=inside)
         occlusion.inputs["Distance"].default_value = distance
         tree.links.new(geometry.outputs["True Normal"], occlusion.inputs["Normal"])
         return math_node("SUBTRACT", 1.0, occlusion.outputs["AO"])
@@ -418,10 +429,19 @@ def paint_nodes(tree, colour_rgb, spec, conv):
     # (the shading normal of a soft edge would darken every bevel strip).
     # Crevice: how much of the sky above the face other faces hide.
     shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
+    if apart:
+        # A join: the sky another piece hides, over and above what the face's own piece hides. Two
+        # pieces often meet in a groove too open to hide a fifth of the sky, and the join must
+        # still be dark, since that is what hides it.
+        by_others = math_node("SUBTRACT", hidden(False, paint["crevice_width_m"]), hidden(False, paint["crevice_width_m"], own_piece=True), clamp=True)
+        shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, FULL_JOIN_OCCLUSION, clamp=True))
     colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
 
     # Exposed edge: how much of the solid behind the face is missing, because another face cuts it off.
     edge = math_node("DIVIDE", hidden(True, paint["edge_width_m"]), FULL_EDGE_OCCLUSION, clamp=True)
+    if apart:
+        # An edge that runs into a join is not exposed there.
+        edge = math_node("MULTIPLY", edge, math_node("SUBTRACT", 1.0, shade))
     if paint["hidden_underside"]:
         # The edge the asset stands on is not exposed: fade the light out toward the ground.
         edge = math_node("MULTIPLY", edge, math_node("DIVIDE", math_node("SUBTRACT", z, z0), 2 * paint["edge_width_m"], clamp=True))
@@ -496,6 +516,27 @@ def leaf_colours(objects, spec, conv, image):
         bm.free()
 
 
+def pieces_of_mesh(bm):
+    """The indices of the faces of each connected piece of a mesh, in the order of their first faces."""
+    bm.faces.ensure_lookup_table()
+    seen, groups = set(), []
+    for start in bm.faces:
+        if start.index in seen:
+            continue
+        seen.add(start.index)
+        group, front = set(), [start]
+        while front:
+            face = front.pop()
+            group.add(face.index)
+            for vert in face.verts:
+                for other in vert.link_faces:
+                    if other.index not in seen:
+                        seen.add(other.index)
+                        front.append(other)
+        groups.append(group)
+    return groups
+
+
 def apply(spec, conv):
     """Unwrap the spec's objects and replace their flat colours with one baked, painted texture."""
     paint = spec["painted_shading"]
@@ -543,6 +584,32 @@ def apply(spec, conv):
             obj.hide_render = obj in objects
         bpy.context.view_layer.objects.active = baked[0]
 
+    pieces = []
+    if "overlap" in spec and SPLIT_PIECES:
+        # Overlapping pieces (ADR 13): each closed piece is baked as an object of its own, with the
+        # UVs it already has, into the one texture.
+        for obj in baked:
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            groups = pieces_of_mesh(bm)
+            bm.free()
+            for keep in groups:
+                copy = obj.copy()
+                copy.data = obj.data.copy()
+                scene.collection.objects.link(copy)
+                bm = bmesh.new()
+                bm.from_mesh(copy.data)
+                bm.faces.ensure_lookup_table()
+                bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.index not in keep], context="FACES")
+                bm.to_mesh(copy.data)
+                bm.free()
+                pieces.append(copy)
+        whole = baked
+        for obj in scene.objects:
+            obj.select_set(obj in pieces)
+            obj.hide_render = obj in whole or obj.hide_render
+        bpy.context.view_layer.objects.active = pieces[0]
+
     materials = [m for m in dict.fromkeys(slot.material for obj in objects for slot in obj.material_slots) if m.name != leaf]
     temporary = []
     for material in materials:
@@ -561,6 +628,16 @@ def apply(spec, conv):
     result = bpy.ops.object.bake(type="EMIT", margin=conv["painted_shading"]["island_gap_px"] // 2, margin_type="EXTEND", use_clear=True)
     if result != {"FINISHED"}:
         raise RuntimeError(f"bake failed: {result}")
+
+    if pieces:
+        for copy in pieces:
+            mesh = copy.data
+            bpy.data.objects.remove(copy)
+            bpy.data.meshes.remove(mesh)
+        for obj in whole:
+            obj.hide_render = obj in objects and bool(leaf)
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = whole[0]
 
     for tree, made, output, bsdf, target in temporary:
         for node in made:

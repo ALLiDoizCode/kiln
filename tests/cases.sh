@@ -9,7 +9,7 @@
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
@@ -33,6 +33,9 @@ expect 0 "L1 mutation tests: tree_1, part 6 of 6" l1 tree_1 --part 6/6
 uses blade_plant_1 blade_plant_2 blade_plant_3 validate paint
 expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 
+uses slab_1 validate paint
+expect 0 "L1 mutation tests: slab_1" l1 slab_1
+
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
 expect 1 "L4 catches a triangle mismatch"   smoke "$glb" "$(tamper 'm["triangles"] += 1')"
@@ -47,6 +50,9 @@ uses tracer smoke flip_normals
 expect 1 "L4 catches normals against winding" smoke "$(flipped_normals)" "$manifest"
 uses tracer smoke
 expect 1 "L4 catches an inside-out mesh"    smoke "$(exported inside_out)" "$manifest"
+# Overlapping pieces (ADR 13): the tracer with a small box pushed into its leg, and a manifest that says so.
+expect 0 "L4 passes two closed pieces that overlap" smoke "$(exported two_pieces)" "$(tamper 'm["triangles"] += 12; m["overlap"] = True')"
+expect_id "pieces.outward" "L4 catches one piece inside out among several" smoke "$(exported piece_inside_out)" "$(tamper 'm["triangles"] += 12; m["overlap"] = True')"
 # The rock with every face lit flat: the same triangles, but no soft edges.
 uses rock smoke
 expect 0 "L4 passes the real rock"          smoke assets/models/rock.glb assets/models/rock.manifest.json
@@ -115,6 +121,18 @@ uses blade_plant_1 smoke
 expect 0 "L4 passes a plant of blades, which has no cores" smoke assets/models/blade_plant_1.glb assets/models/blade_plant_1.manifest.json
 expect_id "foliage.palette" "L4 catches blades painted from another colour" smoke assets/models/blade_plant_1.glb "$(tamper 'm["materials"]["m_blade_leaf"][1] += 0.2' assets/models/blade_plant_1.manifest.json)"
 
+# Overlapping pieces, painted (ADR 13): slab_1, two plates one pushed into the other.
+uses slab_1 smoke
+expect 0 "L4 passes the real slab"          smoke "$slab" "$slab_manifest"
+# Not told the plates overlap, the load test measures the surface buried inside them as painted surface.
+expect_id "painted.banding"        "L4 fails buried surface as paint unless told the pieces overlap" smoke "$slab" "$(tamper 'm["overlap"] = False' "$slab_manifest")"
+# Three plates: the small one's sides stand close to the dominant one's, and counted as its exposed edges before a face of another piece counted as a join.
+uses slab_2 smoke
+expect 0 "L4 passes a slab of three plates" smoke assets/models/slab_2.glb assets/models/slab_2.manifest.json
+uses slab_1 smoke paint slab_mutations
+expect 0 "L4 passes an unbroken slab from the mutation script" smoke "$(broken_slab none)" "$slab_manifest"
+expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as exposed edges" smoke "$(broken_slab lit_joins)" "$slab_manifest"
+
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
 
@@ -171,6 +189,13 @@ expect_id "spec.lean"                "L0 catches an upright share above the whol
 expect_id "spec.planes"              "L0 catches a ledge's smaller plane set above a large one" lint_rock 's["planes"]["ledge_plane_m2"] = 0.9'
 expect_id "spec.planes"              "L0 catches more ledge views than there are views" lint_rock 's["planes"]["min_ledge_views"] = 9'
 expect_id "spec.painted_needs_uvs"   "L0 catches UVs on a flat-coloured asset" lint_rock 'del s["painted_shading"]'
+# L0, overlapping pieces (ADR 13). The rock is one closed skin, so its copy is first stripped of the
+# two blocks that measure one, and then says it is several pieces, with one thing wrong.
+expect_id "spec.overlap"             "L0 catches an overlap block with a key missing" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3}'
+expect_id "spec.overlap"             "L0 catches a buried share of the whole surface" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 1.0, "min_step_ratio": 1.2}'
+expect_id "spec.overlap"             "L0 catches overlapping pieces of which there need be only one" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 1, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 1.2}'
+expect_id "spec.overlap"             "L0 catches a size step that lets twins through" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 0.9}'
+expect_id "spec.one_skin_checks"     "L0 catches overlapping pieces measured as one closed skin" lint_rock 's["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 1.2}'
 # L0, trees: tree_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
 # `lint_tree <python>` lints a copy of tree_1 after that has changed its spec `s`; `name` is the copy's own name.
 uses tree_1 lint_spec
@@ -233,6 +258,13 @@ expect_id "spec.foliage"             "L0 catches a canopy's keys on a plant of b
 expect_id "spec.blades_need_foliage" "L0 catches blades with no foliage to be" lint_blade 'del s["foliage"]; s["open_materials"] = []'
 uses tree_1 lint_spec
 expect_id "spec.foliage"             "L0 catches blades asked of a canopy"     lint_tree 's["blades"] = {"width_share": [0.08, 0.25], "root_m": 0.15, "max_gap_deg": 100.0, "lean_deg": [15.0, 85.0], "min_arch": 0.08}'
+
+# L0, slabs: slab_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
+uses slab_1 lint_spec
+expect 0 "L0 passes a slab variant's spec"   lint_slab 'pass'
+expect_id "spec.top"                 "L0 catches a level share above the whole view" lint_slab 's["top"]["min_level_share"] = 1.5'
+expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
+expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.

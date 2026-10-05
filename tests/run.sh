@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2 and tree_1_autumn first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, blade_plant_1 and slab_1 first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
@@ -93,6 +93,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/paint.py|tools/foliage.py) echo paint ;;
     tests/paint_mutations.py) echo rock_mutations ;;
     tests/tree_mutations.py) echo tree_mutations ;;
+    tests/slab_mutations.py) echo slab_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -104,6 +105,9 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
+    source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
+    source/slab/*|tools/stone.py) echo slab_1 ;;  # the generator, the brief and the kit slab_1 is built with
+    tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
     # The suite itself, what every script imports, the pinned tools and the standards they all read.
@@ -195,6 +199,7 @@ trap 'kill $(jobs -p) 2> /dev/null; exit 130' INT TERM
 glb=assets/models/tracer.glb; manifest=assets/models/tracer.manifest.json
 rock=assets/models/rock.glb; rock_manifest=assets/models/rock.manifest.json
 tree=assets/models/tree_1.glb; tree_manifest=assets/models/tree_1.manifest.json
+slab=assets/models/slab_1.glb; slab_manifest=assets/models/slab_1.manifest.json
 
 # The Bevy binaries are built once, here, and run directly: `cargo run` checks the whole workspace
 # for changes every time it is called.
@@ -297,6 +302,7 @@ key_of() { # <files...> -> a hash of those files, every tool the builds import, 
 }
 kept="$bin/../gate-test-fixtures"; mkdir -p "$kept" || die "cannot make $kept"
 rock_key="$(key_of tests/paint_mutations.py source/rock/build.py source/rock/spec.json)" || die "cannot hash the rock's sources"
+slab_key="$(key_of tests/slab_mutations.py source/slab_1/build.py source/slab_1/spec.json source/slab/*.py)" || die "cannot hash slab_1's sources"
 tree_key="$(key_of tests/tree_mutations.py source/tree_1/build.py source/tree_1/spec.json source/tree/*.py)" || die "cannot hash tree_1's sources"
 
 # The rock, or tree_1, built and painted with one thing wrong and exported. A mutation that only
@@ -316,12 +322,13 @@ broken_tree() {
   if [[ $tree_after_paint == *" $1 "* ]]; then fixture --key "$tree_key" "tree_1_$1.glb" mutated_painted tests/tree_mutations.py "$1" painted_tree
   else fixture --key "$tree_key" "tree_1_$1.glb" mutated tests/tree_mutations.py "$1"; fi
 }
+broken_slab() { fixture --key "$slab_key" "slab_1_$1.glb" mutated tests/slab_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 
 # A built asset changed in Blender and exported with the exporter's defaults.
 exported() { fixture "$1.glb" export_scene "$1"; }
-export_scene() { # <inside_out|hard_edges|draco> <out.glb>
+export_scene() { # <inside_out|hard_edges|two_pieces|piece_inside_out|draco> <out.glb>
   local script="$fx/$1.py"
   case "$1" in
     inside_out) cat > "$script" <<PY
@@ -340,6 +347,20 @@ bm = bmesh.new(); bm.from_mesh(rock.data)
 for face in bm.faces: face.smooth = False
 flat = bpy.data.meshes.new("rock_flat"); bm.to_mesh(flat); flat.materials.append(rock.data.materials[0])
 rock.data = flat
+bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
+PY
+    ;;
+    two_pieces|piece_inside_out) cat > "$script" <<PY
+# The tracer with a small box pushed into its leg as a second closed piece (ADR 13), the right way out or inside out.
+import bmesh, bpy
+bpy.ops.wm.open_mainfile(filepath="source/tracer/out/tracer.blend")
+mesh = bpy.data.objects["tracer"].data
+bm = bmesh.new(); bm.from_mesh(mesh)
+lo, hi = (0.0, 0.3, 0.5), (0.4, 0.5, 0.9)
+corners = [bm.verts.new((x, y, z)) for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
+faces = [bm.faces.new([corners[i] for i in face]) for face in ([0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3])]
+if "$1" == "piece_inside_out": bmesh.ops.reverse_faces(bm, faces=faces)
+bm.to_mesh(mesh)
 bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
 PY
     ;;
@@ -383,6 +404,7 @@ lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spe
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
+lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

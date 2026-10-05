@@ -82,6 +82,9 @@ manifest = {
 if "open_materials" in spec:
     # Materials whose faces are separate open pieces; the rest is the closed surface.
     manifest["open_materials"] = spec["open_materials"]
+if "overlap" in spec:
+    # Several closed pieces that pass into each other (ADR 13): the load test asks facing outward of each.
+    manifest["overlap"] = True
 if "foliage" in spec:
     # What the leaf pieces' colours must do, from the spec, and how they are found and measured, from the conventions.
     want, rules = spec["foliage"], conventions()
