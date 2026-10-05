@@ -1,6 +1,6 @@
 # tree
 
-A plain broadleaf tree, made by a generator that takes a seed. This is the brief for the family: the generator (`generator.py`, beside this file) and everything its trees share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/tree_1`, `source/tree_2`, `source/tree_3`. Their specs name this folder as their `family`, and `tools/lint_spec.py` holds each of them to the Numbers table below, except for the rows a variant's own brief gives.
+A plain broadleaf tree, made by a generator that reads a spec. This is the brief for the family: the generator (`generator.py`, beside this file), its species recipes (`species/`) and everything its trees share. Every tree is an asset of its own whose spec names this folder as its `family` and gives a `species`, a `growth_stage`, a `season`, a `seed` and bounds (ADR 13): a new tree is a new spec, not new code. `tools/lint_spec.py` holds each of them to the Numbers table below, except for the rows an asset's own brief gives. The trees so far: three mature ones (`source/tree_1`, `tree_2`, `tree_3`), a young and an old one (`tree_young_1`, `tree_old_1`), and `tree_1` in autumn and winter (`tree_1_autumn`, `tree_1_winter`).
 
 It is the first tree, and the first asset with foliage in the style of ADR 9 as amended: leaf-shaped pieces on a branch skeleton, over a dark core.
 
@@ -28,6 +28,43 @@ About 7 m tall with a crown 4 to 6 m across: a small street tree, or four player
 | `tree_3` | 4.3 m | 4.3 m | 7.8 m | taller and narrower |
 
 The origin is on the ground at the middle of the foot of the trunk, so a tree is planted, and turned, about its trunk. The crown is not centred on it: a tree leans, and each variant's bounds say which way.
+
+## Species
+
+A species is a recipe the one generator reads: `species/<name>.toml`, named by a spec's `species`. It holds every number that says how the trunk leans, flares and forks, where the pads sit and how they are built, and the shape of a leaf piece; the generator has none of its own besides how hard it tries (`TREES`, `MAX_STRETCH`) and the room it keeps to each limit (`MARGINS`). The broadleaf (`species/broadleaf.toml`) is the only one. The checks below are this family's, and a species that needs others (a conifer has no pads) will need its own rows.
+
+## Growth stages
+
+A spec's `growth_stage` is a number: the tree's height over a mature tree's, so 1.0 is mature. The recipe's `[growth]` table says what follows it, as multipliers at the stages it names with straight lines between: the trunk's girth, its lean, how low it forks, how many pads it carries and how wide they are. Leaf pieces do not grow: a young tree has fewer, smaller pads of full-size leaves. `tools/lint_spec.py` holds a spec's height to its stage: the stage times the recipe's mature height, 6 to 8 m.
+
+| Stage | `growth_stage` | Height | Crown | Trunk at 1.3 m | Pads | Forks at | Triangles, at most |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Sapling | 0.6 | 3.6 to 4.8 m | about 3 m | about 0.2 m through | 3 | head height | not built: see below |
+| Young | 0.8 | 4.8 to 6.4 m | about 4 m | about 0.3 m through | 3 or 4 | 1.8 to 3.0 m | 2,500 |
+| Mature | 1.0 | 6 to 8 m | 4 to 6 m | about 0.43 m through | 3 to 5 | 2.0 to 3.5 m | 4,000 |
+| Old | 1.25 | 7.5 to 10 m | about 6.4 m | about 0.55 m through | 5 or 6 | 2.5 to 4.5 m | 6,000 |
+
+What a stage changes in the Numbers, and why (each stage asset's own brief gives the rows):
+
+- **Budget.** Leaf pieces are the cost and they follow the canopy's surface: a young tree's three or four pads at 0.8 of the width are about half the mature surface, an old tree's five or six at 1.15 about one and three quarter times. With the bark and cores that gives 2,500 and 6,000 beside the mature 4,000; 6,000 is the ceiling the owner first proposed, from the benchmark's 6,265. They are estimates until the stress scene (ADR 7).
+- **Fork.** A young tree forks lower and an old one higher than a mature one; every stage still forks above a player's head (1.8 m).
+- **Young pads.** A pad under full-size leaves cannot be as flat or as different from its neighbours as a mature one: 0.5 m leaves and a 0.45 m skirt are a larger part of a 1.4 m pad than of a 2.5 m one. A young tree's pads are asked to be 1.2 times as wide as tall (mature 1.3) and its widest 1.3 times its narrowest (mature 1.4).
+- **Young crevice shadow.** The band of shadow round a junction is the mature tree's 4.5 cm times the stage's girth (0.7): 3.2 cm. At 4.5 cm the young tree's thinner limbs showed inside corners 0.71 as light as open faces where `painted.crevices_darker` allows 0.70, the same thinning the mature tree showed at 6 cm.
+- **Old texture.** 2048 px. A 1024 px texture gives the old trunk 231 texels per metre below 2.5 m, where this brief asks for 250; the old tree's file is about three times a mature one's.
+
+**The sapling is not built.** At stage 0.6 the generator kept no tree in 32 tries over four seeds: three pads small enough for a 3 m crown, under 0.5 to 0.75 m leaves, do not keep clear air between them, and their limbs show too little bark. A sapling needs rules of its own (one or two tufts, or smaller leaves), which is a change to this brief's Silhouette and not a number in a recipe; until then the recipe's youngest stage is 0.8 and the lint refuses a spec below it.
+
+## Seasons
+
+A season is a palette on the same mesh (ADR 11, ADR 13). A season asset is a spec of its own that names its `season` and the asset it is a `palette_of`; it is drawn again from the same species, stage, seed and bounds, so its mesh, UVs included, is its base's, and only its texture differs. `tools/lint_spec.py` holds the two specs to agree on everything but the palette (`spec.palette_of`), and `tools/same_mesh.py` holds the two exported files to the same geometry byte for byte, with different images (gate L2c). The game can then keep one mesh and swap the image.
+
+| Season | Leaf, top of a pad | Underside tint | Core tint | What it shows |
+| --- | --- | --- | --- | --- |
+| Summer | `#a8b846` | `#6f96a6` | `#527a86` | Light yellow-green above, darker and bluer below (Style and colour) |
+| Autumn | `#e0a23a` | `#b86a50` | `#8a4a3c` | Golden yellow at the top of a pad through orange to deep red underneath |
+| Winter | `#d8dcde` | `#507359` | `#3a5442` | Snow lying on the pads: near-white on top, through pale grey-green, to dark green underneath |
+
+Winter here is snow on the foliage only, and it is a ramp of six shades, not a snow line. Snow on the bark's upward faces is not done: painted growth keeps the bark's own lightness and the load test finds it by hue (ADR 10), and snow is a change of lightness with no hue, so it needs a growth that lightens and checks that measure it by lightness. A bare winter tree is a separate mesh (ADR 13): the generator without leaf pieces and cores, with the twigs the cores now hide put back, and a spec without the `foliage` block, whose sky and bark-seen checks would need other limits.
 
 ## Silhouette
 
@@ -87,15 +124,18 @@ The texture is 1024 px. The palette takes a strip 16 px tall along the top. The 
 
 ## Out of scope
 
-Wind animation, LODs, collision shapes, a climbable flag, seasonal colour variants, growth stages, other species.
+Wind animation, LODs, collision shapes, a climbable flag, other species, a sapling, a bare winter tree, snow on bark.
 
 ## Numbers
 
-Every value the variants' `spec.json` files share, and the sentence above it comes from. Each variant's own brief gives its `objects`, `seed`, `bounds_m` and `variants.siblings`. `tools/lint_spec.py` fails if a row and a spec disagree, or if a spec has a value with no row.
+Every value the trees' `spec.json` files share, and the sentence above it comes from: the mature summer tree's. Each asset's own brief gives its `objects`, `seed` and `bounds_m`; the mature variants' give their `variants` rows, a stage's the rows Growth stages names, and a season's its `season`, `palette_of` and colours. `tools/lint_spec.py` fails if a row and a spec disagree, or if a spec has a value with no row.
 
 | Spec key | Value | From |
 | --- | --- | --- |
 | `family` | `"tree"` | This brief |
+| `species` | `"broadleaf"` | Species: the recipe `species/broadleaf.toml` |
+| `growth_stage` | `1.0` | Growth stages: mature |
+| `season` | `"summer"` | Seasons |
 | `bounds_tolerance_m` | `0.001` | 1 mm, far below anything seen |
 | `max_triangles` | `4000` | Budget |
 | `materials.m_tree_bark` | `"#7a5a44"` | Style and colour: bark |
@@ -154,7 +194,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `watertight` | `true` | Parts: the bark is a closed surface |
 | `open_materials` | `["m_tree_leaf"]` | Parts: leaf pieces are open and separate |
 | `attributes` | `["POSITION", "NORMAL", "TEXCOORD_0"]` | Style and colour: one texture, so UVs; no tangents |
-| `variants.min_difference` | `0.3` | Decisions: how far two variants' outlines must differ |
 
 ## Decisions
 
@@ -205,6 +244,11 @@ And, after looking at the first three trees beside the benchmark:
   - `foliage.min_pad_spread` 1.4: the first trees scored 1.23 to 1.33, and the eye took their pads for one size. These score 1.53 to 1.80.
   - `foliage.lobes`, `min_lobe_ratio`: the owner's "two to four overlapping lobes of different sizes"; 1.2 is the least difference in width that reads as a difference.
   - Leaf, bark, core and tint colours: chosen by eye against the reference's previews under the Bevy viewer's light. They are the first thing to change at review.
+- **Species, stage and season are spec fields; each tree is still one asset** (ADR 13, agreed by the owner on 2026-10-05; how it is written is the agent's). `species` names a recipe file, so a species is data the generator reads. `growth_stage` is the height over a mature tree's, because a spec's bounds already give the height and the lint can then hold the two together (`spec.growth_height`).
+- **A season is a separate asset that shares its base's mesh**, not a second texture inside one asset: the pipeline's unit is one spec, one GLB, one contact sheet, and every gate already reads a palette from the spec, so an autumn tree is gated exactly as a summer one is. The cost is that each season's GLB repeats the mesh (about 0.15 MB of a 1 MB file); the gate proves the copies are identical, so the game may load one. Exporting the texture alone was not done: it needs images outside the GLB, which the profile (ADR 4) forbids.
+- **Asset names**: `tree_<n>` stays the mature summer tree, a stage is `tree_<stage>_<n>` and a season `<base>_<season>`. The three mature trees were not renamed `tree_mature_<n>`: the tests, baselines and the game's look tests name them, and the default stage needs no word.
+- **`variants.min_difference` moved** from this table to the mature variants' own briefs: it compares seeds of one stage, and a stage or season with one seed has no sibling to compare with.
+- **Stage and season numbers** (Growth stages, Seasons): every one is the agent's. The stage curves in the recipe were set so that the generator keeps trees; the autumn and winter colours were chosen without the owner seeing them.
 - **Seams.** The generator marks seams on the bark (round every ring, and once along each stretch of a limb) and `tools/paint.py` unwraps along them. The grain does not match across the one seam that runs along each limb; it reads as one more furrow.
 - **Seeds**: see each variant's brief.
 

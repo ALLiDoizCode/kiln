@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2 and tree_1_autumn first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
 #   <asset>                  the cases that read that asset: tracer, crate, rock, tree_1, ...
-#   <gate>                   the cases of that gate: L0, L1, L2b, L4, L4b, L4c, L5b, L5c
+#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c
 #   <tool>                   the cases behind one tool: smoke, view, paint, validate, ... (`--list` shows every tag)
 #       Several assets or tools select the cases with any of them, several gates likewise, and
 #       gates together with assets or tools select the cases with both: `tests/run.sh L4 rock`.
@@ -98,10 +98,11 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     crates/asset_view/*) echo view ;;
     tools/view_checks.py) echo view_checks ;;
     tools/bevy_lint.py) echo bevy_lint ;;
+    tools/same_mesh.py) echo same_mesh ;;
     tools/baseline.py) echo baseline ;;
     tools/image_lint.py) echo image_lint ;;
     tools/review_aids.py) echo review_aids ;;
-    source/tree/*) echo tree_1 tree_2 tree_3 ;;  # the generator and brief the variants share
+    source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
     # The suite itself, what every script imports, the pinned tools and the standards they all read.
@@ -379,6 +380,7 @@ lint_copy() { # <asset> <sed expression for the brief> <python statements for th
 lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the copied brief>
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
+lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

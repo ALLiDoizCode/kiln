@@ -3,7 +3,7 @@
 # One case per line, and nothing else but comments and `uses` lines. A case is
 #   expect <exit code> "<name>" <command...>      the command must exit with that code
 #   expect_id "<check id>" "<name>" <command...>  the command must exit 1 and name that check
-# Its name starts with its gate (L0, L1, L2b, L4, L4b, L4c, L5b, L5c) and is unique.
+# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c) and is unique.
 # `uses <tag...>` says what the cases below it depend on, until the next `uses`: the assets they
 # read, and the tools behind them (see `tags_of_file` in tests/run.sh). Selection goes by these.
 #
@@ -189,6 +189,32 @@ expect_id "spec.painted_grain"       "L0 catches an impossible grain"          l
 expect_id "spec.painted_shading"     "L0 catches close texels with no height"  lint_tree 'del s["painted_shading"]["close_height_m"]'
 expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" lint_tree 's["painted_shading"]["close_texels_per_m"] = 50.0'
 expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" lint_tree 's["skeleton"]["min_view_grain"] = 0.5'
+# Species and growth stage (ADR 13): a tree's spec names a recipe and says how grown the tree is.
+expect_id "spec.species"             "L0 catches a species with no recipe"     lint_tree 's["species"] = "zz_nope"'
+expect_id "spec.species"             "L0 catches a tree with no species"       lint_tree 'del s["species"]'
+expect_id "spec.growth_stage"        "L0 catches a growth stage older than the recipe draws" lint_tree 's["growth_stage"] = 5.0'
+expect_id "spec.growth_stage"        "L0 catches a tree with no growth stage"  lint_tree 'del s["growth_stage"]'
+expect_id "spec.growth_height"       "L0 catches a mature tree's height called a sapling" lint_tree 's["growth_stage"] = 0.8'
+# Seasons (ADR 11, ADR 13): a season is another palette on its base asset's mesh, so its spec is the base's but for the palette.
+# `lint_season <python>` lints a copy of tree_1_autumn after that has changed its spec `s`.
+uses tree_1 tree_1_autumn lint_spec
+expect 0 "L0 passes a season's spec"         lint_season 'pass'
+expect_id "spec.season"              "L0 catches a season that is not one of the year's" lint_season 's["season"] = "monsoon"'
+expect_id "spec.season"              "L0 catches a tree with no season"        lint_season 'del s["season"]'
+expect_id "spec.palette_of"          "L0 catches a season drawn from another seed than its base" lint_season 's["seed"] = 2'
+expect_id "spec.palette_of"          "L0 catches a season with a leaf shape of its own" lint_season 's["foliage"]["piece_m"] = [0.2, 0.9]'
+expect_id "spec.palette_of"          "L0 catches a palette of an asset that does not exist" lint_season 's["palette_of"] = "zz_nope"'
+expect_id "spec.palette_of"          "L0 catches a season in its base's own colours" lint_season 'b = json.load(open("source/tree_1/spec.json")); s["materials"] = b["materials"]; s["foliage"] = b["foliage"]'
+
+# L2c: a season's GLB carries its base's mesh, UVs included: only the texture differs.
+uses tree_1 tree_1_autumn same_mesh
+expect 0 "L2c passes a season on its base's mesh" python tools/same_mesh.py assets/models/tree_1_autumn.glb assets/models/tree_1.glb
+uses tree_1 tree_2 same_mesh
+expect_id "palette.same_mesh"        "L2c catches a season on another tree's mesh" python tools/same_mesh.py assets/models/tree_2.glb assets/models/tree_1.glb
+uses tree_1 tree_1_autumn same_mesh paint tree_mutations
+expect_id "palette.same_mesh"        "L2c catches a season whose leaves sit on other swatches" python tools/same_mesh.py "$(broken_tree gradient_within_piece)" assets/models/tree_1.glb
+uses tree_1 same_mesh
+expect_id "palette.other_texture"    "L2c catches a season with its base's own texture" python tools/same_mesh.py assets/models/tree_1.glb assets/models/tree_1.glb
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.
