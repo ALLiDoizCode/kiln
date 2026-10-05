@@ -58,7 +58,7 @@
     "min_branches": 3,
     "max_branch_taper": 0.8,
     "min_seen_share": 0.02,
-    "min_seen_views": 5,
+    "min_seen_views": 4,
     "min_view_tone": 0.014,
     "min_view_grain": 1.25,
     "min_canopy_over_limbs": 1.25
@@ -66,7 +66,7 @@
   "foliage": {
     "material": "m_tree_leaf",
     "pad_gap_m": 0.06,
-    "min_pads": 6,
+    "min_pads": 5,
     "max_pads": 9,
     "min_pad_pieces": 24,
     "piece_m": [

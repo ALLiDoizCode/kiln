@@ -858,7 +858,7 @@ def grow_tiers(r, tree, rng, lo, hi):
         # whatever the upper one's tips hang lower than the lower one's surface does at that distance.
         need = []
         for k in range(count):
-            above = (r.boughs.lift + r.boughs.up + r.tiers.reach) * thick[k] + r.boughs.scatter
+            above = (r.boughs.lift + r.boughs.up + r.tiers.stand) * thick[k] + r.boughs.scatter
             below = (r.boughs.down + r.skirt.drop) * thick[k + 1] + r.boughs.scatter
             reach = widths[k + 1] * widest
             need.append(above + below + r.tiers.clear + max(0.0, hang(k + 1, reach) - hang(k, reach)))
@@ -913,7 +913,8 @@ def grow_tiers(r, tree, rng, lo, hi):
             length = share * room(azimuth)
             z = heights[k] + rng.uniform(-r.boughs.scatter, r.boughs.scatter) * thick[k]
             root, parent = at_height(points, radii, z)
-            wide = max(length * rng.uniform(*r.boughs.width), r.boughs.least_width)
+            # A short tier's boughs are no narrower than `least_width` at their longest, and in proportion below it.
+            wide = length * max(rng.uniform(*r.boughs.width), r.boughs.least_width / max(room(a) * w for t, a, w in drawn if t == k))
             bough = Bough(root + Z * r.boughs.lift * thick[k], out, length, r.boughs.inner, wide, r.boughs.up * thick[k], r.boughs.down * thick[k], droops[k], r.tiers.sag)
             boughs.append(bough)
             # Its wood: out of the leader, level at first, and down into the foliage.
@@ -953,8 +954,12 @@ def grow_needles(r, tree, rng, tiers):
             plan = math.pi * lobe.long * lobe.wide if bough else math.pi * lobe.radius * (lobe.radius + lobe.up)
             total = round(plan * 1.25 / r.leaf.spacing**2 * 2 / (1 - r.lobes.open))
             turn = rng.uniform(0, 2 * math.pi)
+            if bough:
+                # A bough is flat: its pieces are spread evenly over its plan, seen from above, and not over a ball's
+                # surface, which would put most of them round its edge where the skirt already hangs.
+                total = round(plan * r.leaf.cover / r.leaf.spacing**2)
             for k in range(total):
-                height = 1 - (2 * k + 1) / total
+                height = math.sqrt(1 - (k + 0.5) / total) if bough else 1 - (2 * k + 1) / total
                 if height < r.lobes.open:
                     break
                 ring = math.sqrt(1 - height * height)
