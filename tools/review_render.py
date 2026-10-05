@@ -160,6 +160,9 @@ tiles += render_pass("clay_wire")
 # A tree is also shown as a player under it sees it: looking up into the canopy from beside the
 # trunk, and straight at the bark from 0.5 m.
 bevy_views = ["bevy", "bevy_back"] + (["bevy_under", "bevy_trunk"] if "skeleton" in spec else [])
+# A table rock a player can stand under is shown from there too: looking up at the underside of its cap.
+if "table" in spec and spec["table"]["min_clear_m"] >= conv["metrics"]["player_height_m"]:
+    bevy_views.append("bevy_under")
 for bevy in (out_dir / f"{view}.png" for view in bevy_views):
     if not bevy.is_file():
         raise RuntimeError(f"{bevy} is missing: run tools/gate.sh, which takes the Bevy screenshots first")

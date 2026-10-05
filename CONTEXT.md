@@ -177,6 +177,7 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Chamfer**: a plane that cuts off a corner or a rim, of a middle size: smaller than a large plane, and wide enough to be lit as a face of its own. _Avoid_: bevel (the narrow strip of a soft edge).
 - **Upright**: within a few degrees of vertical (`[lean]` in `conventions.toml`). A shape's **upright share** is how much of its side surface is upright.
 - **Summit**: the part of a shape above nine tenths of its height. It is **off-centre** by how far its middle is from the middle of the bounds.
+- **Neck**: a narrow piece that stands on the ground and holds a table rock's plate off it. **Clearance**: the open air under that plate, from the ground up; the part of the outline that has the clearance a spec asks is **sheltered**. **Overhang**: how far in from the rim of the outline, seen from above, the necks stand. _Avoid_: pillar, leg, stem (a bush's).
 
 **Game**
 

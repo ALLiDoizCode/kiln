@@ -28,7 +28,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Crag | 3 or more clusters | Three variants built from pieces (ADR 13): 3.0, 4.6 and 1.7 m tall, of 6, 8 and 5 pieces (4, 5 and 3 leaning prisms, the rest foot blocks), 394 to 634 triangles, bare stone. The largest needs a 2048 px texture. No covers. Not approved. |
 | Arch | Lintel arch and wedged-block arch | Not started |
 | Rib | Single ribs and a paired arch | Not started |
-| Table rock | 2 or more | Not started |
+| Table rock | 2 or more | Three variants built from pieces (ADR 13): 3.6, 6.4 and 2.4 m across and 2.9, 4.2 and 1.5 m tall, with 2.0, 3.0 and 0.9 m of open air under the cap; the largest on two necks and with a 2048 px texture; 288 to 500 triangles, bare stone. Under the viewer's light the underside and necks are in the cap's shadow and their paint does not read. No covers. Not approved. |
 | Slab | Single and overlapped, several sizes | Three overlapped variants built from pieces (ADR 13): 2.6, 4.0 and 1.4 m across, 208 to 312 triangles, bare stone. No single slab, no covers. Not approved. |
 | Stack | 3 or more | Not started |
 | Block | A run of sizes, some cracked | Not started |
