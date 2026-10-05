@@ -879,6 +879,406 @@ def check_heads(checks, name, bm, slots, spec, conv):
     )
 
 
+def discs_of(bm, leaf):
+    """The discs of a group (source/lily_pad/brief.md), read from the mesh: every open piece of the foliage material.
+
+    A disc's middle is its vertex with the most faces; its floor is the
+    vertices joined to its middle, and its rim every other one. Its notch is
+    the angle, seen from above, between the two open edges that meet at its
+    middle; a disc whose middle is not on its open edge has none."""
+    found = []
+    for piece in foliage.pieces_of(bm, leaf):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        middle = max(verts, key=lambda v: sum(1 for f in v.link_faces if f in inside))
+        at = middle.co.xy
+        spokes = [e for e in middle.link_edges if any(f in inside for f in e.link_faces)]
+        floor = [e.other_vert(middle) for e in spokes]
+        rim = [v for v in verts if v is not middle and v not in floor] or floor
+        walls = [e.other_vert(middle).co.xy - at for e in spokes if sum(1 for f in e.link_faces if f in inside) == 1]
+        notch = math.degrees(abs(walls[0].angle_signed(walls[1]))) if len(walls) == 2 and min(wall.length for wall in walls) > 1e-9 else 0.0
+        # Its outline, seen from above: the rim in order round the middle, from the widest gap between two neighbours, and the middle where a notch reaches it.
+        ring = sorted(rim, key=lambda v: math.atan2(v.co.y - at.y, v.co.x - at.x))
+        angles = [math.atan2(v.co.y - at.y, v.co.x - at.x) for v in ring]
+        gaps = [(b - a) % (2 * math.pi) for a, b in zip(angles, angles[1:] + angles[:1])]
+        start = (gaps.index(max(gaps)) + 1) % len(ring) if ring else 0
+        outline = [v.co.xy.copy() for v in ring[start:] + ring[:start]] + ([at.copy()] if notch else [])
+        reach = [(v.co.xy - at).length for v in rim]
+        levels = [v.co.z for v in floor]
+        level = sum(levels) / len(levels)
+        found.append({
+            "middle": at.copy(), "outline": outline, "width": 2 * max(reach), "round": min(reach) / max(max(reach), 1e-9), "notch": notch,
+            "level": level, "off_level": max(abs(v.co.z - level) for v in floor + [middle]),
+            "rim": (sum(v.co.z for v in rim) / len(rim) - level) / max(2 * max(reach), 1e-9),
+        })
+    return sorted(found, key=lambda disc: -disc["width"])
+
+
+def inside_outline(point, outline):
+    """Whether a point lies inside a closed outline, both seen from above."""
+    hit = False
+    for a, b in zip(outline, outline[1:] + outline[:1]):
+        if (a.y > point.y) != (b.y > point.y) and point.x < a.x + (b.x - a.x) * (point.y - a.y) / (b.y - a.y):
+            hit = not hit
+    return hit
+
+
+def check_discs(checks, name, bm, slots, spec, conv):
+    """The foliage is a group of discs floating at one level (source/lily_pad/brief.md): round, notched, rimmed, in a run of sizes, apart and scattered.
+
+    Returns the discs' measurements, for check_blooms."""
+    want, size = spec["discs"], spec["foliage"]
+    discs = discs_of(bm, slots.index(size["material"]))
+
+    def span(key, digits=3):
+        values = [disc[key] for disc in discs]
+        return f"{min(values, default=0):.{digits}f} to {max(values, default=0):.{digits}f}"
+
+    widths = [disc["width"] for disc in discs]
+    low, high = size["piece_m"]
+    odd = sum(1 for width in widths if not low <= width <= high)
+    checks.check(
+        f"{name}.discs",
+        want["count"][0] <= len(discs) <= want["count"][1] and len(discs) >= size["min_pad_pieces"] and not odd,
+        f"{len(discs)} discs (open pieces of the foliage), {odd} of them not {low} to {high} m across (they run {span('width')} m); spec wants {want['count'][0]} to {want['count'][1]}, at least {size['min_pad_pieces']}, all of that width",
+    )
+    steps = [a / max(b, 1e-9) for a, b in zip(widths, widths[1:])]
+    twin = conv["discs"]["twin"]
+    twins = sum(1 for step in steps if step < twin)
+    narrow, wide = want["narrowest_m"], want["widest_m"]
+    checks.check(
+        f"{name}.discs_sizes",
+        len(discs) >= 2 and narrow[0] <= widths[-1] <= narrow[1] and wide[0] <= widths[0] <= wide[1] and max(steps) <= want["max_size_step"] and twins <= want["max_twins"],
+        f"the discs are {[round(width, 3) for width in widths]} m across: the narrowest is to be {narrow[0]} to {narrow[1]} m and the widest {wide[0]} to {wide[1]} m, "
+        f"with no step between one size and the next above {want['max_size_step']} times (the largest is {max(steps, default=0):.2f}) and at most {want['max_twins']} pairs within {twin} times of each other (there are {twins}): a run of sizes",
+    )
+    levels = [disc["level"] for disc in discs]
+    middle_level = statistics.median(levels) if levels else 0.0
+    apart = max((abs(level - middle_level) for level in levels), default=0.0)
+    tipped = max((disc["off_level"] for disc in discs), default=0.0)
+    checks.check(
+        f"{name}.discs_level",
+        discs and apart <= want["level_m"] and tipped <= want["level_m"],
+        f"the discs' floors lie up to {apart:.3f} m from the height of the middle one of them, and the furthest point of a floor is {tipped:.3f} m from its own floor's height; spec wants both within {want['level_m']} m: level, and all at one height",
+    )
+    low, high = want["rim_share"]
+    off = sum(1 for disc in discs if not low <= disc["rim"] <= high)
+    checks.check(
+        f"{name}.discs_rim",
+        discs and not off,
+        f"{off} of {len(discs)} discs have a rim that does not stand {low} to {high} of the disc's width above its floor (they run {span('rim')}): a raised rim",
+    )
+    low, high = want["notch_deg"]
+    off = sum(1 for disc in discs if not low <= disc["notch"] <= high)
+    checks.check(
+        f"{name}.discs_notch",
+        discs and not off,
+        f"{off} of {len(discs)} discs have no notch {low} to {high} degrees wide cut in to their middle (their notches run {span('notch', 0)} degrees; 0 is none)",
+    )
+    # The longest straight side of a rim, seen from above (the two sides of a notch, which run in to the middle, are not rim).
+    sides = [max(((a - b).length for a, b in zip(disc["outline"], disc["outline"][1:]) if (a - disc["middle"]).length > 1e-9 and (b - disc["middle"]).length > 1e-9), default=0.0) for disc in discs]
+    checks.check(
+        f"{name}.discs_sides",
+        discs and max(sides) <= want["max_side_m"],
+        f"the longest straight side of a disc's rim is {max(sides, default=0):.3f} m (the discs' longest run {min(sides, default=0):.3f} to {max(sides, default=0):.3f} m); spec wants at most {want['max_side_m']}: from standing height a rim is round, not a polygon",
+    )
+    oval = sum(1 for disc in discs if disc["round"] < want["min_round"])
+    checks.check(
+        f"{name}.discs_round",
+        discs and not oval,
+        f"{oval} of {len(discs)} discs have a rim whose nearest point is less than {want['min_round']} as far from the middle as its furthest (they run {span('round')}): a disc is round",
+    )
+    over = [
+        (i, j) for i, a in enumerate(discs) for j, b in enumerate(discs)
+        if i < j and (any(inside_outline(point, b["outline"]) for point in a["outline"] + [a["middle"]]) or any(inside_outline(point, a["outline"]) for point in b["outline"] + [b["middle"]]))
+    ]
+    checks.check(
+        f"{name}.discs_apart",
+        discs and not over,
+        f"seen from above, {len(over)} pairs of discs overlap (widest is 0: {over[:6]}); spec wants none: discs float side by side at one level",
+    )
+    # Scattered: neither a row (the middles spread across as well as along) nor a ring (they are not all one distance from the middle of the group).
+    across, ring = 0.0, 0.0
+    if len(discs) >= 3:
+        points = numpy.array([tuple(disc["middle"]) for disc in discs])
+        spread = numpy.sqrt(numpy.maximum(numpy.linalg.eigvalsh(numpy.cov((points - points.mean(axis=0)).T)), 0.0))
+        across = float(spread[0] / max(spread[1], 1e-9))
+        out = numpy.linalg.norm(points - points.mean(axis=0), axis=1)
+        ring = float(out.std() / max(out.mean(), 1e-9))
+    print(f"{name} discs: {len(discs)}, {[round(width, 3) for width in widths]} m across, round {span('round')}, notches {span('notch', 0)} degrees, rims {span('rim')} of the width, "
+          f"floors within {apart:.3f} m of one height and {tipped:.3f} m of level, {len(over)} overlapping; middles spread {across:.2f} as far across as along, their distances from the middle differ by {ring:.2f} of the mean")
+    checks.check(
+        f"{name}.discs_scattered",
+        across >= want["min_scatter"] and ring >= want["min_scatter"],
+        f"the discs' middles spread {across:.2f} as far across the group as along it, and their distances from the group's middle differ by {ring:.2f} of the mean distance; spec wants both at least {want['min_scatter']}: not a row and not a ring",
+    )
+    return discs
+
+
+def check_mat(checks, name, bm, slots, spec, conv):
+    """The foliage is a mat (source/leaf_mat/brief.md): small leaf pieces lying near level, over each other, in a ragged patch with gaps.
+
+    What the leaves cover is counted on a grid seen from straight above: a cell
+    is covered when its middle lies under a leaf. A disc or a rectangle of
+    leaves covers the whole convex hull of what it covers; a ragged patch with
+    gaps covers part of it."""
+    want, size, rules = spec["mat"], spec["foliage"], conv["foliage"]
+    pieces = foliage.pieces_of(bm, slots.index(size["material"]))
+    shapes = [foliage.piece_shape(piece) for piece in pieces]
+    lengths = sorted(shape["length_m"] for shape in shapes)
+    low, high = size["piece_m"]
+    odd = sum(1 for length in lengths if not low <= length <= high)
+    bent = sum(1 for shape in shapes if shape["off_plane_m"] > rules["flat_m"])
+    blunt = sum(1 for shape in shapes if shape["sharpest_deg"] > rules["pointed_deg"])
+    checks.check(
+        f"{name}.mat_leaves",
+        len(pieces) >= size["min_pad_pieces"] and not (odd or bent or blunt),
+        f"{len(pieces)} leaf pieces, {odd} of them not {low} to {high} m long (they run {lengths[0] if lengths else 0:.3f} to {lengths[-1] if lengths else 0:.3f} m), {bent} not flat (within {rules['flat_m']} m) "
+        f"and {blunt} with no corner of {rules['pointed_deg']} degrees or less; spec wants at least {size['min_pad_pieces']}, all of that length, flat and pointed",
+    )
+    tilts = [math.degrees(math.acos(min(1.0, abs(piece[0].normal.z)))) for piece in pieces]
+    tipped = sum(1 for tilt in tilts if tilt > want["max_tilt_deg"])
+    checks.check(
+        f"{name}.mat_lying",
+        pieces and not tipped,
+        f"{tipped} of {len(pieces)} leaves lie more than {want['max_tilt_deg']} degrees from level (the steepest is {max(tilts, default=0):.1f}); a mat's leaves lie down",
+    )
+    cell = conv["mat"]["cell_m"]
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    nx, ny = (max(1, math.ceil((hi[i] - lo[i]) / cell)) for i in range(2))
+    over = numpy.zeros((nx, ny), dtype=numpy.int32)
+    for piece in pieces:
+        mine = numpy.zeros((nx, ny), dtype=bool)
+        for face in piece:
+            corners = [((v.co.x - lo[0]) / cell - 0.5, (v.co.y - lo[1]) / cell - 0.5) for v in face.verts]
+            for k in range(1, len(corners) - 1):
+                (ax, ay), (bx, by), (cx, cy) = corners[0], corners[k], corners[k + 1]
+                x0, x1 = max(0, math.floor(min(ax, bx, cx))), min(nx - 1, math.ceil(max(ax, bx, cx)))
+                y0, y1 = max(0, math.floor(min(ay, by, cy))), min(ny - 1, math.ceil(max(ay, by, cy)))
+                if x1 < x0 or y1 < y0:
+                    continue
+                xs, ys = numpy.meshgrid(numpy.arange(x0, x1 + 1), numpy.arange(y0, y1 + 1), indexing="ij")
+                d1 = (xs - bx) * (ay - by) - (ax - bx) * (ys - by)
+                d2 = (xs - cx) * (by - cy) - (bx - cx) * (ys - cy)
+                d3 = (xs - ax) * (cy - ay) - (cx - ax) * (ys - ay)
+                mine[x0 : x1 + 1, y0 : y1 + 1] |= ~(((d1 < 0) | (d2 < 0) | (d3 < 0)) & ((d1 > 0) | (d2 > 0) | (d3 > 0)))
+        over += mine
+    covered = over > 0
+    cells = [(int(i), int(j)) for i, j in zip(*numpy.nonzero(covered))]
+    hull = hull_area_2d([(i + a, j + b) for i, j in cells for a in (0, 1) for b in (0, 1)]) if cells else 0.0
+    of_hull = len(cells) / hull if hull else 0.0
+    of_footprint = len(cells) / (nx * ny)
+    # A leaf lies over or under another when a cell it covers is covered twice.
+    twice = over > 1
+    lapped = 0
+    for piece in pieces:
+        hit = False
+        for face in piece:
+            at = face.calc_center_median()
+            i, j = int((at.x - lo[0]) / cell), int((at.y - lo[1]) / cell)
+            hit = hit or any(0 <= i + a < nx and 0 <= j + b < ny and twice[i + a, j + b] for a in (-1, 0, 1) for b in (-1, 0, 1))
+        lapped += hit
+    share = lapped / max(len(pieces), 1)
+    print(f"{name} mat: {len(pieces)} leaves {lengths[0] if lengths else 0:.3f} to {lengths[-1] if lengths else 0:.3f} m long, tilted up to {max(tilts, default=0):.1f} degrees, {share:.2f} of them lapping another; "
+          f"they cover {of_hull:.3f} of their convex hull and {of_footprint:.3f} of the bounds' footprint")
+    checks.check(
+        f"{name}.mat_overlap",
+        share >= want["min_overlap_share"],
+        f"seen from above, {lapped} of {len(pieces)} leaves ({share:.2f}) lie partly over or under another; spec wants at least {want['min_overlap_share']}: overlapping leaves",
+    )
+    low, high = want["hull_cover"]
+    checks.check(
+        f"{name}.mat_ragged",
+        cells and of_hull <= high,
+        f"seen from above, the leaves cover {of_hull:.3f} of the convex hull of what they cover; spec wants at most {high}: a ragged outline with gaps, not a disc or a rectangle of leaves",
+    )
+    checks.check(
+        f"{name}.mat_cover",
+        of_hull >= low and of_footprint >= want["min_footprint_cover"],
+        f"seen from above, the leaves cover {of_hull:.3f} of their convex hull and {of_footprint:.3f} of the bounds' footprint; spec wants at least {low} and {want['min_footprint_cover']}: a mat, not scattered leaves",
+    )
+
+
+def check_mat_grows(checks, name, bm, slots, spec, conv):
+    """A mat grows: its leaves stand along its runners and point away from them (source/leaf_mat/brief.md).
+
+    A runner is a closed piece of the closed surface, read as the straight line between its two corners furthest
+    apart. A leaf grows from a runner when its nearest corner is within `runner_reach_m` of that line and its
+    furthest corner from the same line stands at least half the leaf's own length off it: fallen leaves lie anywhere
+    and point any way, and a leaf laid along a runner does not point away from it."""
+    want = spec["mat"]
+    leaf = slots.index(spec["foliage"]["material"])
+    runners = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        runners.append(max(((a.co.xy, b.co.xy) for a in verts for b in verts), key=lambda ends: (ends[0] - ends[1]).length))
+
+    def off(point, runner):
+        a, b = runner
+        along = b - a
+        share = min(1.0, max(0.0, (point - a).dot(along) / max(along.length_squared, 1e-12)))
+        return (point - (a + along * share)).length
+
+    pieces = foliage.pieces_of(bm, leaf)
+    growing, gaps = 0, []
+    for piece in pieces:
+        corners = [v.co.xy for v in {v for face in piece for v in face.verts}]
+        length = max((a - b).length for a in corners for b in corners)
+        near = min(runners, key=lambda runner: min(off(corner, runner) for corner in corners), default=None)
+        if near is None:
+            continue
+        gaps.append(min(off(corner, near) for corner in corners))
+        if gaps[-1] <= want["runner_reach_m"] and max(off(corner, near) for corner in corners) >= 0.5 * length:
+            growing += 1
+    share = growing / max(len(pieces), 1)
+    print(f"{name} mat: {len(runners)} runners; {growing} of {len(pieces)} leaves ({share:.2f}) start within {want['runner_reach_m']} m of one and point away from it (the leaves start {min(gaps, default=0):.3f} to {max(gaps, default=0):.3f} m from the nearest)")
+    checks.check(
+        f"{name}.mat_grows",
+        pieces and runners and share >= want["min_growing_share"],
+        f"{growing} of {len(pieces)} leaves ({share:.2f}) start within {want['runner_reach_m']} m of one of the {len(runners)} runners and point away from it; spec wants at least {want['min_growing_share']}: "
+        f"ground cover grows along its runners, where fallen leaves lie anywhere",
+    )
+
+
+def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
+    """The plant has blooms (flowers): closed pieces of the closed material, each a star of petals and not a ball, and, among discs, standing between them.
+
+    A bloom is found from the mesh: a connected piece of the closed surface. How much of its own convex hull it fills says whether it has petals."""
+    want = spec["blooms"]
+    leaf = slots.index(spec["foliage"]["material"])
+    blooms = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        hull = bmesh.new()
+        for v in verts:
+            hull.verts.new(v.co)
+        bmesh.ops.convex_hull(hull, input=hull.verts)
+        hull_volume = hull.calc_volume(signed=False)
+        hull.free()
+        blooms.append({
+            "closed": foliage.closed(piece),
+            "width": max((a.co - b.co).length for a in verts for b in verts),
+            "full": abs(signed_volume(piece)) / hull_volume if hull_volume > 0 else 1.0,
+            "middle": sum((v.co for v in verts), Vector()) / len(verts),
+            "low": min(v.co.z for v in verts), "high": max(v.co.z for v in verts),
+        })
+        blooms[-1]["reach"] = max((v.co - blooms[-1]["middle"]).length for v in verts)
+    low, high = want["width_m"]
+    widths = sorted(round(bloom["width"], 3) for bloom in blooms)
+    odd = sum(1 for bloom in blooms if not low <= bloom["width"] <= high)
+    holed = sum(1 for bloom in blooms if not bloom["closed"])
+    checks.check(
+        f"{name}.blooms",
+        want["count"][0] <= len(blooms) <= want["count"][1] and not odd and not holed,
+        f"{len(blooms)} blooms (closed pieces of the closed surface), {holed} of them not closed and {odd} not {low} to {high} m across (they are {widths}); spec wants {want['count'][0]} to {want['count'][1]}, all of that width",
+    )
+    full = sorted(round(bloom["full"], 3) for bloom in blooms)
+    print(f"{name} blooms: {len(blooms)}, {widths} m across, filling {full} of their convex hulls")
+    checks.check(
+        f"{name}.blooms_petals",
+        blooms and full[-1] <= want["max_hull_share"],
+        f"the blooms fill {full} of their own convex hulls; spec wants at most {want['max_hull_share']}: a bloom is a star of petals with air between them, not a ball",
+    )
+    if discs is not None:
+        on = sum(1 for bloom in blooms if any(inside_outline(bloom["middle"].xy, disc["outline"]) for disc in discs))
+        checks.check(
+            f"{name}.blooms_between",
+            blooms and not on,
+            f"seen from above, the middles of {on} of {len(blooms)} blooms lie over a disc; spec wants none: flowers stand on the water between the discs",
+        )
+    return blooms
+
+
+def check_flowers(checks, name, bm, slots, spec, conv, blooms):
+    """The plant is a scatter of flowers (source/flower_scatter/brief.md): each bloom on a stem, above the leaves, at a height and a lean of its own, apart from the others, with leaves at its foot.
+
+    `blooms` are check_blooms' measurements. A stem is the open piece of the foliage nearest a bloom's middle, when it comes within the bloom's own reach of it; every other piece is a leaf."""
+    want = spec["flowers"]
+    ground = spec["bounds_m"]["min"][2]
+    pieces = [list({v for face in piece for v in face.verts}) for piece in foliage.pieces_of(bm, slots.index(spec["foliage"]["material"]))]
+    stems, adrift = {}, []
+    for bloom in blooms:
+        gaps = [min((v.co - bloom["middle"]).length for v in verts) for verts in pieces]
+        nearest = min(range(len(pieces)), key=gaps.__getitem__, default=None)
+        if nearest is None or gaps[nearest] > bloom["reach"]:
+            adrift.append(None if nearest is None else round(gaps[nearest], 3))
+        else:
+            stems[nearest] = bloom
+    checks.check(
+        f"{name}.flowers_carried",
+        blooms and not adrift,
+        f"{len(adrift)} of {len(blooms)} blooms have no piece of the foliage within their own reach of their middle (the nearest are {adrift} m away): a flower is on a stem",
+    )
+    leaves = [verts for index, verts in enumerate(pieces) if index not in stems]
+    leaf_top = max((v.co.z for verts in leaves for v in verts), default=ground)
+    bloom_low = min((bloom["low"] for bloom in blooms), default=ground)
+    checks.check(
+        f"{name}.flowers_above_leaves",
+        blooms and bloom_low > leaf_top,
+        f"the lowest point of the lowest bloom is {bloom_low - ground:.3f} m up and the highest corner of a leaf {leaf_top - ground:.3f} m; spec wants every flower above the leaves",
+    )
+    heights = sorted(bloom["middle"].z - ground for bloom in blooms)
+    share = heights[0] / max(heights[-1], 1e-9) if heights else 1.0
+    checks.check(
+        f"{name}.flowers_heights",
+        len(heights) >= 2 and share <= want["max_height_share"],
+        f"the blooms' middles are {[round(height, 3) for height in heights]} m up: the lowest is {share:.2f} as high as the highest; spec wants at most {want['max_height_share']}: flowers at different heights",
+    )
+    leans, ways = [], Vector((0.0, 0.0))
+    for index in stems:
+        foot, tip = min(pieces[index], key=lambda v: v.co.z).co, max(pieces[index], key=lambda v: v.co.z).co
+        leans.append(math.degrees((tip - foot).angle(Vector((0, 0, 1)))) if (tip - foot).length > 1e-9 else 0.0)
+        level = (tip - foot).xy
+        ways += level.normalized() if level.length > 1e-9 else Vector((0.0, 0.0))
+    typical = statistics.median(leans) if leans else 0.0
+    together = ways.length / max(len(stems), 1)
+    checks.check(
+        f"{name}.flowers_leans",
+        stems and typical >= want["min_lean_deg"] and together <= want["max_lean_together"],
+        f"the stems lean {[round(lean) for lean in sorted(leans)]} degrees from upright (median {typical:.1f}), and the mean of their level directions of lean is {together:.2f} long (1 is all one way); "
+        f"spec wants a median of at least {want['min_lean_deg']} and at most {want['max_lean_together']}: flowers leaning different ways",
+    )
+    middles = [bloom["middle"] for bloom in blooms]
+    nearest = min(((a - b).length for i, a in enumerate(middles) for b in middles[i + 1 :]), default=0.0)
+    checks.check(
+        f"{name}.flowers_apart",
+        len(middles) >= 2 and nearest >= want["min_apart_m"],
+        f"the two nearest blooms' middles are {nearest:.3f} m apart; spec wants at least {want['min_apart_m']}: a scatter, not a bunch",
+    )
+    # Found from across a clearing: a typical bloom's width as a share of the scatter's wider side.
+    wider = max(spec["bounds_m"]["max"][i] - spec["bounds_m"]["min"][i] for i in range(2))
+    typical_width = statistics.median(bloom["width"] for bloom in blooms) if blooms else 0.0
+    checks.check(
+        f"{name}.flowers_size",
+        blooms and typical_width / wider >= want["min_bloom_share"],
+        f"the typical bloom is {typical_width:.3f} m across, {typical_width / wider:.2f} of the scatter's wider side ({wider:.2f} m); spec wants at least {want['min_bloom_share']}: spots of colour, not specks",
+    )
+    # Scattered, as discs are: neither a row nor a ring.
+    across, ring = 0.0, 0.0
+    if len(middles) >= 3:
+        points = numpy.array([tuple(middle.xy) for middle in middles])
+        spread = numpy.sqrt(numpy.maximum(numpy.linalg.eigvalsh(numpy.cov((points - points.mean(axis=0)).T)), 0.0))
+        across = float(spread[0] / max(spread[1], 1e-9))
+        out = numpy.linalg.norm(points - points.mean(axis=0), axis=1)
+        ring = float(out.std() / max(out.mean(), 1e-9))
+    checks.check(
+        f"{name}.flowers_scattered",
+        len(middles) >= 3 and min(across, ring) >= want["min_scatter"],
+        f"seen from above, the blooms' middles spread {across:.2f} as far across the scatter as along it, and their distances from its middle differ by {ring:.2f} of their mean; "
+        f"spec wants both at least {want['min_scatter']}: not a row, and not a ring",
+    )
+    low, high = want["leaves_per_bloom"]
+    each = len(leaves) / max(len(blooms), 1)
+    lifted = sum(1 for verts in leaves if min(v.co.z for v in verts) - ground > want["foot_m"])
+    print(f"{name} scatter: {len(blooms)} blooms {[round(height, 3) for height in heights]} m up on {len(stems)} stems leaning {[round(lean) for lean in sorted(leans)]} degrees (together {together:.2f}), the nearest two {nearest:.3f} m apart; "
+          f"{len(leaves)} leaves ({each:.1f} to a bloom) reaching {leaf_top - ground:.3f} m, under the lowest bloom's {bloom_low - ground:.3f} m")
+    checks.check(
+        f"{name}.flowers_leaves",
+        leaves and low <= each <= high and not lifted,
+        f"{len(leaves)} leaves to {len(blooms)} blooms ({each:.1f} each), {lifted} of them starting more than {want['foot_m']} m above the ground; spec wants {low} to {high} to a bloom, all at the foot",
+    )
+
+
 def check_variants(checks, name, bm, spec, conv):
     """This asset's outline differs from each of its sibling variants' (source/tree/brief.md)."""
     want = spec["variants"]
@@ -2250,6 +2650,18 @@ def check_scene(checks, spec, conv):
                     check_clump(checks, name, bm, slot_names, spec, conv, stalks, "stalks")
                 if "heads" in spec:
                     check_heads(checks, name, bm, slot_names, spec, conv)
+            elif "discs" in spec:
+                # Or, where it has `discs`, a group of discs floating at one level, with blooms between them.
+                discs = check_discs(checks, name, bm, slot_names, spec, conv)
+                if "blooms" in spec:
+                    check_blooms(checks, name, bm, slot_names, spec, conv, discs)
+            elif "flowers" in spec:
+                # Or, where it has `flowers`, blooms on stems with leaves at their feet (a flower scatter; `scatter` is separate stones).
+                check_flowers(checks, name, bm, slot_names, spec, conv, check_blooms(checks, name, bm, slot_names, spec, conv))
+            elif "mat" in spec:
+                # Or, where it has `mat`, a mat of leaf pieces lying on the ground.
+                check_mat(checks, name, bm, slot_names, spec, conv)
+                check_mat_grows(checks, name, bm, slot_names, spec, conv)
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)

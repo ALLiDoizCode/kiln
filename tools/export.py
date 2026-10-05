@@ -118,6 +118,14 @@ if "painted_shading" in spec:
     if "scatter" in spec:
         # Separate stones that touch shade each other (tools/paint.py), and the load test looks for that shadow where a face of one stands this near the other.
         manifest["painted"]["touch_m"] = conventions()["scatter"]["touch_m"]
+    if "foliage" in spec:
+        # A palette-coloured asset (ADR 11): coverage is taken of the texture under the palette's strip, and of the painted
+        # parts with the margin tools/paint.py bakes round each (half the gap between islands).
+        import foliage
+
+        swatches = spec["foliage"]["shades"] * spec["foliage"]["tones"] + 1
+        manifest["painted"]["palette_strip_px"] = foliage.swatch_layout(want["texture_px"], conventions()["foliage"]["swatch_px"], swatches)[2]
+        manifest["painted"]["island_margin_px"] = rules["island_gap_px"] // 2
     if "grain" in want or "close_texels_per_m" in want:
         # Grain and close-range texels the spec asks for (ADR 12), and how the load test measures the grain.
         manifest["painted"].update({key: want[key] for key in ("grain", "grain_width_m", "close_height_m", "close_texels_per_m") if key in want})

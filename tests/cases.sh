@@ -50,6 +50,17 @@ expect 0 "L1 mutation tests: tall_grass_1" l1 tall_grass_1
 # set adrift and drawn flat, and its heads taken off, thinned and put on every stalk.
 uses reeds_1 reeds_2 reeds_3 validate paint
 expect 0 "L1 mutation tests: reeds_1" l1 reeds_1
+# A flower scatter (source/flower_scatter): its blooms set adrift, sunk among the leaves, brought to one height, combed one way, gathered
+# to one point and blown into balls, and its leaves taken away.
+uses flower_scatter_1 flower_scatter_2 flower_scatter_3 validate paint
+expect 0 "L1 mutation tests: flower_scatter_1" l1 flower_scatter_1
+# A leaf mat (source/leaf_mat): its leaves grown, stood up, thinned out, shrunk apart, and laid as a round plate.
+uses leaf_mat_1 leaf_mat_2 leaf_mat_3 validate paint
+expect 0 "L1 mutation tests: leaf_mat_1" l1 leaf_mat_1
+# A group of lily pads (source/lily_pad): its discs taken away, made one size, tipped, lifted, flattened, closed, squashed, slid over each other
+# and laid in a row and in a ring, and its blooms taken away, blown into balls and stood on a disc.
+uses lily_pad_1 lily_pad_2 lily_pad_3 validate paint
+expect 0 "L1 mutation tests: lily_pad_1" l1 lily_pad_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
@@ -284,6 +295,14 @@ expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a plan
 # edges they are, and failed it. What a surface has does not depend on how finely it is sampled.
 uses dome_bush_2 smoke paint plant_mutations
 expect 0 "L4 finds no inside corner on a bush's stems, however fine its texture" smoke "$(broken_plant dome_bush_2 fine_texture)" "$(tamper 'm["painted"]["texture_px"] *= 2' assets/models/dome_bush_2.manifest.json)"
+# A palette-coloured plant (ADR 11): its leaves read the strip of swatches along the top of the texture, and only its few small
+# closed parts (a lily pad's one flower) are painted under it. The load test took coverage of the whole texture, strip and
+# all, and counted only texels under a triangle: lily_pad_1's flower, laid as large as the texture under the strip lets it
+# be, read 0.277 and failed. The same flower at half that size must still be caught.
+uses lily_pad_1 smoke
+expect 0 "L4 passes an unbroken lily pad, whose one flower is all that is painted under its palette" cover lily_pad_1
+uses lily_pad_1 smoke paint plant_mutations
+expect_id "uv.coverage" "L4 catches a mostly unused texture on a palette-coloured plant" smoke "$(broken_plant lily_pad_1 shrunk_uvs)" assets/models/lily_pad_1.manifest.json
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
@@ -473,6 +492,37 @@ expect_id "spec.clump_amounts"       "L0 catches a clump that is not of blades" 
 expect_id "spec.heads"               "L0 catches a missing heads key"          lint_grass 'del s["heads"]["min_height"]'
 expect_id "spec.heads_amounts"       "L0 catches a head count given backwards" lint_grass 's["heads"]["count"] = [6, 3]'
 expect_id "spec.heads_amounts"       "L0 catches heads asked above the plant's top" lint_grass 's["heads"]["min_height"] = 1.2'
+# L0, a group of discs and its blooms: lily_pad_1's spec with one thing wrong. `lint_lily <python>` lints a copy of lily_pad_1 after that has changed its spec `s`.
+uses lily_pad_1 lint_spec
+expect 0 "L0 passes a lily pad group's spec" lint_lily 'pass'
+expect_id "spec.discs"               "L0 catches a missing discs key"          lint_lily 'del s["discs"]["min_round"]'
+expect_id "spec.discs_amounts"       "L0 catches a disc count given backwards" lint_lily 's["discs"]["count"] = [7, 5]'
+expect_id "spec.discs_amounts"       "L0 catches a widest disc narrower than the narrowest" lint_lily 's["discs"]["widest_m"] = [0.1, 0.15]'
+expect_id "spec.discs_amounts"       "L0 catches discs asked of a plant of blades" lint_lily 's["blades"] = {"width_share": [0.008, 0.05], "root_m": 0.25, "max_gap_deg": 60.0, "lean_deg": [0.0, 60.0], "min_arch": 0.05}'
+expect_id "spec.blooms"              "L0 catches a missing blooms key"         lint_lily 'del s["blooms"]["max_hull_share"]'
+expect_id "spec.blooms_amounts"      "L0 catches a bloom allowed to fill its hull" lint_lily 's["blooms"]["max_hull_share"] = 1.0'
+expect_id "spec.blooms_colour"       "L0 catches a flower in the green of its leaves" lint_lily 's["materials"]["m_lily_flower"] = "#6a9a50"'
+# L0, a mat of leaves: leaf_mat_1's spec with one thing wrong. `lint_mat <python>` lints a copy of leaf_mat_1 after that has changed its spec `s`.
+uses leaf_mat_1 lint_spec
+expect 0 "L0 passes a leaf mat's spec"      lint_mat 'pass'
+expect_id "spec.mat"                 "L0 catches a missing mat key"            lint_mat 'del s["mat"]["min_overlap_share"]'
+expect_id "spec.mat_amounts"         "L0 catches a mat's cover given backwards" lint_mat 's["mat"]["hull_cover"] = [0.8, 0.45]'
+expect_id "spec.mat_amounts"         "L0 catches a mat allowed to fill its hull" lint_mat 's["mat"]["hull_cover"] = [0.45, 1.0]'
+expect_id "spec.mat_amounts"         "L0 catches a mat asked of a group of discs" lint_mat 's["discs"] = json.load(open("source/lily_pad_1/spec.json"))["discs"]'
+# L0, a scatter of flowers: flower_scatter_1's spec with one thing wrong. `lint_flower <python>` lints a copy of flower_scatter_1 after that has changed its spec `s`.
+uses flower_scatter_1 lint_spec
+expect 0 "L0 passes a flower scatter's spec" lint_flower 'pass'
+expect_id "spec.flowers"             "L0 catches a missing scatter key"        lint_flower 'del s["flowers"]["foot_m"]'
+expect_id "spec.flowers_amounts"     "L0 catches leaves to a bloom given backwards" lint_flower 's["flowers"]["leaves_per_bloom"] = [4.0, 2.0]'
+expect_id "spec.flowers_amounts"     "L0 catches a scatter with no blooms asked" lint_flower 'del s["blooms"]'
+expect_id "spec.flowers_amounts"     "L0 catches a scatter whose flowers may all be one height" lint_flower 's["flowers"]["max_height_share"] = 1.0'
+# A colour (docs/style/catalogue.md): another flower or foliage colour as a palette on its base's mesh. `lint_colour <python>` lints a copy of lily_pad_1_pink.
+uses lily_pad_1_pink lily_pad_1 lint_spec
+expect 0 "L0 passes a colour variant's spec" lint_colour 'pass'
+expect_id "spec.colour"              "L0 catches a colour that is not a plain name" lint_colour 's["colour"] = "Hot Pink"'
+expect_id "spec.palette_of"          "L0 catches a colour variant in its base's own colour" lint_colour 's["colour"] = "white"'
+expect_id "spec.palette_of"          "L0 catches a colour variant drawn from another seed" lint_colour 's["seed"] = 2'
+expect_id "spec.palette_of"          "L0 catches a colour variant with discs of its own" lint_colour 's["discs"]["min_round"] = 0.5'
 # L0, a bed of stalks: reeds_1's spec with one thing wrong. `lint_reeds <python>` lints a copy of reeds_1 after that has changed its spec `s`.
 uses reeds_1 lint_spec
 expect 0 "L0 passes a reed bed's spec"     lint_reeds 'pass'

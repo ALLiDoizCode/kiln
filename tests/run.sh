@@ -116,6 +116,9 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
     source/tall_grass/*) echo tall_grass_1 tall_grass_2 tall_grass_3 tall_grass_1_dry ;;
     source/reeds/*) echo reeds_1 reeds_2 reeds_3 reeds_1_winter ;;
+    source/leaf_mat/*) echo leaf_mat_1 leaf_mat_2 leaf_mat_3 ;;
+    source/flower_scatter/*) echo flower_scatter_1 flower_scatter_2 flower_scatter_3 flower_scatter_1_violet ;;
+    source/lily_pad/*) echo lily_pad_1 lily_pad_2 lily_pad_3 lily_pad_1_pink ;;
     source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
     source/standing_stone/*) echo standing_stone_1_mossy ;;  # the one standing stone a case reads
@@ -484,6 +487,10 @@ lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing 
 lint_grass() { lint_copy tall_grass_1 '' "$1"; } # <python statements changing spec s>
 lint_dry() { lint_copy tall_grass_1_dry '' "$1"; } # <python statements changing spec s>
 lint_reeds() { lint_copy reeds_1 '' "$1"; } # <python statements changing spec s>
+lint_mat() { lint_copy leaf_mat_1 '' "$1"; } # <python statements changing spec s>
+lint_flower() { lint_copy flower_scatter_1 '' "$1"; } # <python statements changing spec s>
+lint_lily() { lint_copy lily_pad_1 '' "$1"; } # <python statements changing spec s>
+lint_colour() { lint_copy lily_pad_1_pink '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>

@@ -1,7 +1,8 @@
-"""The parts small plants are built from: leaf pieces, cores, stems, blades and heads, as plain lists.
+"""The parts small plants are built from: leaf pieces, cores, stems, blades, heads, discs and blooms, as plain lists.
 
 Shared by the generators of the small-plant families (source/dome_bush,
-source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds). A generator draws its plant into a
+source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds,
+source/lily_pad, source/leaf_mat, source/flower_scatter). A generator draws its plant into a
 `Parts`, fits it to the spec's bounds and turns it into one Blender object of
 two materials: a closed one (stems, a crown) and the open foliage material
 (leaf pieces and blades, with the cores under them).
@@ -23,7 +24,7 @@ from mathutils import Quaternion, Vector
 from pipeline import ROOT, linear_rgb
 
 Z = Vector((0, 0, 1))
-LEAF, CORE, STEM, GROUND = "leaf", "core", "stem", "ground"
+LEAF, CORE, STEM, GROUND, PETAL = "leaf", "core", "stem", "ground", "petal"
 
 # A leaf piece's outline in its own plane (along its length, across it), from its foot: the
 # foot, a shoulder, a notch and a tooth up one side, the tip, and a shoulder on the other side.
@@ -58,6 +59,7 @@ class Parts:
         self.round_normals = {}  # core vertex -> its normal
         self.seams = []  # pairs of vertices: edges along which the closed surface is cut open to be painted
         self.whole = []  # (first vertex, how many): runs of vertices the fit stretches as one thing, by what it gives their middle (a head)
+        self.creased = {}  # face -> a number: a bent piece is lit smooth only among its faces of one number, so a crease runs between two (a disc's floor and its rim)
 
     def vert(self, co):
         self.verts.append(Vector(co))
@@ -238,6 +240,96 @@ def head(parts, base, top, radius, sides, rings=((0.35, 1.0),), spin=0.0):
     parts.seams += list(zip(line, line[1:]))
 
 
+def disc(parts, rng, centre, radius, sides, notch_at, notch, floor, rim, rise, dip, oval=0.05, rough=0.03):
+    """One disc (a lily pad): a level floor with a raised rim and a notch cut in to its middle, as one open piece of the foliage.
+
+    `centre` is its middle, level; `floor` the height its floor lies at, and
+    `dip` how far under that its middle sinks, where its stalk would join it.
+    `rim` is the width of the rim over the radius and `rise` how far the rim's
+    edge stands above the floor. The notch is `notch` radians wide and opens
+    toward `notch_at`. The outline is a little oval (`oval`) and uneven
+    (`rough`), and drawn in at the two corners of the notch, so no disc is a
+    compass circle. Its floor is lit smooth and its rim smooth round the disc, with a crease between the two."""
+    piece = parts.piece(Z, None)
+    middle = parts.vert((centre[0], centre[1], floor - dip))
+    long = rng.uniform(0, math.pi)
+    inner, outer = [], []
+    for k in range(sides + 1):
+        angle = notch_at + notch / 2 + (2 * math.pi - notch) * k / sides
+        reach = radius * (1 + oval * math.cos(2 * (angle - long)) + rng.uniform(-rough, rough)) * (0.94 if k in (0, sides) else 1.0)
+        way = Vector((math.cos(angle), math.sin(angle), 0))
+        inner.append(parts.vert(Vector((centre[0], centre[1], floor)) + way * reach * (1 - rim)))
+        outer.append(parts.vert(Vector((centre[0], centre[1], floor + rise * rng.uniform(0.85, 1.0))) + way * reach))
+    for k in range(sides):
+        parts.face((middle, inner[k], inner[k + 1]), LEAF, piece)
+        parts.face((inner[k], outer[k], outer[k + 1], inner[k + 1]), LEAF, piece)
+        # The rim is creased where it leaves the floor: the floor is lit as one level thing and the rim as a lip
+        # round it, so that from above the lip is a ring lighter toward the sun and darker away from it.
+        parts.creased[len(parts.faces) - 1] = 1
+    return piece
+
+
+def bloom(parts, base, top, rings, petals, spin=0.0, cuts=(0,), shoulder=None, heart=1.0, flat=False, slit=0):
+    """One bloom (a flower): a closed star from `base` to `top`, its petals the points of its rings.
+
+    It is of the closed material, and what it is not is a spindle: each ring
+    is `petals` points with a notch between each pair, given as (its points'
+    radius, its notches' radius, how far along the line from `base` to `top`
+    its points stand, and its notches, and how far round it is turned, in
+    petals). One ring is a flat star; a second and a third, drawn in and
+    raised, are rings of petals inside it. A ring whose "points" are nearer
+    than its "notches" has its petals between those of the ring before.
+    `shoulder` rounds a petal: a corner either side of each point, at (that
+    share of the point's radius, that share of the way down from the point's
+    height to the notch's). `heart` is how far along the line the middle
+    of the bloom's upper face lies: below the innermost ring it is the bottom
+    of a cup. With `flat` every face is lit as itself, as a leaf piece is: a
+    cup lit smooth has corners lit from behind their own faces. `cuts` are the
+    rings round which it is cut open to be painted; with none it is cut once
+    from `base` to `top`. `slit` is how many times its upper face is also cut
+    from its outermost ring to its middle, evenly round it: a cup opens out
+    flat in fans, where uncut it is pressed flat and the texels of its walls
+    are squeezed."""
+    axis = top - base
+    unit = axis.normalized()
+    across = unit.orthogonal().normalized()
+    along = unit.cross(across)
+    per = 4 if shoulder else 2
+    count = per * petals
+    first = len(parts.verts)
+    kind = PETAL if flat else STEM
+    loops = []
+    for tips, notches, tips_up, notches_up, turned in rings:
+        loop = []
+        for j in range(count):
+            angle = spin + 2 * math.pi * (j / per + turned) / petals
+            if j % per == 0:
+                reach, up = tips, tips_up
+            elif 2 * (j % per) == per:
+                reach, up = notches, notches_up
+            else:
+                reach, up = tips * shoulder[0], tips_up + (notches_up - tips_up) * shoulder[1]
+            loop.append(parts.vert(base + axis * up + (across * math.cos(angle) + along * math.sin(angle)) * reach))
+        loops.append(loop)
+    low, high = parts.vert(base), parts.vert(base + axis * heart)
+    parts.whole.append((first, count * len(loops) + 2))
+    for i in range(count):
+        j = (i + 1) % count
+        parts.face((low, loops[0][j], loops[0][i]), kind)
+        for lower, upper in zip(loops, loops[1:]):
+            parts.face((lower[i], lower[j], upper[j], upper[i]), kind)
+        parts.face((loops[-1][i], loops[-1][j], high), kind)
+    for ring in cuts:
+        parts.seams += [(loops[ring][i], loops[ring][(i + 1) % count]) for i in range(count)]
+    for k in range(slit):
+        line = [loop[k * count // slit] for loop in loops] + [high]
+        parts.seams += list(zip(line, line[1:]))
+    if not cuts:
+        # Cut once from point to point, as a head is, it is painted as one island.
+        line = [low] + [loop[0] for loop in loops] + [high]
+        parts.seams += list(zip(line, line[1:]))
+
+
 def stalk(parts, spine, radii, sides=3, spin=0.0):
     """One stalk (a reed's): a thin tube along `spine` that tapers to its tip, open at its foot, as one open piece of the foliage.
 
@@ -378,19 +470,20 @@ def corner_normals(parts, lift=0.3):
         if len(face) == 4:
             normal += (c - a).cross(parts.verts[face[3]] - a)
         face_normals.append(normal.normalized())
-    smooth = [Vector() for _ in parts.verts]
+    smooth = {}
     for face, kind, normal in zip(parts.faces, parts.kinds, face_normals):
         if kind == STEM:
             for i in face:
-                smooth[i] += normal
-    # A bent piece (a blade) is lit smooth, one normal per vertex, so no edge within it is hard.
-    for face, kind, piece, normal in zip(parts.faces, parts.kinds, parts.pieces, face_normals):
+                smooth[i, 0] = smooth.get((i, 0), Vector()) + normal
+    # A bent piece (a blade) is lit smooth, one normal per vertex, so no edge within it is hard, but along a crease.
+    for index, (face, kind, piece, normal) in enumerate(zip(parts.faces, parts.kinds, parts.pieces, face_normals)):
         if kind == LEAF and parts.piece_round[piece] is None:
             for i in face:
-                smooth[i] += normal
+                key = (i, parts.creased.get(index, 0))
+                smooth[key] = smooth.get(key, Vector()) + normal
     normals = []
-    for face, kind, piece, normal in zip(parts.faces, parts.kinds, parts.pieces, face_normals):
-        if kind == GROUND:
+    for index, (face, kind, piece, normal) in enumerate(zip(parts.faces, parts.kinds, parts.pieces, face_normals)):
+        if kind in (GROUND, PETAL):
             normals += [normal] * len(face)
         elif kind == LEAF and parts.piece_round[piece] is not None:
             share = parts.piece_round[piece]
@@ -402,7 +495,7 @@ def corner_normals(parts, lift=0.3):
         elif kind == CORE:
             normals += [parts.round_normals[i] if parts.round_normals[i].dot(normal) > 0.05 else normal for i in face]
         else:
-            normals += [smooth[i].normalized() for i in face]
+            normals += [smooth[i, parts.creased.get(index, 0)].normalized() for i in face]
     return normals
 
 
