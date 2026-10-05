@@ -1,0 +1,133 @@
+# Conifer: a species recipe for the tree generator (source/tree/generator.py, source/tree/species/conifer.md).
+#
+# One straight leader with tiers of drooping boughs round it, widest at the bottom, narrowing to a
+# pointed top that stands a little off true. `[crown] form` names the crown the generator builds:
+# "tiers" here, where the broadleaf's is pads (the default). The trunk, its foot and roots, the
+# leaf piece, the core and the skirt are read as the broadleaf's are, by the same code.
+# Lengths are metres and angles degrees unless a share is named; a pair is a range one value is
+# drawn from per tree (or per tier, bough or piece).
+
+[crown]
+form = "tiers"
+
+[trunk]
+sides = [6, 7]                 # flat sides, drawn per tree
+strip = 0.2                    # the soft-edge strip at a corner, as a share of the angle between corners
+breast_radius = [0.17, 0.21]   # at 1.3 m, for a mature tree
+fork_height = [0.28, 0.32]     # share of the tree's height at which the lowest whorl leaves the leader
+top = 0.7                      # radius at the lowest whorl over the radius at 1.3 m
+lean = [0.03, 0.09]            # how far the lowest whorl stands to one side of the foot: a leader stands straight
+bend = [0.01, 0.04]            # how far the trunk bows out of the straight line from foot to whorl
+roots = [3, 4]                 # corners pulled out into roots
+root_reach = [2.3, 3.0]        # a root's tip from the trunk's axis, over the radius there
+root_rise = 0.3                # height at which a root has all but joined the trunk
+root_curve = [[0.0, 1.0], [0.15, 0.62], [0.42, 0.3], [1.0, 0.0]]
+root_ring_gap = 0.03
+root_valleys = 3
+root_valley = 1.08
+root_width = 0.42
+rings = [0.85, 1.6]            # heights of the trunk's two rings between its roots and the stretch below the lowest whorl
+leader = 0.95                  # radius of the leader just above the lowest whorl, over the trunk's just below: it does not fork
+tip_radius = 0.03
+
+[tiers]
+counts = [[5, 0.4], [6, 0.4], [7, 0.2]]  # tiers below the top (count, how often), drawn per tree; fewer when they do not fit the height
+count_share = 1.0              # scaled by the growth stage
+fewest = 3                     # however young the tree
+lowest = [2.75, 3.3]           # the height the lowest whorl leaves at: its boughs hang from there to about head height
+taper = [0.7, 1.0]             # the cone: a tier's width falls from the lowest to the top as (share of the way up) to this power
+jitter = [0.86, 1.07]          # and each tier's width is this much off the cone
+first = [0.8, 1.0]             # the lowest tier's, again: the tier above it is sometimes the widest
+droop = [0.3, 0.55]            # how far a bough's tip hangs below where it leaves, over its length; drawn per tier
+sag = 1.5                      # a bough hangs as (share of its length) to this power: nearly level at the leader, steepest at its tip
+thin = 0.6                     # how thick the narrowest tier's foliage is, over the widest's
+clear = 0.12                   # clear air between one tier's foliage and the next, at least, before the fit
+slack = 2.0                    # the room left over is shared out unequally: each gap gets (a draw from 0 to 1) to this power of it
+reach = 0.12                   # how far leaf tips stand off a bough's surface
+
+[boughs]
+count = [5, 7]                 # boughs in a whorl of the widest tier; narrower tiers carry fewer, never under three
+fewer = 0.6                    # the narrowest tier's count over the widest's
+turn = 0.3                     # how far a bough stands from its even place round the whorl, as a share of the step
+length = [0.62, 1.0]           # a bough's length over its tier's; one in each tier is full length and one is under `short`
+short = 0.7
+width = [0.34, 0.42]            # half a bough's width over its length
+least_width = 0.2              # and never narrower than this
+inner = 0.12                   # a bough's foliage begins this far behind the leader's axis, so the boughs of a tier meet round it
+up = 0.2                       # foliage above a bough's middle line, in the widest tier
+down = 0.1                     # and below it
+lift = 0.08                    # the foliage's middle line above the wood
+scatter = 0.05                 # boughs of one whorl leave within this far above or below its height
+radius = 0.46                  # a bough's radius where it leaves, over the leader's there
+wood = 0.72                    # the wood runs this share of the bough's length, the rest is foliage alone
+rings = [4, 3]                 # rings of a bough's wood: in the lowest two tiers, and above
+sides = [4, 3]                 # flat sides of a bough's wood: in the lowest two tiers, and above
+start = 0.45                   # how far from the leader's axis a bough begins, over the leader's radius there
+
+[top]
+# The top: a narrow spire of foliage on the leader's tip, over a small whorl of short boughs.
+off = [0.18, 0.45]             # how far the tip stands to one side of the foot: off true
+width = [0.24, 0.3]            # the top whorl's width over the widest tier's
+boughs = 3
+droop = [0.1, 0.25]
+spire_radius = [0.17, 0.22]
+spire_up = [0.7, 0.9]          # the spire's height above its middle
+spire_down = 0.8               # and its depth below it, over its radius
+tip = 0.22                     # pieces stand this far above the spire, pointing up: the point
+tip_pieces = 3
+slack = 0.25                   # the top's share of the room left over, against a tier's
+drop = 0.05                    # the top whorl leaves this far below the spire's middle
+
+[lobes]
+open = -0.3                    # the shell of pieces stops here (unit sphere height); the skirt hangs from there
+buried = 0.9                   # a piece is left out when its place is this deep inside another bough
+
+[core]
+size = 0.66
+sides = 4
+flat = 0.45                    # a bough's core is this flat: its height over a pad core's, so the shell and the skirt hide it from the side
+rough = 0.12
+
+[leaf]
+spacing = 0.29                 # between neighbouring pieces on a bough's surface
+length = [0.46, 0.68]
+width = [0.44, 0.52]           # over the length
+lift = [8.0, 26.0]             # degrees a piece is raised off the surface
+yaw = 30.0
+roll = 18.0
+foot = 0.55                    # how much of a piece's length lies behind the point where it crosses the bough's surface: a bough is thin
+fall = 30.0                    # pieces point away from the leader and this far below level, along the surface
+round = 0.4
+up = 0.3
+outline = [[0.0, 0.0], [0.3, -0.5], [0.5, -0.22], [0.64, -0.36], [1.0, 0.0], [0.4, 0.5]]
+triangles = [[0, 1, 2], [2, 3, 4], [0, 2, 4], [0, 4, 5]]
+
+[skirt]
+spacing = 0.28                 # between neighbouring pieces round a bough's rim
+droop = [38.0, 68.0]           # degrees below level
+foot = 0.4
+drop = 0.26                    # how far the skirt hangs below a bough's underside
+under_spacing = 0.36           # between pieces hanging under a bough
+under_droop = [40.0, 70.0]
+out = 0.8                      # a skirt piece points this much away from the leader, against 0.6 out of its own bough's rim
+
+[growth]
+# A spec's `growth_stage` is the tree's height over a mature tree's. Each curve is a multiplier at
+# the stages named in `stage`, read off in straight lines between them; `[follows]` says which of
+# the numbers above each curve scales.
+mature_height_m = [8.0, 11.0]
+stage  = [0.5, 0.8, 1.0, 1.25]     # sapling, young, mature, old
+girth  = [0.5, 0.7, 1.0, 1.3]
+tips   = [0.71, 0.84, 1.0, 1.14]   # the square root of the girth
+lean   = [0.5, 0.88, 1.0, 1.1]
+whorl  = [0.6, 0.85, 1.0, 1.15]    # the height of the lowest whorl
+count  = [0.6, 0.85, 1.0, 1.35]    # how many tiers
+foliage = [0.8, 1.0, 1.0, 1.0]     # how thick a tier's foliage is, and a sapling's shorter pieces
+
+[follows]
+girth = ["trunk.breast_radius", "trunk.root_rise"]
+tips = ["trunk.tip_radius"]
+lean = ["trunk.lean", "trunk.bend", "top.off"]
+whorl = ["tiers.lowest"]
+count = ["tiers.count_share"]
+foliage = ["boughs.up", "boughs.down", "leaf.length", "leaf.spacing", "skirt.drop", "skirt.spacing", "top.spire_up", "top.tip"]

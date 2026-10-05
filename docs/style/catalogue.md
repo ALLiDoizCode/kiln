@@ -44,7 +44,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 | --- | --- |
 | Broadleaf | Three mature variants built (2,800 to 3,550 triangles), one sapling (stage 0.5, 3.5 m, two tufts in a row, 1,050 triangles, with its own limits for pieces in a tuft and bark seen), one young tree (1,850) and one old (5,340). One mature tree in autumn and in winter (snow on the foliage, as palettes); no bare winter tree, no snow on bark. Species is a recipe and growth stage a number in the spec. Not approved. |
 | Umbrella tree | Not started |
-| Conifer | Not started |
+| Conifer | Started, nothing built. A second species of the tree family: a recipe (`source/tree/species/conifer.toml`), its brief beside it (`conifer.md`), and a second crown form in the generator, tiers of drooping boughs round one leader, beside the pad. Drawn unchecked it reads as a conifer of six or seven tiers, 9.5 m tall, 4,500 to 5,400 triangles; no tree is kept yet, because the cores show past the 10% the family allows and the tiers are seen into from below. No asset passes a gate; no stages or winter. |
 | Tall pine | Not started |
 | Columnar tree | Not started |
 | Weeping tree | Not started |

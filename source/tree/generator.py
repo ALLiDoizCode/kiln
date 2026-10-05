@@ -105,6 +105,22 @@ MARGINS = {
     "foliage.min_rim_points_per_m": 1.2,
 }
 
+# A conifer's (a spec with `tiers`), in place of or beside those: the leader shows from the four level views and from below,
+# and from none above, so no view is left to spare; the tiers' own limits are drawn in a little.
+TIER_MARGINS = {
+    "skeleton.min_seen_views": lambda views: views,
+    "skeleton.min_seen_share": lambda least: round(least * 1.15, 3),
+    "foliage.sky_share": [0.21, 0.49],
+    "foliage.max_core_seen": 0.095,
+    "foliage.max_seen_into": 0.14,
+    "skeleton.max_branch_taper": 0.78,
+    "tiers.max_top_share": lambda most: round(most - 0.03, 3),
+    "tiers.min_droop": lambda least: round(least + 0.03, 3),
+    "tiers.max_tip_width_m": lambda most: round(most - 0.08, 3),
+    "tiers.max_leader_bow_m": lambda most: round(most - 0.04, 3),
+    "tiers.tip_off_m": inside(0.1, 0.1),
+}
+
 SIDE, STRIP_FACE, CONE, GROUND, LEAF, CORE_FACE = range(6)
 
 SPECIES = Path(__file__).resolve().parent / "species"
@@ -136,6 +152,12 @@ def grown(recipe, stage):
         value = recipe[table][key]
         recipe[table][key] = [v * factor for v in value] if isinstance(value, list) else value * factor
 
+    if "follows" in recipe:
+        # A recipe that says itself which of its numbers each curve scales (the conifer's).
+        for curve, keys in recipe.pop("follows").items():
+            for key in keys:
+                scale(*key.split("."), by[curve])
+        return SimpleNamespace(**{name: SimpleNamespace(**table) for name, table in recipe.items()})
     for key in ("breast_radius", "root_rise"):
         scale("trunk", key, by["girth"])
     scale("trunk", "tip_radius", math.sqrt(by["girth"]))
@@ -383,6 +405,68 @@ class Pad:
         """Distance from the middle to the outside of the pad along a unit direction, leaf tips included."""
         vertical = self.above() if direction.z >= 0 else self.below()
         return self.r.pads.reach + 1.0 / math.sqrt((direction.x**2 + direction.y**2) / self.radius**2 + direction.z**2 / vertical**2)
+
+
+class Bough(Lobe):
+    """One bough of a tier: a lobe drawn out along `out`, level, from the leader, that hangs lower the further out it goes.
+
+    `root` is on the leader's axis. The foliage runs from `inner` behind it to `length` in front, `wide`
+    to either side, `up` above and `down` below a middle line that sags by `droop` times the length at
+    the tip, as (share of the length) to the power `sag`."""
+
+    def __init__(self, root, out, length, inner, wide, up, down, droop, sag):
+        self.root, self.out, self.side = root, out, Vector((-out.y, out.x, 0))
+        self.length, self.droop, self.sag = length, droop, sag
+        self.long, self.wide, self.up, self.down = (length + inner) / 2, wide, up, down
+        self.middle = (length - inner) / 2  # how far out the foliage's middle is
+        self.radius = math.sqrt(self.long * self.wide)
+        self.centre = self.at(0.0, 0.0, 0.0)
+
+    def hang(self, far):
+        """How far the middle line has sunk, `far` metres out from the leader."""
+        return -self.droop * self.length * max(far / self.length, 0.0) ** self.sag
+
+    def slope(self, far):
+        return -self.droop * self.sag * max(far / self.length, 0.0) ** (self.sag - 1)
+
+    def at(self, x, y, z):
+        """A point given along the bough, across it and above its middle line, from the foliage's middle."""
+        far = self.middle + x
+        return self.root + self.out * far + self.side * y + Z * (z + self.hang(far))
+
+    def inside(self, unit):
+        """The point for a place in the unit ball (not only on its surface)."""
+        return self.at(unit.x * self.long, unit.y * self.wide, unit.z * (self.up if unit.z >= 0 else self.down))
+
+    def out_of(self, unit):
+        """The direction out of the bough at a place on the unit sphere."""
+        vertical = self.up if unit.z >= 0 else self.down
+        x, y, z = unit.x / self.long, unit.y / self.wide, unit.z / vertical
+        return (self.out * (x - z * self.slope(self.middle + unit.x * self.long)) + self.side * y + Z * z).normalized()
+
+    def surface(self, unit):
+        return self.inside(unit), self.out_of(unit)
+
+    def unit_of(self, point):
+        offset = point - self.root
+        far = offset.dot(self.out)
+        z = offset.z - self.hang(far)
+        return Vector(((far - self.middle) / self.long, offset.dot(self.side) / self.wide, z / (self.up if z >= 0 else self.down)))
+
+    def depth(self, point):
+        return self.unit_of(point).length
+
+
+class Tier:
+    """A whorl of boughs round the leader at one height, or the top: a spire over a few short boughs."""
+
+    def __init__(self, boughs):
+        self.boughs = boughs
+        self.radius = max((b.length for b in boughs if isinstance(b, Bough)), default=0.0)
+        self.shapes = boughs
+
+    def lobes(self):
+        return self.boughs
 
 
 def draw_lobes(r, rng, toward):
@@ -636,6 +720,8 @@ def grow_core(r, tree, rng, pad, lobe):
     # A dome: widest at its rim, just under the lobe's middle, where it closes the view up into the
     # pad from below; narrower above, where the shell of pieces lies over it.
     def at(radius, height):
+        if isinstance(lobe, Bough):
+            return lobe.inside(Vector((radius.x, radius.y, height * r.core.flat)) * r.core.size)
         return lobe.centre + Vector((radius.x * lobe.radius, radius.y * lobe.radius, height * (lobe.up if height >= 0 else lobe.down))) * r.core.size
 
     spin = rng.uniform(0, 2 * math.pi)
@@ -659,6 +745,9 @@ def grow_core(r, tree, rng, pad, lobe):
             b, c = c, b
         tree.face((a, b, c), CORE_FACE, pad)
     for i in upper + lower + [top, bottom]:
+        if isinstance(lobe, Bough):
+            tree.core_normals[i] = lobe.out_of(lobe.unit_of(tree.verts[i]).normalized())
+            continue
         offset = tree.verts[i] - lobe.centre
         vertical = lobe.up if offset.z >= 0 else lobe.down
         tree.core_normals[i] = Vector((offset.x / lobe.radius**2, offset.y / lobe.radius**2, offset.z / vertical**2)).normalized()
@@ -722,6 +811,199 @@ def grow_leaves(r, tree, rng, pads):
                 azimuth = turn + golden * k
                 point, normal = lobe.surface(Vector((share * math.cos(azimuth), share * math.sin(azimuth), -math.sqrt(1 - share * share))))
                 hang(point, azimuth + rng.uniform(-0.8, 0.8), rng.uniform(*r.skirt.under_droop), normal)
+
+
+def at_height(points, radii, z):
+    """The leader's middle and radius at a height, between the rings of its path."""
+    for (a, b), (ra, rb) in zip(zip(points, points[1:]), zip(radii, radii[1:])):
+        if b.z >= z and b.z > a.z:
+            t = min(max((z - a.z) / (b.z - a.z), 0.0), 1.0)
+            return a.lerp(b, t), ra + (rb - ra) * t
+    return points[-1].copy(), radii[-1]
+
+
+def grow_tiers(r, tree, rng, lo, hi):
+    """The second crown form: one leader to the tip and tiers of drooping boughs round it, with their wood. Returns the tiers, lowest first, the top last."""
+    height = hi.z
+    lowest = min(max(height * rng.uniform(*r.trunk.fork_height), r.tiers.lowest[0]), r.tiers.lowest[1])
+    # The top first: the leader grows to it. A spire of foliage, a little to one side of the foot.
+    turn, off = rng.uniform(0, 2 * math.pi), rng.uniform(*r.top.off)
+    spire_radius, spire_up = rng.uniform(*r.top.spire_radius), rng.uniform(*r.top.spire_up)
+    spire = Lobe(Vector((off * math.cos(turn), off * math.sin(turn), height - r.top.tip - spire_up)), spire_radius, spire_up, spire_radius * r.top.spire_down)
+    points, radii = grow_trunk(r, tree, rng, hi, lowest, SimpleNamespace(centre=spire.centre, lobes=lambda: [spire]))
+    top_z = spire.centre.z - r.top.drop
+
+    # How far a bough may reach each way: the bounds are not the same on every side of the foot.
+    def room(azimuth):
+        x = hi.x if math.cos(azimuth) >= 0 else -lo.x
+        y = hi.y if math.sin(azimuth) >= 0 else -lo.y
+        return 1.0 / math.hypot(math.cos(azimuth) / x, math.sin(azimuth) / y) - r.tiers.reach
+
+    widest = min(hi.x, -lo.x, hi.y, -lo.y) - r.tiers.reach
+    count = rng.choices([c for c, _ in r.tiers.counts], [w for _, w in r.tiers.counts])[0]
+    count = max(r.tiers.fewest, math.floor(count * r.tiers.count_share + 0.5))
+    power, top_width = rng.uniform(*r.tiers.taper), rng.uniform(*r.top.width)
+    while True:
+        # Widths down the cone, each a little off it; droops; and how thick each tier's foliage is.
+        widths = [(top_width + (1 - top_width) * (1 - k / count) ** power) * rng.uniform(*r.tiers.jitter) for k in range(count)]
+        widths[0] *= rng.uniform(*r.tiers.first)
+        widths = [min(w, 1.0) for w in widths] + [top_width]
+        droops = [rng.uniform(*r.tiers.droop) for _ in range(count)] + [rng.uniform(*r.top.droop)]
+        thick = [r.tiers.thin + (1 - r.tiers.thin) * w for w in widths]
+
+        def hang(k, far):
+            return droops[k] * far**r.tiers.sag / (widths[k] * widest) ** (r.tiers.sag - 1)
+
+        # The least each tier must stand above the one below it: both tiers' foliage, clear air, and
+        # whatever the upper one's tips hang lower than the lower one's surface does at that distance.
+        need = []
+        for k in range(count):
+            above = (r.boughs.lift + r.boughs.up + r.tiers.reach) * thick[k] + r.boughs.scatter
+            below = (r.boughs.down + r.skirt.drop) * thick[k + 1] + r.boughs.scatter
+            reach = widths[k + 1] * widest
+            need.append(above + below + r.tiers.clear + max(0.0, hang(k + 1, reach) - hang(k, reach)))
+        spare = top_z - lowest - sum(need)
+        if spare >= 0:
+            break
+        count -= 1
+        if count < r.tiers.fewest:
+            raise RuntimeError(f"{r.tiers.fewest} tiers do not fit between {lowest:.2f} and {top_z:.2f} m")
+    # The room left over, shared out unequally: some tiers stand close and one or two apart, with the leader bare between.
+    shares = [rng.random() ** r.tiers.slack for _ in range(count)]
+    shares[-1] *= r.top.slack  # the top stands close over the highest tier
+    heights = [lowest]
+    for k in range(count):
+        heights.append(heights[-1] + need[k] + spare * shares[k] / sum(shares))
+
+    # Boughs: (tier, azimuth, length as a share of what the bounds allow that way).
+    drawn = []
+    for k in range(count + 1):
+        if k == count:
+            number = r.top.boughs
+        else:
+            share = (widths[k] - top_width) / (1 - top_width)
+            number = max(3, round(rng.uniform(*r.boughs.count) * (r.boughs.fewer + (1 - r.boughs.fewer) * share)))
+        start = rng.uniform(0, 2 * math.pi)
+        lengths = [1.0, rng.uniform(r.boughs.length[0], r.boughs.short)] + [rng.uniform(*r.boughs.length) for _ in range(number - 2)]
+        rng.shuffle(lengths)
+        for j in range(number):
+            azimuth = start + 2 * math.pi * (j + rng.uniform(-r.boughs.turn, r.boughs.turn)) / number
+            drawn.append([k, azimuth, widths[k] * lengths[j]])
+    # Each side of the bounds is reached by the bough that reaches furthest that way: lengths are scaled, by how
+    # far a bough points to each side, so that the furthest on every side just reaches it.
+    axis = [at_height(points, radii, z)[0] for z in heights]
+
+    def reaches(k, azimuth, share):
+        return axis[k] + Vector((math.cos(azimuth), math.sin(azimuth), 0)) * (share * room(azimuth) + r.tiers.reach)
+
+    ends = [reaches(*bough) for bough in drawn]
+    by = {"x+": hi.x / max(e.x for e in ends), "x-": lo.x / min(e.x for e in ends), "y+": hi.y / max(e.y for e in ends), "y-": lo.y / min(e.y for e in ends)}
+    by = {side: min(max(factor, 0.6), 1.6) for side, factor in by.items()}
+    for bough in drawn:
+        c, s = math.cos(bough[1]), math.sin(bough[1])
+        bough[2] *= by["x+" if c >= 0 else "x-"] * c * c + by["y+" if s >= 0 else "y-"] * s * s
+
+    tiers = []
+    for k in range(count + 1):
+        boughs = []
+        for tier, azimuth, share in drawn:
+            if tier != k:
+                continue
+            out = Vector((math.cos(azimuth), math.sin(azimuth), 0))
+            length = share * room(azimuth)
+            z = heights[k] + rng.uniform(-r.boughs.scatter, r.boughs.scatter) * thick[k]
+            root, parent = at_height(points, radii, z)
+            wide = max(length * rng.uniform(*r.boughs.width), r.boughs.least_width)
+            bough = Bough(root + Z * r.boughs.lift * thick[k], out, length, r.boughs.inner, wide, r.boughs.up * thick[k], r.boughs.down * thick[k], droops[k], r.tiers.sag)
+            boughs.append(bough)
+            # Its wood: out of the leader, level at first, and down into the foliage.
+            start = root + out * parent * r.boughs.start
+            end = bough.at(r.boughs.wood * length - bough.middle, 0.0, -r.boughs.lift * thick[k])
+            control = start + out * (end - start).dot(out) * 0.5
+            first = max(parent * r.boughs.radius, r.trunk.tip_radius * 1.2)
+            turns = equal_turns(start, control, end, r.boughs.rings[0 if k < 2 else 1])
+            tube(tree, [bezier(start, control, end, s) for s in turns], [r.trunk.tip_radius * 0.7 + (first - r.trunk.tip_radius * 0.7) * (1 - s) ** 0.85 for s in turns],
+                 r.boughs.sides[0 if k < 2 else 1], spin=rng.uniform(0, 2 * math.pi))
+        tiers.append(Tier(boughs + ([spire] if k == count else [])))
+    return tiers
+
+
+def grow_needles(r, tree, rng, tiers):
+    """Every bough's core, and the pieces over it: a shell lying along it, pointing away from the leader and down; a skirt hanging from its rim; a few under it; and the point of the top."""
+    golden = math.pi * (3 - math.sqrt(5))
+    for index, tier in enumerate(tiers):
+        lobes = tier.lobes()
+        for lobe in lobes:
+            grow_core(r, tree, rng, index, lobe)
+        for lobe in lobes:
+            others = [other for other in lobes if other is not lobe]
+            bough = isinstance(lobe, Bough)
+
+            def buried(point):
+                return any(other.depth(point) < r.lobes.buried for other in others)
+
+            def away(point):
+                """Level, away from the leader (a bough), or out of the spire."""
+                flat = point - (lobe.root if bough else lobe.centre)
+                flat.z = 0.0
+                return flat.normalized() if flat.length > 1e-6 else Vector((1, 0, 0))
+
+            # The shell: over the top of the bough and a little way down its sides.
+            plan = math.pi * lobe.long * lobe.wide if bough else math.pi * lobe.radius * (lobe.radius + lobe.up)
+            total = round(plan * 1.25 / r.leaf.spacing**2 * 2 / (1 - r.lobes.open))
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(total):
+                height = 1 - (2 * k + 1) / total
+                if height < r.lobes.open:
+                    break
+                ring = math.sqrt(1 - height * height)
+                azimuth = turn + golden * k + rng.uniform(-0.12, 0.12)
+                unit = Vector((ring * math.cos(azimuth), ring * math.sin(azimuth), height + rng.uniform(-0.04, 0.04))).normalized()
+                point, normal = lobe.surface(unit)
+                yaw, lift = rng.uniform(-r.leaf.yaw, r.leaf.yaw), rng.uniform(*r.leaf.lift)
+                fall = away(point) * math.cos(math.radians(r.leaf.fall)) - Z * math.sin(math.radians(r.leaf.fall)) if bough else -Z
+                down = fall - normal * normal.dot(fall)
+                if down.length < 0.25:
+                    down = Quaternion(normal, rng.uniform(0, 2 * math.pi)) @ normal.orthogonal().normalized()
+                down = Quaternion(normal, math.radians(yaw)) @ down.normalized()
+                axis = (down * math.cos(math.radians(lift)) + normal * math.sin(math.radians(lift))).normalized()
+                if not buried(point):
+                    leaf(r, tree, rng, index, point, normal, axis, r.leaf.foot)
+
+            def hang(point, flat, droop, normal):
+                axis = flat * math.cos(math.radians(droop)) - Z * math.sin(math.radians(droop))
+                if not buried(point):
+                    leaf(r, tree, rng, index, point, (normal + flat * 0.5 - Z * 0.3).normalized(), axis, r.skirt.foot)
+
+            # The skirt: round the rim, pointing out of the bough and away from the leader, and down.
+            around = 2 * math.pi * math.sqrt((lobe.long**2 + lobe.wide**2) / 2) if bough else 2 * math.pi * lobe.radius
+            count = max(5, round(around / r.skirt.spacing))
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(count):
+                azimuth = turn + 2 * math.pi * (k + rng.uniform(-0.3, 0.3)) / count
+                height = rng.uniform(r.lobes.open - 0.25, r.lobes.open + 0.05)
+                ring = math.sqrt(1 - height * height)
+                point, normal = lobe.surface(Vector((ring * math.cos(azimuth), ring * math.sin(azimuth), height)))
+                rim = Vector((normal.x, normal.y, 0))
+                flat = (rim.normalized() * 0.6 + away(point) * r.skirt.out) if rim.length > 1e-6 else away(point)
+                flat = Quaternion(Z, rng.uniform(-0.4, 0.4)) @ flat.normalized()
+                hang(point, flat, rng.uniform(*r.skirt.droop), normal)
+            # And a few under it, hanging steeply.
+            count = round(plan * 0.6 / r.skirt.under_spacing**2)
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(count):
+                share = math.sqrt((k + 0.5) / count) * 0.75
+                azimuth = turn + golden * k
+                point, normal = lobe.surface(Vector((share * math.cos(azimuth), share * math.sin(azimuth), -math.sqrt(1 - share * share))))
+                hang(point, Quaternion(Z, rng.uniform(-0.6, 0.6)) @ away(point), rng.uniform(*r.skirt.under_droop), normal)
+            if not bough:
+                # The point: a few pieces standing on the spire's top, nearly upright.
+                turn = rng.uniform(0, 2 * math.pi)
+                for k in range(r.top.tip_pieces):
+                    azimuth = turn + 2 * math.pi * (k + rng.uniform(-0.2, 0.2)) / r.top.tip_pieces
+                    out = Vector((math.cos(azimuth), math.sin(azimuth), 0))
+                    axis = (Z + out * rng.uniform(0.08, 0.22)).normalized()
+                    leaf(r, tree, rng, index, lobe.centre + Z * lobe.up, out, axis, 0.55)
 
 
 def fit(tree, lo, hi):
@@ -838,7 +1120,7 @@ def unmet(tree, spec):
     before any Blender object exists, against the spec with MARGINS in place
     of its limits."""
     strict = copy.deepcopy(spec)
-    for key, value in MARGINS.items():
+    for key, value in {**MARGINS, **(TIER_MARGINS if "tiers" in spec else {})}.items():
         *path, last = key.split(".")
         block = strict
         for part in path:
@@ -885,14 +1167,20 @@ def draw(spec, strict=True, recipe=None):
     recipe = recipe or recipe_of(spec)
     r = grown(recipe, spec["growth_stage"])
     refused = []
+    # The crown's form: pads on a forked trunk (the default), or tiers of boughs round one leader.
+    tiered = hasattr(r, "crown") and r.crown.form == "tiers"
     for take in range(1, TREES + 1):
         tree = Tree()
-        fork_z = max(hi.z * rng.uniform(*r.trunk.fork_height), r.branches.fork_lowest + r.branches.fork_spread)
         try:
-            pads = place_pads(r, rng, lo, hi, fork_z)
-            trunk = grow_trunk(r, tree, rng, hi, fork_z, pads[0])
-            grow_branches(r, tree, rng, pads, trunk)
-            grow_leaves(r, tree, rng, pads)
+            if tiered:
+                pads = grow_tiers(r, tree, rng, lo, hi)
+                grow_needles(r, tree, rng, pads)
+            else:
+                fork_z = max(hi.z * rng.uniform(*r.trunk.fork_height), r.branches.fork_lowest + r.branches.fork_spread)
+                pads = place_pads(r, rng, lo, hi, fork_z)
+                trunk = grow_trunk(r, tree, rng, hi, fork_z, pads[0])
+                grow_branches(r, tree, rng, pads, trunk)
+                grow_leaves(r, tree, rng, pads)
             fit(tree, lo, hi)
             separate(tree, len(pads), spec["foliage"]["pad_gap_m"])
         except RuntimeError as error:
