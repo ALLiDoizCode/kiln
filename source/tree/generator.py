@@ -679,6 +679,10 @@ def corner_normals(r, tree):
             # Never round the back of its own piece: the engine would light it from behind.
             if lit.dot(normal) < 0.3:
                 lit = (lit + normal * (0.3 - lit.dot(normal)) * 1.5).normalized()
+            # Nor lift the front of a piece that faces the ground or stands near upright: tipped toward the sky it
+            # would be lit by a sun that cannot reach it, a light piece among dark ones to an eye under the canopy.
+            if normal.z < 0.3 and lit.z > normal.z:
+                lit = Vector((lit.x, lit.y, normal.z)).normalized()
             piece_normals[piece] = lit
 
     normals = []
@@ -785,6 +789,10 @@ def flat_material(name, colour, two_sided):
     bsdf.inputs["Base Color"].default_value = (*linear_rgb(colour), 1.0)
     bsdf.inputs["Roughness"].default_value = 0.9
     bsdf.inputs["Metallic"].default_value = 0.0
+    if two_sided:
+        # A leaf piece has no gloss (exported as KHR_materials_specular, specularFactor 0). With it, a flat piece
+        # the sun grazes shows the sun's glare to an eye under the canopy: near-white among dark neighbours.
+        bsdf.inputs["Specular IOR Level"].default_value = 0.0
     # Exported as glTF doubleSided: a leaf piece is seen, and lit, from both sides.
     material.use_backface_culling = not two_sided
     return material

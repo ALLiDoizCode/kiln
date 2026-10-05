@@ -35,6 +35,7 @@ if grep -q '"skeleton"' "source/$asset/spec.json"; then
                                  cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --stand 0.5 --pitch 0 \
                                    --screenshot "source/$asset/review/$phase/bevy_trunk.png" 2>> "$reports/L4b-bevy-view.log"
 step "L4c bark seen from 0.5 m"; tools/bl tools/view_checks.py "$asset" "source/$asset/review/$phase/bevy_trunk.png"
+step "L4d canopy seen from below"; tools/bl tools/under_checks.py "$asset" "source/$asset/review/$phase/bevy_under.png"
 fi
 step "L5  review renders";       tools/bl tools/review_render.py "$asset" "$phase"
 step "L5c review image";         python tools/image_lint.py "source/$asset/review/$phase/sheet.png"

@@ -5,7 +5,7 @@
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
 #   <asset>                  the cases that read that asset: tracer, crate, rock, tree_1, ...
-#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c
+#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c
 #   <tool>                   the cases behind one tool: smoke, view, paint, validate, ... (`--list` shows every tag)
 #       Several assets or tools select the cases with any of them, several gates likewise, and
 #       gates together with assets or tools select the cases with both: `tests/run.sh L4 rock`.
@@ -98,6 +98,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
     tools/view_checks.py) echo view_checks ;;
+    tools/under_checks.py) echo under_checks ;;
     tools/bevy_lint.py) echo bevy_lint ;;
     tools/same_mesh.py) echo same_mesh ;;
     tools/baseline.py) echo baseline ;;
@@ -228,6 +229,7 @@ view() {
   return $code
 }
 view_checks() { tools/bl tools/view_checks.py "$@"; }
+under_checks() { tools/bl tools/under_checks.py "$@"; }
 
 # A case passes or fails here. Each runs in a shell of its own with $tmp to itself.
 verdict() { # <ok|FAIL> <name> [why]
@@ -311,7 +313,7 @@ tree_key="$(key_of tests/tree_mutations.py source/tree_1/build.py source/tree_1/
 # changes what painting left starts from the one painted asset of the run (the scripts say which
 # may, and refuse the others); the rest build and bake their own.
 rock_after_paint=" shrunk_uvs stacked_uvs uvs_off_the_texture tinted_factor jpeg "
-tree_after_paint=" none single_sided gradient_within_piece no_cores core_open bark_inside_out two_textures "
+tree_after_paint=" none single_sided gradient_within_piece no_cores core_open bark_inside_out two_textures glossy_leaves "
 mutated() { tools/bl "$1" "$2" "${@:3}"; }                 # <script> <mutation> <out.glb>
 mutated_painted() { tools/bl "$1" "$2" "$4" "$("$3")"; }  # <script> <mutation> <function naming the painted asset> <out.glb>
 painted_rock() { fixture --key "$rock_key" rock_painted.blend mutated tests/paint_mutations.py painted; }
@@ -391,6 +393,11 @@ away_picture_exists() { away_view > /dev/null 2>&1; test -e "$fx/away.png"; }
 # so only the picture is asked of the viewer here; L4b is where its exit code is tested.
 bark_shot() { fixture "bark_$1.png" bark_view "$1"; }
 bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$2"; [[ -e "$2" ]]; }
+
+# L4d: tree_1 with its foliage broken, seen from under it as the gate takes that view. The check
+# casts its rays at tree_1's own built mesh, so these mutations change colour and light, not shape.
+under_shot() { fixture "under_$1.png" under_view "$1"; }
+under_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 1 --pitch 78 --screenshot "$2"; [[ -e "$2" ]]; }
 
 # L0: a copy of an asset's brief and spec under a name of its own, linted and removed.
 lint_copy() { # <asset> <sed expression for the brief> <python statements for the spec s> -> lints the copy

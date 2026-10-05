@@ -3,13 +3,13 @@
 # One case per line, and nothing else but comments and `uses` lines. A case is
 #   expect <exit code> "<name>" <command...>      the command must exit with that code
 #   expect_id "<check id>" "<name>" <command...>  the command must exit 1 and name that check
-# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c) and is unique.
+# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c) and is unique.
 # `uses <tag...>` says what the cases below it depend on, until the next `uses`: the assets they
 # read, and the tools behind them (see `tags_of_file` in tests/run.sh). Selection goes by these.
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `broken_slab`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
@@ -155,6 +155,14 @@ uses tree_1 view_checks view paint tree_mutations
 expect_id "view.bark_tone"  "L4c catches bark that is flat brown at arm's length" view_checks tree_1 "$(bark_shot no_grain)"
 expect_id "view.bark_grain" "L4c catches grain seen running round the trunk" view_checks tree_1 "$(bark_shot grain_across)"
 
+# L4d: the canopy seen from under it, as the gate takes it: leaf pieces lit where the sun cannot reach, and limbs lost against the leaves.
+uses tree_1 under_checks
+expect 0 "L4d passes the real tree seen from below" under_checks tree_1 source/tree_1/review/final/bevy_under.png
+expect_id "view.under_seen"  "L4d catches a picture that is not the view from below" under_checks tree_1 source/tree_1/review/final/bevy_trunk.png
+uses tree_1 under_checks view paint tree_mutations
+expect_id "view.under_pale"  "L4d catches glossy leaf pieces glaring under the canopy" under_checks tree_1 "$(under_shot glossy_leaves)"
+expect_id "view.under_limbs" "L4d catches leaf undersides as dark as the bark" under_checks tree_1 "$(under_shot dark_underside)"
+
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 uses tracer bevy_lint
 expect 0 "L2b passes the real export"       python tools/bevy_lint.py "$glb"
@@ -224,6 +232,8 @@ expect_id "spec.painted_grain"       "L0 catches an impossible grain"          l
 expect_id "spec.painted_shading"     "L0 catches close texels with no height"  lint_tree 'del s["painted_shading"]["close_height_m"]'
 expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" lint_tree 's["painted_shading"]["close_texels_per_m"] = 50.0'
 expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" lint_tree 's["skeleton"]["min_view_grain"] = 0.5'
+expect_id "spec.skeleton_view"       "L0 catches limbs asked to be lighter than the canopy" lint_tree 's["skeleton"]["min_canopy_over_limbs"] = 0.8'
+expect_id "spec.skeleton"            "L0 catches a missing limit on limbs seen from below" lint_tree 'del s["skeleton"]["min_canopy_over_limbs"]'
 # Species and growth stage (ADR 13): a tree's spec names a recipe and says how grown the tree is.
 expect_id "spec.species"             "L0 catches a species with no recipe"     lint_tree 's["species"] = "zz_nope"'
 expect_id "spec.species"             "L0 catches a tree with no species"       lint_tree 'del s["species"]'

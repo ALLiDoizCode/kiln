@@ -39,7 +39,8 @@
     "min_seen_share": 0.02,
     "min_seen_views": 6,
     "min_view_tone": 0.021,
-    "min_view_grain": 1.16
+    "min_view_grain": 1.16,
+    "min_canopy_over_limbs": 1.25
   },
   "foliage": {
     "material": "m_tree_leaf",
@@ -52,12 +53,12 @@
     "min_pointing_down": 0.7,
     "sky_share": [0.2, 0.5],
     "min_sky_views": 5,
-    "under_tint": "#b86a50",
+    "under_tint": "#ff936f",
     "top_tint": "#ffffff",
     "shades": 6,
     "tones": 4,
     "variation": 0.16,
-    "core_tint": "#8a4a3c",
+    "core_tint": "#bf6653",
     "lobes": [2, 4],
     "min_lobe_ratio": 1.2,
     "max_core_seen": 0.1,
