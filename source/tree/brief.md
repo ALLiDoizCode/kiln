@@ -35,11 +35,11 @@ A species is a recipe the one generator reads: `species/<name>.toml`, named by a
 
 ## Growth stages
 
-A spec's `growth_stage` is a number: the tree's height over a mature tree's, so 1.0 is mature. The recipe's `[growth]` table says what follows it, as multipliers at the stages it names with straight lines between: the trunk's girth, its lean, how low it forks, how many pads it carries and how wide they are. Leaf pieces do not grow: a young tree has fewer, smaller pads of full-size leaves. `tools/lint_spec.py` holds a spec's height to its stage: the stage times the recipe's mature height, 6 to 8 m.
+A spec's `growth_stage` is a number: the tree's height over a mature tree's, so 1.0 is mature. The recipe's `[growth]` table says what follows it, as multipliers at the stages it names with straight lines between: the trunk's girth, its lean, how low it forks, how many pads it carries, how wide they are and how long and how close its leaf pieces are. From young to old, leaf pieces do not grow: a young tree has fewer, smaller pads of full-size leaves. A sapling's are shorter (below). `tools/lint_spec.py` holds a spec's height to its stage: the stage times the recipe's mature height, 6 to 8 m.
 
 | Stage | `growth_stage` | Height | Crown | Trunk at 1.3 m | Pads | Forks at | Triangles, at most |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sapling | 0.6 | 3.6 to 4.8 m | about 3 m | about 0.2 m through | 3 | head height | not built: see below |
+| Sapling | 0.5 | 3.0 to 4.0 m | about 2.6 by 1.9 m | about 0.2 m through | 2 | 1.5 to 2.1 m | 1,200; not built: see below |
 | Young | 0.8 | 4.8 to 6.4 m | about 4 m | about 0.3 m through | 3 or 4 | 1.8 to 3.0 m | 2,500 |
 | Mature | 1.0 | 6 to 8 m | 4 to 6 m | about 0.43 m through | 3 to 5 | 2.0 to 3.5 m | 4,000 |
 | Old | 1.25 | 7.5 to 10 m | about 6.4 m | about 0.55 m through | 5 or 6 | 2.5 to 4.5 m | 6,000 |
@@ -52,7 +52,19 @@ What a stage changes in the Numbers, and why (each stage asset's own brief gives
 - **Young crevice shadow.** The band of shadow round a junction is the mature tree's 4.5 cm times the stage's girth (0.7): 3.2 cm. At 4.5 cm the young tree's thinner limbs showed inside corners 0.71 as light as open faces where `painted.crevices_darker` allows 0.70, the same thinning the mature tree showed at 6 cm.
 - **Old texture.** 2048 px. A 1024 px texture gives the old trunk 231 texels per metre below 2.5 m, where this brief asks for 250; the old tree's file is about three times a mature one's.
 
-**The sapling is not built.** At stage 0.6 the generator kept no tree in 32 tries over four seeds: three pads small enough for a 3 m crown, under 0.5 to 0.75 m leaves, do not keep clear air between them, and their limbs show too little bark. A sapling needs rules of its own (one or two tufts, or smaller leaves), which is a change to this brief's Silhouette and not a number in a recipe; until then the recipe's youngest stage is 0.8 and the lint refuses a spec below it.
+**The sapling has a silhouette of its own, and is not built yet.** At stage 0.6, drawn as a small young tree (three pads under full-size leaves), the generator kept no tree in 32 tries over four seeds: three pads small enough for a 3 m crown, under 0.5 to 0.75 m leaves, do not keep clear air between them, and their limbs show too little bark. So a sapling is not a young tree made smaller. It is stage 0.5, 3 to 4 m tall, a tree a player looks at and across rather than up into, and these are its rules, each a row of a sapling's own brief where it changes a number:
+
+- **Two tufts.** One stem that forks once: the leader carries the higher, wider tuft and one side branch the lower, narrower one, with clear air between them. Two tufts are a row, not a ring, so a sapling's crown is longer one way than the other, and its bounds say which. Silhouette 2's "at least three limbs" is two for a sapling, and Silhouette 3's "three to six pads" is exactly two. Everything else Silhouette 3 asks of a pad (lobes, a core in each, a skirt, at least 40 pieces) is asked of a tuft.
+- **Shorter leaf pieces**: 0.84 of the length, 0.42 to 0.63 m, at 0.72 of the spacing. A piece stands for a spray of leaves, and a sapling's shoots are short; pieces 0.5 to 0.75 m long on a tuft about 1 m wide would be a handful of cards. Silhouette 4's floor of 0.35 m stands (it is what a piece must be to show at 20 m); its ceiling for a sapling is 0.7 m, so that a sapling drawn with full-size pieces fails.
+- **Fork.** At about a player's eye height (1.7 m), between 1.5 and 2.1 m: the player looks across the fork into the lower tuft, where every older stage forks overhead. Not lower, because the trunk's girth is taken 1.3 m up (`conventions.toml`) and the checks need one stem there and one slice above it.
+- **A thin stem.** Half the mature girth: about 0.2 m through at 1.3 m, with five to eight flat sides about 10 cm wide. The bands of painted light and shadow follow the girth, as the young tree's shadow does: light along the corners 1.5 cm wide (3 cm times 0.5), shadow round a junction 2.2 cm (4.5 cm times 0.5).
+- **Lean.** The fork stands 0.08 to 0.4 m to one side of the foot: the mature range times the stage (0.5), since the stem is half as long.
+- **Small pads under large leaves**, as for the young tree and more so (a 0.5 m piece on a tuft 1 to 1.5 m wide): tufts are asked to be 1.2 times as wide as tall and the wider 1.3 times the narrower, the young tree's numbers.
+- **Budget.** Two tufts at about 0.45 of the mature width are a tenth of a mature canopy's surface (four pads), and pieces at 0.8 of the spacing are 1.56 times as many on it: about 330 leaf triangles of the mature 2,100. With five or six cores (about 140) and the bark of one stem, one branch and a few twigs (about 420) that is about 900, and the ceiling is 1,200, the same share over the estimate as the young tree's 2,500 is over its 1,850.
+
+**Status.** The recipe draws stage 0.5 and `source/tree_sapling_1` has its brief and spec, but the generator keeps no tree: none in 36 tries over seeds 1 to 3 as the recipe stands, and none in about 180 over the settings tried before it. The limits above were written before any tree was drawn, except the bounds (first 2.5 by 2.4 m, which a row of two tufts cannot fill), the girth (first 0.4, raised to 0.5 for bark seen, and the two band widths with it by their rule) and the two leaf factors (first 0.8 and 0.8); the budget's estimate was made for the first of each and not redone. What the last tries were refused for is in `source/tree_sapling_1/brief.md`.
+
+Not changed for a sapling, and so asked of it as of a mature tree: sky between the tufts (20 to 50% from five of six directions), bark seen above the fork (2% from six of seven views), the view from below, the bark's grain and its 250 texels per metre, and the 1024 px texture.
 
 ## Seasons
 
@@ -124,7 +136,7 @@ The texture is 1024 px. The palette takes a strip 16 px tall along the top. The 
 
 ## Out of scope
 
-Wind animation, LODs, collision shapes, a climbable flag, other species, a sapling, a bare winter tree, snow on bark.
+Wind animation, LODs, collision shapes, a climbable flag, other species, a bare winter tree, snow on bark.
 
 ## Numbers
 
