@@ -1,0 +1,52 @@
+{
+  "asset": "pebble_3",
+  "family": "pebble",
+  "objects": [
+    "pebble_3"
+  ],
+  "seed": 3,
+  "bounds_m": {
+    "min": [
+      -0.25,
+      -0.19,
+      0.0
+    ],
+    "max": [
+      0.25,
+      0.19,
+      0.16
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 150,
+  "materials": {
+    "m_pebble": "#a1a7a1"
+  },
+  "painted_shading": {
+    "texture_px": 256,
+    "base_tint": "#8c8c9a",
+    "top_tint": "#c8c8c8",
+    "edge_light": 0.3,
+    "edge_width_m": 0.016,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.05,
+    "blotch": 0.12,
+    "blotch_size_m": 0.05,
+    "hidden_underside": true
+  },
+  "fullness": {
+    "min_volume_share": 0.4,
+    "min_crown_share": 0.2
+  },
+  "lean": {
+    "max_upright_share": 0.15,
+    "min_summit_offset": 0.15
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ]
+}

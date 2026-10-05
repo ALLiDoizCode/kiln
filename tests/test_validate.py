@@ -377,6 +377,79 @@ def plate_inside_out(spec):
     edit(flip, "slab_1")
 
 
+# The crag (source/crag): leaning prisms of different heights on one base.
+
+
+def crag_pieces(bm):
+    """The crag's pieces as lists of vertices, tallest first."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(pieces, key=lambda verts: max(v.co.z for v in verts), reverse=True)
+
+
+def even_heights(spec):
+    """Every piece of the crag stretched up to the height of the tallest: a palisade, with no steps down."""
+    top = spec["bounds_m"]["max"][2]
+
+    def stretch(bm):
+        for verts in crag_pieces(bm):
+            scale = top / max(v.co.z for v in verts)
+            for v in verts:
+                v.co.z *= scale
+
+    edit(stretch, "crag_1")
+
+
+def one_prism(spec):
+    """Every piece but the tallest pressed down to a fifth of the crag's height: one prism among blocks."""
+    low = 0.2 * spec["bounds_m"]["max"][2]
+
+    def press(bm):
+        for verts in crag_pieces(bm)[1:]:
+            scale = min(1.0, low / max(v.co.z for v in verts))
+            for v in verts:
+                v.co.z *= scale
+
+    edit(press, "crag_1")
+
+
+def piece_axis(verts):
+    """Where a piece stands and where its top is: the middle of its corners on the ground, and of the rest, which ring its cap and its shoulder."""
+    low = min(v.co.z for v in verts)
+    foot = [v.co for v in verts if v.co.z <= low + 0.001]
+    top = [v.co for v in verts if v.co.z > low + 0.001]
+    return sum(foot, Vector()) / len(foot), sum(top, Vector()) / len(top)
+
+
+def upright_prisms(spec):
+    """Every piece of the crag sheared until its top stands over its foot: nothing leans."""
+
+    def stand(bm):
+        for verts in crag_pieces(bm):
+            foot, top = piece_axis(verts)
+            for v in verts:
+                share = (v.co.z - foot.z) / (top.z - foot.z)
+                v.co.x -= (top.x - foot.x) * share
+                v.co.y -= (top.y - foot.y) * share
+
+    edit(stand, "crag_1")
+
+
+def fanned_prisms(spec):
+    """Every piece of the crag turned on its foot, each a different way: they lean as much as before, but apart."""
+
+    def fan(bm):
+        pieces = crag_pieces(bm)
+        for index, verts in enumerate(pieces):
+            foot, _ = piece_axis(verts)
+            turn = Matrix.Rotation(index * math.tau / len(pieces), 3, "Z")
+            for v in verts:
+                v.co = foot + turn @ (v.co - foot)
+
+    edit(fan, "crag_1")
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -758,6 +831,10 @@ CASES = [
     (tipped_tops, "slab_1.top_level", "slab_1"),
     (plate_lifted, "slab_1.overlap_touch", "slab_1"),
     (plate_inside_out, "slab_1.normals_outward", "slab_1"),
+    (even_heights, "crag_1.cluster_steps_down", "crag_1"),
+    (one_prism, "crag_1.cluster_steps_down", "crag_1"),
+    (upright_prisms, "crag_1.cluster_leans", "crag_1"),
+    (fanned_prisms, "crag_1.cluster_leans_together", "crag_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),
