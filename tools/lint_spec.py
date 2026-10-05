@@ -137,10 +137,19 @@ FOLIAGE = {
     "min_rim_points_per_m": float,
 }
 # What foliage of blades shares with foliage of leaf pieces: the material, how pieces are found, and the palette.
-# A spec with a `blades` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
+# A spec with a `blades` or a `stalks` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
 FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
 # Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
 BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
+# Optional; a bed of stalks that carry leaves (source/reeds/brief.md), in place of pads over cores and of blades from one point. All keys are required once it is present.
+STALKS = {
+    "count": list, "length_m": list, "width_m": list, "min_round": float, "foot_m": float, "max_lean_deg": float, "min_apart_m": float, "min_bed": float,
+    "leaves": list, "leaf_width_share": list, "min_leaf_sweep": float, "head_width_m": list, "min_head_fullness": float, "head_share": list,
+}
+# Optional, with `blades` or `stalks`: a clump of them (source/tall_grass/brief.md): how many stand near upright, and how much sky shows through it from the side.
+CLUMP = {"upright_deg": float, "min_upright_share": float, "max_sky_share": float}
+# Optional, with `blades` or `stalks`: heads (seed heads, cattails), closed pieces of the closed material carried on blades or stalks. Every key is required once it is present.
+HEADS = {"count": list, "size_m": list, "min_height": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
 HEX = "#[0-9a-f]{6}"
@@ -453,7 +462,8 @@ if not checks.failed():
             0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1 and skeleton["min_canopy_over_limbs"] > 1,
             "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it; min_canopy_over_limbs above 1: seen from below the foliage is the lighter of the two",
         )
-    bladed = "blades" in spec
+    # Foliage that is not pads over cores: blades from one point, or stalks in a bed.
+    bladed = "blades" in spec or "stalks" in spec
     blades = block("blades", BLADES)
     if blades:
         checks.check(
@@ -462,8 +472,37 @@ if not checks.failed():
             and span(blades["lean_deg"]) and blades["lean_deg"][1] <= 180 and 0 <= blades["min_arch"] < 1,
             "width_share and lean_deg as [least, most], a width at most the length and a lean at most 180 degrees; root_m above 0; max_gap_deg in 0..360; min_arch in 0..1",
         )
+    stalks = block("stalks", STALKS)
+    if stalks:
+        whole = lambda pair: len(pair) == 2 and all(type(n) is int for n in pair) and 1 <= pair[0] <= pair[1]
+        checks.check(
+            "spec.stalks_amounts",
+            "blades" not in spec and "clump" in spec and whole(stalks["count"]) and whole(stalks["leaves"])
+            and all(span(stalks[key]) and stalks[key][0] > 0 for key in ("length_m", "width_m", "leaf_width_share", "head_width_m", "head_share"))
+            and stalks["leaf_width_share"][1] <= 1 and stalks["head_share"][1] <= 1 and 0 < stalks["min_round"] <= 1 and stalks["foot_m"] > 0
+            and 0 < stalks["max_lean_deg"] < 90 and stalks["min_apart_m"] > 0 and 0 < stalks["min_bed"] <= 1 and 0 <= stalks["min_leaf_sweep"] < 1 and 0 < stalks["min_head_fullness"] <= 1,
+            "not on a plant of blades (`blades`: a plant is one or the other), and with a `clump`, which says how many stalks stand upright; count and leaves as [least, most] whole numbers, at least 1; "
+            "length_m, width_m, leaf_width_share, head_width_m and head_share as [least, most], above 0, the shares at most 1; min_round, min_bed and min_head_fullness in (0, 1]; "
+            "foot_m and min_apart_m above 0; max_lean_deg in 0..90; min_leaf_sweep in 0..1",
+        )
+    clump = block("clump", CLUMP)
+    if clump:
+        checks.check(
+            "spec.clump_amounts",
+            bladed and 0 < clump["upright_deg"] < 90 and 0 < clump["min_upright_share"] <= 1 and 0 < clump["max_sky_share"] < 1,
+            "on a plant of blades or of stalks (`blades`, `stalks`); upright_deg in 0..90; min_upright_share in (0, 1]; max_sky_share above 0 and below 1 (at 1 it asks nothing)",
+        )
+    heads = block("heads", HEADS)
+    if heads:
+        count = heads["count"]
+        checks.check(
+            "spec.heads_amounts",
+            bladed and spec["watertight"] and len(count) == 2 and all(type(n) is int for n in count) and 1 <= count[0] <= count[1]
+            and span(heads["size_m"]) and heads["size_m"][0] > 0 and 0 < heads["min_height"] < 1,
+            "on a watertight plant of blades or of stalks (`blades`, `stalks`): a head is closed, and a blade or a stalk carries it; count as [least, most] whole numbers, at least 1; size_m as [least, most], above 0; min_height above 0 and below 1, a share of the bounds' height",
+        )
     if bladed:
-        checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades are foliage: the spec needs a foliage block for their material, size and palette")
+        checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades and stalks are foliage: the spec needs a foliage block for their material, size and palette")
     leaves = block("foliage", {key: FOLIAGE[key] for key in FOLIAGE_SHARED} if bladed else FOLIAGE)
     if leaves and not bladed:
         lobes = leaves["lobes"]
