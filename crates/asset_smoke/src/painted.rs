@@ -695,7 +695,12 @@ pub fn check(
         }
     }
     if want.blotch > 0.0 {
-        let mut tones: Vec<f32> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.ratio).collect();
+        // Open faces whose tone the formula gives. Between the foot of the growth at the base and the height it is
+        // clear of, a patch of growth is darker by an amount that depends on how far the base's growth reaches at
+        // that spot, which only the paint knows: a sample showing growth there is not held to be a blotch.
+        let band = (want.growth_height_m * 0.4, above_base);
+        let plain = |s: &Sample| s.zone == Zone::Open && !(want.growth_darker > 0.0 && s.growth > 0.2 && s.above > band.0 && s.above <= band.1);
+        let mut tones: Vec<f32> = samples.iter().filter(|s| plain(s)).map(|s| s.ratio).collect();
         tones.sort_by(f32::total_cmp);
         measured.blotch_spread = tones[tones.len() * 9 / 10] - tones[tones.len() / 10];
         let [least, most] = want.blotch_spread.map(|share| share * want.blotch);
@@ -707,7 +712,7 @@ pub fn check(
         }
         // Neighbouring samples, a stride apart along a row of the texture.
         let open: std::collections::HashMap<(u32, u32), f32> =
-            samples.iter().filter(|s| s.zone == Zone::Open).map(|s| (s.at, s.ratio)).collect();
+            samples.iter().filter(|s| plain(s)).map(|s| (s.at, s.ratio)).collect();
         let steps: Vec<f32> = open.iter().filter_map(|(&(x, y), ratio)| open.get(&(x + stride, y)).map(|next| (next - ratio).abs())).collect();
         measured.blotch_grain = steps.iter().sum::<f32>() / steps.len().max(1) as f32 / measured.blotch_spread.max(1e-6);
         if measured.blotch_grain > want.max_blotch_grain {
