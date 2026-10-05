@@ -164,6 +164,11 @@ expect_id "uv.in_unit_square"      "L4 catches UVs off the texture"             
 expect_id "uv.coverage"            "L4 catches a mostly unused texture"             once shrunk smoke "$(broken shrunk_uvs)" "$rock_manifest"
 expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"         once shrunk smoke "$(broken shrunk_uvs)" "$rock_manifest"
 
+# The painter's packing (tools/paint.py): seven unlike stones, each a net of its own, are the layout it filled worst
+# (0.384 of a 512 px texture as boxes, under the 0.4 asked). The gated asset as it is, so a packer that wastes the texture again fails here.
+uses rubble_2 smoke
+expect 0 "L4 passes a group of seven stones on a 512 px texture" cover rubble_2
+
 # Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
 uses tree_1 smoke
 expect 0 "L4 passes the real tree"          smoke "$tree" "$tree_manifest"
