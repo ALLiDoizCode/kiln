@@ -97,7 +97,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.base_tint` | `"#8c8c9a"` | Painted shading 1: a cool grey at the ground |
 | `painted_shading.top_tint` | `"#c8c8c8"` | Painted shading 1: a light grey at the top |
 | `painted_shading.edge_light` | `0.3` | Painted shading 5: exposed edges gain up to 30% |
-| `painted_shading.crevice_shadow` | `0.45` | Painted shading 4: a crack loses 45% of its light |
 | `painted_shading.blotch` | `0.12` | Painted shading 3: lighter and darker by up to 12% |
 | `painted_shading.side_shade` | `0.22` | Painted shading 2: upright faces darker at mid height by up to 22% |
 | `painted_shading.hidden_underside` | `true` | Painted shading: the underside is never seen |

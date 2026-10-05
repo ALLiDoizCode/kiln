@@ -4,6 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 asset="$1"; phase="${2:-final}"
+# What is gated is baked on the CPU, whatever the caller's environment asks: only that bake gives
+# the same texels every time (tools/paint.py), and a gated asset is what gets committed.
+if [[ ${KILN_BAKE:-cpu} != cpu ]]; then echo "tools/gate.sh: ignoring KILN_BAKE=$KILN_BAKE; a gated asset is baked on the CPU"; fi
+unset KILN_BAKE
 glb="assets/models/$asset.glb"
 reports="source/$asset/out/reports"
 

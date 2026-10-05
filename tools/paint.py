@@ -13,7 +13,7 @@ The colour at a point, in linear RGB, is
       * mix(base_tint, top_tint, height within the spec's bounds)
       * (1 - side_shade * how upright the face is * how near mid height the point is)
       * (1 + blotch * a broad patch pattern between -1 and 1)
-      * (1 - crevice_shadow * how enclosed the point is)
+      * (1 - crevice_shadow * how enclosed the point is), where the spec asks a crevice shadow
       * (1 + edge_light * how close the point is to an exposed edge)
 
 The growth mask is the largest of three: below `growth_height_m`, with a ragged
@@ -30,6 +30,13 @@ Nothing here is random: the patterns are Blender's noise texture at fixed
 places in space and Cycles runs on the CPU with a fixed seed, so a rebuild
 gives the same texels.
 
+`KILN_BAKE=gpu` in the environment bakes on the graphics card instead (CUDA),
+in a tenth of the time, for looking at candidates: a handful of texels in a
+million then differ by one level from one run to the next, so nothing gated
+or committed is baked that way (tools/gate.sh unsets it). Unset, or `cpu`,
+the bake is the CPU's. See `bake` for what is done about a card that is busy,
+missing or out of memory (docs/research/gpu-acceleration.md has the measurements).
+
 Foliage is not baked (ADR 11). A spec with a `foliage` block names the leaf
 material; its faces are left out of the unwrap and the bake, and `leaf_colours`
 gives every leaf piece one flat colour instead: a strip along the top of the
@@ -41,8 +48,11 @@ shuffle, so neighbouring pieces differ.
 Run under Blender, through tools/build.py.
 """
 
+import fcntl
 import math
+import os
 import random
+import time
 
 import addon_utils
 import bmesh
@@ -102,6 +112,20 @@ CLOSE_PASSES = 5  # how many times the layout is repacked to give close faces th
 # Overlapping pieces are baked apart, so that a piece's edge light comes from its own shape (`paint_nodes`, hidden).
 # tests/slab_mutations.py turns this off to paint a slab as one solid, joins lit as edges.
 SPLIT_PIECES = True
+# The bake on the graphics card (`KILN_BAKE=gpu`). One at a time on the whole machine, whichever working
+# copy asks: eight at once ran a 10 GB card out of memory. The lock is this file, held while the card is in use.
+BAKE_ENV = "KILN_BAKE"
+GPU_LOCK = "/tmp/kiln-gpu-bake.lock"
+# Cycles sizes its working memory by the card and not by the scene; this share of it is plenty for one texture.
+GPU_STATES_FACTOR = "0.25"
+# A card out of memory can leave a wrong texture and say the bake finished. So the same bake is done
+# again on the CPU, CHECK_SHRINK times smaller each way, and the two compared texel by coarse texel, away
+# from the borders of islands: they disagree when they are more than CHECK_STEP apart (of 1) in any
+# channel, and the bake is wrong when more than CHECK_SHARE of them disagree. Measured: 0 of a right
+# slab's and rock's disagree and 0.001 of a tree's bark, and all of a bake that ran out of memory.
+CHECK_SHRINK = 8
+CHECK_STEP = 0.12
+CHECK_SHARE = 0.02
 
 
 def luminance(rgb):
@@ -428,18 +452,22 @@ def paint_nodes(tree, colour_rgb, spec, conv):
     # Both masks come from Cycles' ambient occlusion node, aimed along the face's own normal
     # (the shading normal of a soft edge would darken every bevel strip).
     # Crevice: how much of the sky above the face other faces hide.
-    shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
-    if apart:
+    # A spec for a shape with no inside corner asks none (tools/lint_spec.py asks it of overlapping pieces always).
+    shade = None
+    if "crevice_shadow" in paint:
+        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
+    if apart and shade is not None:
         # A join: the sky another piece hides, over and above what the face's own piece hides. Two
         # pieces often meet in a groove too open to hide a fifth of the sky, and the join must
         # still be dark, since that is what hides it.
         by_others = math_node("SUBTRACT", hidden(False, paint["crevice_width_m"]), hidden(False, paint["crevice_width_m"], own_piece=True), clamp=True)
         shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, FULL_JOIN_OCCLUSION, clamp=True))
-    colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
+    if shade is not None:
+        colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
 
     # Exposed edge: how much of the solid behind the face is missing, because another face cuts it off.
     edge = math_node("DIVIDE", hidden(True, paint["edge_width_m"]), FULL_EDGE_OCCLUSION, clamp=True)
-    if apart:
+    if apart and shade is not None:
         # An edge that runs into a join is not exposed there.
         edge = math_node("MULTIPLY", edge, math_node("SUBTRACT", 1.0, shade))
     if paint["hidden_underside"]:
@@ -537,6 +565,117 @@ def pieces_of_mesh(bm):
     return groups
 
 
+def texels_of(image):
+    """An image's texels as rows of (r, g, b, a), as stored (sRGB, 0 to 1); row 0 is the bottom."""
+    width, height = image.size
+    texels = numpy.empty(width * height * 4, dtype=numpy.float32)
+    image.pixels.foreach_get(texels)
+    return texels.reshape(height, width, 4)
+
+
+def bakes_disagree(fine, coarse):
+    """The share of a coarse bake's texels that a fine bake of the same thing, averaged over each, is more than CHECK_STEP from.
+
+    Of the coarse texels with a painted texel on every side, that is: at the border of an island
+    one bake has the bled margin and the other bare texture. With none such, of the painted ones;
+    and a coarse bake with nothing painted agrees with nothing (1)."""
+    rows, columns = coarse.shape[:2]
+    block = fine.shape[0] // rows
+    means = fine[: rows * block, : columns * block, :3].reshape(rows, block, columns, block, 3).mean(axis=(1, 3))
+    apart = numpy.abs(means - coarse[:, :, :3]).max(axis=2) > CHECK_STEP
+    painted = coarse[:, :, :3].max(axis=2) > 0
+    padded = numpy.pad(painted, 1)
+    inner = painted.copy()
+    for down in range(3):
+        for along in range(3):
+            inner &= padded[down : down + rows, along : along + columns]
+    asked = inner if inner.any() else painted
+    return float(apart[asked].mean()) if asked.any() else 1.0
+
+
+def cuda_devices():
+    """Turn on Cycles' CUDA devices, and no other; the names of those there are.
+
+    CUDA and not OptiX: OptiX is no faster here, compiles for four minutes on its first run, and its
+    texels are further from the CPU's. --factory-startup leaves no device chosen, so this is every run's to do."""
+    preferences = bpy.context.preferences.addons["cycles"].preferences
+    try:
+        preferences.compute_device_type = "CUDA"
+    except TypeError:  # this Blender offers no CUDA at all
+        return []
+    preferences.refresh_devices()
+    for device in preferences.devices:
+        device.use = device.type == "CUDA"
+    return [device.name for device in preferences.devices if device.use]
+
+
+def run_bake(margin):
+    """Bake what is selected into the active image node of each material."""
+    result = bpy.ops.object.bake(type="EMIT", margin=margin, margin_type="EXTEND", use_clear=True)
+    if result != {"FINISHED"}:
+        raise RuntimeError(f"bake failed: {result}")
+
+
+def gpu_bake(scene, image, targets, margin):
+    """Bake on the graphics card, and say whether the texture can be trusted (None), or why not.
+
+    The card is taken by one bake at a time (GPU_LOCK). The texture is then compared with a
+    small bake of the same thing on the CPU (`bakes_disagree`), since the operator reports a
+    bake that ran out of memory as finished."""
+    os.environ.setdefault("CYCLES_CONCURRENT_STATES_FACTOR", GPU_STATES_FACTOR)
+    started = time.monotonic()
+    # Anyone may take the lock, whoever made the file.
+    lock = os.open(GPU_LOCK, os.O_RDONLY | os.O_CREAT, 0o644)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        waited = time.monotonic() - started
+        scene.cycles.device = "GPU"
+        try:
+            run_bake(margin)
+        except RuntimeError as error:
+            return f"it failed: {str(error).strip().splitlines()[-1]}"
+        finally:
+            scene.cycles.device = "CPU"
+    finally:
+        os.close(lock)
+    took = time.monotonic() - started - waited
+
+    size = image.size[0]
+    coarse = bpy.data.images.new(f"{image.name}_check", size // CHECK_SHRINK, size // CHECK_SHRINK, alpha=False)
+    coarse.colorspace_settings.name = image.colorspace_settings.name
+    for target in targets:
+        target.image = coarse
+    try:
+        run_bake(margin // CHECK_SHRINK)
+        share = bakes_disagree(texels_of(image), texels_of(coarse))
+    finally:
+        for target in targets:
+            target.image = image
+        bpy.data.images.remove(coarse)
+    print(f"bake: on the graphics card in {took:.1f} s after {waited:.1f} s waiting for it; {share:.4f} of a {size // CHECK_SHRINK} px bake on the CPU disagrees with it")
+    if share > CHECK_SHARE:
+        return f"{share:.3f} of it is not what a {size // CHECK_SHRINK} px bake on the CPU gives (a right bake: at most {CHECK_SHARE})"
+    return None
+
+
+def bake(scene, image, targets, margin):
+    """Bake the painted colour into `image`: on the CPU, or with `KILN_BAKE=gpu` on the graphics card if that can be done and comes out right."""
+    asked = os.environ.get(BAKE_ENV, "cpu") or "cpu"
+    if asked not in ("cpu", "gpu"):
+        raise RuntimeError(f"{BAKE_ENV} is 'cpu' or 'gpu', not '{asked}'")
+    scene.cycles.device = "CPU"
+    if asked == "gpu":
+        devices = cuda_devices()
+        if not devices:
+            print(f"bake: {BAKE_ENV}=gpu, but Blender sees no CUDA device; baking on the CPU")
+        else:
+            wrong = gpu_bake(scene, image, targets, margin)
+            if wrong is None:
+                return
+            print(f"WARNING: bake: the bake on the graphics card ({', '.join(devices)}) is thrown away, {wrong}; baking again on the CPU")
+    run_bake(margin)
+
+
 def apply(spec, conv):
     """Unwrap the spec's objects and replace their flat colours with one baked, painted texture."""
     paint = spec["painted_shading"]
@@ -555,7 +694,6 @@ def apply(spec, conv):
     # Cycles is a bundled add-on, and --factory-startup leaves it off.
     addon_utils.enable("cycles")
     scene.render.engine = "CYCLES"
-    scene.cycles.device = "CPU"
     scene.cycles.samples = conv["painted_shading"]["bake_samples"]
     scene.cycles.seed = 0
     scene.cycles.use_animated_seed = False
@@ -625,9 +763,7 @@ def apply(spec, conv):
         tree.nodes.active = target
         temporary.append((tree, made + [emission], output, bsdf, target))
 
-    result = bpy.ops.object.bake(type="EMIT", margin=conv["painted_shading"]["island_gap_px"] // 2, margin_type="EXTEND", use_clear=True)
-    if result != {"FINISHED"}:
-        raise RuntimeError(f"bake failed: {result}")
+    bake(scene, image, [target for *_, target in temporary], conv["painted_shading"]["island_gap_px"] // 2)
 
     if pieces:
         for copy in pieces:

@@ -28,8 +28,6 @@
     "top_tint": "#c8c8c8",
     "edge_light": 0.3,
     "edge_width_m": 0.0156,
-    "crevice_shadow": 0.45,
-    "crevice_width_m": 0.03,
     "blotch": 0.12,
     "blotch_size_m": 0.075,
     "side_shade": 0.22,

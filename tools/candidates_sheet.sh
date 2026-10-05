@@ -4,11 +4,15 @@
 # named on the last line. Each seed is built as a copy of the asset under a name of its own, so
 # the asset's own outputs are not touched. An aid for a look decision, not a gate: nothing is checked.
 # Written 8 bits deep and opaque (tools/image_lint.py).
-# Usage: [KILN_SHEET_VIEW='--stand 3'] [KILN_JOBS=4] tools/candidates_sheet.sh <out.png> <asset> <first seed> <last seed>
+# The candidates are baked on the graphics card (KILN_BAKE=gpu, tools/paint.py), one at a time, when
+# Blender sees a CUDA device, and on the CPU when it does not: a few texels in a million then differ
+# from the bake the gate does, which no eye can see. KILN_BAKE=cpu bakes them as the gate does.
+# Usage: [KILN_SHEET_VIEW='--stand 3'] [KILN_JOBS=4] [KILN_BAKE=cpu] tools/candidates_sheet.sh <out.png> <asset> <first seed> <last seed>
 set -euo pipefail
 cd "$(dirname "$0")/.."
 out="$1"; asset="$2"; first="$3"; last="$4"
 view="${KILN_SHEET_VIEW:-standard}"
+export KILN_BAKE="${KILN_BAKE:-gpu}"
 tmp="$(mktemp -d)"; run="zz_cand_$$"
 trap 'rm -rf "$tmp" source/${run}_* assets/models/${run}_*' EXIT
 cargo build -q -p asset_view
@@ -41,4 +45,5 @@ done
 count=$((${#tiles[@]} / 3)); columns=4; if [[ $count -le 6 ]]; then columns=3; fi
 magick montage -background '#202124' -fill white -pointsize 18 "${tiles[@]}" -tile "${columns}x" -geometry 640x640+4+4 -depth 8 -alpha off "PNG24:$out"
 python tools/image_lint.py "$out"
-echo "$out: $count of $((last - first + 1)) seeds, view '$view'${missing[*]:+; no picture for seeds ${missing[*]}}"
+on_card="$(cat "$tmp"/*.log | grep -c '^bake: on the graphics card' || true)"; thrown="$(cat "$tmp"/*.log | grep -c '^WARNING: bake' || true)"
+echo "$out: $count of $((last - first + 1)) seeds, view '$view', $((on_card - thrown)) baked on the graphics card${missing[*]:+; no picture for seeds ${missing[*]}}"

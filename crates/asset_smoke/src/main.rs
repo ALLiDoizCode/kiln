@@ -477,6 +477,7 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
                     want,
                     &painted_triangles,
                     manifest.overlap,
+                    manifest.foliage.is_some(),
                     image,
                     manifest.bounds.min[1],
                     manifest.bounds.max[1],

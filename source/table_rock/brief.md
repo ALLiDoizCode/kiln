@@ -91,7 +91,7 @@ Collision shapes and the climbable flag (ADR 7: not implemented), LODs, mossy an
 
 ## Numbers
 
-Every value the variants' `spec.json` files share, and the sentence above it comes from. Each variant's own brief gives its `objects`, `seed`, `bounds_m`, how many pieces and necks it has, its clearance and overhang, and its budget; `table_rock_2`'s gives its own texture size, and `table_rock_3`'s its own narrower paint bands.
+Every value the variants' `spec.json` files share, and the sentence above it comes from. Each variant's own brief gives its `objects`, `seed`, `bounds_m`, how many pieces and necks it has, its clearance and overhang, and its budget; and `table_rock_2`'s gives its own texture size.
 
 | Spec key | Value | From |
 | --- | --- | --- |
