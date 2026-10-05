@@ -207,7 +207,7 @@ def frames(points, first=None):
     return result
 
 
-def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=None, frame=None, valleys=None, valley=1.0):
+def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=None, frame=None, valleys=None, valley=1.0, grain_from=0):
     """A closed tapering tube along `points`.
 
     With `strip` each corner is two vertices, with a narrow face between them.
@@ -221,6 +221,8 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
     second, and pulled in to `valley` times the ring's radius, so that the
     ground between two roots comes back to the trunk. The first ring above
     them joins those vertices to its own corners with triangles.
+    `grain_from` is the first ring whose grain is measured round itself;
+    the rings below it (the foot) take its measure.
     """
     rings = []
     frame = frame or frames(points, Vector((1, 0, 0)) if ground else None)
@@ -259,6 +261,16 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
         for i in range(len(ring)):
             far.append(far[-1] + (tree.verts[ring[(i + 1) % len(ring)]] - tree.verts[ring[i]]).length)
         round_at.append(far)
+    # But not below `grain_from`, on the foot: a ring there is far longer than the trunk's above it, and by its own
+    # measure the grain would slant across the flare by the difference. Those rings take that ring's measure, corner
+    # for corner, so a streak runs straight down the trunk and out along a root, wider where the foot spreads.
+    for k in range(grain_from):
+        above, far = round_at[grain_from], []
+        for j in range(sides):
+            far += above[per * j : per * j + per]
+            if len(rings[k]) > count:
+                far.append(above[per * j + per - 1] + (above[per * j + per] - above[per * j + per - 1]) * valleys[k][j])
+        round_at[k] = far + [above[count]]
     along_at = [0.0]
     for a, b in zip(points, points[1:]):
         along_at.append(along_at[-1] + (b - a).length)
@@ -499,7 +511,7 @@ def grow_trunk(r, tree, rng, hi, fork_z, crown):
 
     valleys = [[beside(j) for j in range(sides)]] * min(r.trunk.root_valleys, len(sweep))
     tube(tree, foot + points[1:], [radius_at(z) for z, _ in sweep] + radii[1:], sides, strip=r.trunk.strip, spin=spin, ground=True,
-         reach=reach, frame=[level] * len(sweep) + frame[1:], valleys=valleys, valley=r.trunk.root_valley)
+         reach=reach, frame=[level] * len(sweep) + frame[1:], valleys=valleys, valley=r.trunk.root_valley, grain_from=len(sweep) + 1)
     return points, radii
 
 
