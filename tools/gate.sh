@@ -27,6 +27,13 @@ step "L4b Bevy screenshot";      mkdir -p "source/$asset/review/$phase"
                                    --screenshot "source/$asset/review/$phase/bevy.png" 2> "$reports/L4b-bevy-view.log"
                                  cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --back \
                                    --screenshot "source/$asset/review/$phase/bevy_back.png" 2>> "$reports/L4b-bevy-view.log"
+if grep -q '"painted_shading"' "source/$asset/spec.json" && ! grep -q '"foliage"' "source/$asset/spec.json"; then
+  # A painted solid (a rock): the sides the sun does not reach, seen close from the back, where
+  # only the viewer's ambient light and the paint decide whether anything can be read.
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --back --close \
+                                   --screenshot "source/$asset/out/bevy_shade.png" --shade "source/$asset/out/bevy_shade.json" 2>> "$reports/L4b-bevy-view.log"
+step "L4d shaded sides";         python tools/shade_check.py "$asset" "source/$asset/out/bevy_shade.json" --report "$reports/L4d-shade.json"
+fi
 if grep -q '"skeleton"' "source/$asset/spec.json"; then
   # A tree is mostly seen from under it and from against its trunk: a player's eye 1 m from the
   # trunk looking up into the canopy, and 0.5 m from it looking straight at the bark.

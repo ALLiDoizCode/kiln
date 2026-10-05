@@ -1117,6 +1117,9 @@ def check_table(checks, name, bm, spec, conv):
     print(
         f"{name} table: {share:.3f} of the outline has {want['min_clear_m']} m of open air under it; {len(through)} necks fill {neck_share:.3f} of the outline {cut - lo.z:.2f} m up, "
         f"and stand {overhang:.2f} m in from the rim at the nearest"
+    )
+
+
 # A block (docs/style/rock-shapes.md): a near-cuboid with big chamfers and one or two cracks.
 
 

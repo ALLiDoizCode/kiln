@@ -3,7 +3,7 @@
 # One case per line, and nothing else but comments and `uses` lines. A case is
 #   expect <exit code> "<name>" <command...>      the command must exit with that code
 #   expect_id "<check id>" "<name>" <command...>  the command must exit 1 and name that check
-# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c) and is unique.
+# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c) and is unique.
 # `uses <tag...>` says what the cases below it depend on, until the next `uses`: the assets they
 # read, and the tools behind them (see `tags_of_file` in tests/run.sh). Selection goes by these.
 #
@@ -161,6 +161,13 @@ expect 0 "L4c passes the real tree's bark"  view_checks tree_1 source/tree_1/rev
 uses tree_1 view_checks view paint tree_mutations
 expect_id "view.bark_tone"  "L4c catches bark that is flat brown at arm's length" view_checks tree_1 "$(bark_shot no_grain)"
 expect_id "view.bark_grain" "L4c catches grain seen running round the trunk" view_checks tree_1 "$(bark_shot grain_across)"
+
+# L4d: a rock's sides turned away from the sun, in the viewer's picture, as the gate takes it.
+uses slab_1 shade_check view paint slab_mutations
+expect 0 "L4d passes an unbroken slab's shaded sides" shade_check slab_1 "$(shade_shot none)"
+expect_id "view.shade_value" "L4d catches paint so dark the shaded sides are lost" shade_check slab_1 "$(shade_shot dark_paint)"
+uses slab_1 shade_check
+expect_id "view.shade_seen" "L4d catches a picture with no shaded side in it" shade_check slab_1 "$(shade_report 'r["away"]["pixels"] = 3')"
 
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 uses tracer bevy_lint
