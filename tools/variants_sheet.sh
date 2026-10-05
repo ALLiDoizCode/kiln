@@ -2,18 +2,22 @@
 # Variants of one family beside a benchmark, all under Bevy from the same cameras, one row each:
 # the standard view, from the back, a player standing 3 m away, standing 0.5 m away, and looking
 # up from 1 m beside the trunk. Written 8 bits deep and opaque, and checked (tools/image_lint.py).
-# Usage: tools/variants_sheet.sh <out.png> <benchmark.gltf> <benchmark.manifest.json> <asset> [asset...]
+# With --low, for plants below a player's eye, which have no view from below: the last view is
+# the player standing 1 m away and looking down at the plant.
+# Usage: tools/variants_sheet.sh [--low] <out.png> <benchmark.gltf> <benchmark.manifest.json> <asset> [asset...]
 set -euo pipefail
 cd "$(dirname "$0")/.."
+last="--stand 1 --pitch 78"; last_label="from below (--stand 1 --pitch 78)"
+if [[ ${1:-} == --low ]]; then last="--stand 1"; last_label="--stand 1"; shift; fi
 out="$1"; benchmark="$2"; benchmark_manifest="$3"; shift 3
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 tiles=()
 row() { # <label> <model> <manifest>
   local n=0
-  for view in "standard" "--back" "--stand 3" "--stand 0.5" "--stand 1 --pitch 78"; do
+  for view in "standard" "--back" "--stand 3" "--stand 0.5" "$last"; do
     n=$((n + 1)); flags=(); [[ $view == standard ]] || read -ra flags <<< "$view"
     cargo run -q -p asset_view -- "$2" "$3" "${flags[@]}" --screenshot "$tmp/$1_$n.png" 2> /dev/null
-    label="$view"; [[ $n -eq 5 ]] && label="from below (--stand 1 --pitch 78)"
+    label="$view"; [[ $n -eq 5 ]] && label="$last_label"
     tiles+=(-label "$1, $label" "$tmp/$1_$n.png")
   done
 }

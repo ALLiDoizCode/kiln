@@ -1,0 +1,88 @@
+{
+  "asset": "dome_bush_2",
+  "family": "dome_bush",
+  "objects": [
+    "dome_bush_2"
+  ],
+  "seed": 2,
+  "bounds_m": {
+    "min": [
+      -1.1,
+      -1.0,
+      0.0
+    ],
+    "max": [
+      1.1,
+      1.0,
+      1.5
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 1500,
+  "materials": {
+    "m_bush_stem": "#6b5540",
+    "m_bush_leaf": "#9ab552"
+  },
+  "painted_shading": {
+    "texture_px": 512,
+    "base_tint": "#a89c94",
+    "top_tint": "#ffffff",
+    "edge_light": 0.2,
+    "edge_width_m": 0.004,
+    "crevice_shadow": 0.5,
+    "crevice_width_m": 0.01,
+    "hidden_underside": true
+  },
+  "foliage": {
+    "material": "m_bush_leaf",
+    "pad_gap_m": 0.06,
+    "min_pads": 1,
+    "max_pads": 1,
+    "min_pad_pieces": 40,
+    "piece_m": [
+      0.2,
+      0.5
+    ],
+    "min_pointing_out": 0.8,
+    "min_pointing_down": 0.5,
+    "sky_share": [
+      0.03,
+      0.3
+    ],
+    "min_sky_views": 5,
+    "under_tint": "#6f96a6",
+    "top_tint": "#ffffff",
+    "shades": 6,
+    "tones": 4,
+    "variation": 0.16,
+    "core_tint": "#527a86",
+    "lobes": [
+      2,
+      3
+    ],
+    "min_lobe_ratio": 1.2,
+    "max_core_seen": 0.1,
+    "max_core_seen_below": 1.0,
+    "min_pad_flatness": 1.2,
+    "min_pad_spread": 1.0,
+    "max_seen_into": 1.0,
+    "min_rim_points_per_m": 1.0
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "open_materials": [
+    "m_bush_leaf"
+  ],
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "variants": {
+    "siblings": [
+      "dome_bush_1",
+      "dome_bush_3"
+    ],
+    "min_difference": 0.3
+  }
+}

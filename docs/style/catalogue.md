@@ -58,7 +58,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Dome bush | Not started |
+| Dome bush | Three variants built in three sizes, 0.75 to 1.5 m tall (664 to 1,432 triangles). Not approved. No flowers, seasons or colours yet. |
 | Blade plant (ferns, understorey) | Not started |
 | Grass tuft, tall grass, reeds | Not started |
 | Leaf mat | Not started |
