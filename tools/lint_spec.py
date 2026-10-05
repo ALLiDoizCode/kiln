@@ -41,10 +41,11 @@ PAINTED = {
     "top_tint": str,
     "edge_light": float,
     "edge_width_m": float,
-    "crevice_shadow": float,
-    "crevice_width_m": float,
     "hidden_underside": bool,
 }
+# Optional, both or neither: the shadow in inside corners. A shape with none (a pebble) leaves them out, and the
+# load test then fails if it finds an inside corner; overlapping pieces always have them, for their joins (ADR 13).
+CREVICE = {"crevice_shadow": float, "crevice_width_m": float}
 GROWTH = {"growth": str, "growth_height_m": float}
 # Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
 # needs `growth`; `blotch` and `blotch_size_m` come together.
@@ -56,12 +57,21 @@ PIECES = {"min_count": int, "min_shown_m2": float, "min_dominant_ratio": float, 
 FOOT = {"min_sides": int, "min_side_m2": float}
 CHAMFERS = {"min_count": int, "min_m2": float, "min_width_m": float}
 LEAN = {"max_upright_share": float, "min_summit_offset": float}
+# Optional; a low, rounded stone (source/pebble): how tall it may be for its wider side, and how much of
+# the surface that is seen one steep plane may hold. Each block has exactly its one key, a share in (0, 1).
+LOW = {"max_height_share": float}
+ROUNDED = {"max_steep_plane_share": float}
 # Optional; a shape of several closed pieces that pass into each other (ADR 13). Every key is required once it is present.
 OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
 # Optional, with `overlap`: a cluster of leaning prisms on one base (a crag).
 CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "max_lean_spread_deg": float}
 # Optional, with `overlap`: flat stones piled one on another (a stack).
 PILE = {"max_sink": float, "max_thickness": float, "max_size_step": float}
+# Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
+TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
+# Optional; a near-cuboid with big chamfers (a block), and, with it, the cracks across it. Every key of a block is required once it is present.
+BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
+CRACKS = {"count": int, "depth_m": float, "width_m": float, "min_span": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -177,6 +187,11 @@ if not checks.failed():
         # Chamfers are measured against what counts as a large plane, and all four against a closed shape.
         ok = ok and spec["watertight"] and (block != "chamfers" or (isinstance(planes, dict) and wanted_block["min_m2"] < planes.get("large_m2", 0)))
         checks.check(f"spec.{block}", ok, f"optional; needs exactly {sorted(keys)}, none negative, shares at most 1, ratios at least 1, on a watertight asset (chamfers: with `planes`, and min_m2 below planes.large_m2)")
+    for block, keys in (("low", LOW), ("rounded", ROUNDED)):
+        wanted_block = spec.get(block)
+        if wanted_block is not None:
+            ok = isinstance(wanted_block, dict) and set(wanted_block) == set(keys) and all(type(wanted_block[key]) is float and 0 < wanted_block[key] < 1 for key in keys)
+            checks.check(f"spec.{block}", ok and spec["watertight"], f"optional; needs exactly {sorted(keys)}, a share above 0 and below 1, on a watertight asset")
     overlap = spec.get("overlap")
     if overlap is not None:
         ok = (
@@ -216,6 +231,46 @@ if not checks.failed():
             and cluster["min_prisms"] <= overlap.get("min_count", 0)
         )
         checks.check("spec.cluster", ok, f"optional; needs exactly {sorted(CLUSTER)}: at least 2 prisms and no more than `overlap.min_count`, max_height_step in 0..1 (below 1), min_lean_deg in 0..90, max_lean_spread_deg in 0..90, on an asset of overlapping pieces (`overlap`)")
+    table = spec.get("table")
+    if table is not None:
+        size = [high - low for low, high in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]
+        ok = (
+            isinstance(table, dict)
+            and set(table) == set(TABLE)
+            and all(type(table[key]) is kind for key, kind in TABLE.items())
+            and table["necks"] >= 1
+            and 0 < table["min_clear_m"] < size[2]
+            and 0 < table["max_neck_share"] < table["min_shelter_share"] <= 1
+            and table["max_neck_share"] + table["min_shelter_share"] <= 1
+            and 0 < table["min_overhang_m"] < min(size[0], size[1]) / 2
+            and isinstance(overlap, dict)
+            and table["necks"] < overlap.get("min_count", 0)
+        )
+        checks.check("spec.table", ok, f"optional; needs exactly {sorted(TABLE)}: at least 1 neck and fewer than `overlap.min_count` (the cap is a piece too), min_clear_m above 0 and below the bounds' height, max_neck_share above 0 and min_shelter_share at most 1 with the two together at most 1, min_overhang_m above 0 and below half the bounds' lesser side, on an asset of overlapping pieces (`overlap`)")
+    box = spec.get("block")
+    if box is not None:
+        ok = (
+            isinstance(box, dict)
+            and set(box) == set(BLOCK)
+            and all(type(box[key]) is kind for key, kind in BLOCK.items())
+            and 0 < box["min_square_share"] <= 1
+            and box["min_chamfers"] >= 0
+            and box["min_chamfer_m"] > 0
+        )
+        checks.check("spec.block", ok and spec["watertight"], f"optional; needs exactly {sorted(BLOCK)}: min_square_share in (0, 1], min_chamfers not negative, min_chamfer_m above 0, on a watertight asset")
+    cracks = spec.get("cracks")
+    if cracks is not None:
+        ok = (
+            isinstance(cracks, dict)
+            and set(cracks) == set(CRACKS)
+            and all(type(cracks[key]) is kind for key, kind in CRACKS.items())
+            and cracks["count"] >= 1
+            and cracks["depth_m"] > 0
+            and cracks["width_m"] > 0
+            and 0 < cracks["min_span"] <= 1
+            and isinstance(box, dict)
+        )
+        checks.check("spec.cracks", ok, f"optional; needs exactly {sorted(CRACKS)}: at least 1 crack, depth_m and width_m above 0, min_span in (0, 1], on a block (`block`)")
     top = spec.get("top")
     if top is not None:
         ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
@@ -224,7 +279,7 @@ if not checks.failed():
     painted = spec.get("painted_shading")
     if painted is not None:
         keys = set(painted) if isinstance(painted, dict) else set()
-        wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
+        wanted = {**PAINTED, **(CREVICE if keys & set(CREVICE) else {}), **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
         optional = {**SIDE_SHADE, **({**GROWTH_WHERE, **GROWTH_LOOK} if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
         wanted.update({**(GRAIN if keys & set(GRAIN) else {}), **(CLOSE if keys & set(CLOSE) else {})})
@@ -233,7 +288,7 @@ if not checks.failed():
         checks.check(
             "spec.painted_shading",
             ok,
-            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
         )
         if ok:
             size = painted["texture_px"]
@@ -244,7 +299,9 @@ if not checks.failed():
                 luma(painted["base_tint"]) < luma(painted["top_tint"]),
                 f"base_tint {painted['base_tint']} is not darker than top_tint {painted['top_tint']} (ADR 9: darker toward the base)",
             )
-            amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted["crevice_shadow"] < 1 and painted["edge_width_m"] > 0 and painted["crevice_width_m"] > 0
+            amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted.get("crevice_shadow", 0.0) < 1 and painted["edge_width_m"] > 0 and painted.get("crevice_width_m", 1.0) > 0
+            if "overlap" in spec:
+                checks.check("spec.painted_joins", "crevice_shadow" in painted, "overlapping pieces are joined by what the crevice shadow hides (ADR 13): painted_shading needs crevice_shadow and crevice_width_m")
             strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
             strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0
             checks.check(

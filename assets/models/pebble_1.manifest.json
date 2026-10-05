@@ -12,7 +12,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 104,
+  "triangles": 122,
   "bounds": {
     "min": [
       -0.06,
@@ -21,7 +21,7 @@
     ],
     "max": [
       0.06,
-      0.05,
+      0.025,
       0.045
     ]
   },
@@ -46,8 +46,6 @@
     ],
     "edge_light": 0.3,
     "edge_width_m": 0.004,
-    "crevice_shadow": 0.45,
-    "crevice_width_m": 0.012,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,

@@ -16,7 +16,11 @@
 //! asset hidden, and the two must differ where the manifest's bounds fall in the picture; if
 //! they do not after a few tries, nothing is saved and the exit code is 1.
 //!
-//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back] [--stand <metres>] [--pitch <degrees>]
+//! `--shade <report.json>` with `--screenshot` also writes what the saved picture shows of the
+//! asset's sides: the median luminance of those turned away from the sun, which only the ambient
+//! light reaches, and of those turned toward it (`tools/shade_check.py` reads it).
+//!
+//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--shade <report.json>] [--close] [--back] [--stand <metres>] [--pitch <degrees>]
 
 use std::{
     path::PathBuf,
@@ -27,6 +31,7 @@ use std::{
 use bevy::{
     app::ScheduleRunnerPlugin,
     asset::{RecursiveDependencyLoadState, UnapprovedPathMode},
+    mesh::VertexAttributeValues,
     camera::RenderTarget,
     prelude::*,
     render::{
@@ -58,6 +63,22 @@ const PIXEL_DIFFERS: u8 = 8;
 const MIN_ASSET_SHARE: f32 = 0.005;
 /// Two captures of the same scene are the same when at most this share of their pixels differ.
 const MAX_UNSTABLE_SHARE: f32 = 0.002;
+/// The way the sun's light travels: from the asset's front left, above, as in the review renders.
+const SUN_TO: Vec3 = Vec3::new(0.4, -1.0, -0.6);
+const SUN_LUX: f32 = 8000.0;
+/// The light that reaches every face alike, the only light on a face the sun does not reach.
+/// At 300 a rock's shaded side was a near-black field (0.030 linear on crag_1, against 0.176 lit)
+/// in which joins and paint could not be read; shown both, the owner chose 900.
+/// The sun and this are a stand-in: the game (`pit`, ADR 8) settles its own light, and what an
+/// asset is held to here (`[shade]` in `conventions.toml`) is measured under this one.
+const AMBIENT: f32 = 900.0;
+/// `--shade`: one ray every this many pixels each way.
+const SHADE_STEP: u32 = 4;
+/// `--shade`: a face is a side when its normal is no nearer upright than this (45 degrees), and is
+/// turned toward the sun, or away from it, when the level part of its normal is at least this far
+/// (as a cosine) round to the sun's side or the other.
+const SHADE_SIDE_NORMAL_Y: f32 = 0.7071;
+const SHADE_TURNED: f32 = 0.3;
 
 #[derive(Deserialize)]
 struct Manifest {
@@ -81,6 +102,8 @@ struct View {
     centre: Vec3,
     radius: f32,
     screenshot: Option<PathBuf>,
+    /// Where to write what the saved picture shows of the asset's shaded sides (`--shade`).
+    shade: Option<PathBuf>,
     /// Where the screenshot's camera stands, as a turn about the vertical from the front right.
     orbit: f32,
     /// A player's view instead: (metres from `stand_at`, the height looked at).
@@ -110,10 +133,13 @@ fn main() -> AppExit {
     let mut back = false;
     let mut stand = None;
     let mut pitch = None;
+    let mut shade = None;
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
         if arg == "--screenshot" {
             screenshot = iter.next().map(PathBuf::from);
+        } else if arg == "--shade" {
+            shade = iter.next().map(PathBuf::from);
         } else if arg == "--close" {
             close = true;
         } else if arg == "--back" {
@@ -203,6 +229,7 @@ fn main() -> AppExit {
             // Close up, the asset overfills the frame a little, as it would at arm's length.
             radius: (framed_max - framed_min).length() / 2.0 * if close { 0.8 } else { 1.0 },
             screenshot,
+            shade,
             orbit: if back { std::f32::consts::PI } else { 0.0 },
             stand: stand.map(|metres| (metres, (min.y + max.y) / 2.0)),
             pitch,
@@ -280,14 +307,14 @@ fn setup(
     // Same direction as the review renders' sun: from the asset's front-left, above.
     commands.spawn((
         DirectionalLight {
-            illuminance: 8000.0,
+            illuminance: SUN_LUX,
             shadow_maps_enabled: true,
             ..default()
         },
-        Transform::default().looking_to(Vec3::new(0.4, -1.0, -0.6), Vec3::Y),
+        Transform::default().looking_to(SUN_TO, Vec3::Y),
     ));
     commands.insert_resource(GlobalAmbientLight {
-        brightness: 300.0,
+        brightness: AMBIENT,
         ..default()
     });
 
@@ -336,6 +363,9 @@ fn capture(
     asset_server: Res<AssetServer>,
     mut visibility: Query<&mut Visibility>,
     mut exit: MessageWriter<AppExit>,
+    meshes: Res<Assets<Mesh>>,
+    drawn: Query<(Entity, &Mesh3d, &GlobalTransform)>,
+    parents: Query<&ChildOf>,
 ) {
     view.frames += 1;
     if view.frames > TIMEOUT_FRAMES {
@@ -391,6 +421,25 @@ fn capture(
             if unstable <= MAX_UNSTABLE_SHARE && present >= MIN_ASSET_SHARE {
                 let path = view.screenshot.clone().expect("capture only runs with --screenshot");
                 let saved = again.clone().try_into_dynamic().map_err(|e| e.to_string()).and_then(|image| image.to_rgb8().save(&path).map_err(|e| e.to_string()));
+                let saved = saved.and_then(|()| {
+                    let Some(report) = &view.shade else { return Ok(()) };
+                    let root = view.root.expect("the asset was spawned");
+                    let mut triangles = Vec::new();
+                    for (entity, mesh, to_world) in &drawn {
+                        if !parents.iter_ancestors(entity).any(|ancestor| ancestor == root) {
+                            continue;
+                        }
+                        let Some(mesh) = meshes.get(&mesh.0) else { continue };
+                        let Some(VertexAttributeValues::Float32x3(positions)) = mesh.attribute(Mesh::ATTRIBUTE_POSITION) else { continue };
+                        let positions: Vec<Vec3> = positions.iter().map(|p| to_world.transform_point(Vec3::from(*p))).collect();
+                        let indices: Vec<usize> = match mesh.indices() {
+                            Some(indices) => indices.iter().collect(),
+                            None => (0..positions.len()).collect(),
+                        };
+                        triangles.extend(indices.chunks_exact(3).map(|t| [positions[t[0]], positions[t[1]], positions[t[2]]]));
+                    }
+                    std::fs::write(report, view.shade_report(again, &triangles)).map_err(|e| e.to_string())
+                });
                 match saved {
                     Ok(()) => exit.write(AppExit::Success),
                     Err(error) => {
@@ -417,6 +466,74 @@ fn capture(
 }
 
 impl View {
+    /// What the saved picture shows of the asset's sides, as JSON: the median luminance (linear, of
+    /// the picture's own pixels) of the sides turned away from the sun and of those turned toward
+    /// it. Which a pixel is comes from the triangle a ray through it meets first, never from the picture.
+    fn shade_report(&self, picture: &Image, triangles: &[[Vec3; 3]]) -> String {
+        let camera = camera_transform(self, self.orbit);
+        let fov = if self.stand.is_some() { STAND_FOV } else { std::f32::consts::FRAC_PI_4 };
+        let reach = (fov / 2.0).tan();
+        let sun = Vec2::new(-SUN_TO.x, -SUN_TO.z).normalize();
+        let data = picture.data.as_ref().expect("a captured picture has pixels");
+        let stride = data.len() / (SIZE * SIZE) as usize;
+        let linear = |v: u8| {
+            let c = v as f32 / 255.0;
+            if c <= 0.04045 { c / 12.92 } else { ((c + 0.055) / 1.055).powf(2.4) }
+        };
+        let (mut away, mut toward, mut seen) = (Vec::new(), Vec::new(), 0usize);
+        for y in (SHADE_STEP / 2..SIZE).step_by(SHADE_STEP as usize) {
+            for x in (SHADE_STEP / 2..SIZE).step_by(SHADE_STEP as usize) {
+                let at = Vec2::new((x as f32 + 0.5) / SIZE as f32 * 2.0 - 1.0, 1.0 - (y as f32 + 0.5) / SIZE as f32 * 2.0);
+                let ray = camera.rotation * Vec3::new(at.x * reach, at.y * reach, -1.0);
+                let mut nearest: Option<(f32, Vec3)> = None;
+                for [a, b, c] in triangles {
+                    // Moeller and Trumbore's ray and triangle test.
+                    let (e1, e2) = (*b - *a, *c - *a);
+                    let p = ray.cross(e2);
+                    let det = e1.dot(p);
+                    if det.abs() < 1e-12 {
+                        continue;
+                    }
+                    let t = camera.translation - *a;
+                    let u = t.dot(p) / det;
+                    let q = t.cross(e1);
+                    let v = ray.dot(q) / det;
+                    let distance = e2.dot(q) / det;
+                    if u < 0.0 || v < 0.0 || u + v > 1.0 || distance <= 0.0 {
+                        continue;
+                    }
+                    if nearest.is_none_or(|(least, _)| distance < least) {
+                        nearest = Some((distance, e1.cross(e2).normalize_or_zero()));
+                    }
+                }
+                let Some((_, normal)) = nearest else { continue };
+                seen += 1;
+                let level = Vec2::new(normal.x, normal.z);
+                if normal.y.abs() >= SHADE_SIDE_NORMAL_Y || level.length() < 1e-6 {
+                    continue;
+                }
+                let turned = level.normalize().dot(sun);
+                let pixel = (y * SIZE + x) as usize * stride;
+                let luminance = 0.2126 * linear(data[pixel]) + 0.7152 * linear(data[pixel + 1]) + 0.0722 * linear(data[pixel + 2]);
+                if turned <= -SHADE_TURNED {
+                    away.push(luminance);
+                } else if turned >= SHADE_TURNED {
+                    toward.push(luminance);
+                }
+            }
+        }
+        let median = |values: &mut Vec<f32>| {
+            values.sort_by(f32::total_cmp);
+            if values.is_empty() { 0.0 } else { values[values.len() / 2] }
+        };
+        let lowest = |values: &Vec<f32>| if values.is_empty() { 0.0 } else { values[values.len() / 10] };
+        let (away_median, toward_median) = (median(&mut away), median(&mut toward));
+        format!(
+            "{{\n  \"rays\": {},\n  \"asset_pixels\": {},\n  \"away\": {{\"pixels\": {}, \"median\": {:.5}, \"tenth\": {:.5}}},\n  \"toward\": {{\"pixels\": {}, \"median\": {:.5}}}\n}}\n",
+            (SIZE / SHADE_STEP).pow(2), seen, away.len(), away_median, lowest(&away), toward.len(), toward_median
+        )
+    }
+
     /// Where the manifest's bounds fall in the screenshot, as pixels (x0, y0, x1, y1); the whole
     /// picture when a corner of them is beside or behind the camera.
     fn region(&self) -> (u32, u32, u32, u32) {

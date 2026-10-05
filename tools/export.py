@@ -106,7 +106,8 @@ if "painted_shading" in spec:
         "texture_px": want["texture_px"],
         "base_tint": [round(c, 6) for c in linear_rgb(want["base_tint"])],
         "top_tint": [round(c, 6) for c in linear_rgb(want["top_tint"])],
-        **{key: want[key] for key in ("edge_light", "edge_width_m", "crevice_shadow", "crevice_width_m", "hidden_underside")},
+        # The crevice shadow is asked only of a shape with inside corners; absent, the load test holds the shape to having none.
+        **{key: want[key] for key in ("edge_light", "edge_width_m", "crevice_shadow", "crevice_width_m", "hidden_underside") if key in want},
         **{key: rules[key] for key in ("min_texels_per_m", "min_uv_coverage", "max_uv_overlap", "feature_deg", "colour_tolerance", "min_effect_share")},
         "texel_range": rules["texel_range_srgb"],
         # Variation the spec asks for (absent: none), and the rules tools/paint.py and the load test share.

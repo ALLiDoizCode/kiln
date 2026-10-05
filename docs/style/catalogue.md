@@ -28,12 +28,12 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Crag | 3 or more clusters | Three variants built from pieces (ADR 13): 3.0, 4.6 and 1.7 m tall, of 6, 8 and 5 pieces (4, 5 and 3 leaning prisms, the rest foot blocks), 394 to 634 triangles, bare stone. The largest needs a 2048 px texture. No covers. Not approved. |
 | Arch | Lintel arch and wedged-block arch | Not started |
 | Rib | Single ribs and a paired arch | Not started |
-| Table rock | 2 or more | Not started |
+| Table rock | 2 or more | Three variants built from pieces (ADR 13): 3.6, 6.4 and 2.4 m across and 2.9, 4.2 and 1.5 m tall, with 2.0, 3.0 and 0.9 m of open air under the cap; the largest on two necks and with a 2048 px texture; 288 to 500 triangles, bare stone. Under the viewer's light the underside and necks are in the cap's shadow and their paint does not read. No covers. Not approved. |
 | Slab | Single and overlapped, several sizes | Three overlapped variants built from pieces (ADR 13): 2.6, 4.0 and 1.4 m across, 208 to 312 triangles, bare stone. No single slab, no covers. Not approved. |
 | Stack | 3 or more | Three variants built from pieces (ADR 13), the first whose pieces stand on each other: 0.7, 1.1 and 0.32 m tall, of 4, 5 and 3 flat stones, 334 to 430 triangles on the two measured, bare stone. `stack_2` and `stack_3` pass every gate; `stack_1` fails the load test on `painted.banding`. No covers. Not reviewed, not approved. |
-| Block | A run of sizes, some cracked | Not started |
+| Block | A run of sizes, some cracked | Three sizes: 0.5, 1.0 and 2.0 m wide, 80 to 164 triangles, bare stone. The smallest is whole, one closed skin; the others are parted along one and two cracks into overlapping pieces (ADR 13). The cracks are straight slots, not wandering lines. No covers. Not approved. |
 | Terrace | 2 or more | Not started |
-| Pebble | A run of sizes | Three sizes, each one closed skin cut by planes (not pieces): 0.12, 0.25 and 0.5 m across, 92 to 104 triangles, a 256 px texture, bare stone. No square pebbles, no covers. Not approved. |
+| Pebble | A run of sizes | Three sizes, each one closed skin (not pieces): a low plate of six to eight leaning sides, a broad rim and a tipped cap, 0.12, 0.25 and 0.5 m across and a fifth as tall, 104 to 122 triangles, a 256 px texture, bare stone. Redone lower and rounder after the first review; `low` and `rounded` are checked against limits measured on the benchmark's round pebbles. Twelve seeds of each size are in `benchmarks/out/pebble_<n>_candidates.png` for the owner to pick from. No square pebbles, no covers. Not approved. |
 | Rubble | 2 or more groups | Not started |
 
 ## Trees
@@ -42,7 +42,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Broadleaf | Three mature variants built (2,800 to 3,550 triangles), one young tree (1,850) and one old (5,340); no sapling yet. One mature tree in autumn and in winter (snow on the foliage, as palettes); no bare winter tree, no snow on bark. Species is a recipe and growth stage a number in the spec. Not approved. |
+| Broadleaf | Three mature variants built (2,800 to 3,550 triangles), one sapling (stage 0.5, 3.5 m, two tufts in a row, 1,050 triangles, with its own limits for pieces in a tuft and bark seen), one young tree (1,850) and one old (5,340). One mature tree in autumn and in winter (snow on the foliage, as palettes); no bare winter tree, no snow on bark. Species is a recipe and growth stage a number in the spec. Not approved. |
 | Umbrella tree | Not started |
 | Conifer | Not started |
 | Tall pine | Not started |
