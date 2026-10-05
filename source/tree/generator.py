@@ -207,69 +207,131 @@ def frames(points, first=None):
     return result
 
 
-def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=None):
+def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=None, frame=None, valleys=None, valley=1.0, grain_from=0):
     """A closed tapering tube along `points`.
 
     With `strip` each corner is two vertices, with a narrow face between them.
     `reach[ring][corner]` scales a corner's distance from the axis (roots).
     `ground` makes the first ring level at its own height with a flat cap
     under it; otherwise both ends close to a point.
+    `frame[ring]` is that ring's (tangent, axis across, axis across), in place
+    of the frames carried along the points.
+    `valleys[ring][side]` gives each of the lowest rings one more vertex in
+    every side: that share of the way from the side's first corner to its
+    second, and pulled in to `valley` times the ring's radius, so that the
+    ground between two roots comes back to the trunk. The first ring above
+    them joins those vertices to its own corners with triangles.
+    `grain_from` is the first ring whose grain is measured round itself;
+    the rings below it (the foot) take its measure at their corners, and on
+    a root's flank measure on from the root's crest over the flank itself.
     """
     rings = []
-    frame = frames(points, Vector((1, 0, 0)) if ground else None)
+    frame = frame or frames(points, Vector((1, 0, 0)) if ground else None)
     per = 2 if strip else 1
     for k, (point, radius) in enumerate(zip(points, radii)):
         tangent, across, along = frame[k]
         if ground and k == 0:
             across, along = Vector((1, 0, 0)), Vector((0, 1, 0))
-        ring = []
+        corners = []
         for j in range(sides):
             scale = reach[k][j] if reach and k < len(reach) else 1.0
             # A root is a fin: its two corner vertices stay close together however far it reaches.
             half = strip * math.pi / sides / (scale if scale > 1.2 else 1.0)
             for step in range(per):
                 angle = spin + 2 * math.pi * j / sides + (half * (2 * step - 1) if strip else 0.0)
-                ring.append(tree.vert(point + (across * math.cos(angle) + along * math.sin(angle)) * radius * scale))
+                corners.append(point + (across * math.cos(angle) + along * math.sin(angle)) * radius * scale)
+        ring = []
+        for j in range(sides):
+            ring += [tree.vert(co) for co in corners[per * j : per * j + per]]
+            if valleys and k < len(valleys):
+                between = corners[per * j + per - 1].lerp(corners[per * (j + 1) % len(corners)], valleys[k][j]) - point
+                ring.append(tree.vert(point + between * min(1.0, radius * valley / between.length)))
         rings.append(ring)
     count = sides * per
+
+    def chain(k, j):
+        """Side `j` of ring `k`: where in the ring its vertices are, from the last vertex of one corner to the first of the next."""
+        size = len(rings[k]) // sides
+        return list(range(size * j + per - 1, size * (j + 1) + 1))
+
     # Grain: how far round the limb each corner of a ring is, in metres over its own surface (so the
     # grain is as fine on a root's fin as on the trunk above it), and how far along the limb each ring is.
     round_at = []
     for ring in rings:
         far = [0.0]
-        for i in range(count):
-            far.append(far[-1] + (tree.verts[ring[(i + 1) % count]] - tree.verts[ring[i]]).length)
+        for i in range(len(ring)):
+            far.append(far[-1] + (tree.verts[ring[(i + 1) % len(ring)]] - tree.verts[ring[i]]).length)
         round_at.append(far)
+    # But not below `grain_from`, on the foot: a ring there is far longer than the trunk's above it, and by its own
+    # measure the grain would slant across the flare by the difference. Those rings take that ring's measure, corner
+    # for corner, so a streak runs straight down the trunk and out along a root's crest.
+    # A root's flank is several times as wide as the side of the trunk it grows from, and by the trunk's measure
+    # its grain would be stretched into broad patches. So a flank measures on from its root's crest over its own
+    # surface: `flank_at[ring, place]` is a valley vertex's measure as each of the two flanks that meet there
+    # has it. The grain breaks along the valley, where the bark folds and the painted islands are cut anyway.
+    flank_at = {}
+    for k in range(grain_from):
+        above, far, own = round_at[grain_from], [], round_at[k]
+        for j in range(sides):
+            far += above[per * j : per * j + per]
+            if len(rings[k]) > count:
+                place = len(far)
+                flank_at[k, place] = (above[per * j + per - 1] + own[place] - own[place - 1], above[per * j + per] - (own[place + 1] - own[place]))
+                far.append(above[per * j + per - 1] + (above[per * j + per] - above[per * j + per - 1]) * valleys[k][j])
+        round_at[k] = far + [above[count]]
     along_at = [0.0]
     for a, b in zip(points, points[1:]):
         along_at.append(along_at[-1] + (b - a).length)
     limb = tree.limbs * 3.7
     tree.limbs += 1
-    for k, (lower, upper) in enumerate(zip(rings, rings[1:])):
-        for i in range(count):
-            j = (i + 1) % count
-            kind = STRIP_FACE if strip and i % 2 == 0 else SIDE
-            grain = [(round_at[k][i], along_at[k], limb), (round_at[k][i + 1], along_at[k], limb), (round_at[k + 1][i + 1], along_at[k + 1], limb), (round_at[k + 1][i], along_at[k + 1], limb)]
-            tree.face((lower[i], lower[j], upper[j], upper[i]), kind, grain=grain)
+
+    def face(kind, *corners, flank=None):
+        """A face from (ring, place in the ring) corners; a place one past a ring's end is its first vertex again.
+
+        `flank` says which root's flank the face is: 0 that of the corner before its valley vertices, 1 the one after."""
+        across = [round_at[k][i] if flank is None or (k, i) not in flank_at else flank_at[k, i][flank] for k, i in corners]
+        tree.face([rings[k][i % len(rings[k])] for k, i in corners], kind, grain=[(far, along_at[k], limb) for far, (k, _) in zip(across, corners)])
+
+    for k in range(len(rings) - 1):
+        for j in range(sides):
+            lower, upper = chain(k, j), chain(k + 1, j)
+            if strip:
+                face(STRIP_FACE, (k, lower[0] - 1), (k, lower[0]), (k + 1, upper[0]), (k + 1, upper[0] - 1))
+            if len(lower) == len(upper):
+                for flank, (a, b, c, d) in enumerate(zip(lower, lower[1:], upper[1:], upper)):
+                    face(SIDE, (k, a), (k, b), (k + 1, c), (k + 1, d), flank=flank if len(lower) == 3 else None)
+            else:
+                # Where the valley's vertices end: a fan from each to the two corners above it.
+                first, middle, last = lower
+                face(SIDE, (k, first), (k, middle), (k + 1, upper[0]), flank=0)
+                face(SIDE, (k, middle), (k + 1, upper[1]), (k + 1, upper[0]))
+                face(SIDE, (k, middle), (k, last), (k + 1, upper[1]), flank=1)
         # Each stretch between two rings is cut once along its length, to unroll flat.
-        tree.seams.append((lower[0], upper[0]))
+        tree.seams.append((rings[k][0], rings[k + 1][0]))
+        # The foot does not unroll: a band of fins folds over itself. It is cut along every valley, so each
+        # root lies flat by itself, its two flanks either side of its crest.
+        if len(rings[k]) > count:
+            for j in range(sides):
+                lower, upper = chain(k, j), chain(k + 1, j)
+                tree.seams.append((rings[k][lower[1]], rings[k + 1][upper[1] % len(rings[k + 1])]))
     # And every ring is a cut, so no painted island is longer than one stretch of a limb.
     for ring in rings:
-        tree.seams += [(ring[i], ring[(i + 1) % count]) for i in range(count)]
+        tree.seams += [(ring[i], ring[(i + 1) % len(ring)]) for i in range(len(ring))]
     start, end = points[0], points[-1]
+    first, last = rings[0], rings[-1]
     if ground:
         centre = tree.vert(start)
-        for i in range(count):
-            tree.face((centre, rings[0][(i + 1) % count], rings[0][i]), GROUND, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
+        for i in range(len(first)):
+            tree.face((centre, first[(i + 1) % len(first)], first[i]), GROUND, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
     else:
         apex = tree.vert(start - frame[0][0] * radii[0] * 0.35)
         for i in range(count):
-            tree.face((apex, rings[0][(i + 1) % count], rings[0][i]), CONE, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
-        tree.seams.append((rings[0][0], apex))
+            tree.face((apex, first[(i + 1) % count], first[i]), CONE, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
+        tree.seams.append((first[0], apex))
     apex = tree.vert(end + frame[-1][0] * radii[-1] * 2.0)
     for i in range(count):
-        tree.face((rings[-1][i], rings[-1][(i + 1) % count], apex), CONE, grain=[(round_at[-1][i], along_at[-1], limb), (round_at[-1][i + 1], along_at[-1], limb), (round_at[-1][i], along_at[-1] + radii[-1] * 2, limb)])
-    tree.seams.append((rings[-1][0], apex))
+        tree.face((last[i], last[(i + 1) % count], apex), CONE, grain=[(round_at[-1][i], along_at[-1], limb), (round_at[-1][i + 1], along_at[-1], limb), (round_at[-1][i], along_at[-1] + radii[-1] * 2, limb)])
+    tree.seams.append((last[0], apex))
 
 
 def bezier(a, c, b, t):
@@ -445,8 +507,28 @@ def grow_trunk(r, tree, rng, hi, fork_z, crown):
 
     roots = rng.sample(range(sides), rng.choice(r.trunk.roots))
     ground = [rng.uniform(*r.trunk.root_reach) if j in roots else rng.uniform(1.1, 1.3) for j in range(sides)]
-    rise = [1.0 + (g - 1.0) * 0.16 for g in ground]
-    tube(tree, points, radii, sides, strip=r.trunk.strip, spin=rng.uniform(0, 2 * math.pi), ground=True, reach=[ground, rise])
+    spin = rng.uniform(0, 2 * math.pi)
+    # The foot: a root's crest does not run straight from its tip to the trunk. It leaves the trunk steeply and
+    # sweeps out into the ground, through rings between the ground and `root_rise` that are level, like the
+    # ground's (a ring tipped with a leaning trunk would dip under the ground on its low side).
+    frame = frames(points, Vector((1, 0, 0)))
+    level = (Z, Vector((1, 0, 0)), Vector((0, 1, 0)))
+    sweep = []
+    for share, left in r.trunk.root_curve[:-1]:
+        # A thin stem's foot is low: a ring too close above the last one shows nothing, and is left out.
+        if not sweep or share * r.trunk.root_rise - sweep[-1][0] >= r.trunk.root_ring_gap:
+            sweep.append((share * r.trunk.root_rise, left))
+    foot = [trunk_at(z) for z, _ in sweep]
+    reach = [[1.0 + (g - 1.0) * (0.16 + 0.84 * left) for g in ground] for _, left in list(sweep) + [(r.trunk.root_rise, 0.0)]]
+    # And a root is a ridge of its own: between two corners the lowest rings come back to the trunk, close
+    # beside a root where its neighbour is not one, so that ground shows between the roots.
+    def beside(j):
+        a, b = j in roots, (j + 1) % sides in roots
+        return 0.5 if a == b else r.trunk.root_width if a else 1.0 - r.trunk.root_width
+
+    valleys = [[beside(j) for j in range(sides)]] * min(r.trunk.root_valleys, len(sweep))
+    tube(tree, foot + points[1:], [radius_at(z) for z, _ in sweep] + radii[1:], sides, strip=r.trunk.strip, spin=spin, ground=True,
+         reach=reach, frame=[level] * len(sweep) + frame[1:], valleys=valleys, valley=r.trunk.root_valley, grain_from=len(sweep) + 1)
     return points, radii
 
 
@@ -456,6 +538,31 @@ def along(points, radii, share):
     i = min(int(at), len(points) - 2)
     t = at - i
     return points[i].lerp(points[i + 1], t), radii[i] + (radii[i + 1] - radii[i]) * t
+
+
+def equal_turns(a, c, b, count):
+    """Where along a limb's curve (`bezier`) its `count` rings sit, as shares from 0 to 1: at equal turns of its direction.
+
+    At equal steps along the curve the bends between its stretches are unequal, and the sharpest, where
+    the limb turns up out of the trunk, shows from below as an elbow. The curve's direction is
+    (c - a) at its start and (b - c) at its end and turns one way between, so the share at which it
+    has turned a given part of the whole is found by halving.
+    """
+    first, last = c - a, b - c
+    whole = first.angle(last, 0.0)
+    if whole < 1e-6:
+        return [k / (count - 1) for k in range(count)]
+    shares = [0.0]
+    for k in range(1, count - 1):
+        low, high = 0.0, 1.0
+        for _ in range(40):
+            middle = (low + high) / 2
+            if first.angle(first.lerp(last, middle), 0.0) < whole * k / (count - 1):
+                low = middle
+            else:
+                high = middle
+        shares.append((low + high) / 2)
+    return shares + [1.0]
 
 
 def grow_branches(r, tree, rng, pads, trunk):
@@ -483,12 +590,16 @@ def grow_branches(r, tree, rng, pads, trunk):
         control = start + Vector((span.x, span.y, 0)) * 0.62 + Z * span.z * 0.12
         # Begin a little way out from the parent's axis, so the buried end does not come out of its far side.
         start = start + (control - start).normalized() * parent * r.branches.start
-        shares = [k / (r.branches.rings - 1) for k in range(r.branches.rings)]
-        path = [bezier(start, control, end, s) for s in shares]
         first = parent * r.branches.radius
-        widths = [r.trunk.tip_radius + (first - r.trunk.tip_radius) * (1 - s) ** 0.85 for s in shares]
+
+        def rings_at(shares):
+            return [bezier(start, control, end, s) for s in shares], [r.trunk.tip_radius + (first - r.trunk.tip_radius) * (1 - s) ** 0.85 for s in shares]
+
+        # The rings sit at equal turns of the limb's curve. A branch that leaves this one is still placed
+        # on it as when the rings sat at equal steps, so no limb's path moves with its rings.
+        path, widths = rings_at(equal_turns(start, control, end, r.branches.rings))
         tube(tree, path, widths, r.branches.sides, strip=r.trunk.strip, spin=rng.uniform(0, 2 * math.pi))
-        paths.append((path, widths))
+        paths.append(rings_at([k / (r.branches.rings - 1) for k in range(r.branches.rings)]))
 
     ends = {0: points[-1]}
     for rank, i in enumerate(order):

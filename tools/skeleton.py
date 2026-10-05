@@ -83,7 +83,59 @@ def stand_at(bm, material_index, floor, eye_height):
     return tuple(loops[0][1]) if loops else None
 
 
-NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None}
+NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None, "root_fill": None, "root_ridges": 0, "root_curve": None, "limb_bend": None, "limbs": 0}
+
+
+def inside(points, at):
+    """Whether a point lies inside a closed loop, both in the plane."""
+    within = False
+    for a, b in zip(points, points[1:] + points[:1]):
+        if (a.y > at.y) != (b.y > at.y) and at.x < a.x + (b.x - a.x) * (at.y - a.y) / (b.y - a.y):
+            within = not within
+    return within
+
+
+def limb_bends(bark, floor):
+    """The largest bend, in degrees, between successive stretches of each limb: one number per limb.
+
+    The trunk and every limb is a closed tube of its own: rings of vertices, with one vertex closing each
+    end. Counting edges from an end vertex gives the rings in order, and the line through their middles is
+    the limb's path. The tube that stands on the ground is the trunk, and a tube of fewer than four sides is a twig.
+    """
+    found, seen = [], set()
+    for start in bark.verts:
+        if start in seen:
+            continue
+        piece, front = [start], [start]
+        seen.add(start)
+        while front:
+            for edge in front.pop().link_edges:
+                for other in edge.verts:
+                    if other not in seen:
+                        seen.add(other)
+                        piece.append(other)
+                        front.append(other)
+        if min(v.co.z for v in piece) <= floor + 1e-4:
+            continue
+        end = max(piece, key=lambda v: len(v.link_edges))
+        depth, layer, rings = {end: 0}, [end], []
+        while layer:
+            rings.append(layer)
+            onward = []
+            for vert in layer:
+                for edge in vert.link_edges:
+                    other = edge.other_vert(vert)
+                    if other not in depth:
+                        depth[other] = len(rings)
+                        onward.append(other)
+            layer = onward
+        rings = [ring for ring in rings if len(ring) > 1]
+        if len(rings) < 3 or min(len(ring) for ring in rings) < 4:
+            continue
+        middles = [sum((v.co for v in ring), Vector()) / len(ring) for ring in rings]
+        stretches = [b - a for a, b in zip(middles, middles[1:])]
+        found.append(max(math.degrees(a.angle(b)) for a, b in zip(stretches, stretches[1:])))
+    return found
 
 
 def measure(bark, conv):
@@ -125,18 +177,37 @@ def measure(bark, conv):
         foot = slice_at(bark, floor + rules["foot_height_m"])
         if foot:
             found["lean_m"] = (below[0][1] - foot[0][1]).length
+    bends = limb_bends(bark, floor)
+    found["limbs"], found["limb_bend"] = len(bends), max(bends, default=None)
     ground = slice_at(bark, floor + 0.02)
     if ground:
         _, middle, points = ground[0]
         reach = [(p - middle).length for p in points]
         found["flare"] = max(reach) / breast[0][0]
         # A root is a corner of the ground slice that stands well out from the trunk: further than
-        # its neighbours on the loop, and at least one and a half times the girth at breast height.
-        tips = [i for i, r in enumerate(reach) if r >= 1.5 * breast[0][0] and r >= reach[i - 1] and r >= reach[(i + 1) % len(reach)]]
+        # its neighbours on the loop, at least one and a half times the girth at breast height, and as
+        # far as the circle the roots are told from a plinth on (below). A corner of the trunk that is
+        # no root stands out from the ground either side of it too, now that the foot comes back to the
+        # trunk between corners, and it is thick enough at the ground to pass the first two alone.
+        ring = breast[0][0] + (max(reach) - breast[0][0]) * rules["root_ring_share"]
+        tips = [i for i, r in enumerate(reach) if r >= max(1.5 * breast[0][0], ring) and r >= reach[i - 1] and r >= reach[(i + 1) % len(reach)]]
         # Two tips close together on the loop are the two corners of one root.
         roots = []
         for i in tips:
             if not any((points[i] - points[j]).length < 0.5 * reach[i] for j in roots):
                 roots.append(i)
         found["roots"] = len(roots)
+        # Roots or a plinth: walk a circle part of the way out from the trunk to the furthest tip. Roots are
+        # ridges with ground between them, so little of the circle is inside the slice, in as many runs as there
+        # are roots that reach it; a skirt with flat sides from tip to tip holds most of the circle, in one run.
+        steps = 720
+        radius = ring
+        within = [inside(points, middle + Vector((math.cos(2 * math.pi * i / steps), math.sin(2 * math.pi * i / steps))) * radius) for i in range(steps)]
+        found["root_fill"] = sum(within) / steps
+        found["root_ridges"] = sum(1 for i in range(steps) if within[i] and not within[i - 1])
+        # A curve into the ground, or a straight slope: how much of its reach beyond the trunk the foot
+        # still has a little way up. A root that sweeps out into the ground has lost most of it by there.
+        above = slice_at(bark, floor + 0.02 + rules["root_curve_height"] * breast[0][0])
+        if above and max(reach) > breast[0][0]:
+            found["root_curve"] = (max((p - above[0][1]).length for p in above[0][2]) - breast[0][0]) / (max(reach) - breast[0][0])
     return found

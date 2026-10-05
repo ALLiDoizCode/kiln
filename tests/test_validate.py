@@ -809,6 +809,63 @@ def no_roots(spec):
     regrow(spec, trunk__root_reach=[1.0, 1.0])
 
 
+def elbowed_limbs(spec):
+    """Each limb with a ring fewer: the same curves in three stretches for four, so every turn between two is sharper."""
+    regrow(spec, branches__rings=4)
+
+
+def foot_levels(bm, spec):
+    """The foot of the trunk as its rings, lowest first, each as (height, its vertices): the bark's vertices below 0.5 m, gathered by height."""
+    slot = leaf_slot(spec)
+    low = sorted((v for v in {v for f in bm.faces if f.material_index != slot for v in f.verts} if v.co.z < 0.5), key=lambda v: v.co.z)
+    levels = [[low[0]]]
+    for vert in low[1:]:
+        # The ring at the top of the roots is tipped with the trunk, so its vertices are not at one height.
+        if vert.co.z - levels[-1][-1].co.z > 0.03:
+            levels.append([])
+        levels[-1].append(vert)
+    # A ring has many vertices; the one at the middle of the ground is taken out of its ring.
+    rings = [[v for v in verts if len(v.link_edges) < len(verts)] for verts in levels]
+    return [(sum(v.co.z for v in verts) / len(verts), verts) for verts in rings if len(verts) > 2]
+
+
+def plinth_foot(spec):
+    """The foot as a skirt with flat sides: at every level below the top of the roots, each vertex pushed out to the straight line between the root tips beside it."""
+    from mathutils.geometry import convex_hull_2d, intersect_line_line_2d
+
+    def skirt(bm):
+        for z, verts in foot_levels(bm, spec)[:-1]:
+            flat = [Vector((v.co.x, v.co.y)) for v in verts]
+            middle = sum(flat, Vector((0, 0))) / len(flat)
+            hull = [flat[i] for i in convex_hull_2d(flat)]
+            for vert, at in zip(verts, flat):
+                out = (at - middle).normalized() * 10.0
+                for a, b in zip(hull, hull[1:] + hull[:1]):
+                    hit = intersect_line_line_2d(middle, middle + out, a, b)
+                    if hit:
+                        vert.co.x, vert.co.y = hit
+                        break
+
+    edit(skirt, "tree_1")
+
+
+def straight_roots(spec):
+    """Roots that run straight from their tips to the trunk: each ring of the foot between the ground and the top of the roots widened to the straight line between those two."""
+
+    def straighten(bm):
+        levels = foot_levels(bm, spec)
+        (low, ground), (high, top) = levels[0], levels[-1]
+        middle = sum((v.co for v in top), Vector()) / len(top)
+        reach = lambda verts: max((Vector((v.co.x - middle.x, v.co.y - middle.y))).length for v in verts)
+        for z, verts in levels[1:-1]:
+            wanted = reach(ground) + (reach(top) - reach(ground)) * (z - low) / (high - low)
+            scale = wanted / reach(verts)
+            for vert in verts:
+                vert.co.x, vert.co.y = middle.x + (vert.co.x - middle.x) * scale, middle.y + (vert.co.y - middle.y) * scale
+
+    edit(straighten, "tree_1")
+
+
 def upright_trunk(spec):
     regrow(spec, trunk__lean=[0.0, 0.0], trunk__bend=[0.0, 0.0])
 
@@ -1347,6 +1404,9 @@ CASES = [
     (stout_limbs, "tree_1.branches_taper", "tree_1"),
     (no_roots, "tree_1.roots", "tree_1"),
     (upright_trunk, "tree_1.lean", "tree_1"),
+    (plinth_foot, "tree_1.roots_apart", "tree_1"),
+    (elbowed_limbs, "tree_1.limbs_bend", "tree_1"),
+    (straight_roots, "tree_1.roots_curve", "tree_1"),
     (solid_ball, "tree_1.branches_seen", "tree_1"),
     (solid_ball, "tree_1.sky", "tree_1"),
     (solid_ball, "tree_1.leaf_shape", "tree_1"),

@@ -79,3 +79,13 @@ The leaf material has no gloss, the underside and core tints are about twice as 
 - L4e, from 1 m beside the trunk looking 78 degrees up: pale leaf samples (grey and light) are 0.00007 of the leaf samples, before 0.00170 (at most 0.001); foliage over the limbs among it is 1.32, before 0.92 (at least 1.25).
 - bevy_under: no near-white piece. The left limb (x 0 to 600, y 620 to 900 of 1024) and the leader are darker than the leaves behind them; two lit pieces at about x 880, y 790 are light green, not grey. The left limb is still one straight prism.
 - Differences from the brief still standing: the foot (finding 1), the limbs' elbows (finding 2) and the grain on the foot (finding 5) are not fixed.
+
+## After the swept foot and the limbs' rings (branch `treefoot`, 2026-10-05)
+
+Read from the rebuilt `bevy.png`, `bevy_under.png` and `bevy_trunk.png`, and the gate's reports; the Blender tiles of the sheet were opened only for `tree_young_1`. Where a line above speaks of the foot as a skirt or of elbows, this replaces it.
+
+- Triangles: 2,900. L1: 4 roots in 4 ridges, the sharpest turn between two stretches of a limb 13.5 degrees (it was 14.6).
+- `bevy`: the foot is four separate roots, thin ridges that run out over the ground from the trunk, with bare ground between them; no skirt joins their tips. Between two roots the trunk comes straight down to the ground, flat-sided: it does not widen there.
+- `bevy`, the roots' flanks: fine streaks run out along each root. The grain is not seen stretched into patches at this distance.
+- `bevy_under`: each limb curves in even stretches; no single stretch turns more sharply than its neighbours. A limb is still flat-sided, and its corners show as straight lines.
+- L4: on open faces the grain's furrows are 1.013 of the tone the paint gives a furrow and its plates 0.997 of a plate's (0.45 of the open samples are furrow); inside corners are 0.58 times as light as open faces; the sparsest triangle has 234 texels per metre.

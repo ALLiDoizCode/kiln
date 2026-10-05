@@ -131,6 +131,16 @@ expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"     
 # Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
 uses tree_1 smoke
 expect 0 "L4 passes the real tree"          smoke "$tree" "$tree_manifest"
+# The sapling's roots meet the ground between them in valleys folded 30 to 50 degrees, which the painter shades in
+# part: its shadow is whole where a fifth of the sky is hidden (conventions.toml, crevice_sky_hidden), a fold of 53.
+# A load test that calls every fold of 30 degrees a crevice holds those valleys to the whole shadow and fails the tree.
+uses tree_sapling_1 smoke
+expect 0 "L4 passes a tree whose root valleys are too open to be crevices" smoke assets/models/tree_sapling_1.glb assets/models/tree_sapling_1.manifest.json
+# Bark with grain is furrows and plates, two tones about half the surface each, and over a tree's few open faces their
+# shares do not average out: the young tree's open faces are 0.61 furrow and read 0.915 of the bark's colour with the
+# paint right. painted.colour holds a grained surface's furrows and its plates each to the tone the painter gives them.
+uses tree_young_1 smoke
+expect 0 "L4 passes an unbroken young tree with the swept foot" smoke assets/models/tree_young_1.glb assets/models/tree_young_1.manifest.json
 uses tree_1 smoke paint tree_mutations
 expect 0 "L4 passes an unbroken tree from the mutation script" smoke "$(broken_tree none)" "$tree_manifest"
 expect_id "foliage.two_sided"      "L4 catches leaves seen from one side only"      smoke "$(broken_tree single_sided)" "$tree_manifest"
@@ -148,6 +158,7 @@ expect_id "signed volume"          "L4 catches inside-out bark under open leaves
 expect_id "foliage.cores"          "L4 catches pads with no core under their leaves" smoke "$(broken_tree no_cores)" "$tree_manifest"
 expect_id "foliage.cores"          "L4 catches cores that are not closed"           smoke "$(broken_tree core_open)" "$tree_manifest"
 expect_id "foliage.core_colour"    "L4 catches a core as light as the leaves"       smoke "$(broken_tree light_core)" "$tree_manifest"
+expect_id "painted.colour"         "L4 catches bark painted over the wrong brown"   smoke "$(broken_tree wrong_bark_colour)" "$tree_manifest"
 expect_id "painted.grain"          "L4 catches bark with no grain"                  smoke "$(broken_tree no_grain)" "$tree_manifest"
 expect_id "painted.grain_along"    "L4 catches grain running round the limbs"       smoke "$(broken_tree grain_across)" "$tree_manifest"
 expect_id "uv.close_density"       "L4 catches a trunk with no more texels than a twig" smoke "$(broken_tree no_close_texels)" "$tree_manifest"

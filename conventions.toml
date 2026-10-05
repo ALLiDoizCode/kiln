@@ -130,7 +130,12 @@ min_uv_coverage = 0.4       # share of the texture the triangles use; the box pa
 max_uv_overlap = 0.001      # share of used texels claimed by more than one triangle
 # Brightest channel of any texel, 8-bit sRGB. Outside this a surface clips to black or white once lit.
 texel_range_srgb = [30, 240]
-feature_deg = 30.0          # two faces at least this far apart in tilt make an edge or a crevice
+feature_deg = 30.0          # two faces at least this far apart in tilt make an exposed edge
+# What a crevice is, for the painter and for the load test alike. The painter's shadow is whole where this share of
+# the sky above a face is hidden (weighted toward straight up, as its ambient occlusion weighs it); the load test
+# measures the shadow beside a fold that hides as much at its own line: two faces tilted t apart hide (1 - cos t) / 2.
+crevice_sky_hidden = 0.2    # a fold of 53 degrees, as in the corner of a ledge whose wall leans back; a shallower valley is shaded in part, and is neither crevice nor open face
+join_sky_hidden = 0.06      # where pieces overlap (ADR 13), the sky another piece hides: 28 degrees. Two pieces often meet in a groove too open to hide a fifth of the sky
 colour_tolerance = 0.08     # open faces: measured over (material colour times tint)
 min_effect_share = 0.5      # share of edge_light, crevice_shadow, side_shade and growth_edges the measured zones must average
 # Variation a spec may ask for. The upward part (z) of a face's normal decides what it gets.
@@ -195,6 +200,11 @@ breast_height_m = 1.3       # where a trunk's girth and its sides are taken
 slice_step_m = 0.1          # between the slices that look for the fork and count branches
 side_min_share = 0.06       # an edge of the slice is a flat side when it is this share of the way round
 foot_height_m = 0.4         # where a trunk's foot is taken for its lean: just above where the roots have joined it
+root_ring_share = 0.5       # roots are told from a plinth on a circle this share of the way from the trunk's girth out to its furthest root tip
+max_root_fill = 0.25        # at most this share of that circle is root: three quarters of the way round is ground
+root_curve_height = 0.5     # a root's sweep is taken this many times the trunk's radius (at breast height) above the ground slice
+max_root_curve = 0.65       # where the foot reaches at most this share as far beyond the trunk as at the ground
+max_limb_bend_deg = 16.0    # the sharpest turn between two stretches of a limb, ring to ring: more shows from below as an elbow (the reviewers' were 17 to 21)
 
 [variants]
 # Variants are compared by outline, from the four level views, both standing on their origins.

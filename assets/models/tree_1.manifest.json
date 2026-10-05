@@ -17,7 +17,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 3554,
+  "triangles": 3652,
   "bounds": {
     "min": [
       -2.4,
@@ -92,6 +92,8 @@
     "min_uv_coverage": 0.4,
     "max_uv_overlap": 0.001,
     "feature_deg": 30.0,
+    "crevice_sky_hidden": 0.2,
+    "join_sky_hidden": 0.06,
     "colour_tolerance": 0.08,
     "min_effect_share": 0.5,
     "texel_range": [
@@ -125,7 +127,10 @@
     "min_grain_step": 0.25,
     "min_grain_along": 1.16,
     "min_grain_patches": 0.8,
-    "grain_patch_m": 0.15
+    "grain_patch_m": 0.15,
+    "grain_furrow_tone": 0.59248,
+    "grain_furrow_top": 0.70288,
+    "grain_plate_tone": 1.288
   },
   "stand_at": [
     -0.2093,

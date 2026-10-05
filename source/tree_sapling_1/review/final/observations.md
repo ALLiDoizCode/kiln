@@ -13,3 +13,13 @@ Read from `sheet.png`, `bevy_under.png`, and the aids `bevy_aids.png` and `mater
 9. **Values** (bevy_aids, value map): three masses: the tufts' lit tops (lightest), their undersides and the stem (dark), and the shadows on the ground. The smaller tuft is as light as the larger and stays separate from it.
 10. **At a glance** (squint): "small forked tree"; the eye lands on the wider tuft, then the smaller one above and to the left of it.
 11. **Differences from the brief**: from the two views along the row (right, left) the two tufts read as one, so "two tufts with clear air between them" holds in four of the six level views' directions and not end-on (sky 0.27 there, 0.43 from front and back); in bevy_under three or four pale slivers show between the dark pieces near the stem, which no check measures; the tufts read spikier than a mature pad (points clear against the sky 4.7 to 6.1 per metre of outline, mature 1.4 to 3.6), which follows from half of each piece standing out of its lobe. 1,046 triangles of 1,200.
+
+## After the swept foot and the limbs' rings (branch `treefoot`, 2026-10-05)
+
+Read from the rebuilt `bevy.png`, `bevy_under.png` and `bevy_trunk.png`, and the gate's reports; the Blender tiles of the sheet were opened only for `tree_young_1`. Where a line above speaks of the foot as a skirt or of elbows, this replaces it.
+
+- Triangles: 1,102. L1: 3 roots in 3 ridges, the sharpest turn between two stretches of a limb 14.8 degrees (it was 16.9).
+- `bevy`: the foot is three separate roots, thin ridges that run out over the ground from the trunk, with bare ground between them; no skirt joins their tips. Between two roots the trunk comes straight down to the ground, flat-sided: it does not widen there.
+- `bevy`, the roots' flanks: fine streaks run out along each root. The grain is not seen stretched into patches at this distance.
+- `bevy_under`: each limb curves in even stretches; no single stretch turns more sharply than its neighbours. A limb is still flat-sided, and its corners show as straight lines.
+- L4: on open faces the grain's furrows are 1.019 of the tone the paint gives a furrow and its plates 0.981 of a plate's (0.44 of the open samples are furrow); inside corners are 0.56 times as light as open faces; the sparsest triangle has 456 texels per metre.
