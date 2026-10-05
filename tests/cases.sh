@@ -154,6 +154,14 @@ uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
+# A mossy log lies: the top fifth of its bounds is its root plate, and the edges moss grows along are those of the
+# trunk's own upper sides, all along it. Its wood, at the ends, takes no growth.
+uses log_2_mossy smoke
+expect 0 "L4 passes an unbroken mossy log, whose upper edges run along its trunk" cover log_2_mossy
+uses log_2_mossy smoke paint cover_mutations
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a mossy log"       smoke "$(broken_cover log_2_mossy no_growth_edges)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_height"  "L4 catches growth all the way up a mossy log"     smoke "$(broken_cover log_2_mossy growth_everywhere)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_wood"    "L4 catches moss on the wood of a log's ends"      smoke "$(broken_cover log_2_mossy growth_on_wood)" assets/models/log_2_mossy.manifest.json
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"

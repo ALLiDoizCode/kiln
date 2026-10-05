@@ -286,8 +286,18 @@ def densify_close(objects, spec, conv, skip, keep_clear, repack):
     raise RuntimeError(f"the surface below {paint['close_height_m']} m cannot be given {paint['close_texels_per_m']} texels per metre on a {size} px texture: {least:.0f} after {CLOSE_PASSES} passes")
 
 
-def paint_nodes(tree, colour_rgb, spec, conv):
-    """Build the painted colour as nodes in `tree`. Returns (the nodes made, the colour output)."""
+def no_growth_on(spec):
+    """The materials growth does not take on: the wood a log shows where it is broken or sawn through (`log.wood`).
+
+    Moss grows on bark; wood laid bare is paler than the bark and stays so (source/log/brief.md, Covers).
+    tools/export.py writes these into the manifest, and the load test holds them bare (`painted.growth_wood`)."""
+    return [spec["log"]["wood"]] if "log" in spec else []
+
+
+def paint_nodes(tree, colour_rgb, spec, conv, grows=True):
+    """Build the painted colour as nodes in `tree`. Returns (the nodes made, the colour output).
+
+    `grows` is whether growth takes on this material: not on the wood of a log's broken and sawn ends (`no_growth_on`)."""
     paint = spec["painted_shading"]
     z0, z1 = spec["bounds_m"]["min"][2], spec["bounds_m"]["max"][2]
     made = []
@@ -381,7 +391,7 @@ def paint_nodes(tree, colour_rgb, spec, conv):
         return mix("MULTIPLY", 1.0, colour, grey.outputs["Color"])
 
     colour = colour_rgb
-    if "growth" in paint:
+    if "growth" in paint and grows:
         reach = paint["growth_height_m"]
         # Where the growth stops at this spot: reach, raised or lowered by the noise.
         wander = math_node("MULTIPLY", math_node("SUBTRACT", noise(GROWTH_NOISE_SCALE, 3.0, 0.0), 0.5), 2 * GROWTH_RAGGED * reach)
@@ -395,6 +405,11 @@ def paint_nodes(tree, colour_rgb, spec, conv):
             # Along exposed edges, in the upper part of the asset, as far in from an edge as the spec says (`growth_edge_m`).
             rim = math_node("DIVIDE", hidden(True, paint["growth_edge_m"]), FULL_EDGE_OCCLUSION, clamp=True)
             upper = ramp(z, *(z0 + share * (z1 - z0) for share in GROWTH_EDGES_FROM))
+            if "log" in spec:
+                # A limb that lies has its upper edges all along it, and the upper part of its bounds is whatever
+                # stands highest (a root plate, a stub): the edges of every side that faces up, from the tilt at
+                # which a face is no longer upright (`side_shade_normal_z`).
+                upper = ramp(up, 0.0, rules["side_shade_normal_z"][0])
             settled = math_node("MAXIMUM", settled, math_node("MULTIPLY", math_node("MULTIPLY", rim, upper), patches(paint["growth_edges"], 23.0)))
         mask = math_node("MAXIMUM", mask, settled)
         colour = mix("MIX", mask, colour, growth_colour(colour_rgb, paint["growth"]))
@@ -765,7 +780,7 @@ def apply(spec, conv):
     for material in materials:
         tree = material.node_tree
         output, bsdf = principled(material)
-        made, colour = paint_nodes(tree, tuple(bsdf.inputs["Base Color"].default_value)[:3], spec, conv)
+        made, colour = paint_nodes(tree, tuple(bsdf.inputs["Base Color"].default_value)[:3], spec, conv, grows=material.name not in no_growth_on(spec))
         emission = tree.nodes.new("ShaderNodeEmission")
         tree.links.new(colour, emission.inputs["Color"])
         tree.links.new(emission.outputs[0], output.inputs["Surface"])
