@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, tree_sapling_1, blade_plant_1 and slab_1 first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, tree_sapling_1, blade_plant_1, tall_grass_1, reeds_1 and slab_1 first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
@@ -111,6 +111,8 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
+    source/tall_grass/*) echo tall_grass_1 tall_grass_2 tall_grass_3 tall_grass_1_dry ;;
+    source/reeds/*) echo reeds_1 reeds_2 reeds_3 reeds_1_winter ;;
     source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
     source/standing_stone/*) echo standing_stone_1_mossy ;;  # the one standing stone a case reads
@@ -444,6 +446,8 @@ lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spe
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
+lint_grass() { lint_copy tall_grass_1 '' "$1"; } # <python statements changing spec s>
+lint_reeds() { lint_copy reeds_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>

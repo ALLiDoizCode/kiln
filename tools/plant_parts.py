@@ -1,7 +1,7 @@
-"""The parts small plants are built from: leaf pieces, cores, stems and blades, as plain lists.
+"""The parts small plants are built from: leaf pieces, cores, stems, blades and heads, as plain lists.
 
 Shared by the generators of the small-plant families (source/dome_bush,
-source/blade_plant, source/grass_tuft). A generator draws its plant into a
+source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds). A generator draws its plant into a
 `Parts`, fits it to the spec's bounds and turns it into one Blender object of
 two materials: a closed one (stems, a crown) and the open foliage material
 (leaf pieces and blades, with the cores under them).
@@ -57,6 +57,7 @@ class Parts:
         self.piece_round = []  # per piece: the share of its normal taken from that direction; None for a bent piece, lit smooth
         self.round_normals = {}  # core vertex -> its normal
         self.seams = []  # pairs of vertices: edges along which the closed surface is cut open to be painted
+        self.whole = []  # (first vertex, how many): runs of vertices the fit stretches as one thing, by what it gives their middle (a head)
 
     def vert(self, co):
         self.verts.append(Vector(co))
@@ -184,8 +185,11 @@ def stem(parts, points, radii, sides, spin=0.0):
             parts.face((rings[-1][i], rings[-1][(i + 1) % sides], apex), STEM)
 
 
-def mound(parts, rng, radius, height, sides, rough=0.08):
-    """A closed, low, faceted mound on the ground about the origin: the crown a rosette of blades grows from."""
+def mound(parts, rng, radius, height, sides, rough=0.08, seams=False):
+    """A closed, low, faceted mound on the ground about the origin: the crown a rosette of blades grows from.
+
+    With `seams` it is cut round its foot, for a plant whose closed surface has other pieces that
+    are cut open to be painted (heads): tools/paint.py then unwraps all of it along its seams."""
     spin = rng.uniform(0, 2 * math.pi)
     rings = []
     # Shallow enough all over that tools/paint.py unwraps what is seen of it as one island, from above.
@@ -201,27 +205,89 @@ def mound(parts, rng, radius, height, sides, rough=0.08):
         j = (i + 1) % sides
         parts.face((centre, lower[j], lower[i]), GROUND)
         parts.face((upper[i], upper[j], apex), STEM)
+    if seams:
+        parts.seams += [(lower[i], lower[(i + 1) % sides]) for i in range(sides)]
 
 
-def blade(parts, spine, widths, front, fold=0.0):
+def head(parts, base, top, radius, sides, rings=((0.35, 1.0),), spin=0.0):
+    """One head (a seed head, a cattail): a closed spindle from `base` to `top`, pointed at both ends.
+
+    It is of the closed material and lit smooth, as a stem is, and stands on
+    nothing: what carries it is a blade drawn through it. `rings` are the
+    loops of corners between its two points, each as (how far along it, its
+    radius over `radius`)."""
+    axis = top - base
+    unit = axis.normalized()
+    across = unit.orthogonal().normalized()
+    along = unit.cross(across)
+    loops = [
+        [parts.vert(base + axis * share + (across * math.cos(spin + 2 * math.pi * j / sides) + along * math.sin(spin + 2 * math.pi * j / sides)) * radius * wide) for j in range(sides)]
+        for share, wide in rings
+    ]
+    low, high = parts.vert(base), parts.vert(top)
+    # Stretched as one thing by the fit: bent where it crosses one of the origin's axes, a spindle this small is no longer convex.
+    parts.whole.append((loops[0][0], sides * len(loops) + 2))
+    for i in range(sides):
+        j = (i + 1) % sides
+        parts.face((low, loops[0][j], loops[0][i]), STEM)
+        for lower, upper in zip(loops, loops[1:]):
+            parts.face((lower[i], lower[j], upper[j], upper[i]), STEM)
+        parts.face((loops[-1][i], loops[-1][j], high), STEM)
+    # Cut once from point to point, it unrolls as one island.
+    line = [low] + [loop[0] for loop in loops] + [high]
+    parts.seams += list(zip(line, line[1:]))
+
+
+def stalk(parts, spine, radii, sides=3, spin=0.0):
+    """One stalk (a reed's): a thin tube along `spine` that tapers to its tip, open at its foot, as one open piece of the foliage.
+
+    `spine` is the points along its middle, from its foot to its tip; `radii`
+    the tube's radius at each, the last a few millimetres. It is round, where a
+    blade is a strip: seen at the same width from every side, and lit smooth
+    round itself. Its tip is a ring closed by a cap and not one corner: one
+    corner shared by sides that long would be lit along the stalk, square to
+    every face it belongs to, and the load test finds such normals against their faces."""
+    piece = parts.piece(Z, None)
+    rings = []
+    for k, (point, radius) in enumerate(zip(spine, radii)):
+        tangent = (spine[min(k + 1, len(spine) - 1)] - spine[max(k - 1, 0)]).normalized()
+        across = (Vector((1, 0, 0)) - tangent * tangent.x).normalized()
+        along = tangent.cross(across).normalized()
+        rings.append([parts.vert(point + (across * math.cos(spin + 2 * math.pi * j / sides) + along * math.sin(spin + 2 * math.pi * j / sides)) * radius) for j in range(sides)])
+    for lower, upper in zip(rings, rings[1:]):
+        for i in range(sides):
+            j = (i + 1) % sides
+            parts.face((lower[i], lower[j], upper[j], upper[i]), LEAF, piece)
+    parts.face(tuple(rings[-1]), LEAF, piece)
+    return piece
+
+
+def blade(parts, spine, widths, front, fold=0.0, across=None):
     """One blade: a strip along `spine` that tapers to a point, as one open piece.
 
     `spine` is the points along its middle, from its foot to its tip; `widths`
     the blade's whole width at each but the tip. `front` is the side its upper
     face looks to at the foot. With `fold` the blade is a shallow V along its
-    middle: its edges are raised by that share of its half width."""
+    middle: its edges are raised by that share of its half width. With `across`,
+    one direction for each row, the strip lies that way across its spine at each
+    row and not square to `front`: a leaf that turns as it goes."""
     piece = parts.piece(front, None)  # lit smooth, not as one flat thing
     rows = []
     for k, (point, width) in enumerate(zip(spine[:-1], widths)):
         tangent = (spine[k + 1] - spine[max(k - 1, 0)]).normalized()
-        across = tangent.cross(front)
-        across = (across if across.length > 1e-6 else tangent.orthogonal()).normalized()
-        up = across.cross(tangent).normalized()
+        if across is not None:
+            lies = across[k] - tangent * across[k].dot(tangent)
+            lies = (lies if lies.length > 1e-6 else tangent.orthogonal()).normalized()
+        else:
+            lies = tangent.cross(front)
+            lies = (lies if lies.length > 1e-6 else tangent.orthogonal()).normalized()
+        across_row = lies
+        up = across_row.cross(tangent).normalized()
         half = width / 2
-        row = [parts.vert(point - across * half + up * half * fold)]
+        row = [parts.vert(point - across_row * half + up * half * fold)]
         if fold:
             row.append(parts.vert(point))
-        row.append(parts.vert(point + across * half + up * half * fold))
+        row.append(parts.vert(point + across_row * half + up * half * fold))
         rows.append(row)
     for lower, upper in zip(rows, rows[1:]):
         for i in range(len(lower) - 1):
@@ -251,9 +317,36 @@ def fit(parts, lo, hi, about_origin=False, most=(0.8, 1.25)):
             f"the plant drawn spans {[round(v, 3) for v in have_lo]}..{[round(v, 3) for v in have_hi]}; reaching the bounds "
             f"{tuple(lo)}..{tuple(hi)} would stretch it by {[round(s, 2) for s in low + high]}, outside {most}, or it does not stand on the ground"
         )
-    for v in parts.verts:
+    # A run of vertices in `parts.whole` goes by the side of the origin its middle is on.
+    side = list(parts.verts)
+    for first, count in parts.whole:
+        middle = sum(parts.verts[first : first + count], Vector()) / count
+        side[first : first + count] = [middle] * count
+    for v, by in zip(parts.verts, side):
         for i in range(3):
-            v[i] = v[i] * (high[i] if v[i] > 0 else low[i]) if about_origin else lo[i] + (v[i] - have_lo[i]) * high[i]
+            v[i] = v[i] * (high[i] if by[i] > 0 else low[i]) if about_origin else lo[i] + (v[i] - have_lo[i]) * high[i]
+
+
+def parted(parts, least=0.0015, step=0.003):
+    """The plant with no two vertices nearer than `least` on every axis: the later of such a pair is moved `step` toward the middle of the plant.
+
+    Two corners of different pieces at one place are lit as a hard edge, and
+    among the feet of a hundred blades in one rootstock some pair meets by chance."""
+    middle = sum(parts.verts, Vector()) / len(parts.verts)
+    for _ in range(8):
+        moved = False
+        order = sorted(range(len(parts.verts)), key=lambda i: parts.verts[i].x)
+        for n, i in enumerate(order):
+            for j in order[n + 1 :]:
+                if parts.verts[j].x - parts.verts[i].x >= least:
+                    break
+                if all(abs(parts.verts[i][axis] - parts.verts[j][axis]) < least for axis in (1, 2)):
+                    later = max(i, j)
+                    parts.verts[later] += (middle - parts.verts[later]).normalized() * step
+                    moved = True
+        if not moved:
+            break
+    return parts
 
 
 def drawn_to_fit(sketch, lo, hi, about_origin=False, most=(0.8, 1.25)):
