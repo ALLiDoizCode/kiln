@@ -1,14 +1,14 @@
 # arch_2, final: observations
 
-Sheets opened: `sheet.png`, and this variant's row of `benchmarks/out/arch_variants.png`. No value map or squint view was made for this variant.
+Sheets opened: `sheet.png`, and this variant's row of `benchmarks/out/arch_variants.png`.
 
-1. **Silhouette.** front, back, three_quarter, bevy: two piers and a long lintel round one opening. right: end on, one stepped column. Three rubble blocks, each a few pixels; they read in bevy and bevy_back.
-2. **Proportions.** front: the opening is about 0.5 of the width (gate: 3.40 of 6.6 m) and 0.75 of the height (3.30 of 4.4 m); the lintel is about 0.25 of the height and 0.88 of the width; each pier's upper block is about half as wide as its lower block.
-3. **Facing and grounding.** front and top: opening front to back; base on the bottom edge of the frame.
-4. **Topology.** clay_wire: planes with narrow strips; the lintel's top is 5 triangles round its two cut corners.
-5. **Shading.** right: where each upper block's top passes above the lintel's underside it shows as a small notch at the lintel's lower front and back corners. No face lit wrongly.
-6. **Materials.** one grey; blotches on the lintel's top about a twelfth of its length across.
-7. **Scale.** scale: the figure is 0.41 of the height (1.8 of 4.4 m) and reaches 0.55 of the way up the opening; a 3 m wall would fit under the lintel.
-8. **In the engine.** bevy: as arch_1, the lintel's top is light and everything under it is in shadow. From inside the opening (variants sheet, `--stand 1 --pitch 35`) the underside is one dark tone with the join round the pier just visible.
+1. **Silhouette.** front, back, scale, bevy: a tall thin pier, a pile of three or four boulders, and a long beam lying aslant between them round one opening. right: end on, one column.
+2. **Proportions.** front: the opening is about 0.41 of the width where a wall would stand (gate: 3.89 of 9.4 m) and 0.75 of the height at its tallest (4.48 of 6.0 m); the slab is about 0.75 of the width long and 0.14 of the height thick, five to six times as long as thick; the tall pier is about 0.12 of the width and 0.95 of the height.
+3. **Facing and grounding.** opening front to back; base on the bottom edge of the frame.
+4. **Topology.** clay_wire top and three_quarter: lines fan out past the outline at both ends of the slab, where pointed corners of the blocks under it come through.
+5. **Shading.** no face lit wrongly.
+6. **Materials.** one grey; blotches on the slab about a tenth of its length.
+7. **Scale.** scale: the figure is 0.3 of the height; the low pile is twice the figure's height.
+8. **In the engine.** bevy: the beam's top light, its underside and the pier's inner face dark.
 9. **Values / 10. At a glance.** Not made.
-11. **Differences from the brief.** The upper blocks are slim under so long a lintel. The top views show the lintel about 1.9 m deep (brief: at least 1.5 m). "Nothing upright" does not read.
+11. **Differences from the brief.** The slab reads as a beam, long and even, more than a rock slab; the tall pier as a post. The blocks' corners come through the slab at both ends.

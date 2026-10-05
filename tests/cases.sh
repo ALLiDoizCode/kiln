@@ -362,8 +362,11 @@ expect_id "spec.table"               "L0 catches a cap and necks asked of one cl
 # L0, arches: arch_1's spec with one thing wrong in what it asks of its opening and its span (`arch`).
 uses arch_1 lint_spec
 expect 0 "L0 passes an arch variant's spec" lint_arch 'pass'
-expect_id "spec.arch"                "L0 catches an opening wider than the arch's own bounds" lint_arch 's["arch"]["min_opening_m"] = 5.0'
-expect_id "spec.arch"                "L0 catches an opening taller than the arch's own bounds" lint_arch 's["arch"]["min_clear_m"] = 3.5'
+expect_id "spec.arch"                "L0 catches an opening wider than the arch's own bounds" lint_arch 's["arch"]["min_opening_m"] = 7.0'
+expect_id "spec.arch"                "L0 catches an opening taller than the arch's own bounds" lint_arch 's["arch"]["min_clear_m"] = 5.0'
 expect_id "spec.arch"                "L0 catches an arch block with a key missing" lint_arch 'del s["arch"]["min_bearing_m2"]'
 expect_id "spec.arch"                "L0 catches a kind of span the generator does not know" lint_arch 's["arch"]["span"] = "vault"'
 expect_id "spec.arch"                "L0 catches piers and a span asked of one closed skin" lint_arch 'del s["overlap"]'
+expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
+expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
+expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'

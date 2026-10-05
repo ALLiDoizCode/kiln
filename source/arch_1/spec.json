@@ -2,7 +2,7 @@
   "asset": "arch_1",
   "family": "arch",
   "bounds_tolerance_m": 0.001,
-  "max_triangles": 600,
+  "max_triangles": 700,
   "materials": {
     "m_arch": "#a1a7a1"
   },
@@ -25,14 +25,14 @@
   "seed": 1,
   "bounds_m": {
     "min": [
-      -2.1,
-      -0.85,
+      -3.0,
+      -1.0,
       0.0
     ],
     "max": [
-      2.1,
-      0.85,
-      3.3
+      3.0,
+      1.0,
+      4.2
     ]
   },
   "overlap": {
@@ -45,14 +45,18 @@
     "span": "lintel",
     "min_opening_m": 1.6,
     "min_clear_m": 2.2,
-    "min_bearing_m2": 0.2
+    "min_bearing_m2": 0.2,
+    "max_box_share": 0.8,
+    "min_side_step": 0.12,
+    "max_level_share": 0.35
+  },
+  "lean": {
+    "max_upright_share": 0.35,
+    "min_summit_offset": 0.2
   },
   "foot": {
     "min_sides": 2,
-    "min_side_m2": 0.08
-  },
-  "top": {
-    "min_level_share": 0.5
+    "min_side_m2": 0.15
   },
   "soft_edges": true,
   "watertight": true,

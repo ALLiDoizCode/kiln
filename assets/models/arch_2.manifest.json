@@ -12,17 +12,17 @@
     ]
   },
   "watertight": true,
-  "triangles": 626,
+  "triangles": 596,
   "bounds": {
     "min": [
-      -3.3,
+      -4.7,
       0.0,
-      -1.1
+      -1.2
     ],
     "max": [
-      3.3,
-      4.4,
-      1.1
+      4.7,
+      6.0,
+      1.2
     ]
   },
   "bounds_tolerance": 0.001,

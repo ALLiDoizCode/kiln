@@ -68,7 +68,7 @@ CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "
 # Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
 TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
 # Optional, with `overlap`: two piers that reach the ground and a span resting on both, with open air right through under it (an arch).
-ARCH = {"span": str, "min_opening_m": float, "min_clear_m": float, "min_bearing_m2": float}
+ARCH = {"span": str, "min_opening_m": float, "min_clear_m": float, "min_bearing_m2": float, "max_box_share": float, "min_side_step": float, "max_level_share": float}
 ARCH_SPANS = ("lintel", "wedged")
 # Optional; a near-cuboid with big chamfers (a block), and, with it, the cracks across it. Every key of a block is required once it is present.
 BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
@@ -249,10 +249,13 @@ if not checks.failed():
             and 0 < arch["min_opening_m"] < size[0]
             and 0 < arch["min_clear_m"] < size[2]
             and arch["min_bearing_m2"] > 0
+            and 0 < arch["max_box_share"] < 1
+            and 0 < arch["min_side_step"] < 1
+            and 0 < arch["max_level_share"] < 1
             and isinstance(overlap, dict)
             and overlap.get("min_count", 0) >= 3
         )
-        checks.check("spec.arch", ok, f"optional; needs exactly {sorted(ARCH)}: span one of {ARCH_SPANS}, min_opening_m above 0 and below the bounds' width (x), min_clear_m above 0 and below the bounds' height, min_bearing_m2 above 0, on an asset of at least 3 overlapping pieces (`overlap`): two piers and a span")
+        checks.check("spec.arch", ok, f"optional; needs exactly {sorted(ARCH)}: span one of {ARCH_SPANS}, min_opening_m above 0 and below the bounds' width (x), min_clear_m above 0 and below the bounds' height, min_bearing_m2 above 0, max_box_share, min_side_step and max_level_share each above 0 and below 1 (at 1, 0 and 1 they ask nothing), on an asset of at least 3 overlapping pieces (`overlap`): two piers and a span")
     box = spec.get("block")
     if box is not None:
         ok = (

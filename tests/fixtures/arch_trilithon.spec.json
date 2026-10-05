@@ -1,8 +1,8 @@
 {
-  "asset": "arch_2",
+  "asset": "arch_1",
   "family": "arch",
   "bounds_tolerance_m": 0.001,
-  "max_triangles": 780,
+  "max_triangles": 600,
   "materials": {
     "m_arch": "#a1a7a1"
   },
@@ -20,43 +20,39 @@
     "hidden_underside": true
   },
   "objects": [
-    "arch_2"
+    "arch_1"
   ],
-  "seed": 2,
+  "seed": 1,
   "bounds_m": {
     "min": [
-      -4.7,
-      -1.2,
+      -2.1,
+      -0.85,
       0.0
     ],
     "max": [
-      4.7,
-      1.2,
-      6.0
+      2.1,
+      0.85,
+      3.3
     ]
   },
   "overlap": {
-    "min_count": 8,
-    "max_count": 8,
+    "min_count": 7,
+    "max_count": 7,
     "max_buried_share": 0.3,
     "min_step_ratio": 1.15
   },
   "arch": {
     "span": "lintel",
-    "min_opening_m": 3.0,
-    "min_clear_m": 3.0,
-    "min_bearing_m2": 0.4,
-    "max_box_share": 0.8,
-    "min_side_step": 0.12,
-    "max_level_share": 0.35
-  },
-  "lean": {
-    "max_upright_share": 0.35,
-    "min_summit_offset": 0.2
+    "min_opening_m": 1.6,
+    "min_clear_m": 2.2,
+    "min_bearing_m2": 0.2
   },
   "foot": {
     "min_sides": 2,
-    "min_side_m2": 0.15
+    "min_side_m2": 0.08
+  },
+  "top": {
+    "min_level_share": 0.5
   },
   "soft_edges": true,
   "watertight": true,

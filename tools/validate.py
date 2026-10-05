@@ -1257,9 +1257,35 @@ def check_arch(checks, name, bm, spec, conv):
         f"beside the opening, rock stands without a break from the ground up into the span over {bearing[0]:.2f} m2 on the left and {bearing[1]:.2f} m2 on the right; "
         f"spec wants at least {want['min_bearing_m2']} m2 on each side",
     )
+    # Rock that ended up as an arch, not a door frame of dressed blocks (a trilithon): the opening is not a rectangle,
+    # the two sides do not stand equally high, and the top is not a level table.
+    across, up = [i for i, _ in hole], [j for _, j in hole]
+    box = (max(across) - min(across) + 1) * (max(up) - min(up) + 1) if hole else 0
+    box_share = len(hole) / box if box else 1.0
+    checks.check(
+        f"{name}.arch_opening_shape",
+        box_share <= want["max_box_share"],
+        f"seen from the front, the hole fills {box_share:.3f} of the upright rectangle drawn round it; spec allows {want['max_box_share']}: an opening between squared piers under a level lintel is a rectangle",
+    )
+    crest = {i: max((j for j in range(rows) if (i, j) in covered), default=-1) for i in range(columns)}
+    stands = [max((crest[i] + 1 for i in side), default=0) * cell for side in (range(0, first), range(last + 1, columns))] if last >= first else [0.0, 0.0]
+    step = abs(stands[0] - stands[1]) / (top - floor) if top > floor else 0.0
+    checks.check(
+        f"{name}.arch_sides_differ",
+        step >= want["min_side_step"],
+        f"seen from the front, the arch stands {stands[0]:.2f} m high to the left of the opening and {stands[1]:.2f} m to the right: {step:.3f} of its height apart; spec wants at least {want['min_side_step']}",
+    )
+    seen, _ = seen_from_above(bm, spec, conv)
+    level = sum(1 for _, _, _, normal in seen if normal.z >= math.cos(math.radians(conv["top"]["level_deg"]))) / len(seen) if seen else 1.0
+    checks.check(
+        f"{name}.arch_top_broken",
+        level <= want["max_level_share"],
+        f"seen from straight above, {level:.3f} of the shape is within {conv['top']['level_deg']} degrees of level; spec allows {want['max_level_share']}: the top of an arch of fallen rock is not a table",
+    )
     print(
         f"{name} arch: {len(holes)} holes seen from the front; the opening is {width:.2f} m wide up to {want['min_clear_m']} m and {tallest:.2f} m tall at its tallest; "
-        f"the span rests on {bearing[0]:.2f} m2 of pier on the left and {bearing[1]:.2f} m2 on the right"
+        f"the span rests on {bearing[0]:.2f} m2 of pier on the left and {bearing[1]:.2f} m2 on the right; "
+        f"the hole fills {box_share:.3f} of the rectangle round it; the sides stand {step:.3f} of the height apart; {level:.3f} of the view from above is level"
     )
 
 

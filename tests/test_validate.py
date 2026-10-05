@@ -908,7 +908,8 @@ def span_lifted(spec):
 
 
 def pier_off_the_ground(spec):
-    """The lower block of one pier raised 0.3 m: the pier does not reach the ground."""
+    """The lower block of one pier raised 0.3 m: the pier does not reach the ground. Seen from the front the rubble at its
+    foot hides the gap, so the hole stays closed; nothing under the span runs down to the ground on that side."""
     edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[2][1], vec=(0, 0, 0.3)), "arch_1")
 
 
@@ -939,6 +940,26 @@ def span_behind_the_piers(spec):
     """The lintel moved back by the depth of the bounds: from the front it still closes the opening, and it rests on nothing."""
     depth = spec["bounds_m"]["max"][1] - spec["bounds_m"]["min"][1]
     edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[0], vec=(0, depth, 0)), "arch_1")
+
+
+def trilithon(spec):
+    """The first arch_1, which passed every gate and reads as a door frame of dressed blocks: two matched upright piers of
+    squared blocks under a level squared lintel. Built by the generator of that day (tests/fixtures/arch_trilithon.py)
+    from its spec, in place of the arch, and measured against its own bounds."""
+    import importlib.util
+
+    module = importlib.util.spec_from_file_location("arch_trilithon", ROOT / "tests" / "fixtures" / "arch_trilithon.py")
+    generator = importlib.util.module_from_spec(module)
+    module.loader.exec_module(generator)
+    old = json.loads((ROOT / "tests" / "fixtures" / "arch_trilithon.spec.json").read_text())
+    bpy.data.objects.remove(bpy.data.objects["arch_1"])
+    for held in (bpy.data.meshes, bpy.data.materials):
+        for block in list(held):
+            if not block.users:
+                held.remove(block)
+    # The first arch that seed drew was the one it kept, so nothing need be measured here: the checks of that day asked less of a spec.
+    generator.build_arch(old, strict=False)
+    spec["bounds_m"] = old["bounds_m"]
 
 
 def tall_pebble(spec):
@@ -1033,10 +1054,14 @@ CASES = [
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
     (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
     (span_lifted, "arch_1.arch_through", "arch_1"),
-    (pier_off_the_ground, "arch_1.arch_through", "arch_1"),
+    (pier_off_the_ground, "arch_1.arch_rests", "arch_1"),
     (span_pressed_down, "arch_1.arch_opening", "arch_1"),
     (rubble_in_the_passage, "arch_1.arch_opening", "arch_1"),
     (span_behind_the_piers, "arch_1.arch_rests", "arch_1"),
+    (trilithon, "arch_1.lean", "arch_1"),
+    (trilithon, "arch_1.arch_opening_shape", "arch_1"),
+    (trilithon, "arch_1.arch_sides_differ", "arch_1"),
+    (trilithon, "arch_1.arch_top_broken", "arch_1"),
     (tapered_block, "block_2.block_square", "block_2"),
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),
