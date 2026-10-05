@@ -28,7 +28,7 @@ root_valley = 1.08
 root_width = 0.42
 rings = [0.85, 1.6]            # heights of the trunk's two rings between its roots and the stretch below the lowest whorl
 leader = 0.95                  # radius of the leader just above the lowest whorl, over the trunk's just below: it does not fork
-tip_radius = 0.045
+tip_radius = 0.06             # the leader at its tip; a bough's least thickness follows it. Stout enough that the leader shows between the upper tiers
 
 [tiers]
 counts = [[5, 0.4], [6, 0.4], [7, 0.2]]  # tiers below the top (count, how often), drawn per tree; fewer when they do not fit the height
@@ -41,7 +41,7 @@ first = [0.8, 1.0]             # the lowest tier's, again: the tier above it is 
 droop = [0.32, 0.54]           # how far a bough's tip hangs below where it leaves, over its length; drawn per tier
 sag = 1.5                      # a bough hangs as (share of its length) to this power: nearly level at the leader, steepest at its tip
 thin = 0.6                     # how thick the narrowest tier's foliage is, over the widest's
-clear = 0.14                   # clear air between one tier's foliage and the next, at least, before the fit
+clear = 0.2                    # clear air between one tier's foliage and the next, at least, before the fit: at 0.14 one tree in eight had two tiers touching
 stand = 0.1                    # how far pieces stand above a bough\'s upper surface
 slack = 2.0                    # the room left over is shared out unequally: each gap gets (a draw from 0 to 1) to this power of it
 reach = 0.2                    # how far leaf tips stand off a bough's surface
@@ -52,10 +52,10 @@ fewer = 0.6                    # the narrowest tier's count over the widest's
 turn = 0.3                     # how far a bough stands from its even place round the whorl, as a share of the step
 length = [0.58, 1.0]           # a bough's length over its tier's; one in each tier is full length and one is under `short`
 short = 0.64
-width = [0.34, 0.42]            # half a bough's width over its length
+width = [0.33, 0.40]           # half a bough's width over its length
 least_width = 0.3              # and the longest bough of a tier is never narrower than this; the others in proportion
 inner = 0.12                   # a bough's foliage begins this far behind the leader's axis, so the boughs of a tier meet round it
-up = 0.2                       # foliage above a bough's middle line, in the widest tier
+up = 0.26                      # foliage above a bough's middle line, in the widest tier: a tier seen from the side is a band this thick and more, and the sky between tiers is what is left
 down = 0.1                     # and below it
 lift = 0.1                     # the foliage's middle line above the wood
 scatter = 0.05                 # boughs of one whorl leave within this far above or below its height
@@ -64,14 +64,16 @@ wood = 0.68                    # the wood runs this share of the bough's length,
 rings = [5, 3]                 # rings of a bough's wood: in the lowest two tiers, and above
 sides = [4, 3]                 # flat sides of a bough's wood: in the lowest two tiers, and above
 start = 0.45                   # how far from the leader's axis a bough begins, over the leader's radius there
+hub = 0.5                      # a whorl of short boughs has one plate more, round the leader, this far out at most (and no further than its shortest bough's own plate): near the leader the slits between boughs are narrower than a piece
+hub_under = 1.0                # a whorl has it when its shortest bough is no longer than this
 
 [top]
 # The top: a narrow spire of foliage on the leader's tip, over a small whorl of short boughs.
 off = [0.18, 0.45]             # how far the tip stands to one side of the foot: off true
-width = [0.24, 0.3]            # the top whorl's width over the widest tier's
+width = [0.15, 0.2]            # the top whorl's width over the widest tier's: a tuft under the spire, not a tier of its own
 boughs = 4
 droop = [0.1, 0.25]
-spire_radius = [0.17, 0.22]
+spire_radius = [0.12, 0.15]    # slim: the pieces hanging round a stouter spire are seen from behind by an eye under the top
 spire_up = [0.7, 0.9]          # the spire's height above its middle
 spire_down = 0.8               # and its depth below it, over its radius
 tip = 0.22                     # pieces stand this far above the spire, pointing up: the point
@@ -110,9 +112,10 @@ spacing = 0.26                 # between neighbouring pieces round a bough's rim
 droop = [38.0, 68.0]           # degrees below level
 foot = 0.4
 drop = 0.26                    # how far the skirt hangs below a bough's underside
-under_spacing = 0.27           # between pieces hanging under a bough
+under_spacing = 0.25           # between pieces hanging under a bough: close enough that an eye under a tier sees more pieces than plate (at 0.27 the typical thing seen was a plate, and the limbs did not stand out against it)
 under_droop = [40.0, 70.0]
 out = 0.8                      # a skirt piece points this much away from the leader, against 0.6 out of its own bough's rim
+tight = 0.6                    # a narrow tier is mostly rim: its skirt is closer set, down to this share of `spacing` for a tier of no width
 
 [growth]
 # A spec's `growth_stage` is the tree's height over a mature tree's. Each curve is a multiplier at

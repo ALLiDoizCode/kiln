@@ -63,7 +63,10 @@ import bmesh
 import bpy
 import foliage
 import numpy
+import skeleton
+import under_checks
 from mathutils import Quaternion, Vector
+from mathutils.bvhtree import BVHTree
 from pipeline import Checks, conventions, linear_rgb
 from validate import check_canopy, check_foliage, check_skeleton, check_tiers
 
@@ -113,6 +116,13 @@ TIER_MARGINS = {
     "tiers.max_leader_bow_m": lambda most: round(most - 0.04, 3),
     "tiers.tip_off_m": inside(0.1, 0.1),
 }
+
+# And the view from under it (gate L4e, tools/under_checks.py) must hold sky for the gate to read the picture at all:
+# `min_samples` of the picture's samples. A broadleaf's pads stand apart and always show some; a conifer's lowest
+# tier can close the whole view from 1 m beside the trunk, and of the trees that met everything else half did.
+# A tree of tiers is kept only when this many times the gate's share of the view is sky.
+UNDER_SKY_SPARE = 2.0
+UNDER_SKY_PICTURE = 512 * 512  # the samples the gate takes of its picture: every second pixel of 1024 px each way
 
 SIDE, STRIP_FACE, CONE, GROUND, LEAF, CORE_FACE = range(6)
 
@@ -450,13 +460,32 @@ class Bough(Lobe):
         return self.unit_of(point).length
 
 
+class Hub(Bough):
+    """The plate round the leader under a whorl: a bough's plate, round, that hangs lower the further from the leader every way.
+
+    It carries no pieces. Near the leader the boughs of a whorl have not yet parted, and the slits between them are
+    narrower than a piece: an eye under the tier would look up through them at the backs of the pieces lying on top."""
+
+    def __init__(self, root, radius, up, down, droop, sag):
+        super().__init__(root, Vector((1, 0, 0)), radius, radius, radius, up, down, droop, sag)
+
+    def at(self, x, y, z):
+        return self.root + Vector((x, y, z + self.hang(math.hypot(x, y))))
+
+    def unit_of(self, point):
+        offset = point - self.root
+        z = offset.z - self.hang(math.hypot(offset.x, offset.y))
+        return Vector((offset.x / self.long, offset.y / self.wide, z / (self.up if z >= 0 else self.down)))
+
+
 class Tier:
     """A whorl of boughs round the leader at one height, or the top: a spire over a few short boughs."""
 
-    def __init__(self, boughs):
+    def __init__(self, boughs, hub=None):
         self.boughs = boughs
+        self.hub = hub
         self.radius = max((b.length for b in boughs if isinstance(b, Bough)), default=0.0)
-        self.shapes = boughs
+        self.shapes = boughs + ([hub] if hub else [])
 
     def lobes(self):
         return self.boughs
@@ -891,6 +920,9 @@ def grow_tiers(r, tree, rng, lo, hi):
             number = max(3, round(rng.uniform(*r.boughs.count) * (r.boughs.fewer + (1 - r.boughs.fewer) * share)))
         start = rng.uniform(0, 2 * math.pi)
         lengths = [1.0, rng.uniform(r.boughs.length[0], r.boughs.short)] + [rng.uniform(*r.boughs.length) for _ in range(number - 2)]
+        if k == count and hasattr(r.top, "length"):
+            # The top is a tuft, not a star: its boughs are near one length, so its outline has no deep notches.
+            lengths = [1.0] + [rng.uniform(*r.top.length) for _ in range(number - 1)]
         rng.shuffle(lengths)
         for j in range(number):
             azimuth = start + 2 * math.pi * (j + rng.uniform(-r.boughs.turn, r.boughs.turn)) / number
@@ -932,16 +964,23 @@ def grow_tiers(r, tree, rng, lo, hi):
             turns = equal_turns(start, control, end, r.boughs.rings[0 if k < 2 else 1])
             tube(tree, [bezier(start, control, end, s) for s in turns], [r.trunk.tip_radius * 0.7 + (first - r.trunk.tip_radius * 0.7) * (1 - s) ** 0.85 for s in turns],
                  r.boughs.sides[0 if k < 2 else 1], spin=rng.uniform(0, 2 * math.pi))
-        tiers.append(Tier(boughs + ([spire] if k == count else [])))
+        hub = None
+        if getattr(r.boughs, "hub", 0.0) and min(bough.length for bough in boughs) <= r.boughs.hub_under:
+            # A whorl of short boughs has one plate more, round the leader: as far out as its shortest bough's own plate goes.
+            reach = min(r.boughs.hub, min(bough.length for bough in boughs) * r.core.plate_size)
+            root, _ = at_height(points, radii, heights[k])
+            hub = Hub(root + Z * r.boughs.lift * thick[k], reach, r.boughs.up * thick[k], r.boughs.down * thick[k], droops[k], r.tiers.sag)
+        tiers.append(Tier(boughs + ([spire] if k == count else []), hub))
     return tiers
 
 
 def grow_needles(r, tree, rng, tiers):
     """Every bough's core, and the pieces over it: a shell lying along it, pointing away from the leader and down; a skirt hanging from its rim; a few under it; and the point of the top."""
     golden = math.pi * (3 - math.sqrt(5))
+    widest = max(tier.radius for tier in tiers)
     for index, tier in enumerate(tiers):
         lobes = tier.lobes()
-        for lobe in lobes:
+        for lobe in lobes + ([tier.hub] if tier.hub else []):
             grow_core(r, tree, rng, index, lobe)
         for lobe in lobes:
             others = [other for other in lobes if other is not lobe]
@@ -989,7 +1028,10 @@ def grow_needles(r, tree, rng, tiers):
 
             # The skirt: round the rim, pointing out of the bough and away from the leader, and down.
             around = 2 * math.pi * math.sqrt((lobe.long**2 + lobe.wide**2) / 2) if bough else 2 * math.pi * lobe.radius
-            count = max(5, round(around / r.skirt.spacing))
+            # A narrow tier is mostly rim, and the notches between the pieces round it are most of what an eye under it sees
+            # of the sky: its skirt is closer set, down to `tight` of the spacing for a tier of no width.
+            close = 1 - (1 - getattr(r.skirt, "tight", 1.0)) * (1 - tier.radius / widest)
+            count = max(5, round(around / (r.skirt.spacing * close)))
             turn = rng.uniform(0, 2 * math.pi)
             for k in range(count):
                 azimuth = turn + 2 * math.pi * (k + rng.uniform(-0.3, 0.3)) / count
@@ -1174,6 +1216,11 @@ def unmet(tree, spec):
         check_canopy(checks, name, bm, slots, strict, conv)
         if "tiers" in strict:
             check_tiers(checks, name, bm, slots, strict, conv)
+            view, eye_height = conv["under_view"], conv["metrics"]["eye_height_m"]
+            at = skeleton.stand_at(bm, 0, spec["bounds_m"]["min"][2], eye_height)
+            sky = under_checks.sky_share(BVHTree.FromBMesh(bm), at, view["stand_m"], math.radians(view["pitch_deg"]), eye_height) if at else 0.0
+            least = UNDER_SKY_SPARE * view["min_samples"] / UNDER_SKY_PICTURE
+            checks.check("view.under_sky", sky >= least, f"from {view['stand_m']} m beside the trunk looking {view['pitch_deg']} degrees up, sky is {sky:.4f} of the view; the gate's picture needs {least / UNDER_SKY_SPARE:.4f}, and with room to spare {least:.4f}")
     triangles = sum(len(face) - 2 for face in tree.faces)
     checks.check("budget.triangles", triangles <= strict["max_triangles"], f"{triangles} > {strict['max_triangles']}")
     bm.free()
