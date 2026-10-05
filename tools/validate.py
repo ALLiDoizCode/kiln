@@ -1063,6 +1063,63 @@ def check_cluster(checks, name, bm, spec, conv):
     )
 
 
+# A table rock (source/table_rock): a cap held off the ground on one or two narrow necks.
+
+
+def check_table(checks, name, bm, spec, conv):
+    """The shape is a cap on necks: there is open air under most of it, up to a height a spec gives;
+    the necks are narrow against it; and it overhangs them on every side."""
+    want, rules = spec["table"], conv["table"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    cell = max(hi.x - lo.x, hi.y - lo.y) / conv["planes"]["view_rays"]
+    columns, rows = math.ceil((hi.x - lo.x) / cell), math.ceil((hi.y - lo.y) / cell)
+    tree = BVHTree.FromBMesh(bm)
+    solids = [Solid(piece) for piece in pieces_in(bm.faces)]
+    cut = lo.z + rules["neck_height"] * want["min_clear_m"]
+    outline, sheltered, necks, through = set(), 0, set(), set()
+    for i in range(columns):
+        for j in range(rows):
+            x, y = lo.x + (i + 0.5) * cell, lo.y + (j + 0.5) * cell
+            # The outline is what is seen from straight above; the air under it is how far up a ray from the ground goes before it meets the shape.
+            if tree.ray_cast(Vector((x, y, hi.z + 1.0)), Vector((0, 0, -1)))[0] is None:
+                continue
+            outline.add((i, j))
+            under = tree.ray_cast(Vector((x, y, lo.z - 1.0)), Vector((0, 0, 1)))[0]
+            sheltered += under is not None and under.z - lo.z >= want["min_clear_m"]
+            # A neck is what the level cut at a share of that height passes through.
+            holding = [index for index, solid in enumerate(solids) if solid.holds(Vector((x, y, cut)))]
+            if holding:
+                necks.add((i, j))
+                through.update(holding)
+    share = sheltered / len(outline) if outline else 0.0
+    checks.check(
+        f"{name}.table_shelter",
+        share >= want["min_shelter_share"],
+        f"seen from straight above, {share:.3f} of the outline has at least {want['min_clear_m']} m of open air under it, from the ground up; spec wants at least {want['min_shelter_share']}",
+    )
+    neck_share = len(necks) / len(outline) if outline else 1.0
+    checks.check(
+        f"{name}.table_necks",
+        len(through) == want["necks"] and neck_share <= want["max_neck_share"],
+        f"cut level {cut - lo.z:.2f} m up ({rules['neck_height']} of the clearance), {len(through)} pieces pass through the cut and fill {neck_share:.3f} of the outline; "
+        f"spec wants {want['necks']} necks filling at most {want['max_neck_share']}",
+    )
+    # How far in from the rim the necks stand: from each cell of a neck's own edge to the nearest cell just outside the outline.
+    beside = ((1, 0), (-1, 0), (0, 1), (0, -1))
+    rim = {(i + di, j + dj) for i, j in outline for di, dj in beside} - outline
+    edge = [(i, j) for i, j in necks if any((i + di, j + dj) not in necks for di, dj in beside)]
+    overhang = min((math.hypot(i - a, j - b) for i, j in edge for a, b in rim), default=0.0) * cell
+    checks.check(
+        f"{name}.table_overhang",
+        bool(edge) and overhang >= want["min_overhang_m"],
+        f"seen from above, the necks (cut {cut - lo.z:.2f} m up) come within {overhang:.2f} m of the rim of the outline; spec wants the cap to overhang them by at least {want['min_overhang_m']} m on every side",
+    )
+    print(
+        f"{name} table: {share:.3f} of the outline has {want['min_clear_m']} m of open air under it; {len(through)} necks fill {neck_share:.3f} of the outline {cut - lo.z:.2f} m up, "
+        f"and stand {overhang:.2f} m in from the rim at the nearest"
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -1199,6 +1256,8 @@ def check_scene(checks, spec, conv):
         for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
+        if "table" in spec:
+            check_table(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

@@ -36,6 +36,12 @@ if grep -q '"skeleton"' "source/$asset/spec.json"; then
                                    --screenshot "source/$asset/review/$phase/bevy_trunk.png" 2>> "$reports/L4b-bevy-view.log"
 step "L4c bark seen from 0.5 m"; tools/bl tools/view_checks.py "$asset" "source/$asset/review/$phase/bevy_trunk.png"
 fi
+stood_under="$(python -c "import json,sys,tomllib; t=json.load(open(sys.argv[1])).get('table'); print('yes' if t and t['min_clear_m'] >= tomllib.load(open('conventions.toml','rb'))['metrics']['player_height_m'] else '')" "source/$asset/spec.json")"
+if [[ -n $stood_under ]]; then
+  # A table rock a player can stand under is also seen from there: the eye 1 m from the origin, looking up past the neck at the underside of the cap and its rim (straight up, 0.3 m from the eye, the underside fills the picture with one tone).
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --stand 1 --pitch 35 \
+                                   --screenshot "source/$asset/review/$phase/bevy_under.png" 2>> "$reports/L4b-bevy-view.log"
+fi
 step "L5  review renders";       tools/bl tools/review_render.py "$asset" "$phase"
 step "L5c review image";         python tools/image_lint.py "source/$asset/review/$phase/sheet.png"
 step "L5b approval baseline";    python tools/baseline.py check "$asset" "$phase"

@@ -781,6 +781,65 @@ def straight_blades(spec):
         generator.ARCH = saved
 
 
+# The table rock (source/table_rock): a cap held off the ground on narrow necks.
+
+
+def table_pieces(bm):
+    """The table rock's pieces as lists of vertices: (the cap, which stands on nothing; the neck, the tallest that stands on the ground; the rest)."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    cap = max(pieces, key=lambda verts: min(v.co.z for v in verts))
+    standing = sorted((verts for verts in pieces if verts is not cap), key=lambda verts: max(v.co.z for v in verts), reverse=True)
+    return cap, standing[0], standing[1:]
+
+
+def cap_pressed_down(spec):
+    """The cap lowered until its underside is half the clearance above the ground: a player no longer fits under it."""
+
+    def press(bm):
+        cap = table_pieces(bm)[0]
+        drop = min(v.co.z for v in cap) - spec["bounds_m"]["min"][2] - spec["table"]["min_clear_m"] / 2
+        bmesh.ops.translate(bm, verts=cap, vec=(0, 0, -drop))
+
+    edit(press, "table_rock_1")
+
+
+def fat_neck(spec):
+    """The neck made 2.5 times as wide: a pedestal, not a neck."""
+
+    def widen(bm):
+        neck = table_pieces(bm)[1]
+        middle = sum((v.co for v in neck), Vector()) / len(neck)
+        for v in neck:
+            v.co.x = middle.x + (v.co.x - middle.x) * 2.5
+            v.co.y = middle.y + (v.co.y - middle.y) * 2.5
+
+    edit(widen, "table_rock_1")
+
+
+def neck_cut_short(spec):
+    """The neck pressed down to a third of its height: a second block, and nothing holds the cap up."""
+
+    def press(bm):
+        floor = spec["bounds_m"]["min"][2]
+        for v in table_pieces(bm)[1]:
+            v.co.z = floor + (v.co.z - floor) / 3
+
+    edit(press, "table_rock_1")
+
+
+def neck_at_rim(spec):
+    """The neck and its block moved out until the neck stands 0.1 m in from the right of the bounds: the cap overhangs to one side only."""
+
+    def move(bm):
+        _, neck, rest = table_pieces(bm)
+        shift = spec["bounds_m"]["max"][0] - 0.1 - max(v.co.x for v in neck)
+        bmesh.ops.translate(bm, verts=neck + [v for verts in rest for v in verts], vec=(shift, 0, 0))
+
+    edit(move, "table_rock_1")
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -835,6 +894,10 @@ CASES = [
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
     (fanned_prisms, "crag_1.cluster_leans_together", "crag_1"),
+    (cap_pressed_down, "table_rock_1.table_shelter", "table_rock_1"),
+    (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
+    (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
+    (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),

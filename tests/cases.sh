@@ -39,6 +39,10 @@ expect 0 "L1 mutation tests: slab_1" l1 slab_1
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
 
+# A table rock (source/table_rock): its cap and neck broken one way at a time.
+uses table_rock_1 validate paint
+expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
+
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
 expect 1 "L4 catches a triangle mismatch"   smoke "$glb" "$(tamper 'm["triangles"] += 1')"
@@ -293,3 +297,11 @@ expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/ima
 uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
+# L0, table rocks: table_rock_1's spec with one thing wrong in what it asks of its cap and necks (`table`).
+uses table_rock_1 lint_spec
+expect 0 "L0 passes a table rock variant's spec" lint_table 'pass'
+expect_id "spec.table"               "L0 catches a clearance above the table rock's own height" lint_table 's["table"]["min_clear_m"] = 5.0'
+expect_id "spec.table"               "L0 catches necks allowed to fill the outline" lint_table 's["table"]["max_neck_share"] = 1.0'
+expect_id "spec.table"               "L0 catches a table block with a key missing" lint_table 'del s["table"]["min_overhang_m"]'
+expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
+expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'

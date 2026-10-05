@@ -60,6 +60,8 @@ LEAN = {"max_upright_share": float, "min_summit_offset": float}
 OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
 # Optional, with `overlap`: a cluster of leaning prisms on one base (a crag).
 CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "max_lean_spread_deg": float}
+# Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
+TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -204,6 +206,22 @@ if not checks.failed():
             and cluster["min_prisms"] <= overlap.get("min_count", 0)
         )
         checks.check("spec.cluster", ok, f"optional; needs exactly {sorted(CLUSTER)}: at least 2 prisms and no more than `overlap.min_count`, max_height_step in 0..1 (below 1), min_lean_deg in 0..90, max_lean_spread_deg in 0..90, on an asset of overlapping pieces (`overlap`)")
+    table = spec.get("table")
+    if table is not None:
+        size = [high - low for low, high in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]
+        ok = (
+            isinstance(table, dict)
+            and set(table) == set(TABLE)
+            and all(type(table[key]) is kind for key, kind in TABLE.items())
+            and table["necks"] >= 1
+            and 0 < table["min_clear_m"] < size[2]
+            and 0 < table["max_neck_share"] < table["min_shelter_share"] <= 1
+            and table["max_neck_share"] + table["min_shelter_share"] <= 1
+            and 0 < table["min_overhang_m"] < min(size[0], size[1]) / 2
+            and isinstance(overlap, dict)
+            and table["necks"] < overlap.get("min_count", 0)
+        )
+        checks.check("spec.table", ok, f"optional; needs exactly {sorted(TABLE)}: at least 1 neck and fewer than `overlap.min_count` (the cap is a piece too), min_clear_m above 0 and below the bounds' height, max_neck_share above 0 and min_shelter_share at most 1 with the two together at most 1, min_overhang_m above 0 and below half the bounds' lesser side, on an asset of overlapping pieces (`overlap`)")
     top = spec.get("top")
     if top is not None:
         ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
