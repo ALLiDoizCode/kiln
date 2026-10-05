@@ -33,8 +33,6 @@
     "growth": "#7a8a4d",
     "growth_height_m": 0.03,
     "growth_up": 0.25,
-    "growth_edges": 0.4,
-    "growth_edge_m": 0.03,
     "growth_darker": 0.5,
     "growth_patch_m": 0.03,
     "blotch": 0.12,

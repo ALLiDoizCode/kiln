@@ -75,7 +75,7 @@ Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground u
 - **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
 - **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
 
-A pebble is a low plate: its cap is all the level surface it has and nearly all a player sees of it, so the patches on the cap carry the cover, with a thin wash at the ground and growth along the rim of the cap. `pebble_3_mossy`: 0.1 m tall, so the wash reaches 0.03 m; 0.38 m on its narrower side, so patches of 0.03 m (0.029, rounded), and edge growth reaching 0.03 m.
+A pebble is a low plate: its cap is all the level surface it has and nearly all a player sees of it, so the patches on the cap carry the cover, with a thin wash at the ground. A pebble asks for no growth along upper edges (`growth_edges` and `growth_edge_m` are left out): every edge in its top fifth is the edge of a face near level, where the growth on level faces already lies, so edge growth there would be that growth asked for twice, and the load test has no surface to tell the two apart on (measured on 2026-10-05 with edge growth asked: 0 samples beside an exposed edge on a face not near level in the top fifth). `pebble_3_mossy`: 0.1 m tall, so the wash reaches 0.03 m; 0.38 m on its narrower side, so patches of 0.03 m (0.029, rounded).
 
 ## Parts
 

@@ -97,6 +97,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/tree_mutations.py) echo tree_mutations ;;
     tests/slab_mutations.py) echo slab_mutations ;;
     tests/pebble_mutations.py) echo pebble_mutations ;;
+    tests/cover_mutations.py) echo cover_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -112,13 +113,13 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
     source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
-    source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
-    source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
+    source/standing_stone/*) echo standing_stone_1_mossy ;;  # the one standing stone a case reads
+    source/slab/*) echo slab_1 slab_1_mossy ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 crag_1_mossy ;;
-    source/stack/*) echo stack_1 ;;
+    source/stack/*) echo stack_1 stack_2_mossy ;;
     source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
     source/boulder/*) echo boulder_2 ;;  # the generator and the brief boulder_2 is built with
-    source/pebble/*) echo pebble_1 pebble_2 ;;  # the generator and the brief pebble_1 and pebble_2 are built with
+    source/pebble/*) echo pebble_1 pebble_2 pebble_3_mossy ;;  # the generator and the brief pebble_1 and pebble_2 are built with
     source/arch/*) echo arch_1 ;;  # the generator and the brief arch_1 is built with
     tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 stack_1 ;;&  # the kit all four are built with
     tools/stone.py) echo arch_1 ;;  # and the arch
@@ -231,6 +232,7 @@ fi
 # share the cores out between them. What a script builds does not depend on the number (tools/bl).
 export KILN_BLENDER_THREADS="${KILN_BLENDER_THREADS:-$(( cores / jobs > 0 ? cores / jobs : 1 ))}"
 smoke() { "$bin/asset_smoke" "$@"; }
+cover() { smoke "assets/models/$1.glb" "assets/models/$1.manifest.json"; }  # <asset>: a gated cover as it is
 view() {
   "$bin/asset_view" "$@"; local code=$?
   # Not retried: a crash is reported as the failure it is, with what is known about it.
@@ -341,6 +343,12 @@ broken_tree() {
   else fixture --key "$tree_key" "tree_1_$1.glb" mutated tests/tree_mutations.py "$1"; fi
 }
 broken_slab() { fixture --key "$slab_key" "slab_1_$1.glb" mutated tests/slab_mutations.py "$1"; }
+# A mossy cover built and painted with its growth wrong one way (tests/cover_mutations.py).
+broken_cover() { # <asset> <mutation>
+  local family; family="$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['family'])" "source/$1/spec.json")" || return 3
+  fixture --key "$(key_of tests/cover_mutations.py "source/$1/build.py" "source/$1/spec.json" "source/$family"/*.py)" "$1_$2.glb" mutated_cover "$1" "$2"
+}
+mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }

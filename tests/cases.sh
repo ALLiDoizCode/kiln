@@ -113,6 +113,31 @@ expect_id "painted.growth_edges"   "L4 catches bare upper edges"                
 expect_id "painted.growth_up"      "L4 catches edge growth reaching across the tops"  smoke "$(broken growth_edges_reach_far)" "$rock_manifest"
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the rock"       smoke "$(broken growth_not_darker)" "$rock_manifest"
 expect_id "painted.growth_patches" "L4 catches growth in broad patches"              smoke "$(broken growth_broad_patches)" "$rock_manifest"
+# Growth on shapes the rock is not (the mossy covers): each growth check measured on the surface the shape has.
+# `cover <asset>` loads a gated cover as it is; `broken_cover <asset> <mutation>` builds it with its growth wrong (tests/cover_mutations.py).
+uses slab_1_mossy smoke
+expect 0 "L4 passes an unbroken mossy slab, which has no upright face above its wash" cover slab_1_mossy
+uses pebble_3_mossy smoke
+expect 0 "L4 passes an unbroken mossy pebble, which has no upright face" cover pebble_3_mossy
+uses stack_2_mossy smoke
+expect 0 "L4 passes an unbroken mossy stack, which has no open face above its wash" cover stack_2_mossy
+uses standing_stone_1_mossy smoke
+expect 0 "L4 passes an unbroken mossy standing stone, which has no near-level face" cover standing_stone_1_mossy
+uses slab_1_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a slab"          smoke "$(broken_cover slab_1_mossy growth_everywhere)" assets/models/slab_1_mossy.manifest.json
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a slab"            smoke "$(broken_cover slab_1_mossy no_growth_edges)" assets/models/slab_1_mossy.manifest.json
+uses pebble_3_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a pebble"        smoke "$(broken_cover pebble_3_mossy growth_everywhere)" assets/models/pebble_3_mossy.manifest.json
+uses stack_2_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a stack"         smoke "$(broken_cover stack_2_mossy growth_everywhere)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_up"      "L4 catches growth carpeting a stack's stones"     smoke "$(broken_cover stack_2_mossy growth_carpets_the_top)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a stack"           smoke "$(broken_cover stack_2_mossy no_growth_edges)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a stack" smoke "$(broken_cover stack_2_mossy growth_not_darker)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_patches" "L4 catches growth in broad patches on a stack"    smoke "$(broken_cover stack_2_mossy growth_broad_patches)" assets/models/stack_2_mossy.manifest.json
+uses standing_stone_1_mossy smoke paint cover_mutations
+expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
+expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
+expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"

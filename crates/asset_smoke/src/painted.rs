@@ -179,6 +179,8 @@ struct Sample {
     shade: f32,
     /// Growth shown, 0 to 1, by hue.
     growth: f32,
+    /// Beside an exposed edge, as the edge zone is, whether or not a join is near: where growth along edges is looked for on a shape with no edge clear of its joins.
+    rim: bool,
     green: u8,
     height: f32,
     /// Texel luminance over the luminance the formula gives an open face here.
@@ -417,6 +419,7 @@ pub fn check(
                 up: n.y,
                 shade,
                 growth,
+                rim: convex <= want.edge_width_m * 0.5,
                 green: (srgb.green * 255.0).round() as u8,
                 height,
                 ratio: luminance / expected,
@@ -559,12 +562,31 @@ pub fn check(
     if want.growth.is_some() {
         // Clear of the ragged top of the growth, which wanders by half its height either way.
         let (low, high) = (want.growth_height_m * 0.4, above_base);
+        // Each amount is measured where the rock has it: on open faces, clear of edges and joins. A shape may have no
+        // such face of the kind asked (a slab or a pebble has no upright one above its wash, a standing stone no level
+        // one, a stack none at all up there). It is then measured on the surface the shape does have, named in the
+        // message, and fails only if it has none of that either: nothing passes unmeasured.
+        let settles = |s: &Sample| s.up >= want.growth_up_normal_z[0];
+        let seen = |s: &Sample| s.zone != Zone::Crevice && s.above > high;
         let (base_count, base) = average(&|s| s.zone != Zone::Crevice && s.above < low, &|s| s.growth);
-        let (bare_count, bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
+        let (mut bare_count, mut bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
+        let (mut bare_on, mut bare_most) = ("upright open faces", 0.15);
+        if bare_count < MIN_SAMPLES {
+            // No upright open face: the open faces growth does not settle on, upright or leaning.
+            (bare_count, bare) = average(&|s| s.zone == Zone::Open && !settles(s) && s.above > high, &|s| s.growth);
+            bare_on = "open faces that are not near level";
+        }
+        if bare_count < MIN_SAMPLES {
+            // No open face it does not settle on: every such face is within reach of an edge or a join, where growth
+            // along edges is asked. It may show what that puts there, by the measure growth on level faces is held to, and no more.
+            (bare_count, bare) = average(&|s| seen(s) && !settles(s), &|s| s.growth);
+            bare_on = "faces that are not near level, none of them clear of an edge or a join";
+            bare_most = (want.growth_cover[1] * want.growth_edges).max(bare_most);
+        }
         (measured.growth_base, measured.growth_bare_sides) = (base, bare);
-        if base_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || base < 0.7 || bare > 0.15 {
+        if base_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || base < 0.7 || bare > bare_most {
             fail(format!(
-                "painted.growth_height: growth shows on {base:.2} of the surface below {low:.2} m ({base_count} samples; wanted at least 0.7) and on {bare:.2} of upright open faces above {high:.2} m ({bare_count} samples; wanted at most 0.15); growth_height_m is {}",
+                "painted.growth_height: growth shows on {base:.2} of the surface below {low:.2} m ({base_count} samples; wanted at least 0.7) and on {bare:.2} of {bare_on} above {high:.2} m ({bare_count} samples; wanted at most {bare_most:.2}); growth_height_m is {}",
                 want.growth_height_m
             ));
         }
