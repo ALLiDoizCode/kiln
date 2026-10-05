@@ -1785,14 +1785,16 @@ def squashed_discs(spec):
 
 
 def coarse_discs(spec):
-    """Every second corner of every disc's rim slid up against the one before it: each rim has half as many sides, twice as long."""
+    """Three corners in four of every disc's rim slid up against the one before them: each rim has a quarter as many sides, four times as long."""
 
     def coarsen(place, radius, middle, verts, piece, bm):
         at = middle.co.xy
         floor = {e.other_vert(middle) for e in middle.link_edges}
         rim = sorted((v for v in verts if v is not middle and v not in floor), key=lambda v: math.atan2(v.co.y - at.y, v.co.x - at.x))
-        for before, v in zip(rim[::2], rim[1::2]):
-            v.co.xy = before.co.xy + (v.co.xy - before.co.xy) * 0.02
+        for at, v in enumerate(rim):
+            if at % 4:
+                before = rim[at - at % 4]
+                v.co.xy = before.co.xy + (v.co.xy - before.co.xy) * 0.02
 
     each_disc(spec, coarsen)
 
@@ -1870,12 +1872,30 @@ def no_blooms(spec):
 
 
 def ball_blooms(spec):
-    """Every bloom blown up into a ball: each of its corners pushed out to the distance of its furthest."""
+    """Every bloom blown up into a ball: its foot and the middle of its upper face are the poles, and each ring of corners between them a level of its own."""
 
     def blow(verts, middle, bm):
         reach = max((v.co - middle).length for v in verts)
+        foot = min(verts, key=lambda v: (len(v.link_edges) < max(len(u.link_edges) for u in verts), v.co.z))
+        depth, queue = {foot: 0}, [foot]
+        while queue:
+            v = queue.pop(0)
+            for e in v.link_edges:
+                other = e.other_vert(v)
+                if other not in depth:
+                    depth[other] = depth[v] + 1
+                    queue.append(other)
+        deepest = max(depth.values())
+        top = next(v for v in verts if depth[v] == deepest)
+        axis = (top.co - foot.co).normalized()
+        placed = {}
         for v in verts:
-            v.co = middle + (v.co - middle).normalized() * reach
+            latitude = math.pi * (depth[v] / deepest - 0.5)
+            out = (v.co - middle) - axis * (v.co - middle).dot(axis)
+            out = out.normalized() if out.length > 1e-9 else Vector()
+            placed[v] = middle + (axis * math.sin(latitude) + out * math.cos(latitude)) * reach
+        for v, co in placed.items():
+            v.co = co
 
     each_bloom(spec, blow)
 

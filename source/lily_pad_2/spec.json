@@ -26,7 +26,7 @@
     "m_lily_pad": "#6fa04c"
   },
   "painted_shading": {
-    "texture_px": 128,
+    "texture_px": 256,
     "base_tint": "#c9a8b4",
     "top_tint": "#ffffff",
     "edge_light": 0.1,

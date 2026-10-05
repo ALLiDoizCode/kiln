@@ -17,7 +17,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 229,
+  "triangles": 550,
   "bounds": {
     "min": [
       -0.4,
@@ -36,7 +36,7 @@
     "NORMAL",
     "TEXCOORD_0"
   ],
-  "soft_edges": true,
+  "soft_edges": false,
   "open_materials": [
     "m_flower_leaf"
   ],
@@ -75,9 +75,7 @@
       1.0
     ],
     "edge_light": 0.1,
-    "edge_width_m": 0.001,
-    "crevice_shadow": 0.4,
-    "crevice_width_m": 0.0015,
+    "edge_width_m": 0.002,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -104,12 +102,14 @@
       0.5,
       1.5
     ],
-    "growth_patch_edges": 0.9,
+    "growth_patch_edges": 0.61,
     "blotch_spread": [
       1.0,
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
+    "max_level_gap": 3,
+    "palette_strip_px": 16,
+    "island_margin_px": 4
   }
 }

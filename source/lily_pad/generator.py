@@ -11,10 +11,10 @@ fixed order, as plain lists (tools/plant_parts.py), so a seed gives one mesh.
    straggles: it is not packed round its middle and has no row and no ring.
    The whole is turned to lie along the bounds, and a draw that would not fill
    them without being stretched out of shape is drawn again.
-3. Discs: each a level floor at one height with a raised rim and a notch that
-   opens a way of its own.
+3. Discs: each a level floor at one height with a raised rim, creased where it
+   leaves the floor, and a slit of a notch that opens a way of its own.
 4. Blooms: one or two, where there is open water nearest the middle of the
-   group: a low ring of open petals round a raised, pointed middle, leaning a little.
+   group: a cupped water lily of three rings of petals, leaning a little.
 5. Fit: the group is stretched the little that is left, one stretch along each
    level axis, to the spec's bounds exactly. The taller bloom is as tall as the bounds.
 """
@@ -40,18 +40,19 @@ FLOAT = 0.012  # the floors lie this far above the water, metres
 DIP = 0.06  # a disc's middle sinks this share of its radius under its floor, and no lower than the water
 RIM = (0.1, 0.15)  # the rim's width over the radius
 RISE = (0.07, 0.1)  # how far the rim's edge stands above the floor, over the radius
-NOTCH = (0.3, 0.6)  # the notch's width, radians
-SIDES = (6.0, 12.0, 0.7)  # a disc has the first plus the second times the root of (its radius over the third) sides,
-SIDES_LIMITS = (8, 16)  # and no fewer or more than these
+NOTCH = (0.14, 0.3)  # the notch's width, radians: a slit
+SIDES = (10.0, 14.0)  # a disc has the first plus the second times the root of its width, metres, sides: 14 hand-sized, 27 at 1.5 m,
+SIDES_LIMITS = (12, 30)  # and no fewer or more than these
 BLOOM = (0.06, 0.075, 0.13)  # a bloom's radius: over the group's longer side, and the least and the most, metres
 SECOND = (0.66, 0.8)  # the second bloom's size over the first's
 BLOOM_TRIES = 400  # places tried for a bloom
 BLOOM_CLEAR = 0.8  # a bloom's middle is at least this share of its radius clear of every disc's reach
 LEAN = (2.0, 12.0)  # degrees a bloom leans from upright
-PETALS = 5
-# A bloom's rings (tools/plant_parts.py `bloom`): the open petals, and the shorter ones that stand round its pointed middle.
-# Convex from every petal's edge inward: lit smooth, a cup's inside would be lit from behind.
-RINGS = ((1.0, 0.5, 0.3, 0.3, 0.0), (0.55, 0.28, 0.7, 0.6, 0.0))
+PETALS = 8
+# A bloom's rings (tools/plant_parts.py `bloom`): a water lily. The outer petals lie open on the water; those of the second
+# ring stand between them, half raised; the third ring stands round the cup, whose bottom (HEART) is below every petal's point.
+RINGS = ((1.0, 0.55, 0.14, 0.04, 0.0), (0.42, 0.8, 0.3, 0.6, 0.0), (0.5, 0.26, 1.0, 0.5, 0.0))
+HEART = 0.32
 MAX_STRETCH = (0.82, 1.2)  # the last stretch may not change any side by more
 
 
@@ -121,7 +122,7 @@ def sketch(spec):
 
     parts = Parts()
     for x, y, radius in placed:
-        sides = min(SIDES_LIMITS[1], max(SIDES_LIMITS[0], round(SIDES[0] + SIDES[1] * math.sqrt(radius / SIDES[2]))))
+        sides = min(SIDES_LIMITS[1], max(SIDES_LIMITS[0], round(SIDES[0] + SIDES[1] * math.sqrt(2 * radius))))
         disc(parts, rng, (x, y), radius, sides, rng.uniform(0, 2 * math.pi), rng.uniform(*NOTCH), FLOAT, rng.uniform(*RIM), radius * rng.uniform(*RISE), min(FLOAT, DIP * radius))
 
     # Blooms: on open water, as near the middle of the discs as there is room.
@@ -140,7 +141,7 @@ def sketch(spec):
         up = Vector((math.sin(lean) * math.cos(way), math.sin(lean) * math.sin(way), math.cos(lean)))
         height = (tall - FLOAT) * radius / size
         base = Vector((at[0], at[1], FLOAT))
-        bloom(parts, base, base + up * height, [(tips * radius, notches * radius, tips_up, notches_up, turn) for tips, notches, tips_up, notches_up, turn in RINGS], PETALS, spin=rng.uniform(0, math.pi))
+        bloom(parts, base, base + up * height, [(tips * radius, notches * radius, tips_up, notches_up, turn) for tips, notches, tips_up, notches_up, turn in RINGS], PETALS, spin=rng.uniform(0, math.pi), heart=HEART, flat=True)
     # The taller bloom is as tall as the bounds: everything above the floors is stretched the little its lean cost it.
     top = max(v.z for v in parts.verts)
     for v in parts.verts:

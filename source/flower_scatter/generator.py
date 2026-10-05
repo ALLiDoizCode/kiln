@@ -4,11 +4,13 @@ Shared by the variants' build scripts (source/flower_scatter_1, _2, _3), which
 each call `build_scatter(spec)`. Everything is drawn from `random.Random(seed)`
 in a fixed order, as plain lists (tools/plant_parts.py), so a seed gives one mesh.
 
-1. Places: each flower's foot is the one of a few tries that is furthest from
-   those already placed, inside an oval turned by chance: apart, and in no row.
+1. Places: the first flower's foot at a chance place; each next one beside one
+   already placed, chosen by chance, a chance distance from it, inside an oval
+   turned by chance. So a scatter straggles: two or three stand close and one
+   apart, and a draw whose flowers stand in a row or on a ring is drawn again.
 2. Flowers: each a thin stem from the ground, of a height of its own, leaning a
-   way of its own and bowed a little, with a bloom on its end: a closed
-   five-pointed star that looks along the stem and a little further over.
+   way of its own and bowed a little, with a bloom on its end: five rounded
+   petals round a shallow cup, which looks along the stem and a little further over.
 3. Leaves: two to four leaf pieces at the foot of each stem, pointing out and up.
 4. Fit: the feet are drawn as far apart, along x and along y, as fills the
    bounds, with the flowers as they are; then the scatter is stretched the
@@ -23,18 +25,25 @@ from plant_parts import Z, Parts, blade, bloom, fit, leaf_piece, to_object
 
 BED = 0.36  # the feet stand within this share of the scatter's width of its middle,
 OVAL = (1.0, 1.5)  # in an oval this many times as long as it is wide, turned by chance
-TRIES = 4  # a new foot is the furthest from the others of this many tries
-HEIGHT = (0.42, 0.95)  # a flower's height over the scatter's; the first is the tallest, at 1
+BESIDE = (1.0, 2.6)  # a new foot stands this far from the one it is placed beside, over the least two may be apart
+SCATTER = 0.34  # a draw is kept when its feet, and then its blooms, spread this far across over along, and differ this much in their distance from their middle, over the mean: no row, no ring
+HEIGHT = (0.45, 1.0)  # a flower's height over the scatter's: the tallest at 1 and the others at even steps down to the first, each moved up to a third of a step
 LEAN = (5.0, 24.0)  # degrees a stem leans from upright, its own way:
 WAY = 0.9  # within this many radians of its share of the compass
-APART = 0.2  # no two feet are nearer than this share of the scatter's width, before they are drawn apart to fill the bounds
+APART = 0.2  # no two feet are nearer than this share of the scatter's width, before they are drawn apart to fill the bounds, nor than a bloom's width
 BOW = (0.03, 0.09)  # how far a stem's middle stands off the straight line, over its length
 STEM_WIDTH = 0.005  # metres
-BLOOM = (0.025, 0.031)  # a bloom's radius, metres
+BLOOM = (0.9, 1.1)  # a bloom's width over the middle of the widths the spec allows
 BLOOM_DEEP = 0.5  # its depth from base to top over its radius
 BLOOM_TIP = 0.35  # how much further over than its stem a bloom looks, over the stem's lean
 PETALS = 5
-RINGS = ((1.0, 0.42, 0.5, 0.5, 0.0),)  # tools/plant_parts.py `bloom`: one flat star
+# tools/plant_parts.py `bloom`: one ring of five petals round a middle lower than any of them, a shallow cup. Each petal is
+# flat: its point, the corner either side of it (SHOULDER) and the notches it shares with its neighbours lie in one plane
+# through the middle, which rises 0.5 of the bloom's depth from the middle (HEART) to the point. A corner at radius r and
+# angle a off the petal's own line is then HEART + 0.5 r cos a up: the notch (0.45, 36 degrees) 0.482, the shoulder (0.93, 18 degrees) 0.742.
+RINGS = ((1.0, 0.45, 0.8, 0.482, 0.0),)
+SHOULDER = (0.93, 0.182)
+HEART = 0.3
 LEAVES = (2, 2, 3, 3, 4)  # leaves at a stem's foot, drawn from these
 LEAF = (0.06, 0.1)  # a leaf's length, metres,
 LEAF_MOST = 0.42  # and no more than this share of the lowest flower's height
@@ -43,28 +52,64 @@ LEAF_UP = (15.0, 40.0)  # degrees it points above level
 MAX_STRETCH = (0.9, 1.12)  # the last stretch may not change any side by more
 
 
-def sketch(spec, spread):
-    """The scatter before the last stretch, its feet standing `spread` (along x, along y) times as far apart as first drawn."""
-    rng = random.Random(spec["seed"])
+def scattered(feet):
+    """The lesser of: how far the points spread across over along, seen from above, and how much their distances from their middle differ, over the mean distance."""
+    n = len(feet)
+    middle = sum(feet, Vector()) / n
+    xx, yy, xy = (sum((f[i] - middle[i]) * (f[j] - middle[j]) for f in feet) / n for i, j in ((0, 0), (1, 1), (0, 1)))
+    root = math.sqrt(max(((xx - yy) / 2) ** 2 + xy * xy, 0.0))
+    along = math.sqrt(max((xx + yy) / 2 - root, 0.0) / max((xx + yy) / 2 + root, 1e-12))
+    out = [(f - middle).xy.length for f in feet]
+    mean = sum(out) / n
+    return min(along, math.sqrt(sum((d - mean) ** 2 for d in out) / n) / max(mean, 1e-12))
+
+
+def sketch(spec, spread, again=0):
+    """The scatter before the last stretch, its feet standing `spread` (along x, along y) times as far apart as first drawn, and where its blooms are.
+
+    `again` counts the draws of this seed thrown away before this one."""
+    rng = random.Random(spec["seed"] if not again else f"{spec['seed']} again {again}")
     lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
     wide, tall = min(hi.x - lo.x, hi.y - lo.y), hi.z - lo.z
     count = rng.randint(*spec["blooms"]["count"])
     long, turn = rng.uniform(*OVAL), Matrix.Rotation(rng.uniform(0, math.pi), 3, "Z")
-    feet = []
-    for _ in range(count):
-        tries = []
-        for _ in range(TRIES):
-            angle, reach = rng.uniform(0, 2 * math.pi), math.sqrt(rng.uniform(0, 1)) * wide * BED
-            tries.append(turn @ Vector((math.cos(angle) * reach * math.sqrt(long), math.sin(angle) * reach / math.sqrt(long), 0)))
-        best = max(tries, key=lambda at: min(((at - other).length for other in feet), default=0.0))
-        while feet and min((best - other).length for other in feet) < wide * APART * min(1.0, 4.5 / count):
-            angle, reach = rng.uniform(0, 2 * math.pi), math.sqrt(rng.uniform(0, 1)) * wide * BED
-            best = turn @ Vector((math.cos(angle) * reach * math.sqrt(long), math.sin(angle) * reach / math.sqrt(long), 0))
-        feet.append(best)
-    heights = [1.0] + [rng.uniform(*HEIGHT) for _ in range(count - 1)]
+    widths = spec["blooms"]["width_m"]
+    across = (widths[0] + widths[1]) / 2
+    least = max(wide * APART * min(1.0, 4.5 / count), across)
+
+    def place():
+        angle, reach = rng.uniform(0, 2 * math.pi), math.sqrt(rng.uniform(0, 1)) * wide * BED
+        return turn @ Vector((math.cos(angle) * reach * math.sqrt(long), math.sin(angle) * reach / math.sqrt(long), 0))
+
+    bed = [wide * BED]
+
+    def inside(at):
+        back = turn.inverted() @ at
+        return (back.x / math.sqrt(long)) ** 2 + (back.y * math.sqrt(long)) ** 2 <= bed[0] ** 2
+
+    failed = 0
+    while True:
+        feet = [place()]
+        for _ in range(count - 1):
+            for _ in range(200):
+                beside = rng.choice(feet)
+                angle = rng.uniform(0, 2 * math.pi)
+                at = beside + Vector((math.cos(angle), math.sin(angle), 0)) * least * rng.uniform(*BESIDE)
+                if inside(at) and all((at - other).length >= least for other in feet):
+                    feet.append(at)
+                    break
+        if len(feet) == count and scattered(feet) >= SCATTER:
+            break
+        failed += 1
+        if failed % 60 == 0:
+            # Three flowers are nearly always a row or as good as a ring; a scatter that cannot be drawn with so few has one more.
+            count = min(count + 1, spec["blooms"]["count"][1])
+        bed[0] *= 1.02  # a bed too small for its flowers to stand apart and astray in grows until it is not: the feet are drawn to fill the bounds after
+    step = (HEIGHT[1] - HEIGHT[0]) / max(count - 1, 1)
+    heights = [1.0] + [HEIGHT[0] + step * (k + rng.uniform(-0.33, 0.33)) for k in range(count - 1)]
     rng.shuffle(heights)
 
-    parts = Parts()
+    parts, tops = Parts(), []
     first_way = rng.uniform(0, 2 * math.pi)
     for k, (at, share) in enumerate(zip(feet, heights)):
         foot = Vector((at.x * spread[0], at.y * spread[1], 0.0))
@@ -72,18 +117,19 @@ def sketch(spec, spread):
         way, lean = first_way + 2 * math.pi * k / count + rng.uniform(-WAY, WAY), math.radians(rng.uniform(*LEAN))
         out = Vector((math.cos(way), math.sin(way), 0))
         up = out * math.sin(lean) + Z * math.cos(lean)
-        radius = rng.uniform(*BLOOM)
+        radius = across / 2 * rng.uniform(*BLOOM)
         # The bloom's top is the flower's height: the stem ends at its base.
         looks = (up + out * math.sin(lean) * BLOOM_TIP).normalized()
         deep = radius * BLOOM_DEEP
         length = (tall * share - deep * looks.z) / up.z
         bow = (out * math.cos(lean) - Z * math.sin(lean)) * -length * rng.uniform(*BOW)
         end = foot + up * length
-        blade(parts, [foot, (foot + end) / 2 + bow, end + looks * deep * 0.5], [STEM_WIDTH, STEM_WIDTH], Matrix.Rotation(rng.uniform(-math.pi, math.pi), 3, "Z") @ Vector((1, 0, 0)))
-        bloom(parts, end, end + looks * deep, [(tips * radius, notches * radius, tips_up, notches_up, turned) for tips, notches, tips_up, notches_up, turned in RINGS], PETALS, spin=rng.uniform(0, math.pi))
+        tops.append(end)
+        blade(parts, [foot, (foot + end) / 2 + bow, end + looks * deep * 0.12], [STEM_WIDTH, STEM_WIDTH], Matrix.Rotation(rng.uniform(-math.pi, math.pi), 3, "Z") @ Vector((1, 0, 0)))
+        bloom(parts, end, end + looks * deep, [(tips * radius, notches * radius, tips_up, notches_up, turned) for tips, notches, tips_up, notches_up, turned in RINGS], PETALS, spin=rng.uniform(0, math.pi), shoulder=SHOULDER, heart=HEART, flat=True)
         heading = rng.uniform(0, 2 * math.pi)
         # As many leaves as the budget has left for it, when every flower still to come has its stem, its bloom and two leaves.
-        spare = spec["max_triangles"] - parts.triangles() - (count - k - 1) * (parts.triangles() // (k + 1) if k else 40)
+        spare = spec["max_triangles"] - parts.triangles() - (count - k - 1) * (parts.triangles() // (k + 1) if k else 59)
         leaves = max(2, min(rng.choice(LEAVES), spare // 4))
         for n in range(leaves):
             heading += 2 * math.pi / leaves + rng.uniform(-0.6, 0.6)
@@ -95,20 +141,27 @@ def sketch(spec, spread):
     lowest = min(v.z for v in parts.verts)
     for v in parts.verts:
         v.z -= lowest
-    return parts
+    # And it is as tall as its bounds: a bloom that looks aside lifts the points of its petals above where its stem ends.
+    highest = max(v.z for v in parts.verts)
+    for v in parts.verts + tops:
+        v.z *= tall / highest
+    return parts, tops
 
 
 def draw(spec):
-    """The scatter, its feet drawn as far apart as fills the bounds, and fitted."""
+    """The scatter, its feet drawn as far apart as fills the bounds, and fitted. A draw whose blooms then stand in a row or on a ring is thrown away and the seed drawn again."""
     lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
-    spread = [1.0, 1.0]
-    for _ in range(8):
-        parts = sketch(spec, spread)
-        for i in range(2):
-            spread[i] *= (hi[i] - lo[i]) / (max(v[i] for v in parts.verts) - min(v[i] for v in parts.verts))
-    parts = sketch(spec, spread)
-    fit(parts, lo, hi, most=MAX_STRETCH)
-    return parts
+    for again in range(200):
+        spread = [1.0, 1.0]
+        for _ in range(8):
+            parts, tops = sketch(spec, spread, again)
+            for i in range(2):
+                spread[i] *= (hi[i] - lo[i]) / (max(v[i] for v in parts.verts) - min(v[i] for v in parts.verts))
+        parts, tops = sketch(spec, spread, again)
+        if scattered(tops) >= SCATTER:
+            fit(parts, lo, hi, most=MAX_STRETCH)
+            return parts
+    raise RuntimeError(f"seed {spec['seed']}: no scatter in 200 draws whose blooms stand in neither a row nor a ring")
 
 
 def build_scatter(spec):

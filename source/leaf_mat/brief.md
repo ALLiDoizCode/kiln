@@ -32,8 +32,8 @@ Seen from above, which is how it is seen.
 4. **Overlapping.** Seen from above, at least half of the leaves lie partly over or under another.
 5. **Ragged, with gaps.** Seen from above, the leaves cover 0.45 to 0.8 of the convex hull of what they cover: a disc or a rectangle of leaves covers all of its own, and a few scattered leaves almost none.
 6. **A patch.** The leaves cover at least 0.3 of the bounds' footprint.
-7. **Runners.** Three to five runners creep out from the middle of the mat, each in two or three straight lengths with a turn between them, each length a thin closed spindle. They are what the closed surface is; no plate lies under the mat.
-8. **Growing.** The leaves stand along the runners in pairs, one either side, pointing away from the runner and toward its end, with a leaf at the end and a few round the middle where the runners start: at least 0.8 of the leaves start within 2 cm of a runner and point away from it. Denser at the middle, where the runners are close, and ragged at the edge, where each ends on its own. (First: leaves at chance places pointing every way, which read as leaves that had fallen there.)
+7. **Runners.** Four to six runners creep out from the middle of the mat, each in two or more straight lengths a hand or so long with a turn between them and here and there a side length at a turn, each length a thin closed spindle. They are what the closed surface is; no plate lies under the mat.
+8. **Growing.** The leaves stand along the runners in pairs, one either side, pointing away from the runner and toward its end, with a leaf at the end: at least 0.8 of the leaves start within 2 cm of a runner and point away from it. Denser at the middle, where the runners are close, and ragged at the edge, where each ends on its own. (First: leaves at chance places pointing every way, which read as leaves that had fallen there.)
 
 ## Style and colour
 
@@ -49,7 +49,7 @@ One object and one mesh per variant, with two materials. The leaf material holds
 
 ## Budget
 
-The cheapest foliage there is, laid by the dozen: a leaf is 4 triangles and a length of runner 16. Leaves 9 to 14 cm long that cover a third of the footprint are about 170 to the square metre, and a mat has 6 to 12 lengths of runner, so at most 420, 880 and 280 triangles, with two materials and one 128 px texture. (First set at 320, 560 and 180, before the leaves were counted, and then at 340, 720 and 200 with two runners.)
+The cheapest foliage there is, laid by the dozen: a leaf is 4 triangles and a length of runner 12. Leaves 9 to 14 cm long that cover a third of the footprint are about 170 to the square metre, and a length of runner, at 12 triangles, costs as much as the three leaves it carries, so at most 420, 880 and 280 triangles, with two materials and one 128 px texture. (First set at 320, 560 and 180, before the leaves were counted, and then at 340, 720 and 200 with two runners.)
 
 ## References
 

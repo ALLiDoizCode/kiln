@@ -17,7 +17,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 180,
+  "triangles": 280,
   "bounds": {
     "min": [
       -0.2,
@@ -102,12 +102,14 @@
       0.5,
       1.5
     ],
-    "growth_patch_edges": 0.9,
+    "growth_patch_edges": 0.61,
     "blotch_spread": [
       1.0,
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
+    "max_level_gap": 3,
+    "palette_strip_px": 16,
+    "island_margin_px": 4
   }
 }

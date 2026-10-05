@@ -59,7 +59,7 @@ One object and one mesh per variant, with two materials. The pad material holds 
 
 ## Budget
 
-Cheap dressing, seen at the player's feet and often several groups at once: at most 480, 720 and 820 triangles, and two materials on one 128 px texture: the smallest that holds a flower at the conventions' 100 texels a metre, since the palette's strip takes 24 px of it and the gap round an island 8 px (at 64 px the first variant's 14 cm flower was painted at 11 texels a metre). A disc is three triangles a side, of 12 to 30 sides by its width (Silhouette 1): 36 to 90. A flower is 96. (First 320, 420 and 500, for discs of 8 to 16 sides and a flower of 40.) The benchmark's nearest things, its clover and flower groups, are flat cards.
+Cheap dressing, seen at the player's feet and often several groups at once: at most 480, 720 and 820 triangles, and two materials on one texture, the smallest that holds the flowers at the conventions' 100 texels a metre, since the palette's strip takes 24 px of it and the gap round an island 8 px: 128 px for the first variant's one flower of 14 cm (at 64 px it was painted at 11 texels a metre), and 256 px for the second and third, whose two flowers of three rings of petals, 15 to 27 cm across, are a quarter to a third of a square metre of petal (at 128 px their sparsest petals were painted at 85 and 62 texels a metre). A disc is three triangles a side, of 12 to 30 sides by its width (Silhouette 1): 36 to 90. A flower is 96. (First 320, 420 and 500, for discs of 8 to 16 sides and a flower of 40.) The benchmark's nearest things, its clover and flower groups, are flat cards.
 
 ## References
 
