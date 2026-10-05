@@ -1245,6 +1245,136 @@ def check_table(checks, name, bm, spec, conv):
     )
 
 
+# An arch (source/arch): two piers that reach the ground and a span resting on both, with open air right through under it.
+
+
+def check_arch(checks, name, bm, spec, conv):
+    """The shape is an arch: seen from the front, it and the ground close round one hole of open air; inside that hole a
+    stretch of a width a spec gives is open from the ground up to a height it gives; and on each side of that stretch
+    rock stands without a break from the ground up into the span."""
+    want = spec["arch"]
+    floor = spec["bounds_m"]["min"][2]
+    left, right = min(v.co.x for v in bm.verts), max(v.co.x for v in bm.verts)
+    front, back, top = min(v.co.y for v in bm.verts), max(v.co.y for v in bm.verts), max(v.co.z for v in bm.verts)
+    cell = max(right - left, top - floor) / conv["planes"]["view_rays"]
+    columns, rows = math.ceil((right - left) / cell), math.ceil((top - floor) / cell)
+    tree = BVHTree.FromBMesh(bm)
+    # The view from the front, with parallel rays: the cells the shape covers, and the cells of open air.
+    covered = {
+        (i, j)
+        for i in range(columns)
+        for j in range(rows)
+        if tree.ray_cast(Vector((left + (i + 0.5) * cell, front - 1.0, floor + (j + 0.5) * cell)), Vector((0, 1, 0)))[0] is not None
+    }
+    beside = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+    def spread(start, allowed):
+        """The cells reached from `start` through neighbours for which `allowed` holds."""
+        reached, edge = set(start), list(start)
+        while edge:
+            i, j = edge.pop()
+            for di, dj in beside:
+                cell_ = (i + di, j + dj)
+                if cell_ not in reached and allowed(cell_):
+                    reached.add(cell_)
+                    edge.append(cell_)
+        return reached
+
+    # Open air outside the shape is what the sky reaches: from a ring of cells to the left, to the right and above. The ground closes the bottom.
+    ring = [(-1, j) for j in range(rows + 1)] + [(columns, j) for j in range(rows + 1)] + [(i, rows) for i in range(columns)]
+    sky = spread(ring, lambda c: -1 <= c[0] <= columns and 0 <= c[1] <= rows and c not in covered)
+    enclosed = {(i, j) for i in range(columns) for j in range(rows)} - covered - sky
+    holes = []
+    while enclosed:
+        hole = spread([next(iter(enclosed))], lambda c: c in enclosed)
+        holes.append(hole)
+        enclosed -= hole
+    holes.sort(key=len, reverse=True)
+    checks.check(
+        f"{name}.arch_through",
+        len(holes) == 1,
+        f"seen from the front, the shape and the ground close round {len(holes)} separate holes of open air, of {[round(len(hole) * cell * cell, 3) for hole in holes]} m2; "
+        f"an arch has exactly one: its piers reach the ground and its span closes it over, with no daylight between them",
+    )
+    # The opening: the widest stretch of the largest hole that is open from the ground up to the height wanted.
+    hole = holes[0] if holes else set()
+    high = [j for j in range(rows) if floor + (j + 0.5) * cell < floor + want["min_clear_m"]]
+    clear = [all((i, j) in hole for j in high) for i in range(columns)]
+    first, last, start = 0, -1, None
+    for i in range(columns + 1):
+        if i < columns and clear[i]:
+            start = i if start is None else start
+        elif start is not None:
+            if i - start > last - first + 1:
+                first, last = start, i - 1
+            start = None
+    width = (last - first + 1) * cell
+    tallest = (max((j for i, j in hole), default=-1) + 1) * cell
+    checks.check(
+        f"{name}.arch_opening",
+        width >= want["min_opening_m"],
+        f"seen from the front, the widest stretch of open air right through that reaches from the ground up to {want['min_clear_m']} m is {width:.2f} m wide; "
+        f"spec wants at least {want['min_opening_m']} m (the hole is {tallest:.2f} m tall at its tallest)",
+    )
+    # The span rests on both piers: beside the opening, on each side, rock without a break straight up from the ground
+    # to the middle of what closes the opening over there. A pier alone does not reach that high, and a span alone does not reach the ground.
+    solids = [Solid(piece) for piece in pieces_in(bm.faces)]
+    bearing = []
+    for column, side in ((first, range(0, first)), (last, range(last + 1, columns))):
+        under = max((j for i, j in hole if i == column), default=None)
+        if last < first or under is None:
+            bearing.append(0.0)
+            continue
+        over = under + 1
+        while over < rows and (column, over) in covered:
+            over += 1
+        reach = floor + (under + 1 + (over - under - 1) / 2) * cell
+        heights = [floor + (k + 0.5) * cell for k in range(0, rows, 2) if floor + (k + 0.5) * cell < reach] + [reach]
+        count = 0
+        for i in side:
+            x, y = left + (i + 0.5) * cell, front + cell / 2
+            while y < back:
+                count += all(any(solid.holds(Vector((x, y, z))) for solid in solids) for z in heights)
+                y += cell
+        bearing.append(count * cell * cell)
+    checks.check(
+        f"{name}.arch_rests",
+        min(bearing) >= want["min_bearing_m2"],
+        f"beside the opening, rock stands without a break from the ground up into the span over {bearing[0]:.2f} m2 on the left and {bearing[1]:.2f} m2 on the right; "
+        f"spec wants at least {want['min_bearing_m2']} m2 on each side",
+    )
+    # Rock that ended up as an arch, not a door frame of dressed blocks (a trilithon): the opening is not a rectangle,
+    # the two sides do not stand equally high, and the top is not a level table.
+    across, up = [i for i, _ in hole], [j for _, j in hole]
+    box = (max(across) - min(across) + 1) * (max(up) - min(up) + 1) if hole else 0
+    box_share = len(hole) / box if box else 1.0
+    checks.check(
+        f"{name}.arch_opening_shape",
+        box_share <= want["max_box_share"],
+        f"seen from the front, the hole fills {box_share:.3f} of the upright rectangle drawn round it; spec allows {want['max_box_share']}: an opening between squared piers under a level lintel is a rectangle",
+    )
+    crest = {i: max((j for j in range(rows) if (i, j) in covered), default=-1) for i in range(columns)}
+    stands = [max((crest[i] + 1 for i in side), default=0) * cell for side in (range(0, first), range(last + 1, columns))] if last >= first else [0.0, 0.0]
+    step = abs(stands[0] - stands[1]) / (top - floor) if top > floor else 0.0
+    checks.check(
+        f"{name}.arch_sides_differ",
+        step >= want["min_side_step"],
+        f"seen from the front, the arch stands {stands[0]:.2f} m high to the left of the opening and {stands[1]:.2f} m to the right: {step:.3f} of its height apart; spec wants at least {want['min_side_step']}",
+    )
+    seen, _ = seen_from_above(bm, spec, conv)
+    level = sum(1 for _, _, _, normal in seen if normal.z >= math.cos(math.radians(conv["top"]["level_deg"]))) / len(seen) if seen else 1.0
+    checks.check(
+        f"{name}.arch_top_broken",
+        level <= want["max_level_share"],
+        f"seen from straight above, {level:.3f} of the shape is within {conv['top']['level_deg']} degrees of level; spec allows {want['max_level_share']}: the top of an arch of fallen rock is not a table",
+    )
+    print(
+        f"{name} arch: {len(holes)} holes seen from the front; the opening is {width:.2f} m wide up to {want['min_clear_m']} m and {tallest:.2f} m tall at its tallest; "
+        f"the span rests on {bearing[0]:.2f} m2 of pier on the left and {bearing[1]:.2f} m2 on the right; "
+        f"the hole fills {box_share:.3f} of the rectangle round it; the sides stand {step:.3f} of the height apart; {level:.3f} of the view from above is level"
+    )
+
+
 # A block (docs/style/rock-shapes.md): a near-cuboid with big chamfers and one or two cracks.
 
 
@@ -1357,6 +1487,88 @@ def check_cracks(checks, name, bm, spec, conv):
         found[best] >= want["min_span"],
         f"seen from above, {found[best]:.3f} of the lines along the block meet exactly {want['count']} grooves (points with the surface {reach * cell:.3f} m to either side at least "
         f"{want['depth_m']} m higher) running {best}; spec wants {want['min_span']}; both ways {found}",
+    )
+
+
+# One mass (source/boulder): a boulder is one heavy lump, not a trunk on a spread foot and not a pile of prisms.
+
+
+def filled_columns(bm, lo, hi, cell):
+    """Where the shape is solid, on a grid of upright columns `cell` apart: {(i, j): [(from z, to z), ...]}.
+
+    A column is solid between entering a piece and leaving the last one it is inside, so closed
+    pieces that pass into each other (ADR 13) are read as the one solid they make. Nothing below lo.z counts."""
+    tree = BVHTree.FromBMesh(bm)
+    up = Vector((0, 0, 1))
+    columns = {}
+    for i in range(math.ceil((hi.x - lo.x) / cell - 1e-9)):
+        for j in range(math.ceil((hi.y - lo.y) / cell - 1e-9)):
+            origin = Vector((lo.x + (i + 0.5) * cell, lo.y + (j + 0.5) * cell, min(lo.z, min(v.co.z for v in bm.verts)) - 1.0))
+            inside, entered, spans = 0, None, []
+            while True:
+                point, normal, index, _ = tree.ray_cast(origin, up)
+                if index is None:
+                    break
+                step = -1 if normal.z > 0 else 1
+                if inside <= 0 < inside + step:
+                    entered = point.z
+                if inside + step <= 0 < inside and max(entered, lo.z) < point.z:
+                    spans.append((max(entered, lo.z), point.z))
+                inside += step
+                origin = point + up * 1e-5
+            if spans:
+                columns[i, j] = spans
+    return columns
+
+
+def hull_area_2d(points):
+    """The area of the convex hull of points in a plane."""
+    points = sorted(set(points))
+
+    def chain(run):
+        kept = []
+        for p in run:
+            while len(kept) >= 2 and (kept[-1][0] - kept[-2][0]) * (p[1] - kept[-2][1]) - (kept[-1][1] - kept[-2][1]) * (p[0] - kept[-2][0]) <= 0:
+                kept.pop()
+            kept.append(p)
+        return kept[:-1]
+
+    ring = chain(points) + chain(reversed(points))
+    return abs(sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(ring, ring[1:] + ring[:1]))) / 2
+
+
+def check_mass(checks, name, bm, spec, conv):
+    """The shape is one convex mass with sloping flanks: it fills most of its own convex hull, its outline
+    seen from above fills most of that outline's hull, and not all of its side surface is near upright.
+
+    A trunk on a spread foot, a lump with blocks standing out of its base and a cluster of prisms each leave
+    their hull part empty; a column's flanks are all wall. What is below the floor of the bounds is not counted."""
+    want, rules = spec["mass"], conv["mass"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    cell = max(hi.x - lo.x, hi.y - lo.y) / rules["grid"]
+    columns = filled_columns(bm, lo, hi, cell)
+    volume = sum(top - bottom for spans in columns.values() for bottom, top in spans) * cell * cell
+    hull = bmesh.new()
+    for vert in bm.verts:
+        hull.verts.new((vert.co.x, vert.co.y, max(vert.co.z, lo.z)))
+    bmesh.ops.convex_hull(hull, input=hull.verts)
+    hull_volume = hull.calc_volume(signed=False)
+    hull.free()
+    filled = volume / hull_volume if hull_volume > 0 else 0.0
+    outline = len(columns) / hull_area_2d([(i + a, j + b) for i, j in columns for a in (0, 1) for b in (0, 1)]) if columns else 0.0
+    sides = [f for f in visible_faces(bm, spec, conv) if abs(f.normal.z) < conv["lean"]["side_normal_z"] and f.calc_center_median().z > lo.z]
+    side_area = sum(f.calc_area() for f in sides)
+    steep = sum(f.calc_area() for f in sides if abs(f.normal.z) < math.sin(math.radians(rules["steep_deg"]))) / side_area if side_area else 1.0
+    print(
+        f"{name} mass: {filled:.3f} of its convex hull's volume; its outline from above is {outline:.3f} of that outline's hull; "
+        f"{steep:.3f} of {side_area:.2f} m2 of side surface is within {rules['steep_deg']} degrees of upright"
+    )
+    checks.check(f"{name}.mass_convex", filled >= want["min_hull_share"], f"the shape holds {filled:.3f} of its convex hull's volume ({volume:.3f} of {hull_volume:.3f} m3); spec wants at least {want['min_hull_share']}")
+    checks.check(f"{name}.mass_outline", outline >= want["min_outline_share"], f"seen from above the shape covers {outline:.3f} of its outline's convex hull; spec wants at least {want['min_outline_share']}")
+    checks.check(
+        f"{name}.mass_slopes",
+        steep <= want["max_steep_share"],
+        f"{steep:.3f} of the side surface ({side_area:.2f} m2) is within {rules['steep_deg']} degrees of upright; spec wants at most {want['max_steep_share']}",
     )
 
 
@@ -1498,6 +1710,10 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "table" in spec:
             check_table(checks, name, bm, spec, conv)
+        if "arch" in spec:
+            check_arch(checks, name, bm, spec, conv)
+        if "mass" in spec:
+            check_mass(checks, name, bm, spec, conv)
         for block, check in (("block", check_block), ("cracks", check_cracks)):
             if block in spec:
                 check(checks, name, bm, spec, conv)

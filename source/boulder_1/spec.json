@@ -1,0 +1,59 @@
+{
+  "asset": "boulder_1",
+  "family": "boulder",
+  "objects": [
+    "boulder_1"
+  ],
+  "seed": 1,
+  "bounds_m": {
+    "min": [
+      -0.6,
+      -0.5,
+      0.0
+    ],
+    "max": [
+      0.6,
+      0.5,
+      0.7
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 400,
+  "materials": {
+    "m_boulder": "#a1a7a1"
+  },
+  "painted_shading": {
+    "texture_px": 512,
+    "base_tint": "#8c8c9a",
+    "top_tint": "#c8c8c8",
+    "edge_light": 0.3,
+    "edge_width_m": 0.032,
+    "blotch": 0.12,
+    "blotch_size_m": 0.24,
+    "side_shade": 0.22,
+    "hidden_underside": true
+  },
+  "fullness": {
+    "min_volume_share": 0.4,
+    "min_crown_share": 0.28
+  },
+  "lean": {
+    "max_upright_share": 0.15,
+    "min_summit_offset": 0.15
+  },
+  "low": {
+    "max_height_share": 0.65
+  },
+  "mass": {
+    "min_hull_share": 0.89,
+    "min_outline_share": 0.94,
+    "max_steep_share": 0.85
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ]
+}

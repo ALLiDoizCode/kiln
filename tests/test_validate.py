@@ -1001,6 +1001,81 @@ def neck_at_rim(spec):
     edit(move, "table_rock_1")
 
 
+# The arch (source/arch): two piers that reach the ground and a span resting on both, with open air right through.
+
+
+def arch_pieces(bm, spec):
+    """The arch's pieces as lists of vertices: (the span, the widest piece held off the ground; the other pieces held
+    off the ground; the pier blocks on the ground, the two tallest; the rubble, the rest on the ground)."""
+    from validate import pieces_in
+
+    floor = spec["bounds_m"]["min"][2]
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    held = sorted((verts for verts in pieces if min(v.co.z for v in verts) > floor + 0.01), key=lambda verts: max(v.co.x for v in verts) - min(v.co.x for v in verts), reverse=True)
+    standing = sorted((verts for verts in pieces if min(v.co.z for v in verts) <= floor + 0.01), key=lambda verts: max(v.co.z for v in verts), reverse=True)
+    return held[0], held[1:], standing[:2], standing[2:]
+
+
+def span_lifted(spec):
+    """The lintel raised 0.5 m off its piers: daylight between them, and no hole closed over."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[0], vec=(0, 0, 0.5)), "arch_1")
+
+
+def pier_off_the_ground(spec):
+    """The lower block of one pier raised 0.3 m: the pier does not reach the ground. Seen from the front the rubble at its
+    foot hides the gap, so the hole stays closed; nothing under the span runs down to the ground on that side."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[2][1], vec=(0, 0, 0.3)), "arch_1")
+
+
+def span_pressed_down(spec):
+    """The lintel lowered until its underside is 1.2 m above the ground: a player no longer walks under it."""
+
+    def press(bm):
+        span = arch_pieces(bm, spec)[0]
+        bmesh.ops.translate(bm, verts=span, vec=(0, 0, spec["bounds_m"]["min"][2] + 1.2 - min(v.co.z for v in span)))
+
+    edit(press, "arch_1")
+
+
+def rubble_in_the_passage(spec):
+    """The largest rubble block moved to the middle of the opening: the passage is blocked."""
+
+    def move(bm):
+        _, _, piers, rubble = arch_pieces(bm, spec)
+        block = max(rubble, key=lambda verts: max(v.co.z for v in verts))
+        inner = sorted(x for verts in piers for x in (min(v.co.x for v in verts), max(v.co.x for v in verts)))[1:3]
+        middle = sum(v.co.x for v in block) / len(block)
+        bmesh.ops.translate(bm, verts=block, vec=((inner[0] + inner[1]) / 2 - middle, 0, 0))
+
+    edit(move, "arch_1")
+
+
+def span_behind_the_piers(spec):
+    """The lintel moved back by the depth of the bounds: from the front it still closes the opening, and it rests on nothing."""
+    depth = spec["bounds_m"]["max"][1] - spec["bounds_m"]["min"][1]
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[0], vec=(0, depth, 0)), "arch_1")
+
+
+def trilithon(spec):
+    """The first arch_1, which passed every gate and reads as a door frame of dressed blocks: two matched upright piers of
+    squared blocks under a level squared lintel. Built by the generator of that day (tests/fixtures/arch_trilithon.py)
+    from its spec, in place of the arch, and measured against its own bounds."""
+    import importlib.util
+
+    module = importlib.util.spec_from_file_location("arch_trilithon", ROOT / "tests" / "fixtures" / "arch_trilithon.py")
+    generator = importlib.util.module_from_spec(module)
+    module.loader.exec_module(generator)
+    old = json.loads((ROOT / "tests" / "fixtures" / "arch_trilithon.spec.json").read_text())
+    bpy.data.objects.remove(bpy.data.objects["arch_1"])
+    for held in (bpy.data.meshes, bpy.data.materials):
+        for block in list(held):
+            if not block.users:
+                held.remove(block)
+    # The first arch that seed drew was the one it kept, so nothing need be measured here: the checks of that day asked less of a spec.
+    generator.build_arch(old, strict=False)
+    spec["bounds_m"] = old["bounds_m"]
+
+
 def tall_pebble(spec):
     """The pebble stretched to 0.36 as tall as it is wide, and its spec with it: the proportion the
     first pebble_2 was specified, built and passed with, while its brief said "low"."""
@@ -1030,6 +1105,47 @@ def cut_block(spec):
         fit_to_bounds(bm, spec)
 
     edit(cut, "pebble_2")
+
+
+# A boulder (source/boulder): one heavy lump. Each mutation keeps the mesh closed and at its bounds.
+
+
+def stump_boulder(spec):
+    """The boulder above three tenths of its height drawn in to 0.55 of its width: a trunk on a spread foot, the
+    stump that `source/rock` read as while passing every gate."""
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+
+    def pinch(bm):
+        for vert in bm.verts:
+            if vert.co.z > lo.z + 0.3 * (hi.z - lo.z):
+                vert.co.x, vert.co.y = 0.55 * vert.co.x, 0.55 * vert.co.y
+        fit_to_bounds(bm, spec)
+
+    edit(pinch, "boulder_2")
+
+
+def rooted_boulder(spec):
+    """Three sectors of the boulder drawn in to 0.4 of their reach: seen from above, a lump with roots between notches."""
+
+    def notch(bm):
+        for vert in bm.verts:
+            if math.cos(3 * math.atan2(vert.co.y, vert.co.x)) < -0.3:
+                vert.co.x, vert.co.y = 0.4 * vert.co.x, 0.4 * vert.co.y
+        fit_to_bounds(bm, spec)
+
+    edit(notch, "boulder_2")
+
+
+def tall_boulder(spec):
+    """The boulder stretched to three times its height, and its spec with it: every flank a wall."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+
+    def raise_it(bm):
+        for vert in bm.verts:
+            vert.co.z = lo[2] + (vert.co.z - lo[2]) * 3
+
+    edit(raise_it, "boulder_2")
+    hi[2] = lo[2] + 3 * (hi[2] - lo[2])
 
 
 # mutation -> the check id that must fail because of it. Cases break the
@@ -1084,6 +1200,10 @@ CASES = [
     (plate_inside_out, "slab_1.normals_outward", "slab_1"),
     (tall_pebble, "pebble_2.low", "pebble_2"),
     (cut_block, "pebble_2.rounded", "pebble_2"),
+    (stump_boulder, "boulder_2.mass_convex", "boulder_2"),
+    (rooted_boulder, "boulder_2.mass_outline", "boulder_2"),
+    (tall_boulder, "boulder_2.mass_slopes", "boulder_2"),
+    (tall_boulder, "boulder_2.low", "boulder_2"),
     (even_heights, "crag_1.cluster_steps_down", "crag_1"),
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
@@ -1096,6 +1216,15 @@ CASES = [
     (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
     (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
+    (span_lifted, "arch_1.arch_through", "arch_1"),
+    (pier_off_the_ground, "arch_1.arch_rests", "arch_1"),
+    (span_pressed_down, "arch_1.arch_opening", "arch_1"),
+    (rubble_in_the_passage, "arch_1.arch_opening", "arch_1"),
+    (span_behind_the_piers, "arch_1.arch_rests", "arch_1"),
+    (trilithon, "arch_1.lean", "arch_1"),
+    (trilithon, "arch_1.arch_opening_shape", "arch_1"),
+    (trilithon, "arch_1.arch_sides_differ", "arch_1"),
+    (trilithon, "arch_1.arch_top_broken", "arch_1"),
     (tapered_block, "block_2.block_square", "block_2"),
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),

@@ -46,6 +46,9 @@ expect 0 "L1 mutation tests: slab_1" l1 slab_1
 # A pebble (source/pebble): made too tall for its width, and cut into a block with one big steep face.
 uses pebble_2 validate paint
 expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
+# A boulder (source/boulder): drawn in to a trunk on a spread foot, notched into roots, and stretched into a column.
+uses boulder_2 validate paint
+expect 0 "L1 mutation tests: boulder_2" l1 boulder_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
@@ -60,6 +63,10 @@ expect 0 "L1 mutation tests: block_2" l1 block_2
 # A table rock (source/table_rock): its cap and neck broken one way at a time.
 uses table_rock_1 validate paint
 expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
+
+# An arch (source/arch): its span, a pier and its rubble moved one way at a time.
+uses arch_1 validate paint
+expect 0 "L1 mutation tests: arch_1" l1 arch_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -333,6 +340,12 @@ expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at
 expect_id "spec.painted_joins"       "L0 catches overlapping pieces with no crevice shadow to hide their joins" lint_slab 'del s["painted_shading"]["crevice_shadow"], s["painted_shading"]["crevice_width_m"]'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+# L0, a boulder (source/boulder): one mass, each limit a share below 1.
+uses boulder_2 lint_spec
+expect 0 "L0 passes a boulder variant's spec" lint_boulder 'pass'
+expect_id "spec.mass"                "L0 catches a boulder allowed to fill none of its hull" lint_boulder 's["mass"]["min_hull_share"] = 0.0'
+expect_id "spec.mass"                "L0 catches a boulder with no limit on its walls" lint_boulder 'del s["mass"]["max_steep_share"]'
+expect_id "brief.numbers_match_spec" "L0 catches a boulder's spec without the family's limits on its mass" lint_boulder 'del s["mass"]'
 # L0, a pebble (source/pebble): low and rounded, each a share below 1.
 uses pebble_2 lint_spec
 expect 0 "L0 passes a pebble variant's spec" lint_pebble 'pass'
@@ -387,3 +400,15 @@ expect_id "spec.table"               "L0 catches necks allowed to fill the outli
 expect_id "spec.table"               "L0 catches a table block with a key missing" lint_table 'del s["table"]["min_overhang_m"]'
 expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
 expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'
+
+# L0, arches: arch_1's spec with one thing wrong in what it asks of its opening and its span (`arch`).
+uses arch_1 lint_spec
+expect 0 "L0 passes an arch variant's spec" lint_arch 'pass'
+expect_id "spec.arch"                "L0 catches an opening wider than the arch's own bounds" lint_arch 's["arch"]["min_opening_m"] = 7.0'
+expect_id "spec.arch"                "L0 catches an opening taller than the arch's own bounds" lint_arch 's["arch"]["min_clear_m"] = 5.0'
+expect_id "spec.arch"                "L0 catches an arch block with a key missing" lint_arch 'del s["arch"]["min_bearing_m2"]'
+expect_id "spec.arch"                "L0 catches a kind of span the generator does not know" lint_arch 's["arch"]["span"] = "vault"'
+expect_id "spec.arch"                "L0 catches piers and a span asked of one closed skin" lint_arch 'del s["overlap"]'
+expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
+expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
+expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
