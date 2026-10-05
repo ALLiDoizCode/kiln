@@ -35,6 +35,9 @@ expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
+# A pebble (source/pebble): made too tall for its width, and cut into a block with one big steep face.
+uses pebble_2 validate paint
+expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
@@ -270,6 +273,12 @@ expect_id "spec.top"                 "L0 catches a level share above the whole v
 expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+# L0, a pebble (source/pebble): low and rounded, each a share below 1.
+uses pebble_2 lint_spec
+expect 0 "L0 passes a pebble variant's spec" lint_pebble 'pass'
+expect_id "spec.low"                 "L0 catches a pebble allowed to be as tall as it is wide" lint_pebble 's["low"]["max_height_share"] = 1.0'
+expect_id "spec.rounded"             "L0 catches a steep plane allowed the whole surface" lint_pebble 's["rounded"]["max_steep_plane_share"] = 1.0'
+expect_id "brief.numbers_match_spec" "L0 catches a pebble's spec without the family's limit on height" lint_pebble 'del s["low"]'
 uses crag_1 lint_spec
 expect 0 "L0 passes a crag variant's spec"   lint_crag 'pass'
 expect_id "spec.cluster"             "L0 catches a height step that lets prisms of one height through" lint_crag 's["cluster"]["max_height_step"] = 1.0'

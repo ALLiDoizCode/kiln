@@ -1,8 +1,9 @@
-"""Pebble: a small, low, rounded stone of a few broad planes, one closed piece.
+"""Pebble: a small, low, rounded stone, a flat plate with a broad rim, one closed piece.
 
-docs/style/rock-shapes.md, Pebble. The stone is cut from a block by about a dozen planes that
-touch a tipped ellipsoid, no two facing close together, and by the ground, below its widest
-part (ADR 9: deliberate planes, no noise). It is softened on its own
+docs/style/rock-shapes.md, Pebble. The stone is made of planes, in three rings from the ground
+up (ADR 9: deliberate planes, no noise; tools/stone.py, `prism`): six to eight short sides that
+lean in, round an uneven outline; over each a broad plane of the rim; and one cap that tips a
+little. It is softened on its own
 (tools/stone.py) and stays one closed skin: a pebble is one stone, so it is not built under
 the pieces rule of ADR 13 (source/pebble/brief.md, Decisions).
 
@@ -18,54 +19,42 @@ import random
 
 import stone
 import validate
-from mathutils import Matrix, Vector
+from mathutils import Vector
 from pipeline import conventions
 
 PEBBLES = 120  # how many whole pebbles one seed may draw before it is given up
 SOFT = (0.012, 0.03)  # the least and most a soft edge eats into each plane beside it, as a share of the stone's width
-# The planes, in rings from the ground up: how many, and how far up each faces (the upward part of
-# its direction on the ellipsoid). A side faces a little down or a little up, never level: facing
-# down it is undercut and meets the ground leaning out; level it would stand upright.
-RINGS = (
-    dict(name="sides", count=(5, 6), up=(0.14, 0.3), either_way=True),
-    dict(name="shoulders", count=(3, 5), up=(0.45, 0.75)),
-    dict(name="cap", count=(1, 1), up=(0.95, 1.0)),
-)
-RING_JITTER = 0.3  # how far a plane's direction strays from an even spacing round its ring, as a share of that spacing
-APART = 0.5  # no two planes face closer together than this, radians: the planes are few and broad
-REACH = (0.86, 1.0)  # how far out each plane stands, as a share of the ellipsoid's radius that way
-SUNK = (0.2, 0.32)  # how far above the ground the ellipsoid's middle is, as a share of the stone's height: it is cut where it still widens
-TIP = (6.0, 14.0)  # how far the ellipsoid is tipped from level, degrees: the summit goes off the middle
+SIDES = (6, 8)  # how many sides go round the stone: enough that none is a face of its own
+SIDE_JITTER = 0.25  # how far a side's direction strays from an even spacing round the stone, as a share of that spacing
+SIDE_REACH = (0.85, 1.0)  # where a side meets the ground, as a share of the footprint's radius that way: the outline is uneven
+SIDE_SLOPE = (55.0, 70.0)  # how far from level a side stands, degrees: it leans in, and is never upright
+RIM_DROP = (0.45, 0.6)  # how far below the cap the sides stop and the rim begins, as a share of the height
+RIM_SLOPE = (24.0, 36.0)  # how far from level the rim over each side is, degrees: broad, and lit as the top is
+CAP_DROP = (0.2, 0.35)  # how far the cap falls from one side of the stone to the other, as a share of the height: the summit goes off the middle
 
 
 def draw(rng, lo, hi):
-    """One raw pebble filling the bounds lo..hi, or None when its planes would not do."""
+    """One raw pebble filling the bounds lo..hi (stone.prism), or None when its planes do not make a convex plate."""
     half, height = (hi - lo) / 2, hi.z - lo.z
-    middle = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z + height * rng.uniform(*SUNK)))
-    radii = Vector((half.x, half.y, hi.z - middle.z))
-    spin = Matrix.Rotation(rng.uniform(0, math.tau), 3, "Z") @ Matrix.Rotation(math.radians(rng.uniform(*TIP)), 3, "Y")
-    directions = []
-    for ring in RINGS:
-        count = rng.randint(*ring["count"])
-        turn = rng.uniform(0, math.tau)
-        for i in range(count):
-            for _ in range(40):
-                angle = turn + (i + rng.uniform(-RING_JITTER, RING_JITTER)) * math.tau / count
-                z = rng.uniform(*ring["up"]) * (rng.choice((-1, 1)) if ring.get("either_way") else 1)
-                direction = Vector((math.sqrt(1 - z * z) * math.cos(angle), math.sqrt(1 - z * z) * math.sin(angle), z))
-                if all(direction.angle(other) > APART for other in directions):
-                    directions.append(direction)
-                    break
-            else:
-                return None
-    # Each plane touches the ellipsoid, or stands a little inside it, where its direction leaves it.
-    planes = [(-stone.Z, -lo.z)]
-    for direction in directions:
-        direction = spin @ direction
-        touch = middle + Vector((direction.x * radii.x, direction.y * radii.y, direction.z * radii.z)) * rng.uniform(*REACH)
-        normal = Vector((direction.x / radii.x, direction.y / radii.y, direction.z / radii.z)).normalized()
-        planes.append((normal, normal.dot(touch)))
-    bm = stone.solid(planes)
+    middle = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
+    count = rng.randint(*SIDES)
+    turn = rng.uniform(0, math.tau)
+    drop = height * rng.uniform(*RIM_DROP)
+    walls, insets = [], []
+    for i in range(count):
+        angle = turn + (i + rng.uniform(-SIDE_JITTER, SIDE_JITTER)) * math.tau / count
+        slope = math.radians(rng.uniform(*SIDE_SLOPE))
+        # A side faces out as the footprint's ellipse does there, and meets the ground a little inside it.
+        out = Vector((math.cos(angle) / half.x, math.sin(angle) / half.y, 0)).normalized()
+        normal = out * math.sin(slope) + stone.Z * math.cos(slope)
+        foot = middle + Vector((half.x * math.cos(angle), half.y * math.sin(angle), 0)) * rng.uniform(*SIDE_REACH)
+        walls.append((normal, normal.dot(foot)))
+        # The rim runs in from the side's top edge to the cap: its slope gives how far in it meets the cap.
+        insets.append(drop / math.tan(math.radians(rng.uniform(*RIM_SLOPE))) - drop / math.tan(slope))
+    # The cap: nearly level, falling CAP_DROP of the height across the stone's width.
+    tip = math.atan(height * rng.uniform(*CAP_DROP) / (2 * half.x))
+    cap = stone.leaning(rng.uniform(0, math.tau), math.pi / 2 - tip)
+    bm = stone.prism(walls, (cap, cap.dot(middle + stone.Z * height)), drop, insets, floor=lo.z)
     if bm is None:
         return None
     stone.fit([bm], lo, hi)
@@ -87,7 +76,7 @@ def shape(spec, strict=True):
     for take in range(1, PEBBLES + 1):
         bm = draw(rng, lo / shrink, hi / shrink)
         if bm is None:
-            refused.append(f"pebble {take}: planes that face too close together, or leave one out")
+            refused.append(f"pebble {take}: sides, rim and cap that do not make a convex plate")
             continue
         pieces = [bm]
         done = stone.finish(pieces, metre, SOFT)
@@ -96,7 +85,7 @@ def shape(spec, strict=True):
             for vert in bm.verts:
                 vert.co *= shrink
             bm.normal_update()
-            problems = stone.unmet(name, pieces, spec, conv, extra=(("fullness", validate.check_fullness),)) if strict else []
+            problems = stone.unmet(name, pieces, spec, conv, extra=(("fullness", validate.check_fullness), ("low", validate.check_low), ("rounded", validate.check_rounded))) if strict else []
         if not problems:
             print(f"{name} seed {spec['seed']}: pebble {take} of up to {PEBBLES} meets the spec")
             return pieces, done[1]
