@@ -268,6 +268,10 @@ uses pebble_1 smoke
 expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
 uses rock smoke
 expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+# A plant is held to the same rule as a stone: blades and stems that lie apart have no inside corner, the painter's shadow
+# paints nothing on them (no texel of five plants differs by 2 levels with it and without), and a spec that asks it is refused.
+uses grass_tuft_1 smoke
+expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a plant with no inside corner" smoke assets/models/grass_tuft_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.5, crevice_width_m=0.005)' assets/models/grass_tuft_1.manifest.json)"
 # A bush's stems are tubes that bend: convex all round, with no fold a shadow could lie in. On a 256 px texture the load
 # test found 12 samples of dome_bush_2 "in inside corners", too few to measure, and on a 512 px one 51, lit as the exposed
 # edges they are, and failed it. What a surface has does not depend on how finely it is sampled.
