@@ -1,17 +1,17 @@
 {
-  "asset": "tree_2",
+  "asset": "tree_old_1",
   "family": "tree",
-  "objects": ["tree_2"],
-  "seed": 11,
+  "objects": ["tree_old_1"],
+  "seed": 4,
   "species": "broadleaf",
-  "growth_stage": 1.0,
+  "growth_stage": 1.25,
   "season": "summer",
-  "bounds_m": { "min": [-2.8, -2.6, 0.0], "max": [2.7, 2.8, 6.2] },
+  "bounds_m": { "min": [-3.2, -3.1, 0.0], "max": [3.2, 3.1, 8.8] },
   "bounds_tolerance_m": 0.001,
-  "max_triangles": 4000,
+  "max_triangles": 6000,
   "materials": { "m_tree_bark": "#7a5a44", "m_tree_leaf": "#a8b846" },
   "painted_shading": {
-    "texture_px": 1024,
+    "texture_px": 2048,
     "base_tint": "#b9a8a0",
     "top_tint": "#ffffff",
     "edge_light": 0.2,
@@ -31,7 +31,7 @@
     "min_flare": 2.0,
     "min_roots": 3,
     "lean_m": [0.15, 0.8],
-    "fork_m": [2.0, 3.5],
+    "fork_m": [2.5, 4.5],
     "max_taper": 0.9,
     "min_branches": 3,
     "max_branch_taper": 0.8,
@@ -69,6 +69,5 @@
   "soft_edges": true,
   "watertight": true,
   "open_materials": ["m_tree_leaf"],
-  "attributes": ["POSITION", "NORMAL", "TEXCOORD_0"],
-  "variants": { "siblings": ["tree_1", "tree_3"], "min_difference": 0.3 }
+  "attributes": ["POSITION", "NORMAL", "TEXCOORD_0"]
 }

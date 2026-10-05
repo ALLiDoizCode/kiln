@@ -21,3 +21,4 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `bounds_m.min` | `[-2.4, -2.3, 0.0]` | Real-world size |
 | `bounds_m.max` | `[2.5, 2.4, 7.0]` | Real-world size |
 | `variants.siblings` | `["tree_2", "tree_3"]` | The other two variants |
+| `variants.min_difference` | `0.3` | Family brief, Decisions: how far two seeds of one growth stage must differ in outline |

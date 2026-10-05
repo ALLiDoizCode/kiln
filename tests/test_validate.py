@@ -301,20 +301,19 @@ def textured(spec):
     tree.links.new(image.outputs["Color"], tree.nodes["Principled BSDF"].inputs["Base Color"])
 
 
-def regrow(spec, **constants):
-    """Build the tree again with some of its generator's constants changed."""
+def regrow(spec, **changes):
+    """Build the tree again with some of its species recipe changed: `trunk__sides=[14, 14]` is `sides` in the recipe's `[trunk]`."""
     import generator
 
-    saved = {key: getattr(generator, key) for key in constants}
+    recipe = generator.recipe_of(spec)
+    for key, value in changes.items():
+        table, name = key.split("__")
+        if name not in recipe[table]:
+            raise KeyError(f"the recipe's [{table}] has no {name}")
+        recipe[table][name] = value
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    try:
-        for key, value in constants.items():
-            setattr(generator, key, value)
-        # The first tree that fills the bounds, whatever it measures: the generator would refuse these.
-        generator.build_tree(spec, strict=False)
-    finally:
-        for key, value in saved.items():
-            setattr(generator, key, value)
+    # The first tree that fills the bounds, whatever it measures: the generator would refuse these.
+    generator.build_tree(spec, strict=False, recipe=recipe)
 
 
 def leaf_slot(spec):
@@ -341,17 +340,17 @@ def bark_hole(spec):
 
 
 def round_trunk(spec):
-    regrow(spec, TRUNK_SIDES=(14, 14))
+    regrow(spec, trunk__sides=[14, 14])
 
 
 def pole_trunk(spec):
     """A trunk as thick below the fork as at breast height."""
-    regrow(spec, TRUNK_TOP=1.0)
+    regrow(spec, trunk__top=1.0)
 
 
 def stout_limbs(spec):
     """Limbs and twigs that end as thick as they begin."""
-    regrow(spec, TIP_RADIUS=0.11, TWIG_RADIUS=0.11)
+    regrow(spec, trunk__tip_radius=0.11, branches__twig_radius=0.11)
 
 
 def no_branches(spec):
@@ -373,11 +372,11 @@ def no_branches(spec):
 
 
 def no_roots(spec):
-    regrow(spec, ROOT_REACH=(1.0, 1.0))
+    regrow(spec, trunk__root_reach=[1.0, 1.0])
 
 
 def upright_trunk(spec):
-    regrow(spec, LEAN=(0.0, 0.0), BEND=(0.0, 0.0))
+    regrow(spec, trunk__lean=[0.0, 0.0], trunk__bend=[0.0, 0.0])
 
 
 def solid_ball(spec):
@@ -476,17 +475,17 @@ def core_inside_out(spec):
 
 def even_lobes(spec):
     """Every lobe of a pad the same size."""
-    regrow(spec, LOBE_MAIN=(0.56, 0.56), LOBE_SIDE=(0.56, 0.56), LOBE_TALL=(0.8, 0.8))
+    regrow(spec, lobes__main=[0.56, 0.56], lobes__side=[0.56, 0.56], lobes__tall=[0.8, 0.8])
 
 
 def one_lobe_pads(spec):
     """Every pad a single round cap, as the first generator drew them."""
-    regrow(spec, LOBE_COUNTS=((1, 1.0),))
+    regrow(spec, lobes__counts=[[1, 1.0]])
 
 
 def bare_cores(spec):
     """A third of the pieces: the cores are what is seen."""
-    regrow(spec, LEAF_SPACING=0.5, SKIRT_SPACING=1.2, UNDER_SPACING=1.5)
+    regrow(spec, leaf__spacing=0.5, skirt__spacing=1.2, skirt__under_spacing=1.5)
 
 
 def ball_pads(spec):
@@ -508,7 +507,7 @@ def ball_pads(spec):
 
 def even_pads(spec):
     """Every pad the same width."""
-    regrow(spec, PAD_LARGEST=(1.2, 1.2), PAD_SMALLEST=(1.2, 1.2))
+    regrow(spec, pads__largest=[1.2, 1.2], pads__smallest=[1.2, 1.2])
 
 
 def identical_variants(spec):

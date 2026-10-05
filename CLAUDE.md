@@ -18,6 +18,7 @@ Assets for Bevy, built as code by headless Blender and gated by scripts. Read `C
 - An asset is `source/<asset>/{brief.md, spec.json, build.py}`. `out/` and `assets/models/*.glb` are outputs; never edit them by hand.
 - A build script gives each material one flat colour. Painted shading is asked for in the spec (`painted_shading`) and added by `tools/paint.py` during the build (ADR 10); a build script never unwraps or bakes.
 - Expected values (bounds, budgets) go in `spec.json` from the brief, never copied from what the build produced.
+- A tree's spec names a `species` (a recipe in `source/tree/species/`), a `growth_stage` and a `season`; a season of another asset names it as `palette_of` and must build the same mesh. Gate the base before its seasons.
 - Variants drawn by one generator are separate assets (`source/tree_1`, ...) whose specs name a `family`: the folder holding the generator and the brief they share (`source/tree`). A family folder is not an asset and has no spec.
 - Every asset is for the game described in `docs/adr/0007-game-target-and-metrics.md`; questions about how the game works belong in the `pit` repo (ADR 8).
 - A gate passing means the asset is well-formed, not that it is good. After the gates pass, read `source/<asset>/review/<phase>/sheet.png` and describe what it shows as measurements before calling anything done.

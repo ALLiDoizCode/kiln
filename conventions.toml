@@ -128,6 +128,13 @@ hole_m = 0.15               # gaps in a pad's outline up to this wide are holes 
 rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
 
+[palette]
+# Variants that are a change of palette on their base asset's mesh (ADR 11, ADR 13).
+seasons = ["summer", "autumn", "winter"]
+# What a palette variant's spec may change from its base's, besides its materials' colours
+# (tools/lint_spec.py); everything else shapes the mesh or its UVs and must be the base's.
+keys = ["foliage.under_tint", "foliage.top_tint", "foliage.core_tint", "foliage.variation", "painted_shading.base_tint", "painted_shading.top_tint"]
+
 [skeleton]
 # How a tree's bark is measured: level slices through it. The amounts wanted are in each spec.
 breast_height_m = 1.3       # where a trunk's girth and its sides are taken

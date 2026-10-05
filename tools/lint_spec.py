@@ -6,6 +6,7 @@ Usage: python tools/lint_spec.py <asset>
 import json
 import re
 import sys
+import tomllib
 
 from pipeline import ROOT, Asset, Checks, conventions, linear_rgb
 
@@ -294,7 +295,63 @@ if not checks.failed():
         siblings = variants["siblings"]
         ok = siblings and asset.name not in siblings and all(isinstance(s, str) and (ROOT / "source" / s / "spec.json").is_file() for s in siblings) and 0 < variants["min_difference"] < 1
         checks.check("spec.variants_amounts", ok, "siblings are other assets with a spec.json; min_difference in 0..1")
-    family = spec.get("family")
+    # A tree is drawn from a species recipe at a growth stage (ADR 13): source/<family>/species/<species>.toml.
+    family, species = spec.get("family"), spec.get("species")
+    recipe = None
+    if species is not None or skeleton:
+        path = ROOT / "source" / str(family) / "species" / f"{species}.toml"
+        if isinstance(species, str) and isinstance(family, str) and path.is_file():
+            with open(path, "rb") as f:
+                recipe = tomllib.load(f)
+        checks.check("spec.species", recipe is not None, "an asset with a skeleton names its `family` and a `species` with a recipe at source/<family>/species/<species>.toml")
+    # A season is one of the year's (conventions.toml), and every asset with foliage has one.
+    seasons = conv["palette"]["seasons"]
+    if "season" in spec or leaves:
+        checks.check("spec.season", spec.get("season") in seasons, f"an asset with foliage names its season, one of {seasons}")
+    # A palette variant is its base asset drawn again with other colours (ADR 11, ADR 13): the two
+    # specs agree on everything that shapes the mesh, and differ in what the palette is made from.
+    if "palette_of" in spec:
+        base_path = ROOT / "source" / str(spec["palette_of"]) / "spec.json"
+        ok = isinstance(spec["palette_of"], str) and spec["palette_of"] != asset.name and base_path.is_file()
+        shape, colours = [], []
+        if ok:
+            base = json.loads(base_path.read_text())
+
+            def values(of):
+                found = {}
+
+                def walk(value, path=""):
+                    if isinstance(value, dict):
+                        for key, child in value.items():
+                            walk(child, f"{path}.{key}" if path else key)
+                    else:
+                        found[path] = value
+
+                walk(of)
+                return found
+
+            mine, theirs = values(spec), values(base)
+            free = set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]}
+            # The asset's own name and season, and the comparison with sibling seeds, which a season does not repeat.
+            apart = {"asset", "objects", "palette_of", "season"} | {key for key in set(mine) | set(theirs) if key.startswith("variants.")}
+            shape = sorted(key for key in (set(mine) | set(theirs)) - free - apart if mine.get(key) != theirs.get(key))
+            colours = sorted(key for key in free if mine.get(key) != theirs.get(key))
+        checks.check(
+            "spec.palette_of",
+            ok and not shape and colours,
+            f"names another asset with a spec.json, whose spec this one matches in everything but the palette ({sorted(conv['palette']['keys'])} and the material colours), and differs from there; "
+            f"differs outside the palette in {shape}, and in the palette in {colours}",
+        )
+    stage = spec.get("growth_stage")
+    if stage is not None or recipe is not None:
+        growth = (recipe or {}).get("growth", {})
+        stages = growth.get("stage", [])
+        ok = recipe is not None and type(stage) is float and bool(stages) and stages[0] <= stage <= stages[-1]
+        checks.check("spec.growth_stage", ok, f"with a species: a number from {stages[0] if stages else '?'} to {stages[-1] if stages else '?'}, the stages its recipe draws (the tree's height over a mature tree's)")
+        if ok:
+            height = spec["bounds_m"]["max"][2] - spec["bounds_m"]["min"][2]
+            low, high = (round(stage * h, 3) for h in growth["mature_height_m"])
+            checks.check("spec.growth_height", low <= height <= high, f"the bounds are {height:g} m tall; at growth stage {stage:g} the recipe's mature height {growth['mature_height_m']} gives {low:g} to {high:g} m")
     checks.check("spec.family", family is None or (isinstance(family, str) and (ROOT / "source" / family / "brief.md").is_file()), "optional; names the folder under source/ whose brief.md this asset is a variant of")
     checks.check(
         "spec.painted_needs_uvs",

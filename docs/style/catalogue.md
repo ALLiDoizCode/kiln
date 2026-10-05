@@ -42,7 +42,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Broadleaf | Three mature variants built (2,800 to 3,550 triangles). Not approved. No growth stages yet. |
+| Broadleaf | Three mature variants built (2,800 to 3,550 triangles), one young tree (1,850) and one old (5,340); no sapling yet. One mature tree in autumn and in winter (snow on the foliage, as palettes); no bare winter tree, no snow on bark. Species is a recipe and growth stage a number in the spec. Not approved. |
 | Umbrella tree | Not started |
 | Conifer | Not started |
 | Tall pine | Not started |
