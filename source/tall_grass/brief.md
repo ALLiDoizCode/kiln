@@ -54,7 +54,7 @@ One object and one mesh per variant, with two materials. The straw material is t
 
 ## Budget
 
-At most 700 triangles and two materials, on one 512 px texture (at 256 px the gaps round the seed heads' small islands leave 0.39 of the texture used, under the 0.4 the conventions ask). A blade is 7 triangles (three quads and a tip): it bends twice. 72 to 84 blades are 504 to 588; a seed stalk is 5 and its head 8; the rootstock is 24. The benchmark's tall grass is 326 and 622 triangles, as cards. Several times a grass tuft's budget, for a plant that is larger, nearer the eye and rarer.
+At most 700 triangles and two materials, on one 256 px texture. It was 512 px while the painter packed islands as boxes: at 256 px the gaps round the seed heads' small islands then left 0.39 of the texture used, under the 0.4 the conventions ask; packed by their outlines (`pack` in `tools/paint.py`) they use 0.53 to 0.55 of it, at 398 to 814 texels per metre on the sparsest triangle. A blade is 7 triangles (three quads and a tip): it bends twice. 72 to 84 blades are 504 to 588; a seed stalk is 5 and its head 8; the rootstock is 24. The benchmark's tall grass is 326 and 622 triangles, as cards. Several times a grass tuft's budget, for a plant that is larger, nearer the eye and rarer.
 
 ## References
 
@@ -78,7 +78,7 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `max_triangles` | `700` | Budget |
 | `materials.m_tall_grass_straw` | `"#b09a5e"` | Style and colour: straw |
 | `materials.m_tall_grass_leaf` | `"#9cb64e"` | Style and colour: leaf, the colour of the tallest blade |
-| `painted_shading.texture_px` | `512` | Budget |
+| `painted_shading.texture_px` | `256` | Budget |
 | `painted_shading.base_tint` | `"#8a8278"` | Style and colour: the rootstock dark toward the ground |
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | As the grass tuft |

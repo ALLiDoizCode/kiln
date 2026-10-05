@@ -25,7 +25,7 @@
     "m_tall_grass_leaf": "#9cb64e"
   },
   "painted_shading": {
-    "texture_px": 512,
+    "texture_px": 256,
     "base_tint": "#8a8278",
     "top_tint": "#ffffff",
     "edge_light": 0.2,
