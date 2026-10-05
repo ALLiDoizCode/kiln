@@ -28,6 +28,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 cases_file=tests/cases.sh
+unset KILN_BAKE  # fixtures are baked on the CPU, as the gate bakes: only that bake is the same every time (tools/paint.py)
 
 usage() { sed -n '2,/^set /p' "$0" | sed '$d; s/^# \{0,1\}//'; }
 die() { echo "tests/run.sh: $*" >&2; exit 2; }
@@ -92,6 +93,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/validate.py|tools/skeleton.py|tests/test_validate.py|tests/fixtures/*) echo validate ;;
     tools/paint.py|tools/foliage.py) echo paint ;;
     tests/paint_mutations.py) echo rock_mutations ;;
+    tests/bake_check.py) echo bake_check ;;
     tests/tree_mutations.py) echo tree_mutations ;;
     tests/slab_mutations.py) echo slab_mutations ;;
     tests/pebble_mutations.py) echo pebble_mutations ;;
