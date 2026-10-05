@@ -18,7 +18,7 @@ from pathlib import Path
 
 import bmesh
 import bpy
-from mathutils import Vector, noise
+from mathutils import Matrix, Vector, noise
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
@@ -515,6 +515,101 @@ def identical_variants(spec):
     spec["variants"]["siblings"] = ["tree_1"]
 
 
+def each_blade(spec, change):
+    """Apply change(blade's vertices, its foot, its tip, its faces, bm) to every blade of the blade plant."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+    ground = Vector((0, 0, spec["bounds_m"]["min"][2]))
+
+    def run(bm):
+        for piece in foliage.pieces_of(bm, slot):
+            verts = list({v for face in piece for v in face.verts})
+            inside = set(piece)
+            foot = min(verts, key=lambda v: (v.co - ground).length)
+
+            def corner(v):
+                rim = [e for e in v.link_edges if sum(1 for f in e.link_faces if f in inside) == 1]
+                return (rim[0].other_vert(v).co - v.co).angle(rim[1].other_vert(v).co - v.co) if len(rim) == 2 else math.pi
+
+            # The tip is the sharpest corner of the blade's outline.
+            tip = min((v for v in verts if v is not foot), key=corner)
+            change(verts, foot.co.copy(), tip, piece, bm)
+
+    edit(run, name)
+
+
+def stubby_blades(spec):
+    """Every blade shrunk to a quarter of its length, about its foot."""
+    def shrink(verts, foot, tip, piece, bm):
+        for v in verts:
+            v.co = foot + (v.co - foot) * 0.25
+
+    each_blade(spec, shrink)
+
+
+def wide_blades(spec):
+    """Every blade three times as wide: pads, not blades."""
+    def widen(verts, foot, tip, piece, bm):
+        across = (tip.co - foot).cross(Vector((0, 0, 1))).normalized()
+        for v in verts:
+            v.co += across * (v.co - foot).dot(across) * 2
+
+    each_blade(spec, widen)
+
+
+def blunt_blades(spec):
+    """Every blade cut off square before its tip."""
+    def cut(verts, foot, tip, piece, bm):
+        bmesh.ops.delete(bm, geom=[tip], context="VERTS")
+
+    each_blade(spec, cut)
+
+
+def floating_blades(spec):
+    """Every blade lifted 0.3 m off the crown."""
+    def lift(verts, foot, tip, piece, bm):
+        for v in verts:
+            v.co.z += 0.3
+
+    each_blade(spec, lift)
+
+
+def one_sided_blades(spec):
+    """Every blade swung round to one side of the plant: a fan, not a rosette."""
+    def swing(verts, foot, tip, piece, bm):
+        way = tip.co - foot
+        turn = Matrix.Rotation(-math.atan2(way.y, way.x) * 0.75, 3, "Z")
+        for v in verts:
+            v.co = turn @ v.co
+
+    each_blade(spec, swing)
+
+
+def upright_blades(spec):
+    """Every blade stood straight up on its foot."""
+    def stand(verts, foot, tip, piece, bm):
+        turn = (tip.co - foot).rotation_difference(Vector((0, 0, 1))).to_matrix()
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_blade(spec, stand)
+
+
+def straight_blades(spec):
+    """The plant drawn again with every blade a straight strip from its foot to its tip: sticks, with no arch."""
+    from plant_parts import family_generator
+
+    generator = family_generator("blade_plant")
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    saved, generator.ARCH = generator.ARCH, 0.0
+    try:
+        generator.build_plant(spec)
+    finally:
+        generator.ARCH = saved
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -585,6 +680,13 @@ CASES = [
     (ball_pads, "tree_1.pads_wide", "tree_1"),
     (even_pads, "tree_1.pads_differ", "tree_1"),
     (round_leaves, "tree_1.under_rim", "tree_1"),
+    (stubby_blades, "blade_plant_1.blade_size", "blade_plant_1"),
+    (wide_blades, "blade_plant_1.blade_shape", "blade_plant_1"),
+    (blunt_blades, "blade_plant_1.blade_shape", "blade_plant_1"),
+    (floating_blades, "blade_plant_1.blades_rooted", "blade_plant_1"),
+    (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
+    (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
+    (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
 ]
 
 

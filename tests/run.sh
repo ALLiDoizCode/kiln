@@ -103,6 +103,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/image_lint.py) echo image_lint ;;
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
+    source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
     # The suite itself, what every script imports, the pinned tools and the standards they all read.
@@ -381,6 +382,7 @@ lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the 
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
+lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

@@ -91,10 +91,11 @@ if "foliage" in spec:
         "top_tint": [round(c, 6) for c in linear_rgb(want["top_tint"])],
         **{key: rules["foliage"][key] for key in ("swatch_px", "max_palette_error", "min_neighbours_differ")},
         "min_effect_share": rules["painted_shading"]["min_effect_share"],
-        # The cores under the leaf pieces (ADR 9 as amended): their colour, and how many a pad may have.
-        "core_tint": [round(c, 6) for c in linear_rgb(want["core_tint"])],
-        "lobes": want["lobes"],
     }
+    if "core_tint" in want:
+        # The cores under the leaf pieces (ADR 9 as amended): their colour, and how many a pad may have.
+        # Foliage of blades has none, and the load test then asks for none.
+        manifest["foliage"].update({"core_tint": [round(c, 6) for c in linear_rgb(want["core_tint"])], "lobes": want["lobes"]})
 if "painted_shading" in spec:
     # What the texture must do, from the spec, and how strictly, from the conventions.
     want, rules = spec["painted_shading"], conventions()["painted_shading"]

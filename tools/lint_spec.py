@@ -106,6 +106,11 @@ FOLIAGE = {
     "max_seen_into": float,
     "min_rim_points_per_m": float,
 }
+# What foliage of blades shares with foliage of leaf pieces: the material, how pieces are found, and the palette.
+# A spec with a `blades` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
+FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
+# Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
+BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
 HEX = "#[0-9a-f]{6}"
@@ -247,8 +252,19 @@ if not checks.failed():
             0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1,
             "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it",
         )
-    leaves = block("foliage", FOLIAGE)
-    if leaves:
+    bladed = "blades" in spec
+    blades = block("blades", BLADES)
+    if blades:
+        checks.check(
+            "spec.blades_amounts",
+            span(blades["width_share"]) and blades["width_share"][1] <= 1 and blades["root_m"] > 0 and 0 < blades["max_gap_deg"] <= 360
+            and span(blades["lean_deg"]) and blades["lean_deg"][1] <= 180 and 0 <= blades["min_arch"] < 1,
+            "width_share and lean_deg as [least, most], a width at most the length and a lean at most 180 degrees; root_m above 0; max_gap_deg in 0..360; min_arch in 0..1",
+        )
+    if bladed:
+        checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades are foliage: the spec needs a foliage block for their material, size and palette")
+    leaves = block("foliage", {key: FOLIAGE[key] for key in FOLIAGE_SHARED} if bladed else FOLIAGE)
+    if leaves and not bladed:
         lobes = leaves["lobes"]
         checks.check(
             "spec.foliage_core",
@@ -268,12 +284,18 @@ if not checks.failed():
         ok = (
             leaves["material"] in open_materials
             and leaves["pad_gap_m"] > 0
-            and 1 <= leaves["min_pads"] <= leaves["max_pads"]
+            and leaves["min_pad_pieces"] >= 1
             and span(leaves["piece_m"])
-            and span(leaves["sky_share"])
-            and leaves["sky_share"][1] < 1
-            and 0 < leaves["min_sky_views"] <= len(conv["foliage"]["views"])
-            and all(0 <= leaves[key] <= 1 for key in ("min_pointing_out", "min_pointing_down"))
+            and (
+                bladed
+                or (
+                    1 <= leaves["min_pads"] <= leaves["max_pads"]
+                    and span(leaves["sky_share"])
+                    and leaves["sky_share"][1] < 1
+                    and 0 < leaves["min_sky_views"] <= len(conv["foliage"]["views"])
+                    and all(0 <= leaves[key] <= 1 for key in ("min_pointing_out", "min_pointing_down"))
+                )
+            )
             and all(re.fullmatch(HEX, leaves[key]) for key in ("under_tint", "top_tint"))
             and leaves["shades"] >= 2
             and leaves["tones"] >= 2

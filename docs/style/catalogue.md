@@ -58,9 +58,9 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Dome bush | Not started |
-| Blade plant (ferns, understorey) | Not started |
-| Grass tuft, tall grass, reeds | Not started |
+| Dome bush | Three variants built in three sizes, 0.75 to 1.5 m tall (664 to 1,432 triangles). Not approved. No flowers, seasons or colours yet. |
+| Blade plant (ferns, understorey) | Three variants built in three sizes, 0.45 to 1.0 m tall (164 to 248 triangles): whole-leaf rosettes. Not approved. No fronds cut into leaflets, seasons or colours yet. |
+| Grass tuft, tall grass, reeds | Grass tuft: three variants built in three sizes, 0.25 to 0.9 m tall (104 to 124 triangles). Not approved. Tall dry grass and reeds not started. |
 | Leaf mat | Not started |
 | Lily pad and flowers | Not started |
 | Flower scatter | Not started |
