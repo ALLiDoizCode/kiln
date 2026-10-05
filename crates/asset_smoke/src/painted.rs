@@ -610,12 +610,18 @@ pub fn check(
             }
         }
         if want.growth_edges > 0.0 {
-            let (count, cover) = average(&|s| s.zone == Zone::Edge && upright(s) && s.height > 0.8, &|s| s.growth);
+            let (mut count, mut cover) = average(&|s| s.zone == Zone::Edge && upright(s) && s.height > 0.8, &|s| s.growth);
+            let mut on = "the exposed edges of upright faces";
+            if count < MIN_SAMPLES {
+                // No upright edge clear of a join in the top fifth: the exposed edges there are, of any face growth does not settle on of itself.
+                (count, cover) = average(&|s| s.rim && s.zone != Zone::Crevice && !settles(s) && s.height > 0.8, &|s| s.growth);
+                on = "the exposed edges of faces that are not near level";
+            }
             measured.growth_edges = cover;
             let least = want.min_effect_share * want.growth_edges;
             if count < MIN_SAMPLES || cover < least {
                 fail(format!(
-                    "painted.growth_edges: growth covers {cover:.2} of the exposed edges of upright faces in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}",
+                    "painted.growth_edges: growth covers {cover:.2} of {on} in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}. A shape whose top fifth is all near level, where the growth on level faces lies, leaves growth_edges out of its spec",
                     want.growth_edges
                 ));
             }
