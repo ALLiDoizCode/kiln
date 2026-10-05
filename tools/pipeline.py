@@ -5,6 +5,7 @@ module level uses the standard library only.
 """
 
 import json
+import struct
 import sys
 import tomllib
 from pathlib import Path
@@ -71,6 +72,49 @@ def linear_rgb(srgb_hex):
     """An sRGB hex colour ("#5a3820") as the linear RGB triple Blender and glTF store."""
     channels = (int(srgb_hex[i : i + 2], 16) / 255 for i in (1, 3, 5))
     return tuple(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels)
+
+
+def share_textures(path):
+    """Rewrite a GLB so that materials reading one image through one sampler share one texture.
+
+    The exporter writes a texture per material even when they are the same
+    image, and Bevy loads every texture as an image of its own: two materials
+    on one painted texture (bark and leaf) would hold it in memory twice.
+    """
+    with open(path, "rb") as f:
+        header = f.read(12)
+        length, kind = struct.unpack("<I4s", f.read(8))
+        gltf = json.loads(f.read(length))
+        rest = f.read()
+    textures = gltf.get("textures", [])
+    first, kept, renumber = {}, [], {}
+    for index, texture in enumerate(textures):
+        key = json.dumps(texture, sort_keys=True)
+        if key not in first:
+            first[key] = len(kept)
+            kept.append(texture)
+        renumber[index] = first[key]
+    if len(kept) == len(textures):
+        return
+
+    def visit(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                # Every reference to a texture is a textureInfo: an object with an "index", under a key ending in "Texture".
+                if key.endswith("Texture") and isinstance(child, dict) and "index" in child:
+                    child["index"] = renumber[child["index"]]
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(gltf.get("materials", []))
+    gltf["textures"] = kept
+    chunk = json.dumps(gltf, separators=(",", ":")).encode()
+    chunk += b" " * (-len(chunk) % 4)
+    with open(path, "wb") as f:
+        f.write(header[:8] + struct.pack("<I", 12 + 8 + len(chunk) + len(rest)))
+        f.write(struct.pack("<I4s", len(chunk), kind) + chunk + rest)
 
 
 class Checks:

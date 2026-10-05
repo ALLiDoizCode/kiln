@@ -5,6 +5,7 @@ Usage: tools/bl tests/test_validate.py
 """
 
 import json
+import math
 import runpy
 import sys
 from pathlib import Path
@@ -226,6 +227,162 @@ def textured(spec):
     tree.links.new(image.outputs["Color"], tree.nodes["Principled BSDF"].inputs["Base Color"])
 
 
+def regrow(spec, **constants):
+    """Build the tree again with some of its generator's constants changed."""
+    import generator
+
+    saved = {key: getattr(generator, key) for key in constants}
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    try:
+        for key, value in constants.items():
+            setattr(generator, key, value)
+        generator.build_tree(spec)
+    finally:
+        for key, value in saved.items():
+            setattr(generator, key, value)
+
+
+def leaf_slot(spec):
+    names = [slot.material.name for slot in bpy.data.objects["tree_1"].material_slots]
+    return names.index(spec["foliage"]["material"])
+
+
+def each_piece(spec, change):
+    """Apply change(piece's vertices, its middle, its faces, bm) to every leaf piece of the tree."""
+    import foliage
+
+    def run(bm):
+        for piece in foliage.pieces_of(bm, leaf_slot(spec)):
+            verts = list({v for face in piece for v in face.verts})
+            change(verts, sum((v.co for v in verts), Vector()) / len(verts), piece, bm)
+
+    edit(run, "tree_1")
+
+
+def bark_hole(spec):
+    """One face of the trunk missing: the bark is no longer closed."""
+    slot = leaf_slot(spec)
+    edit(lambda bm: bmesh.ops.delete(bm, geom=[next(f for f in bm.faces if f.material_index != slot)], context="FACES_ONLY"), "tree_1")
+
+
+def round_trunk(spec):
+    regrow(spec, TRUNK_SIDES=(14, 14))
+
+
+def pole_trunk(spec):
+    """A trunk as thick below the fork as at breast height."""
+    regrow(spec, TRUNK_TOP=1.0)
+
+
+def stout_limbs(spec):
+    """Limbs and twigs that end as thick as they begin."""
+    regrow(spec, TIP_RADIUS=0.11, TWIG_RADIUS=0.11)
+
+
+def no_branches(spec):
+    """Only the trunk and its leader: every other piece of bark removed."""
+    slot = leaf_slot(spec)
+
+    def strip(bm):
+        lowest = min((v for f in bm.faces if f.material_index != slot for v in f.verts), key=lambda v: v.co.z)
+        keep, queue = {lowest}, [lowest]
+        while queue:
+            for edge in queue.pop().link_edges:
+                for vert in edge.verts:
+                    if vert not in keep:
+                        keep.add(vert)
+                        queue.append(vert)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != slot and f.verts[0] not in keep], context="FACES")
+
+    edit(strip, "tree_1")
+
+
+def no_roots(spec):
+    regrow(spec, ROOT_REACH=(1.0, 1.0))
+
+
+def upright_trunk(spec):
+    regrow(spec, LEAN=(0.0, 0.0), BEND=(0.0, 0.0))
+
+
+def solid_ball(spec):
+    """The foliage ADR 9 rules out: one solid ball where the canopy was."""
+    slot = leaf_slot(spec)
+
+    def swap(bm):
+        leaves = [f for f in bm.faces if f.material_index == slot]
+        points = [v.co.copy() for f in leaves for v in f.verts]
+        lo = Vector(min(p[i] for p in points) for i in range(3))
+        hi = Vector(max(p[i] for p in points) for i in range(3))
+        bmesh.ops.delete(bm, geom=leaves, context="FACES")
+        before = set(bm.faces)
+        result = bmesh.ops.create_icosphere(bm, subdivisions=3, radius=1.0)
+        for vert in result["verts"]:
+            vert.co = (lo + hi) / 2 + Vector(vert.co[i] * (hi[i] - lo[i]) / 2 for i in range(3))
+        for face in bm.faces:
+            if face not in before:
+                face.material_index = slot
+
+    edit(swap, "tree_1")
+
+
+def confetti(spec):
+    """Every piece shrunk to a third of its size."""
+
+    def shrink(verts, middle, piece, bm):
+        for vert in verts:
+            vert.co = middle + (vert.co - middle) * 0.3
+
+    each_piece(spec, shrink)
+
+
+def round_leaves(spec):
+    """Every piece swapped for a flat eight-sided disc of its own size: neither pointed nor jagged."""
+
+    def disc(verts, middle, piece, bm):
+        normal = piece[0].normal.copy()
+        across = normal.orthogonal().normalized()
+        along = normal.cross(across)
+        radius = max((v.co - middle).length for v in verts)
+        slot = piece[0].material_index
+        bmesh.ops.delete(bm, geom=piece, context="FACES")
+        rim = [bm.verts.new(middle + (across * math.cos(i * math.pi / 4) + along * math.sin(i * math.pi / 4)) * radius) for i in range(8)]
+        hub = bm.verts.new(middle)
+        for a, b in zip(rim, rim[1:] + rim[:1]):
+            bm.faces.new((hub, a, b)).material_index = slot
+
+    each_piece(spec, disc)
+
+
+def merged_pads(spec):
+    """Every piece moved, whole, halfway toward the middle of the canopy: the pads run into each other."""
+    slot = leaf_slot(spec)
+    mesh = bpy.data.objects["tree_1"].data
+    points = [mesh.vertices[i].co for polygon in mesh.polygons if polygon.material_index == slot for i in polygon.vertices]
+    centre = sum(points, Vector()) / len(points)
+
+    def gather(verts, middle, piece, bm):
+        for vert in verts:
+            vert.co += (centre - middle) * 0.5
+
+    each_piece(spec, gather)
+
+
+def leaves_point_in(spec):
+    """Every piece turned end for end about its own middle: tips toward the inside of the pad and upward."""
+
+    def turn(verts, middle, piece, bm):
+        for vert in verts:
+            vert.co = middle * 2 - vert.co
+
+    each_piece(spec, turn)
+
+
+def identical_variants(spec):
+    """The tree compared with itself, as three variants from one seed would be."""
+    spec["variants"]["siblings"] = ["tree_1"]
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -261,6 +418,23 @@ CASES = [
     (painted_at_another_size, "m_rock.painted", "rock"),
     (painted_over_another_colour, "m_rock.base_colour", "rock"),
     (textured, "m_tracer.base_colour"),
+    (bark_hole, "tree_1.manifold", "tree_1"),
+    (round_trunk, "tree_1.trunk_sides", "tree_1"),
+    (pole_trunk, "tree_1.trunk_tapers", "tree_1"),
+    (no_branches, "tree_1.fork", "tree_1"),
+    (no_branches, "tree_1.branches", "tree_1"),
+    (stout_limbs, "tree_1.branches_taper", "tree_1"),
+    (no_roots, "tree_1.roots", "tree_1"),
+    (upright_trunk, "tree_1.lean", "tree_1"),
+    (solid_ball, "tree_1.branches_seen", "tree_1"),
+    (solid_ball, "tree_1.sky", "tree_1"),
+    (solid_ball, "tree_1.leaf_shape", "tree_1"),
+    (solid_ball, "tree_1.pads", "tree_1"),
+    (confetti, "tree_1.leaf_size", "tree_1"),
+    (round_leaves, "tree_1.leaf_shape", "tree_1"),
+    (merged_pads, "tree_1.pads", "tree_1"),
+    (leaves_point_in, "tree_1.leaves_point_out", "tree_1"),
+    (identical_variants, "variants.differ", "tree_1"),
 ]
 
 

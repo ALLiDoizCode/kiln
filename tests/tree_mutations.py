@@ -1,0 +1,71 @@
+"""Export tree_1 with its foliage broken one way, for tests/run.sh to load in Bevy.
+
+Each mutation builds the tree, paints it from a changed spec or changes the
+result, and exports it as tools/export.py would. The real manifest still says
+what the brief wants, so the named check must fail.
+
+Usage: tools/bl tests/tree_mutations.py <mutation> <out.glb>
+"""
+
+import runpy
+import sys
+from pathlib import Path
+
+import bmesh
+import bpy
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+import foliage
+import paint
+from pipeline import Asset, conventions, script_args, share_textures
+
+mutation, out = script_args()
+asset = Asset("tree_1")
+spec = asset.spec()
+want = spec["foliage"]
+conv = conventions()
+bpy.ops.wm.read_factory_settings(use_empty=True)
+tree = runpy.run_path(str(asset.source / "build.py"))["build"](spec)
+leaf = bpy.data.materials[want["material"]]
+slot = [s.material.name for s in tree.material_slots].index(want["material"])
+
+# Painted from a changed spec.
+if mutation == "one_tone":
+    # Every piece of a shade the same colour: neighbours no longer differ.
+    want["variation"] = 0.0
+elif mutation == "no_gradient":
+    want["under_tint"] = want["top_tint"]
+elif mutation == "grey_underside":
+    # Darker underneath, but no bluer.
+    want["under_tint"] = "#8c8c8c"
+elif mutation == "wrong_leaf_colour":
+    # An autumn palette, where the brief and the manifest say green.
+    spec["materials"][want["material"]] = "#c8782a"
+
+paint.apply(spec, conv)
+
+# Changed after painting.
+if mutation == "single_sided":
+    leaf.use_backface_culling = True
+elif mutation == "gradient_within_piece":
+    # Each piece's corners spread over the palette, so a piece is no longer one flat colour.
+    size, swatch = spec["painted_shading"]["texture_px"], conv["foliage"]["swatch_px"]
+    uvs = tree.data.uv_layers[0].data
+    for polygon in tree.data.polygons:
+        if polygon.material_index == slot:
+            for step, corner in enumerate(polygon.loop_indices):
+                uvs[corner].uv = foliage.swatch_uv((polygon.index + step * 7) % (want["shades"] * want["tones"]), size, swatch)
+elif mutation == "bark_inside_out":
+    bm = bmesh.new()
+    bm.from_mesh(tree.data)
+    bmesh.ops.reverse_faces(bm, faces=[f for f in bm.faces if f.material_index != slot])
+    bm.to_mesh(tree.data)
+    bm.free()
+
+tree.select_set(True)
+result = bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_selection=True, export_yup=True, export_apply=True, export_normals=True, export_texcoords=True)
+if result != {"FINISHED"}:
+    raise RuntimeError(f"export failed: {result}")
+if mutation != "two_textures":
+    share_textures(out)

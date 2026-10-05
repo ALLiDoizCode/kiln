@@ -6,8 +6,11 @@
 //!
 //! `--close` frames the asset alone from about first-person distance, with no figure.
 //! `--back` takes the screenshot from the opposite side, the asset's back left.
+//! `--stand <metres>` takes it as a player sees it: eye 1.7 m above the ground, that far from
+//! the asset's origin on its front right, looking at the middle of its height (at most 60
+//! degrees up), with a wide field of view and no figure. Add `--back` to stand behind it.
 //!
-//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back]
+//! Usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back] [--stand <metres>]
 
 use std::{
     path::{Path, PathBuf},
@@ -31,6 +34,10 @@ use serde::Deserialize;
 
 const SIZE: u32 = 1024;
 const PLAYER_HEIGHT: f32 = 1.8;
+/// A player's eye, and how they look at an asset they stand beside (`--stand`).
+const EYE_HEIGHT: f32 = 1.7;
+const STAND_FOV: f32 = 1.31; // 75 degrees
+const STAND_MAX_PITCH: f32 = 1.047; // 60 degrees
 /// Frames to let shadows and shaders settle before capturing.
 const SETTLE_FRAMES: u32 = 30;
 const TIMEOUT_FRAMES: u32 = 3600;
@@ -55,6 +62,8 @@ struct View {
     screenshot: Option<PathBuf>,
     /// Where the screenshot's camera stands, as a turn about the vertical from the front right.
     orbit: f32,
+    /// A player's view instead: (metres from the asset's origin, the height looked at).
+    stand: Option<(f32, f32)>,
     target: Option<Handle<Image>>,
     settled: u32,
     frames: u32,
@@ -67,6 +76,7 @@ fn main() -> AppExit {
     let mut screenshot = None;
     let mut close = false;
     let mut back = false;
+    let mut stand = None;
     let mut iter = args.iter();
     while let Some(arg) = iter.next() {
         if arg == "--screenshot" {
@@ -75,13 +85,19 @@ fn main() -> AppExit {
             close = true;
         } else if arg == "--back" {
             back = true;
+        } else if arg == "--stand" {
+            stand = iter.next().and_then(|metres| metres.parse::<f32>().ok());
+            if stand.is_none() {
+                eprintln!("--stand needs a distance in metres");
+                return AppExit::error();
+            }
         } else {
             positional.push(PathBuf::from(arg));
         }
     }
     if positional.len() != 2 {
         eprintln!(
-            "usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back]"
+            "usage: asset_view <asset.glb> <manifest.json> [--screenshot <out.png>] [--close] [--back] [--stand <metres>]"
         );
         return AppExit::error();
     }
@@ -131,6 +147,7 @@ fn main() -> AppExit {
     // The figure stands on the ground to the asset's left, as in the Blender
     // scale view, and level with its front so the asset does not hide it.
     let figure = Vec3::new(min.x - 0.5, 0.0, max.z);
+    let close = close || stand.is_some();
     let (framed_min, framed_max) = if close {
         (min, max)
     } else {
@@ -148,6 +165,7 @@ fn main() -> AppExit {
             radius: (framed_max - framed_min).length() / 2.0 * if close { 0.8 } else { 1.0 },
             screenshot,
             orbit: if back { std::f32::consts::PI } else { 0.0 },
+            stand: stand.map(|metres| (metres, (min.y + max.y) / 2.0)),
             target: None,
             settled: 0,
             frames: 0,
@@ -226,7 +244,14 @@ fn setup(
         ..default()
     });
 
-    let camera = (Camera3d::default(), camera_transform(&view, view.orbit));
+    let camera = (
+        Camera3d::default(),
+        camera_transform(&view, view.orbit),
+        Projection::Perspective(PerspectiveProjection {
+            fov: if view.stand.is_some() { STAND_FOV } else { std::f32::consts::FRAC_PI_4 },
+            ..default()
+        }),
+    );
     if view.screenshot.is_some() {
         let mut image = Image::new_target_texture(SIZE, SIZE, TextureFormat::Rgba8UnormSrgb, None);
         image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
@@ -240,6 +265,13 @@ fn setup(
 
 /// Three-quarter view from the asset's front right, orbited by `angle` about the vertical.
 fn camera_transform(view: &View, angle: f32) -> Transform {
+    if let Some((metres, height)) = view.stand {
+        let turn = Quat::from_rotation_y(angle);
+        let eye = turn * Vec3::new(metres, 0.0, metres) * std::f32::consts::FRAC_1_SQRT_2 + Vec3::Y * EYE_HEIGHT;
+        let pitch = ((height - EYE_HEIGHT) / metres).atan().min(STAND_MAX_PITCH);
+        let toward = turn * Vec3::new(-1.0, 0.0, -1.0).normalize() * pitch.cos() + Vec3::Y * pitch.sin();
+        return Transform::from_translation(eye).looking_to(toward, Vec3::Y);
+    }
     let direction = Quat::from_rotation_y(angle) * Vec3::new(1.0, 0.7, 1.0).normalize();
     let distance = view.radius / (std::f32::consts::FRAC_PI_4 / 2.0).sin() * 1.1;
     Transform::from_translation(view.centre + direction * distance).looking_at(view.centre, Vec3::Y)

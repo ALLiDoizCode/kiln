@@ -27,6 +27,7 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
+mod foliage;
 mod painted;
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
@@ -59,6 +60,14 @@ struct Manifest {
     /// the texture does what this says. Absent: every material is one flat colour.
     #[serde(default)]
     painted: Option<painted::Painted>,
+    /// Materials whose faces are separate open pieces (leaf pieces). They enclose
+    /// nothing, so `watertight` is asked of every other material's triangles.
+    #[serde(default)]
+    open_materials: Vec<String>,
+    /// Foliage: one material's triangles are leaf pieces coloured from a palette
+    /// in the painted texture, and are measured as such instead of as painted surface.
+    #[serde(default)]
+    foliage: Option<foliage::Foliage>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Copy)]
@@ -79,6 +88,8 @@ struct Report {
     bounds: Option<Bounds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     painted: Option<painted::Measured>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    foliage: Option<foliage::Measured>,
 }
 
 fn main() -> ExitCode {
@@ -270,12 +281,13 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
             fail(format!("painted.present: {} base colour textures; a painted asset has exactly one", textures.len()));
         }
     }
-    let colour_of = |handle: &Option<Handle<GltfMaterial>>| {
+    let name_of = |handle: &Option<Handle<GltfMaterial>>| {
         let handle = handle.as_ref()?;
-        let name = gltf.named_materials.iter().find(|(_, h)| h.id() == handle.id())?.0;
-        manifest.materials.get(&**name).copied()
+        Some(gltf.named_materials.iter().find(|(_, h)| h.id() == handle.id())?.0.to_string())
     };
     let mut painted_triangles: Vec<painted::Triangle> = Vec::new();
+    let mut leaf_triangles: Vec<painted::Triangle> = Vec::new();
+    let leaf_material = manifest.foliage.as_ref().map(|foliage| foliage.material.as_str());
 
     // Walk from scene roots so bounds are in scene space, not mesh-local space.
     let children: BTreeSet<_> = gltf
@@ -354,15 +366,25 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
                 Some(VertexAttributeValues::Float32x2(uvs)) => Some(uvs.iter().map(|uv| Vec2::from(*uv)).collect()),
                 _ => None,
             };
-            let colour = colour_of(&primitive.material);
+            let material = name_of(&primitive.material);
+            let colour = material.as_ref().and_then(|name| manifest.materials.get(name).copied());
+            let is_leaf = material.is_some() && material.as_deref() == leaf_material;
+            let is_open = material.as_ref().is_some_and(|name| manifest.open_materials.contains(name));
             for triangle in indices.chunks_exact(3) {
                 let [a, b, c] = [triangle[0], triangle[1], triangle[2]].map(|i| positions[i]);
-                painted_triangles.push(painted::Triangle {
+                let loaded = painted::Triangle {
                     positions: [a, b, c],
                     uvs: uvs.as_ref().map(|uvs| [triangle[0], triangle[1], triangle[2]].map(|i| uvs[i])),
                     colour,
-                });
-                volume += a.dot(b.cross(c)) / 6.0;
+                };
+                if is_leaf {
+                    leaf_triangles.push(loaded);
+                } else {
+                    painted_triangles.push(loaded);
+                }
+                if !is_open {
+                    volume += a.dot(b.cross(c)) / 6.0;
+                }
                 // The side a triangle's winding makes its front must be the
                 // side its vertex normals point to, or it lights wrongly.
                 let front = (b - a).cross(c - a);
@@ -433,6 +455,17 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
                 ));
             }
             None => fail("painted.present: the base colour texture did not load".into()),
+        }
+    }
+
+    if let Some(want) = &manifest.foliage {
+        let material = gltf.named_materials.get(want.material.as_str()).and_then(|h| materials.get(h));
+        match (material, textures.as_slice().first().and_then(|texture| images.get(texture))) {
+            (Some(material), Some(image)) => {
+                let two_sided = material.double_sided && material.cull_mode.is_none();
+                report.foliage = Some(foliage::check(want, manifest.materials.get(&want.material), &leaf_triangles, image, two_sided, &mut fail));
+            }
+            _ => fail(format!("foliage.present: no material '{}' with a texture to take leaf colours from", want.material)),
         }
     }
 

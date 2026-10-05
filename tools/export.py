@@ -14,7 +14,7 @@ import bmesh
 import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pipeline import Asset, conventions, gltf_bounds, linear_rgb, script_args
+from pipeline import Asset, conventions, gltf_bounds, linear_rgb, script_args, share_textures
 
 asset = Asset(script_args()[0])
 spec = asset.spec()
@@ -53,6 +53,10 @@ result = bpy.ops.export_scene.gltf(
 if result != {"FINISHED"}:
     raise RuntimeError(f"glTF export failed: {result}")
 
+
+
+share_textures(asset.glb)
+
 depsgraph = bpy.context.evaluated_depsgraph_get()
 triangles = 0
 for obj in objects:
@@ -75,6 +79,19 @@ manifest = {
     "attributes": spec["attributes"],
     "soft_edges": spec.get("soft_edges", False),
 }
+if "open_materials" in spec:
+    # Materials whose faces are separate open pieces; the rest is the closed surface.
+    manifest["open_materials"] = spec["open_materials"]
+if "foliage" in spec:
+    # What the leaf pieces' colours must do, from the spec, and how they are found and measured, from the conventions.
+    want, rules = spec["foliage"], conventions()
+    manifest["foliage"] = {
+        **{key: want[key] for key in ("material", "pad_gap_m", "min_pad_pieces", "shades", "tones", "variation")},
+        "under_tint": [round(c, 6) for c in linear_rgb(want["under_tint"])],
+        "top_tint": [round(c, 6) for c in linear_rgb(want["top_tint"])],
+        **{key: rules["foliage"][key] for key in ("swatch_px", "max_palette_error", "min_neighbours_differ")},
+        "min_effect_share": rules["painted_shading"]["min_effect_share"],
+    }
 if "painted_shading" in spec:
     # What the texture must do, from the spec, and how strictly, from the conventions.
     want, rules = spec["painted_shading"], conventions()["painted_shading"]

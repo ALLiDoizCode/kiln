@@ -132,8 +132,19 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Banding**: a smooth gradient shown as flat steps. In a texture it is too few levels; in a review image it is a viewer reducing a file deeper than 8 bits per channel to a palette.
 - **Open face**: surface far enough from every edge and inside corner that only the material colour and the tint reach it. The checks measure colour there.
 - **Hidden underside**: faces lying on the floor of the bounds and facing down, which nobody sees; they get almost none of the texture and are not measured.
-- **Leaf card**: a small flat piece of geometry showing a painted cluster of leaves with transparent gaps; foliage is many of them on a branch skeleton. _Avoid_: billboard (a card that turns to face the camera), leaf plane.
-- **Branch skeleton**: the trunk and branches of a tree as connected tapering tubes, before foliage is added.
+- **Leaf card**: a small flat piece of geometry showing a painted cluster of leaves with transparent gaps, as the benchmark tree builds its foliage. Not used here: our foliage is leaf pieces (ADR 9). _Avoid_: billboard (a card that turns to face the camera), leaf plane.
+- **Leaf piece**: one flat, pointed, notched piece of foliage geometry in a single colour, large enough to read as a leaf; the unit foliage is built from. The checks find a piece as a connected set of faces of the foliage material. _Avoid_: leaf card, leaf plane, confetti (pieces too small to read).
+- **Pad**: a separate clump of leaf pieces with clear air round it; a canopy is several. The checks find a pad as pieces with no gap of `pad_gap_m` between them. _Avoid_: clump, blob, crown (the whole canopy, or the highest pad).
+- **Sky share**: seen from one direction, the part of a canopy's outline (the convex hull of its foliage) through which nothing is hit. A single mass of foliage has little; a ball has none.
+- **Branch skeleton**: the trunk and branches of a tree as connected tapering tubes, before foliage is added. **Limb**: any one of those tubes.
+- **Slice**: bark cut by a level plane, which gives one closed loop per limb the plane passes through. A tree's girth, flat sides, fork, taper, roots and lean are all read from slices.
+- **Fork**: the lowest height at which a slice shows two limbs. **Breast height**: 1.3 m above the ground, where a trunk's girth is taken.
+- **Flare**: how far the trunk reaches out at the ground, over its radius at breast height. A **root** is a corner of the ground slice that stands well out from the rest.
+- **Palette**: the colours foliage may take, as a strip of swatches along the top of an asset's painted texture. A **swatch** is one square of flat colour; all of a leaf piece's UVs sit on the middle of one (ADR 11). **Shade**: a step of the palette from the underside of a pad to its top. **Tone**: one of the lighter or darker versions of a shade, so that neighbouring pieces differ.
+- **Open material**: a material whose faces are separate open pieces by design, such as leaf pieces. The closed-surface checks are asked of an asset's other materials.
+- **Seam**: also, here, an edge a build script marks to say where a surface may be cut to lie flat; `tools/paint.py` unwraps along seams when a mesh has any.
+- **Variant**: one of several assets drawn by the same generator from different seeds, each an asset in its own right. A **family** is the folder holding the generator and the brief they share. _Avoid_: LOD, growth stage, colour variant (none of which exist yet).
+- **Outline difference**: between two variants, the share of what either covers, seen from a level direction, that only one of them covers.
 - **Benchmark**: a professional asset run through the gates and viewer to compare ours against. It is never shipped.
 - **Plane**: a connected set of faces that lie in one flat surface, however they are triangulated. A **large plane** is one at or above the area a spec's `planes.large_m2` gives. _Avoid_: facet (a plane too small to be deliberate), face (one polygon of the mesh).
 - **Plane cut**: slicing a solid with one flat cut and capping the hole; how rock is shaped (ADR 9). A **notch** is two cuts that meet, removing only what is in front of both.

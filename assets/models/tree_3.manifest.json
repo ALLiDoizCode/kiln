@@ -1,0 +1,114 @@
+{
+  "asset": "tree_3",
+  "nodes": [
+    "tree_3"
+  ],
+  "mesh_count": 1,
+  "materials": {
+    "m_tree_bark": [
+      0.194618,
+      0.102242,
+      0.057805
+    ],
+    "m_tree_leaf": [
+      0.391572,
+      0.47932,
+      0.061246
+    ]
+  },
+  "watertight": true,
+  "triangles": 2864,
+  "bounds": {
+    "min": [
+      -2.1,
+      0.0,
+      -2.1
+    ],
+    "max": [
+      2.2,
+      7.8,
+      2.2
+    ]
+  },
+  "bounds_tolerance": 0.001,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "soft_edges": true,
+  "open_materials": [
+    "m_tree_leaf"
+  ],
+  "foliage": {
+    "material": "m_tree_leaf",
+    "pad_gap_m": 0.06,
+    "min_pad_pieces": 40,
+    "shades": 6,
+    "tones": 4,
+    "variation": 0.16,
+    "under_tint": [
+      0.158961,
+      0.304987,
+      0.381326
+    ],
+    "top_tint": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "swatch_px": 8,
+    "max_palette_error": 0.02,
+    "min_neighbours_differ": 0.5,
+    "min_effect_share": 0.5
+  },
+  "painted": {
+    "texture_px": 1024,
+    "base_tint": [
+      0.48515,
+      0.391572,
+      0.351533
+    ],
+    "top_tint": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "edge_light": 0.2,
+    "edge_width_m": 0.03,
+    "crevice_shadow": 0.6,
+    "crevice_width_m": 0.06,
+    "hidden_underside": true,
+    "min_texels_per_m": 100,
+    "min_uv_coverage": 0.4,
+    "max_uv_overlap": 0.001,
+    "feature_deg": 30.0,
+    "colour_tolerance": 0.08,
+    "min_effect_share": 0.5,
+    "texel_range": [
+      30,
+      240
+    ],
+    "blotch": 0.1,
+    "blotch_size_m": 0.4,
+    "side_shade_normal_z": [
+      0.3,
+      0.7
+    ],
+    "side_shade_half_band": 0.35,
+    "growth_up_normal_z": [
+      0.82,
+      0.94
+    ],
+    "growth_cover": [
+      0.5,
+      1.5
+    ],
+    "blotch_spread": [
+      1.0,
+      2.5
+    ],
+    "max_blotch_grain": 0.2,
+    "max_level_gap": 3
+  }
+}

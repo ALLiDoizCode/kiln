@@ -5,8 +5,10 @@ Expected values come from the spec, never from the build script.
 Usage: tools/bl tools/validate.py <asset>
 """
 
+import json
 import math
 import re
+import runpy
 import statistics
 import sys
 from pathlib import Path
@@ -17,6 +19,8 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import foliage
+import skeleton
 from pipeline import VIEW_DIRECTIONS, Asset, Checks, conventions, linear_rgb, script_args
 
 
@@ -224,6 +228,167 @@ def check_fullness(checks, name, bm, spec, conv):
     )
 
 
+def check_skeleton(checks, name, bm, slots, spec, conv):
+    """The bark is a designed trunk that forks into tapering limbs (source/tree/brief.md). Returns the fork's height, or None."""
+    want = spec["skeleton"]
+    bark = skeleton.only(bm, slots.index(want["material"]))
+    found = skeleton.measure(bark, conv)
+    bark.free()
+    breast = conv["skeleton"]["breast_height_m"]
+    shown = {key: round(value, 3) if isinstance(value, float) else value for key, value in found.items()}
+    print(f"{name} skeleton: {shown}")
+    checks.check(
+        f"{name}.trunk_sides",
+        found["sides"] is not None and want["min_sides"] <= found["sides"] <= want["max_sides"],
+        f"the trunk's slice {breast} m up has {found['sides']} flat sides; spec wants {want['min_sides']} to {want['max_sides']}",
+    )
+    low, high = want["fork_m"]
+    checks.check(
+        f"{name}.fork",
+        found["fork_m"] is not None and low <= found["fork_m"] <= high,
+        f"the bark first shows two limbs in one slice at {shown['fork_m']} m (None: never); spec wants a fork between {low} and {high} m",
+    )
+    checks.check(
+        f"{name}.trunk_tapers",
+        found["taper"] is not None and found["taper"] <= want["max_taper"],
+        f"just below the fork the trunk is {shown['taper']} of its radius {breast} m up ({shown['breast_m']} m); spec wants at most {want['max_taper']}",
+    )
+    checks.check(
+        f"{name}.branches",
+        found["branches"] >= want["min_branches"],
+        f"no slice through the bark shows more than {found['branches']} limbs; spec wants at least {want['min_branches']}",
+    )
+    checks.check(
+        f"{name}.branches_taper",
+        found["branch_taper"] is not None and found["branch_taper"] <= want["max_branch_taper"],
+        f"four fifths of the way from the fork to the top, limbs are {shown['branch_taper']} as thick as one fifth of the way; spec wants at most {want['max_branch_taper']}",
+    )
+    checks.check(
+        f"{name}.roots",
+        found["flare"] is not None and found["flare"] >= want["min_flare"] and found["roots"] >= want["min_roots"],
+        f"at the ground the trunk reaches {shown['flare']} times its radius {breast} m up, in {found['roots']} roots; spec wants at least {want['min_flare']} times and {want['min_roots']} roots",
+    )
+    low, high = want["lean_m"]
+    checks.check(
+        f"{name}.lean",
+        found["lean_m"] is not None and low <= found["lean_m"] <= high,
+        f"the trunk below the fork stands {shown['lean_m']} m to the side of its foot; spec wants {low} to {high} m",
+    )
+    return found["fork_m"]
+
+
+def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
+    """The foliage is leaf-shaped pieces in separate pads with sky between (ADR 9), and the skeleton shows through it."""
+    want = spec["foliage"]
+    rules = conv["foliage"]
+    leaf = slots.index(want["material"])
+    pieces = foliage.pieces_of(bm, leaf)
+    shapes = [foliage.piece_shape(piece) for piece in pieces]
+    lengths = sorted(shape["length_m"] for shape in shapes)
+    low, high = want["piece_m"]
+    odd = [length for length in lengths if not low <= length <= high]
+    checks.check(
+        f"{name}.leaf_size",
+        pieces and not odd,
+        f"{len(odd)} of {len(pieces)} leaf pieces are not {low} to {high} m long; lengths run from {lengths[0] if lengths else 0:.2f} to {lengths[-1] if lengths else 0:.2f} m",
+    )
+    bent = sum(1 for shape in shapes if shape["off_plane_m"] > rules["flat_m"])
+    blunt = sum(1 for shape in shapes if shape["sharpest_deg"] > rules["pointed_deg"])
+    smooth = sum(1 for shape in shapes if shape["notches"] < 1)
+    checks.check(
+        f"{name}.leaf_shape",
+        pieces and not (bent or blunt or smooth),
+        f"of {len(pieces)} leaf pieces, {bent} are not flat (within {rules['flat_m']} m), {blunt} have no corner of {rules['pointed_deg']} degrees or less, {smooth} have no notch in their outline",
+    )
+
+    triangles, owner = foliage.triangles_of(pieces)
+    pads = foliage.pads_of(triangles, owner, len(pieces), want["pad_gap_m"])
+    sizes = [pads.count(pad) for pad in range(max(pads, default=-1) + 1)]
+    whole = [size for size in sizes if size >= want["min_pad_pieces"]]
+    strays = sum(size for size in sizes if size < want["min_pad_pieces"])
+    checks.check(
+        f"{name}.pads",
+        want["min_pads"] <= len(whole) <= want["max_pads"] and not strays,
+        f"{len(whole)} pads of at least {want['min_pad_pieces']} pieces with {want['pad_gap_m']} m of clear air between them (sizes {whole[:8]}), and {strays} pieces in "
+        f"{len(sizes) - len(whole)} smaller clumps; spec wants {want['min_pads']} to {want['max_pads']} pads and no strays",
+    )
+    middles = {}
+    for shape, pad in zip(shapes, pads):
+        middles.setdefault(pad, []).append(shape["middle"])
+    middles = {pad: sum(points, Vector()) / len(points) for pad, points in middles.items()}
+    out = sum(1 for shape, pad in zip(shapes, pads) if (shape["middle"] - middles[pad]).dot(shape["points"]) > 0) / max(len(shapes), 1)
+    down = sum(1 for shape in shapes if shape["points"].z < 0) / max(len(shapes), 1)
+    checks.check(
+        f"{name}.leaves_point_out",
+        out >= want["min_pointing_out"] and down >= want["min_pointing_down"],
+        f"{out:.2f} of the leaf pieces point out of their pad and {down:.2f} point below level; spec wants at least {want['min_pointing_out']} and {want['min_pointing_down']}",
+    )
+
+    # What each view shows: sky through the canopy, and bark among what is seen above the fork.
+    if not pieces:
+        return
+    tree = BVHTree.FromBMesh(bm)
+    bm.faces.ensure_lookup_table()
+    canopy = [v.co.copy() for piece in pieces for face in piece for v in face.verts]
+    floor = spec["bounds_m"]["min"][2]
+    above = floor + (fork_m if fork_m is not None else spec.get("skeleton", {}).get("fork_m", [0.0])[0])
+    bark = slots.index(spec["skeleton"]["material"]) if "skeleton" in spec else -1
+    views = {view: VIEW_DIRECTIONS[view] for view in rules["views"]}
+    seen = {view: foliage.sky_and_bark(tree, bm.faces, bark, canopy, direction, rules["view_rays"], above) for view, direction in {**views, "below": (0, 0, -1)}.items()}
+    sky = {view: round(seen[view][0], 3) for view in views}
+    low, high = want["sky_share"]
+    open_views = [view for view in views if low <= sky[view] <= high]
+    print(f"{name} foliage: {len(pieces)} pieces {lengths[0]:.2f} to {lengths[-1]:.2f} m, pads {sizes}, pointing out {out:.2f} and down {down:.2f}, sky {sky}")
+    checks.check(
+        f"{name}.sky",
+        len(open_views) >= want["min_sky_views"],
+        f"sky is {low} to {high} of the canopy's outline from {len(open_views)} of {len(views)} views; spec wants {want['min_sky_views']}; shares {sky}",
+    )
+    if "skeleton" in spec:
+        share = {view: round(seen[view][1], 3) for view in seen}
+        showing = [view for view in seen if share[view] >= spec["skeleton"]["min_seen_share"]]
+        print(f"{name} skeleton seen above the fork: {share}")
+        checks.check(
+            f"{name}.branches_seen",
+            len(showing) >= spec["skeleton"]["min_seen_views"],
+            f"bark is at least {spec['skeleton']['min_seen_share']} of what is seen above the fork from {len(showing)} of {len(seen)} views; "
+            f"spec wants {spec['skeleton']['min_seen_views']}; shares {share}",
+        )
+
+
+def check_variants(checks, name, bm, spec, conv):
+    """This asset's outline differs from each of its sibling variants' (source/tree/brief.md)."""
+    want = spec["variants"]
+    rules = conv["variants"]
+    apart = {}
+    for sibling in want["siblings"]:
+        other_spec = Asset(sibling).spec()
+        before = {kind: set(getattr(bpy.data, kind)) for kind in ("objects", "meshes", "materials")}
+        # The sibling as its own build script draws it; shape only, so it is not painted.
+        built = runpy.run_path(str(Asset(sibling).source / "build.py"))["build"](other_spec)
+        bpy.context.view_layer.update()
+        other = evaluated_bmesh(built)
+        for kind, had in before.items():
+            for block in set(getattr(bpy.data, kind)) - had:
+                getattr(bpy.data, kind).remove(block)
+        lo = [min(a, b) for a, b in zip(spec["bounds_m"]["min"], other_spec["bounds_m"]["min"])]
+        hi = [max(a, b) for a, b in zip(spec["bounds_m"]["max"], other_spec["bounds_m"]["max"])]
+        mine, theirs = BVHTree.FromBMesh(bm), BVHTree.FromBMesh(other)
+        differences = [
+            foliage.difference(foliage.outline(mine, lo, hi, VIEW_DIRECTIONS[view], rules["view_rays"]), foliage.outline(theirs, lo, hi, VIEW_DIRECTIONS[view], rules["view_rays"]))
+            for view in rules["views"]
+        ]
+        other.free()
+        apart[sibling] = round(float(sum(differences) / len(differences)), 3)
+    print(f"{name} variants: outline differs from {apart}")
+    close = {sibling: share for sibling, share in apart.items() if share < want["min_difference"]}
+    checks.check(
+        "variants.differ",
+        apart and not close,
+        f"seen from {rules['views']}, this asset's outline differs from {close} by less than {want['min_difference']} (the share of what either covers that only one covers); all {apart}",
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -258,12 +423,19 @@ def check_scene(checks, spec, conv):
         checks.check(f"{name}.transform_applied", applied, f"rotation {tuple(rotation)}, scale {tuple(scale)}")
 
         bm = evaluated_bmesh(obj)
-        non_manifold = [e.index for e in bm.edges if not e.is_manifold]
+        slot_names = [s.material.name if s.material else "" for s in obj.material_slots]
+        # A spec's `open_materials` are made of separate open pieces by design (leaf pieces: ADR 9).
+        # Being closed, wound one way, facing outward and free of doubled vertices is asked of
+        # everything else: for a tree, the bark. Pieces may touch each other and the bark.
+        opened = {i for i, material in enumerate(slot_names) if material in spec.get("open_materials", [])}
+        closed = [f for f in bm.faces if f.material_index not in opened]
+        closed_edges = {e for f in closed for e in f.edges}
+        non_manifold = [e.index for e in closed_edges if not e.is_manifold]
         if spec["watertight"]:
-            checks.check(f"{name}.manifold", not non_manifold, f"{len(non_manifold)} non-manifold edges")
-            flipped = [e.index for e in bm.edges if e.is_manifold and not e.is_contiguous]
+            checks.check(f"{name}.manifold", closed and not non_manifold, f"{len(non_manifold)} non-manifold edges on the {len(closed)} faces that must form a closed surface")
+            flipped = [e.index for e in closed_edges if e.is_manifold and not e.is_contiguous]
             checks.check(f"{name}.winding_consistent", not flipped, f"{len(flipped)} edges join faces with opposite winding")
-            volume = bm.calc_volume(signed=True)
+            volume = sum(f.verts[0].co.dot(a.co.cross(b.co)) for f in closed for a, b in zip(f.verts[1:], f.verts[2:])) / 6
             checks.check(f"{name}.normals_outward", volume > 0, f"signed volume {volume:.6f}")
         loose = [v.index for v in bm.verts if not v.link_faces]
         checks.check(f"{name}.no_loose_vertices", not loose, f"{len(loose)} vertices belong to no face")
@@ -271,7 +443,8 @@ def check_scene(checks, spec, conv):
         checks.check(f"{name}.no_degenerate_faces", not tiny, f"{len(tiny)} zero-area faces")
         ngons = [f.index for f in bm.faces if len(f.verts) > conv["mesh"]["max_face_sides"]]
         checks.check(f"{name}.no_ngons", not ngons, f"{len(ngons)} faces with more than {conv['mesh']['max_face_sides']} sides")
-        doubles = bmesh.ops.find_doubles(bm, verts=bm.verts, dist=conv["mesh"]["merge_distance_m"])["targetmap"]
+        welded = list({v for f in closed for v in f.verts}) if opened else bm.verts
+        doubles = bmesh.ops.find_doubles(bm, verts=welded, dist=conv["mesh"]["merge_distance_m"])["targetmap"]
         checks.check(f"{name}.no_duplicate_vertices", not doubles, f"{len(doubles)} duplicate vertices")
 
         slots = [s.material for s in obj.material_slots]
@@ -327,6 +500,12 @@ def check_scene(checks, spec, conv):
             check_planes(checks, name, bm, spec, conv)
         if "fullness" in spec and spec["watertight"]:
             check_fullness(checks, name, bm, spec, conv)
+        bm.normal_update()
+        fork_m = check_skeleton(checks, name, bm, slot_names, spec, conv) if "skeleton" in spec and spec["skeleton"]["material"] in slot_names else None
+        if "foliage" in spec and spec["foliage"]["material"] in slot_names:
+            check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
+        if "variants" in spec:
+            check_variants(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

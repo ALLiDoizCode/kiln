@@ -24,14 +24,25 @@ Nothing here is random: the patterns are Blender's noise texture at fixed
 places in space and Cycles runs on the CPU with a fixed seed, so a rebuild
 gives the same texels.
 
+Foliage is not baked (ADR 11). A spec with a `foliage` block names the leaf
+material; its faces are left out of the unwrap and the bake, and `leaf_colours`
+gives every leaf piece one flat colour instead: a strip along the top of the
+same texture holds a palette of swatches, and all of a piece's UVs sit on the
+middle of one swatch. Which swatch comes from the mesh alone (tools/foliage.py):
+the shade from how high the piece sits in its pad, the tone from a fixed
+shuffle, so neighbouring pieces differ.
+
 Run under Blender, through tools/build.py.
 """
 
 import math
+import random
 
 import addon_utils
 import bmesh
 import bpy
+import foliage
+import numpy
 from pipeline import linear_rgb
 
 UV_LAYER = "paint"
@@ -71,8 +82,11 @@ def growth_colour(material_rgb, growth_hex):
     return tuple(min(1.0, c * scale) for c in growth)
 
 
-def unwrap(objects, spec, conv):
-    """Give every object one shared, non-overlapping UV layout filling the 0..1 square."""
+def unwrap(objects, spec, conv, skip=None, keep_clear=0.0):
+    """Give every object one shared, non-overlapping UV layout filling the 0..1 square.
+
+    Faces of the material named `skip` are left out, and `keep_clear` is the
+    share of the texture's height, at the top, that the layout stays out of."""
     paint = spec["painted_shading"]
     floor_z = spec["bounds_m"]["min"][2]
     tol = spec["bounds_tolerance_m"]
@@ -96,7 +110,23 @@ def unwrap(objects, spec, conv):
 
     run(bpy.ops.object.mode_set, mode="EDIT")
     run(bpy.ops.mesh.select_all, action="SELECT")
-    run(bpy.ops.uv.smart_project, angle_limit=math.radians(conv["painted_shading"]["unwrap_angle_deg"]), island_margin=margin, scale_to_bounds=False)
+    if skip is not None:
+        # Leaf pieces take their colour from the palette, not from an island of their own.
+        for obj in objects:
+            bm = bmesh.from_edit_mesh(obj.data)
+            for face in bm.faces:
+                if obj.material_slots[face.material_index].material.name == skip:
+                    face.select_set(False)
+            bm.select_flush_mode()
+            bmesh.update_edit_mesh(obj.data)
+    if any(edge.use_seam for obj in objects for edge in obj.data.edges):
+        # The build script marked seams: where the surface may be cut to lie flat. A tree's limbs,
+        # unwrapped by angle, come out as strips as long as the trunk; the longest sets the scale
+        # of the whole layout and most of the texture stays empty.
+        run(bpy.ops.uv.unwrap, method="ANGLE_BASED", margin=margin)
+        run(bpy.ops.uv.average_islands_scale)
+    else:
+        run(bpy.ops.uv.smart_project, angle_limit=math.radians(conv["painted_shading"]["unwrap_angle_deg"]), island_margin=margin, scale_to_bounds=False)
     if paint["hidden_underside"]:
         # Shrink the underside's islands before packing, so the visible faces get the texels.
         for obj in objects:
@@ -111,6 +141,11 @@ def unwrap(objects, spec, conv):
     # The exact (concave) packer takes 15 s on the rock for 3% more of the texture; boxes take none.
     run(bpy.ops.uv.pack_islands, rotate=True, scale=True, margin_method="FRACTION", margin=margin, shape_method="AABB")
     run(bpy.ops.object.mode_set, mode="OBJECT")
+    if keep_clear:
+        # Shrink the layout toward the bottom-left corner; texels stay square.
+        for obj in objects:
+            for corner in obj.data.uv_layers[UV_LAYER].data:
+                corner.uv = corner.uv * (1.0 - keep_clear)
 
 
 def paint_nodes(tree, colour_rgb, spec, conv):
@@ -249,14 +284,71 @@ def principled(material):
     return output, output.inputs["Surface"].links[0].from_node
 
 
+def srgb(linear):
+    """Linear 0..1 to sRGB 0..1, as an 8-bit image stores it."""
+    return linear * 12.92 if linear <= 0.0031308 else 1.055 * linear ** (1 / 2.4) - 0.055
+
+
+def leaf_colours(objects, spec, conv, image):
+    """Write the foliage palette into the top of `image` and put every leaf piece's UVs on one swatch."""
+    want = spec["foliage"]
+    size, swatch = spec["painted_shading"]["texture_px"], conv["foliage"]["swatch_px"]
+    shades, tones = want["shades"], want["tones"]
+    colours = foliage.palette(linear_rgb(spec["materials"][want["material"]]), linear_rgb(want["under_tint"]), linear_rgb(want["top_tint"]), shades, tones, want["variation"])
+    per_row, rows, strip = foliage.swatch_layout(size, swatch, shades * tones)
+
+    texels = numpy.empty(size * size * 4, dtype=numpy.float32)
+    image.pixels.foreach_get(texels)
+    texels = texels.reshape(size, size, 4)  # row 0 is the bottom of the image
+    flat = [colour for row in colours for colour in row]
+    for index in range(per_row * rows):
+        # Swatches past the last colour repeat it, so the strip has no unpainted texel.
+        colour = flat[min(index, len(flat) - 1)]
+        column, row = index % per_row, index // per_row
+        top = size - row * swatch
+        texels[top - swatch : top, column * swatch : (column + 1) * swatch, :3] = [srgb(c) for c in colour]
+    # The empty band under the swatches takes the colours of the last row above it.
+    under = size - rows * swatch
+    texels[under - swatch : under, :, :3] = texels[under : under + 1, :, :3]
+    texels[size - strip :, :, 3] = 1.0
+    image.pixels.foreach_set(texels.ravel())
+    image.update()
+
+    shuffle = random.Random(0)
+    for obj in objects:
+        slot = next((i for i, s in enumerate(obj.material_slots) if s.material.name == want["material"]), None)
+        if slot is None:
+            continue
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        bm.transform(obj.matrix_world)
+        bm.faces.index_update()
+        pieces = foliage.pieces_of(bm, slot)
+        triangles, owner = foliage.triangles_of(pieces)
+        pads = foliage.pads_of(triangles, owner, len(pieces), want["pad_gap_m"])
+        heights = foliage.heights_in_pads(pieces, pads)
+        uvs = obj.data.uv_layers[UV_LAYER].data
+        for piece, height in zip(pieces, heights):
+            shade = min(shades - 1, int(height * shades))
+            uv = foliage.swatch_uv(shade * tones + shuffle.randrange(tones), size, swatch)
+            for face in piece:
+                for corner in obj.data.polygons[face.index].loop_indices:
+                    uvs[corner].uv = uv
+        bm.free()
+
+
 def apply(spec, conv):
     """Unwrap the spec's objects and replace their flat colours with one baked, painted texture."""
     paint = spec["painted_shading"]
     scene = bpy.context.scene
     objects = [bpy.data.objects[name] for name in spec["objects"]]
-    unwrap(objects, spec, conv)
-
     size = paint["texture_px"]
+    leaf = spec["foliage"]["material"] if "foliage" in spec else None
+    strip = 0
+    if leaf:
+        strip = foliage.swatch_layout(size, conv["foliage"]["swatch_px"], spec["foliage"]["shades"] * spec["foliage"]["tones"])[2]
+    unwrap(objects, spec, conv, skip=leaf, keep_clear=strip / size)
+
     image = bpy.data.images.new(f"{spec['asset']}_paint", size, size, alpha=False)
     image.colorspace_settings.name = "sRGB"
 
@@ -270,7 +362,29 @@ def apply(spec, conv):
     scene.cycles.use_adaptive_sampling = False
     scene.cycles.use_denoising = False
 
-    materials = list(dict.fromkeys(slot.material for obj in objects for slot in obj.material_slots))
+    # What is baked: the objects themselves, or, with foliage, copies without their leaf pieces,
+    # so that leaves neither take texels nor shade the bark they hang over.
+    baked = objects
+    if leaf:
+        baked = []
+        for obj in objects:
+            copy = obj.copy()
+            copy.data = obj.data.copy()
+            scene.collection.objects.link(copy)
+            bm = bmesh.new()
+            bm.from_mesh(copy.data)
+            slot = next(i for i, s in enumerate(copy.material_slots) if s.material.name == leaf)
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index == slot], context="FACES")
+            bm.to_mesh(copy.data)
+            bm.free()
+            copy.data.materials.pop(index=slot)
+            baked.append(copy)
+        for obj in scene.objects:
+            obj.select_set(obj in baked)
+            obj.hide_render = obj in objects
+        bpy.context.view_layer.objects.active = baked[0]
+
+    materials = [m for m in dict.fromkeys(slot.material for obj in objects for slot in obj.material_slots) if m.name != leaf]
     temporary = []
     for material in materials:
         tree = material.node_tree
@@ -295,5 +409,22 @@ def apply(spec, conv):
         tree.links.new(bsdf.outputs[0], output.inputs["Surface"])
         # The flat colour stays on the socket, unlinked, as the record of what was painted over.
         tree.links.new(target.outputs["Color"], bsdf.inputs["Base Color"])
+    if leaf:
+        for copy in baked:
+            mesh = copy.data
+            bpy.data.objects.remove(copy)
+            bpy.data.meshes.remove(mesh)
+        for obj in objects:
+            obj.hide_render = False
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = objects[0]
+        leaf_colours(objects, spec, conv, image)
+        # The leaf material reads the same texture; its flat colour stays on the socket, as the bark's does.
+        material = bpy.data.materials[leaf]
+        _, bsdf = principled(material)
+        target = material.node_tree.nodes.new("ShaderNodeTexImage")
+        target.name = "paint"
+        target.image = image
+        material.node_tree.links.new(target.outputs["Color"], bsdf.inputs["Base Color"])
     image.pack()
     return image

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail.
-# Needs a passing `tools/gate.sh` for tracer, crate and rock first (uses their builds and exports).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds and exports).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 glb=assets/models/tracer.glb
@@ -96,6 +96,21 @@ smoke "$(broken shrunk_uvs)" "$rock_manifest" > "$tmp/shrunk.out" 2>&1
 expect_id "uv.coverage"            "L4 catches a mostly unused texture"             cat_fail "$tmp/shrunk.out"
 expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"         cat_fail "$tmp/shrunk.out"
 
+# Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
+tree=assets/models/tree_1.glb; tree_manifest=assets/models/tree_1.manifest.json
+broken_tree() { tools/bl tests/tree_mutations.py "$1" "$tmp/$1.glb" > /dev/null 2>&1; echo "$tmp/$1.glb"; }
+expect 0 "L4 passes the real tree"          smoke "$tree" "$tree_manifest"
+expect 0 "L4 passes an unbroken tree from the mutation script" smoke "$(broken_tree none)" "$tree_manifest"
+expect_id "foliage.two_sided"      "L4 catches leaves seen from one side only"      smoke "$(broken_tree single_sided)" "$tree_manifest"
+expect_id "foliage.flat_colour"    "L4 catches a gradient within a leaf piece"      smoke "$(broken_tree gradient_within_piece)" "$tree_manifest"
+expect_id "foliage.palette"        "L4 catches leaves painted from another colour"  smoke "$(broken_tree wrong_leaf_colour)" "$tree_manifest"
+expect_id "foliage.colour_varies"  "L4 catches neighbouring leaves all one tone"    smoke "$(broken_tree one_tone)" "$tree_manifest"
+expect_id "foliage.lighter_above"  "L4 catches pads no lighter above than below"    smoke "$(broken_tree no_gradient)" "$tree_manifest"
+expect_id "foliage.bluer_below"    "L4 catches undersides darker but no bluer"      smoke "$(broken_tree grey_underside)" "$tree_manifest"
+expect_id "foliage.pieces"         "L4 catches foliage asked of an asset with none" smoke "$rock" "$(tamper 'm["foliage"] = json.load(open("'$tree_manifest'"))["foliage"]; m["foliage"]["material"] = "m_rock"' "$rock_manifest")"
+expect_id "painted.present"        "L4 catches bark and leaf on two copies of the texture" smoke "$(broken_tree two_textures)" "$tree_manifest"
+expect_id "signed volume"          "L4 catches inside-out bark under open leaves"   smoke "$(broken_tree bark_inside_out)" "$tree_manifest"
+
 printf 'not a glb' > "$tmp/bad.glb"
 expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
 
@@ -162,6 +177,37 @@ paint_copy 's["planes"]["min_ledge_views"] = 9'
 expect_id "spec.planes"              "L0 catches more ledge views than there are views" python tools/lint_spec.py zz_lint
 paint_copy 'del s["painted_shading"]'
 expect_id "spec.painted_needs_uvs"   "L0 catches UVs on a flat-coloured asset" python tools/lint_spec.py zz_lint
+rm -rf source/zz_lint
+# L0, trees: tree_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
+tree_copy() { # <python expression mutating spec s>
+  rm -rf source/zz_lint; mkdir source/zz_lint; cp source/tree_1/brief.md source/zz_lint/
+  sed -i 's/`\["tree_1"\]`/`["zz_lint"]`/' source/zz_lint/brief.md
+  python -c "import json; s=json.load(open('source/tree_1/spec.json')); s['asset']='zz_lint'; s['objects']=['zz_lint']; $1; json.dump(s, open('source/zz_lint/spec.json','w'))"
+}
+tree_copy 'pass'
+expect 0 "L0 passes a tree variant's spec"   python tools/lint_spec.py zz_lint
+tree_copy 's["max_triangles"] = 6000'
+expect_id "brief.numbers_match_spec" "L0 catches a variant that disagrees with its family's brief" python tools/lint_spec.py zz_lint
+tree_copy 's["family"] = "zz_nope"'
+expect_id "spec.family"              "L0 catches a family with no brief"       python tools/lint_spec.py zz_lint
+tree_copy 's["open_materials"] = ["m_zz_nope"]'
+expect_id "spec.open_materials"      "L0 catches an open material the asset does not have" python tools/lint_spec.py zz_lint
+tree_copy 's["open_materials"] = []'
+expect_id "spec.foliage_amounts"     "L0 catches foliage that is not an open material" python tools/lint_spec.py zz_lint
+tree_copy 'del s["foliage"]["tones"]'
+expect_id "spec.foliage"             "L0 catches a missing foliage key"        python tools/lint_spec.py zz_lint
+tree_copy 'f=s["foliage"]; f["under_tint"], f["top_tint"] = f["top_tint"], f["under_tint"]'
+expect_id "spec.foliage_under_darker" "L0 catches an underside lighter than the top" python tools/lint_spec.py zz_lint
+tree_copy 'del s["painted_shading"]; s["attributes"].remove("TEXCOORD_0")'
+expect_id "spec.foliage_needs_paint" "L0 catches foliage with no texture to take colour from" python tools/lint_spec.py zz_lint
+tree_copy 's["materials"]["m_tree_bark"] = "#e0e0d0"'
+expect_id "spec.bark_darker"         "L0 catches bark lighter than the leaves" python tools/lint_spec.py zz_lint
+tree_copy 'del s["skeleton"]["min_roots"]'
+expect_id "spec.skeleton"            "L0 catches a missing skeleton key"       python tools/lint_spec.py zz_lint
+tree_copy 's["skeleton"]["fork_m"] = [3.5, 2.0]'
+expect_id "spec.skeleton_amounts"    "L0 catches a fork range given backwards" python tools/lint_spec.py zz_lint
+tree_copy 's["variants"]["siblings"] = ["zz_lint"]'
+expect_id "spec.variants_amounts"    "L0 catches a variant listed as its own sibling" python tools/lint_spec.py zz_lint
 rm -rf source/zz_lint
 
 # L5b: an approved sheet, then the same sheet with something drawn on it.
