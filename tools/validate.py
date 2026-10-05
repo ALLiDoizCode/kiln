@@ -555,7 +555,9 @@ def check_canopy(checks, name, bm, slots, spec, conv):
             # seen through an open underside is the back of the pieces lying on top, so a piece met from behind (its
             # face turned up, away from the eye under it) is the inside of the tier too. Not at the tier's edge, where
             # the pieces that overhang it are its fringe against the sky (`under_rim` asks for them), but in from it.
-            interior = foliage.shrunk(outline, max(1, round(rules["tier_fringe_m"] / cell)))
+            # The edge is the tier's own: its small holes (`hole_m`) are closed first. Shrunk as it stands, an outline full of
+            # holes has no interior left, and the more open a tier was the less of it was looked at.
+            interior = foliage.shrunk(foliage.closing(outline, max(1, round(rules["hole_m"] / cell))), max(1, round(rules["tier_fringe_m"] / cell)))
             behind = numpy.logical_and(numpy.logical_and(first >= 0, faces_up[numpy.maximum(first, 0)]), interior)
             deep = numpy.logical_or(deep, numpy.logical_and(numpy.logical_and(mine, piece_first), behind))
         holes = numpy.logical_and(foliage.closing(outline, max(1, round(rules["hole_m"] / cell))), first < 0)

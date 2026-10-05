@@ -182,10 +182,19 @@ def measure(bark, conv, leader=False):
         found["taper"] = below[0][0] / breast[0][0]
 
         def mean_radius(share):
-            loops = slice_at(bark, fork + (top - fork) * share)
+            height = fork + (top - fork) * share
+            loops = slice_at(bark, height)
             if leader and loops:
-                # A tree of tiers: its one limb above the lowest whorl is the leader, the thickest thing a slice cuts.
-                return loops[0][0]
+                # A tree of tiers: its one limb above the lowest whorl is the leader. It is not the thickest thing a slice
+                # cuts (a bough cut on the slant is a longer loop than the leader's); it is the loop that carries on from
+                # the trunk, followed up slice by slice from below the lowest whorl as the loop nearest the last one's middle.
+                middle = below[0][1]
+                for z, cut in slices[forked[0] :]:
+                    if z > height:
+                        break
+                    if cut:
+                        middle = min(cut, key=lambda loop: (loop[1] - middle).length)[1]
+                return min(loops, key=lambda loop: (loop[1] - middle).length)[0]
             return sum(radius for radius, _, _ in loops) / len(loops) if loops else None
 
         low, high = mean_radius(0.2), mean_radius(0.8)
