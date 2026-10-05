@@ -83,7 +83,7 @@ def stand_at(bm, material_index, floor, eye_height):
     return tuple(loops[0][1]) if loops else None
 
 
-NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None, "root_fill": None, "root_ridges": 0, "root_curve": None}
+NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None, "root_fill": None, "root_ridges": 0, "root_curve": None, "limb_bend": None, "limbs": 0}
 
 
 def inside(points, at):
@@ -93,6 +93,49 @@ def inside(points, at):
         if (a.y > at.y) != (b.y > at.y) and at.x < a.x + (b.x - a.x) * (at.y - a.y) / (b.y - a.y):
             within = not within
     return within
+
+
+def limb_bends(bark, floor):
+    """The largest bend, in degrees, between successive stretches of each limb: one number per limb.
+
+    The trunk and every limb is a closed tube of its own: rings of vertices, with one vertex closing each
+    end. Counting edges from an end vertex gives the rings in order, and the line through their middles is
+    the limb's path. The tube that stands on the ground is the trunk, and a tube of fewer than four sides is a twig.
+    """
+    found, seen = [], set()
+    for start in bark.verts:
+        if start in seen:
+            continue
+        piece, front = [start], [start]
+        seen.add(start)
+        while front:
+            for edge in front.pop().link_edges:
+                for other in edge.verts:
+                    if other not in seen:
+                        seen.add(other)
+                        piece.append(other)
+                        front.append(other)
+        if min(v.co.z for v in piece) <= floor + 1e-4:
+            continue
+        end = max(piece, key=lambda v: len(v.link_edges))
+        depth, layer, rings = {end: 0}, [end], []
+        while layer:
+            rings.append(layer)
+            onward = []
+            for vert in layer:
+                for edge in vert.link_edges:
+                    other = edge.other_vert(vert)
+                    if other not in depth:
+                        depth[other] = len(rings)
+                        onward.append(other)
+            layer = onward
+        rings = [ring for ring in rings if len(ring) > 1]
+        if len(rings) < 3 or min(len(ring) for ring in rings) < 4:
+            continue
+        middles = [sum((v.co for v in ring), Vector()) / len(ring) for ring in rings]
+        stretches = [b - a for a, b in zip(middles, middles[1:])]
+        found.append(max(math.degrees(a.angle(b)) for a, b in zip(stretches, stretches[1:])))
+    return found
 
 
 def measure(bark, conv):
@@ -134,6 +177,8 @@ def measure(bark, conv):
         foot = slice_at(bark, floor + rules["foot_height_m"])
         if foot:
             found["lean_m"] = (below[0][1] - foot[0][1]).length
+    bends = limb_bends(bark, floor)
+    found["limbs"], found["limb_bend"] = len(bends), max(bends, default=None)
     ground = slice_at(bark, floor + 0.02)
     if ground:
         _, middle, points = ground[0]

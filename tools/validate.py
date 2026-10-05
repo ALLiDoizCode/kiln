@@ -325,6 +325,12 @@ def check_skeleton(checks, name, bm, slots, spec, conv):
         f"{rules['root_curve_height']} of the trunk's radius above the ground the foot still reaches {shown['root_curve']} as far beyond the trunk as at the ground; "
         f"a root that sweeps out into the ground reaches at most {rules['max_root_curve']} (a straight slope from tip to trunk keeps about 0.8)",
     )
+    checks.check(
+        f"{name}.limbs_bend",
+        found["limb_bend"] is not None and found["limb_bend"] <= rules["max_limb_bend_deg"],
+        f"the sharpest turn between two stretches of a limb is {shown['limb_bend']} degrees, over {found['limbs']} limbs; "
+        f"conventions allow {rules['max_limb_bend_deg']}: a limb's rings sit where its curve has turned equally, or it shows an elbow",
+    )
     low, high = want["lean_m"]
     checks.check(
         f"{name}.lean",

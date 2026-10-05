@@ -193,6 +193,7 @@ root_ring_share = 0.5       # roots are told from a plinth on a circle this shar
 max_root_fill = 0.25        # at most this share of that circle is root: three quarters of the way round is ground
 root_curve_height = 0.5     # a root's sweep is taken this many times the trunk's radius (at breast height) above the ground slice
 max_root_curve = 0.65       # where the foot reaches at most this share as far beyond the trunk as at the ground
+max_limb_bend_deg = 16.0    # the sharpest turn between two stretches of a limb, ring to ring: more shows from below as an elbow (the reviewers' were 17 to 21)
 
 [variants]
 # Variants are compared by outline, from the four level views, both standing on their origins.

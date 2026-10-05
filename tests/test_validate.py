@@ -655,6 +655,11 @@ def no_roots(spec):
     regrow(spec, trunk__root_reach=[1.0, 1.0])
 
 
+def elbowed_limbs(spec):
+    """Each limb with a ring fewer: the same curves in three stretches for four, so every turn between two is sharper."""
+    regrow(spec, branches__rings=4)
+
+
 def foot_levels(bm, spec):
     """The foot of the trunk as its rings, lowest first, each as (height, its vertices): the bark's vertices below 0.5 m, gathered by height."""
     slot = leaf_slot(spec)
@@ -1238,6 +1243,7 @@ CASES = [
     (no_roots, "tree_1.roots", "tree_1"),
     (upright_trunk, "tree_1.lean", "tree_1"),
     (plinth_foot, "tree_1.roots_apart", "tree_1"),
+    (elbowed_limbs, "tree_1.limbs_bend", "tree_1"),
     (straight_roots, "tree_1.roots_curve", "tree_1"),
     (solid_ball, "tree_1.branches_seen", "tree_1"),
     (solid_ball, "tree_1.sky", "tree_1"),

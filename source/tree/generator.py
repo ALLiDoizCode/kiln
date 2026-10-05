@@ -540,6 +540,31 @@ def along(points, radii, share):
     return points[i].lerp(points[i + 1], t), radii[i] + (radii[i + 1] - radii[i]) * t
 
 
+def equal_turns(a, c, b, count):
+    """Where along a limb's curve (`bezier`) its `count` rings sit, as shares from 0 to 1: at equal turns of its direction.
+
+    At equal steps along the curve the bends between its stretches are unequal, and the sharpest, where
+    the limb turns up out of the trunk, shows from below as an elbow. The curve's direction is
+    (c - a) at its start and (b - c) at its end and turns one way between, so the share at which it
+    has turned a given part of the whole is found by halving.
+    """
+    first, last = c - a, b - c
+    whole = first.angle(last, 0.0)
+    if whole < 1e-6:
+        return [k / (count - 1) for k in range(count)]
+    shares = [0.0]
+    for k in range(1, count - 1):
+        low, high = 0.0, 1.0
+        for _ in range(40):
+            middle = (low + high) / 2
+            if first.angle(first.lerp(last, middle), 0.0) < whole * k / (count - 1):
+                low = middle
+            else:
+                high = middle
+        shares.append((low + high) / 2)
+    return shares + [1.0]
+
+
 def grow_branches(r, tree, rng, pads, trunk):
     """A branch to every pad but the crown's, and a twig from its end into each of the pad's side lobes."""
     points, radii = trunk
@@ -565,12 +590,16 @@ def grow_branches(r, tree, rng, pads, trunk):
         control = start + Vector((span.x, span.y, 0)) * 0.62 + Z * span.z * 0.12
         # Begin a little way out from the parent's axis, so the buried end does not come out of its far side.
         start = start + (control - start).normalized() * parent * r.branches.start
-        shares = [k / (r.branches.rings - 1) for k in range(r.branches.rings)]
-        path = [bezier(start, control, end, s) for s in shares]
         first = parent * r.branches.radius
-        widths = [r.trunk.tip_radius + (first - r.trunk.tip_radius) * (1 - s) ** 0.85 for s in shares]
+
+        def rings_at(shares):
+            return [bezier(start, control, end, s) for s in shares], [r.trunk.tip_radius + (first - r.trunk.tip_radius) * (1 - s) ** 0.85 for s in shares]
+
+        # The rings sit at equal turns of the limb's curve. A branch that leaves this one is still placed
+        # on it as when the rings sat at equal steps, so no limb's path moves with its rings.
+        path, widths = rings_at(equal_turns(start, control, end, r.branches.rings))
         tube(tree, path, widths, r.branches.sides, strip=r.trunk.strip, spin=rng.uniform(0, 2 * math.pi))
-        paths.append((path, widths))
+        paths.append(rings_at([k / (r.branches.rings - 1) for k in range(r.branches.rings)]))
 
     ends = {0: points[-1]}
     for rank, i in enumerate(order):
