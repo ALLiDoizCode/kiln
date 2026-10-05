@@ -55,6 +55,12 @@ expect 0 "L1 mutation tests: crag_1" l1 crag_1
 # A stack (source/stack): its stones sunk, thickened, evened out and pushed over, one at a time.
 uses stack_1 validate paint
 expect 0 "L1 mutation tests: stack_1" l1 stack_1
+# Rubble (source/rubble): separate stones in one mesh (`scatter`), one turned inside out, taken away, pushed
+# into another, lifted, sunk, and the group made even, strayed, parted, a row and a ring, one at a time.
+uses rubble_1 validate paint
+expect 0 "L1 mutation tests: rubble_1, unbroken" l1 rubble_1 --unbroken
+expect 0 "L1 mutation tests: rubble_1, part 1 of 2" l1 rubble_1 --part 1/2
+expect 0 "L1 mutation tests: rubble_1, part 2 of 2" l1 rubble_1 --part 2/2
 
 # A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
 uses block_2 validate paint
@@ -384,6 +390,15 @@ expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/ima
 uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
+# L0, rubble (source/rubble): rubble_1's spec with one thing wrong in what it asks of its group (`scatter`).
+uses rubble_1 lint_spec
+expect 0 "L0 passes a rubble variant's spec" lint_rubble 'pass'
+expect_id "spec.scatter"             "L0 catches a scatter block with a key missing" lint_rubble 'del s["scatter"]["max_gap_m"]'
+expect_id "spec.scatter"             "L0 catches a group allowed to be stones of one size" lint_rubble 's["scatter"]["min_size_range"] = 1.0'
+expect_id "spec.scatter"             "L0 catches a group of one stone" lint_rubble 's["scatter"]["min_count"] = 1'
+expect_id "spec.scatter"             "L0 catches more touching pairs asked than the group has fragments to make" lint_rubble 's["scatter"]["min_touching"] = 9'
+expect_id "spec.scatter_or_overlap"  "L0 catches separate stones that are also asked to pass into each other" lint_rubble 's["overlap"] = {"min_count": 5, "max_count": 5, "max_buried_share": 0.3, "min_step_ratio": 1.15}'
+expect_id "brief.numbers_match_spec" "L0 catches a rubble spec without the family's size order" lint_rubble 'del s["scatter"]["min_size_range"]'
 # L0, stacks: stack_1's spec with one thing wrong in what it asks of its stones (`pile`).
 uses stack_1 lint_spec
 expect 0 "L0 passes a stack variant's spec"  lint_stack 'pass'

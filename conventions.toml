@@ -84,6 +84,10 @@ head_height = 0.85          # a tier's head is the level cut this share of the w
 grid = 64                   # upright columns across the wider side of the bounds, where the solid is measured
 steep_deg = 20.0            # a side within this of vertical is a wall; the benchmark's three rocks have 0.54 to 0.83 of their sides there, the first boulder (source/rock) 0.95
 
+[scatter]
+# A group of separate stones lying together (source/rubble). The amounts wanted are in each spec.
+touch_m = 0.01              # two stones touch when their surfaces come this near: about a degree seen from 0.5 m
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 

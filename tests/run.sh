@@ -120,6 +120,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/boulder/*) echo boulder_2 ;;  # the generator and the brief boulder_2 is built with
     source/pebble/*) echo pebble_1 pebble_2 ;;  # the generator and the brief pebble_1 and pebble_2 are built with
     source/arch/*) echo arch_1 ;;  # the generator and the brief arch_1 is built with
+    source/rubble/*) echo rubble_1 ;;  # the generator and the brief rubble_1 is built with
     tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 stack_1 ;;&  # the kit all four are built with
     tools/stone.py) echo arch_1 ;;  # and the arch
     tools/try_seeds.py) ;;  # an aid, read by no case
@@ -445,6 +446,7 @@ lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spe
 lint_spire() { lint_copy spire_1 '' "$1"; }   # <python statements changing spec s>
 lint_arch() { lint_copy arch_1 '' "$1"; }     # <python statements changing spec s>
 lint_boulder() { lint_copy boulder_2 '' "$1"; } # <python statements changing spec s>
+lint_rubble() { lint_copy rubble_1 '' "$1"; }  # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

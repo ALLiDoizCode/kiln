@@ -666,6 +666,132 @@ def pushed_over(spec):
     edit(slide, "stack_1")
 
 
+# Rubble (source/rubble): separate stones lying together on the ground, under a spec's `scatter`.
+
+
+def fragments(bm):
+    """The group's fragments as lists of vertices, the longest first."""
+    from validate import pieces_in
+
+    found = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(found, key=lambda verts: max((a.co - b.co).length for a in verts for b in verts), reverse=True)
+
+
+def middle_on_ground(verts):
+    return Vector((sum(v.co.x for v in verts) / len(verts), sum(v.co.y for v in verts) / len(verts), 0.0))
+
+
+def each_fragment(change):
+    """Apply change(bm, the fragments) to rubble_1."""
+    edit(lambda bm: change(bm, fragments(bm)), "rubble_1")
+
+
+def fragment_inside_out(spec):
+    """The smallest fragment turned inside out. The group as a whole still encloses a positive volume."""
+    each_fragment(lambda bm, stones: bmesh.ops.reverse_faces(bm, faces=list({f for v in stones[-1] for f in v.link_faces})))
+
+
+def fragment_removed(spec):
+    """The smallest fragment taken away: one stone fewer than the brief's group."""
+    each_fragment(lambda bm, stones: bmesh.ops.delete(bm, geom=stones[-1], context="VERTS"))
+
+
+def fragment_pushed_in(spec):
+    """The smallest fragment moved into the middle of the largest: one stone passing through another."""
+
+    def push(bm, stones):
+        by = middle_on_ground(stones[0]) - middle_on_ground(stones[-1])
+        for v in stones[-1]:
+            v.co += by
+
+    each_fragment(push)
+
+
+def fragment_lifted(spec):
+    """The second largest fragment raised 3 cm off the ground: it floats."""
+
+    def lift(bm, stones):
+        for v in stones[1]:
+            v.co.z += 0.03
+
+    each_fragment(lift)
+
+
+def fragment_sunk(spec):
+    """The second largest fragment pressed down to a third of its height: sunk until only a cap shows."""
+
+    def press(bm, stones):
+        for v in stones[1]:
+            v.co.z *= 0.33
+
+    each_fragment(press)
+
+
+def equal_fragments(spec):
+    """Every fragment shrunk about its own middle on the ground to the length of the smallest: stones of one size."""
+
+    def shrink(bm, stones):
+        length = lambda verts: max((a.co - b.co).length for a in verts for b in verts)
+        want = length(stones[-1])
+        for verts in stones[:-1]:
+            about, by = middle_on_ground(verts), want / length(verts)
+            for v in verts:
+                v.co = about + (v.co - about) * by
+
+    each_fragment(shrink)
+
+
+def fragment_strayed(spec):
+    """The smallest fragment moved a metre and a half off along x, clear of the group wherever in it it lay: a stone near a group, not one of it."""
+
+    def stray(bm, stones):
+        for v in stones[-1]:
+            v.co.x += 1.5
+
+    each_fragment(stray)
+
+
+def none_touching(spec):
+    """Every fragment moved straight out from the middle of the group by a sixth of its distance from it: no two touch."""
+
+    def part(bm, stones):
+        middle = sum((middle_on_ground(verts) for verts in stones), Vector()) / len(stones)
+        for verts in stones:
+            by = (middle_on_ground(verts) - middle) * 0.16
+            for v in verts:
+                v.co += by
+
+    each_fragment(part)
+
+
+def in_a_line(spec):
+    """The fragments set in a row along x, largest first, 2 cm apart."""
+
+    def row(bm, stones):
+        x = 0.0
+        for verts in stones:
+            low, high, y = min(v.co.x for v in verts), max(v.co.x for v in verts), middle_on_ground(verts).y
+            for v in verts:
+                v.co.x += x - low
+                v.co.y -= y
+            x += high - low + 0.02
+
+    each_fragment(row)
+
+
+def in_a_ring(spec):
+    """The fragments set evenly round a circle 0.4 m across, with nothing in the middle."""
+
+    def ring(bm, stones):
+        for index, verts in enumerate(stones):
+            angle = index * math.tau / len(stones)
+            by = Vector((0.2 * math.cos(angle), 0.2 * math.sin(angle), 0.0)) - middle_on_ground(verts)
+            for v in verts:
+                v.co += by
+
+    each_fragment(ring)
+
+
 # The block (source/block): a near-cuboid with big chamfers, parted along a crack.
 
 
@@ -1339,6 +1465,16 @@ CASES = [
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),
     (crack_filled, "block_2.cracks", "block_2"),
+    (fragment_inside_out, "rubble_1.scatter_closed", "rubble_1"),
+    (fragment_removed, "rubble_1.scatter_count", "rubble_1"),
+    (fragment_pushed_in, "rubble_1.scatter_apart", "rubble_1"),
+    (fragment_lifted, "rubble_1.scatter_on_ground", "rubble_1"),
+    (fragment_sunk, "rubble_1.scatter_stands", "rubble_1"),
+    (equal_fragments, "rubble_1.scatter_size_order", "rubble_1"),
+    (fragment_strayed, "rubble_1.scatter_grouped", "rubble_1"),
+    (none_touching, "rubble_1.scatter_touching", "rubble_1"),
+    (in_a_line, "rubble_1.scatter_not_line", "rubble_1"),
+    (in_a_ring, "rubble_1.scatter_not_ring", "rubble_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),
