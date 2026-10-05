@@ -76,6 +76,6 @@ From `sheet.png`, seed 11, 2,802 triangles (642 bark, 216 core, 1,944 leaf), two
 
 The leaf material has no gloss, the underside and core tints are about twice as light, and nothing else changed: the mesh's positions, triangle counts and every L1 figure above are as they were. Lines above that describe `bevy_under` or the underside's tone are from before; these replace them.
 
-- L4d, from 1 m beside the trunk looking 78 degrees up: pale leaf samples (grey and light) are 0.00007 of the leaf samples, before 0.00170 (at most 0.001); foliage over the limbs among it is 1.32, before 0.92 (at least 1.25).
+- L4e, from 1 m beside the trunk looking 78 degrees up: pale leaf samples (grey and light) are 0.00007 of the leaf samples, before 0.00170 (at most 0.001); foliage over the limbs among it is 1.32, before 0.92 (at least 1.25).
 - bevy_under: no near-white piece. The left limb (x 0 to 600, y 620 to 900 of 1024) and the leader are darker than the leaves behind them; two lit pieces at about x 880, y 790 are light green, not grey. The left limb is still one straight prism.
 - Differences from the brief still standing: the foot (finding 1), the limbs' elbows (finding 2) and the grain on the foot (finding 5) are not fixed.

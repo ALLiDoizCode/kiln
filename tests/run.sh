@@ -5,7 +5,7 @@
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
 #   <asset>                  the cases that read that asset: tracer, crate, rock, tree_1, ...
-#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c
+#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L4e, L5b, L5c
 #   <tool>                   the cases behind one tool: smoke, view, paint, validate, ... (`--list` shows every tag)
 #       Several assets or tools select the cases with any of them, several gates likewise, and
 #       gates together with assets or tools select the cases with both: `tests/run.sh L4 rock`.
@@ -98,6 +98,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
     tools/view_checks.py) echo view_checks ;;
+    tools/shade_check.py) echo shade_check ;;
     tools/under_checks.py) echo under_checks ;;
     tools/bevy_lint.py) echo bevy_lint ;;
     tools/same_mesh.py) echo same_mesh ;;
@@ -106,10 +107,14 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
+    source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
+    tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 ;;
-    tools/stone.py) echo slab_1 crag_1 ;;  # the kit both are built with
+    source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
+    source/pebble/*) echo pebble_2 ;;  # the generator and the brief pebble_2 is built with
+    tools/stone.py) echo slab_1 crag_1 pebble_2 ;;  # the kit all three are built with
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
@@ -229,6 +234,7 @@ view() {
   return $code
 }
 view_checks() { tools/bl tools/view_checks.py "$@"; }
+shade_check() { python tools/shade_check.py "$@"; }
 under_checks() { tools/bl tools/under_checks.py "$@"; }
 
 # A case passes or fails here. Each runs in a shell of its own with $tmp to itself.
@@ -394,7 +400,15 @@ away_picture_exists() { away_view > /dev/null 2>&1; test -e "$fx/away.png"; }
 bark_shot() { fixture "bark_$1.png" bark_view "$1"; }
 bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$2"; [[ -e "$2" ]]; }
 
-# L4d: tree_1 with its foliage broken, seen from under it as the gate takes that view. The check
+# L4d: slab_1 with its paint broken, seen as the gate takes a rock's shaded sides; the check reads
+# what the viewer measured in its own picture.
+shade_shot() { fixture "shade_$1.json" shade_view "$1"; }
+shade_report() { # <python statements changing a passing report r> -> path of the report
+  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.075, 'tenth': 0.058}, 'toward': {'pixels': 1800, 'median': 0.26}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
+  echo "$tmp/shade.json"
+}
+shade_view() { view "$(broken_slab "$1")" "$slab_manifest" --back --close --screenshot "$2.png" --shade "$2"; [[ -e "$2" ]]; }
+# L4e: tree_1 with its foliage broken, seen from under it as the gate takes that view. The check
 # casts its rays at tree_1's own built mesh, so these mutations change colour and light, not shape.
 under_shot() { fixture "under_$1.png" under_view "$1"; }
 under_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 1 --pitch 78 --screenshot "$2"; [[ -e "$2" ]]; }
@@ -415,6 +429,9 @@ lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changin
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
+lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
+lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
+lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

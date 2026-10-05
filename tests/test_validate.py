@@ -450,6 +450,53 @@ def fanned_prisms(spec):
     edit(fan, "crag_1")
 
 
+# The block (source/block): a near-cuboid with big chamfers, parted along a crack.
+
+
+def tapered_block(spec):
+    """The block drawn in toward its top, to six tenths of its footprint there: a stump of a pyramid, with no side square to anything."""
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+
+    def taper(bm):
+        for vert in bm.verts:
+            narrow = 1 - 0.4 * (vert.co.z - lo.z) / (hi.z - lo.z)
+            vert.co.x, vert.co.y = vert.co.x * narrow, vert.co.y * narrow
+
+    edit(taper, "block_2")
+
+
+def plain_box(spec):
+    """The block's two pieces each swapped for the plain box round it: no chamfer anywhere, and no groove between them."""
+    from validate import pieces_in
+
+    def swap(bm):
+        boxes = []
+        for piece in pieces_in(bm.faces):
+            corners = [v.co for f in piece for v in f.verts]
+            boxes.append(box([min(co[i] for co in corners) for i in range(3)], [max(co[i] for co in corners) for i in range(3)]))
+        bm.clear()
+        for piece in boxes:
+            verts = [bm.verts.new(co) for co in piece["vertices"]]
+            for face in piece["faces"]:
+                bm.faces.new([verts[i] for i in face])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    edit(swap, "block_2")
+
+
+def crack_filled(spec):
+    """A flat plate laid into the top of the block, over its whole footprint and up to its full height: the groove of the crack is filled level."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    plate = box((lo[0], lo[1], lo[2] + 0.8 * (hi[2] - lo[2])), hi)
+
+    def fill(bm):
+        verts = [bm.verts.new(co) for co in plate["vertices"]]
+        for face in plate["faces"]:
+            bm.faces.new([verts[i] for i in face])
+
+    edit(fill, "block_2")
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -781,6 +828,96 @@ def straight_blades(spec):
         generator.ARCH = saved
 
 
+# The table rock (source/table_rock): a cap held off the ground on narrow necks.
+
+
+def table_pieces(bm):
+    """The table rock's pieces as lists of vertices: (the cap, which stands on nothing; the neck, the tallest that stands on the ground; the rest)."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    cap = max(pieces, key=lambda verts: min(v.co.z for v in verts))
+    standing = sorted((verts for verts in pieces if verts is not cap), key=lambda verts: max(v.co.z for v in verts), reverse=True)
+    return cap, standing[0], standing[1:]
+
+
+def cap_pressed_down(spec):
+    """The cap lowered until its underside is half the clearance above the ground: a player no longer fits under it."""
+
+    def press(bm):
+        cap = table_pieces(bm)[0]
+        drop = min(v.co.z for v in cap) - spec["bounds_m"]["min"][2] - spec["table"]["min_clear_m"] / 2
+        bmesh.ops.translate(bm, verts=cap, vec=(0, 0, -drop))
+
+    edit(press, "table_rock_1")
+
+
+def fat_neck(spec):
+    """The neck made 2.5 times as wide: a pedestal, not a neck."""
+
+    def widen(bm):
+        neck = table_pieces(bm)[1]
+        middle = sum((v.co for v in neck), Vector()) / len(neck)
+        for v in neck:
+            v.co.x = middle.x + (v.co.x - middle.x) * 2.5
+            v.co.y = middle.y + (v.co.y - middle.y) * 2.5
+
+    edit(widen, "table_rock_1")
+
+
+def neck_cut_short(spec):
+    """The neck pressed down to a third of its height: a second block, and nothing holds the cap up."""
+
+    def press(bm):
+        floor = spec["bounds_m"]["min"][2]
+        for v in table_pieces(bm)[1]:
+            v.co.z = floor + (v.co.z - floor) / 3
+
+    edit(press, "table_rock_1")
+
+
+def neck_at_rim(spec):
+    """The neck and its block moved out until the neck stands 0.1 m in from the right of the bounds: the cap overhangs to one side only."""
+
+    def move(bm):
+        _, neck, rest = table_pieces(bm)
+        shift = spec["bounds_m"]["max"][0] - 0.1 - max(v.co.x for v in neck)
+        bmesh.ops.translate(bm, verts=neck + [v for verts in rest for v in verts], vec=(shift, 0, 0))
+
+    edit(move, "table_rock_1")
+
+
+def tall_pebble(spec):
+    """The pebble stretched to 0.36 as tall as it is wide, and its spec with it: the proportion the
+    first pebble_2 was specified, built and passed with, while its brief said "low"."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    height = 0.36 * max(hi[0] - lo[0], hi[1] - lo[1])
+    stretch = height / (hi[2] - lo[2])
+
+    def raise_it(bm):
+        for vert in bm.verts:
+            vert.co.z = lo[2] + (vert.co.z - lo[2]) * stretch
+
+    edit(raise_it, "pebble_2")
+    hi[2] = lo[2] + height
+
+
+def cut_block(spec):
+    """The pebble cut through by one steep plane and stretched back to its bounds: a block with one big cut face."""
+
+    def cut(bm):
+        lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+        normal = Vector((math.cos(math.radians(20)), 0, math.sin(math.radians(20))))
+        through = (lo + hi) / 2 + Vector((0.1 * (hi.x - lo.x), 0, 0))
+        result = bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-7, plane_co=through, plane_no=normal, clear_outer=True)
+        before = set(bm.faces)
+        bmesh.ops.holes_fill(bm, edges=[g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge)])
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if f not in before])
+        fit_to_bounds(bm, spec)
+
+    edit(cut, "pebble_2")
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -831,10 +968,20 @@ CASES = [
     (tipped_tops, "slab_1.top_level", "slab_1"),
     (plate_lifted, "slab_1.overlap_touch", "slab_1"),
     (plate_inside_out, "slab_1.normals_outward", "slab_1"),
+    (tall_pebble, "pebble_2.low", "pebble_2"),
+    (cut_block, "pebble_2.rounded", "pebble_2"),
     (even_heights, "crag_1.cluster_steps_down", "crag_1"),
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
     (fanned_prisms, "crag_1.cluster_leans_together", "crag_1"),
+    (cap_pressed_down, "table_rock_1.table_shelter", "table_rock_1"),
+    (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
+    (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
+    (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
+    (tapered_block, "block_2.block_square", "block_2"),
+    (plain_box, "block_2.block_chamfers", "block_2"),
+    (plain_box, "block_2.cracks", "block_2"),
+    (crack_filled, "block_2.cracks", "block_2"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),

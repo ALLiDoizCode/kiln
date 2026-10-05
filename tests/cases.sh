@@ -3,7 +3,7 @@
 # One case per line, and nothing else but comments and `uses` lines. A case is
 #   expect <exit code> "<name>" <command...>      the command must exit with that code
 #   expect_id "<check id>" "<name>" <command...>  the command must exit 1 and name that check
-# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c) and is unique.
+# Its name starts with its gate (L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L4e, L5b, L5c) and is unique.
 # `uses <tag...>` says what the cases below it depend on, until the next `uses`: the assets they
 # read, and the tools behind them (see `tags_of_file` in tests/run.sh). Selection goes by these.
 #
@@ -35,9 +35,19 @@ expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
+# A pebble (source/pebble): made too tall for its width, and cut into a block with one big steep face.
+uses pebble_2 validate paint
+expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
+# A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
+uses block_2 validate paint
+expect 0 "L1 mutation tests: block_2" l1 block_2
+
+# A table rock (source/table_rock): its cap and neck broken one way at a time.
+uses table_rock_1 validate paint
+expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -155,13 +165,20 @@ uses tree_1 view_checks view paint tree_mutations
 expect_id "view.bark_tone"  "L4c catches bark that is flat brown at arm's length" view_checks tree_1 "$(bark_shot no_grain)"
 expect_id "view.bark_grain" "L4c catches grain seen running round the trunk" view_checks tree_1 "$(bark_shot grain_across)"
 
-# L4d: the canopy seen from under it, as the gate takes it: leaf pieces lit where the sun cannot reach, and limbs lost against the leaves.
+# L4d: a rock's sides turned away from the sun, in the viewer's picture, as the gate takes it.
+uses slab_1 shade_check view paint slab_mutations
+expect 0 "L4d passes an unbroken slab's shaded sides" shade_check slab_1 "$(shade_shot none)"
+expect_id "view.shade_value" "L4d catches paint so dark the shaded sides are lost" shade_check slab_1 "$(shade_shot dark_paint)"
+uses slab_1 shade_check
+expect_id "view.shade_seen" "L4d catches a picture with no shaded side in it" shade_check slab_1 "$(shade_report 'r["away"]["pixels"] = 3')"
+
+# L4e: the canopy seen from under it, as the gate takes it: leaf pieces lit where the sun cannot reach, and limbs lost against the leaves.
 uses tree_1 under_checks
-expect 0 "L4d passes the real tree seen from below" under_checks tree_1 source/tree_1/review/final/bevy_under.png
-expect_id "view.under_seen"  "L4d catches a picture that is not the view from below" under_checks tree_1 source/tree_1/review/final/bevy_trunk.png
+expect 0 "L4e passes the real tree seen from below" under_checks tree_1 source/tree_1/review/final/bevy_under.png
+expect_id "view.under_seen"  "L4e catches a picture that is not the view from below" under_checks tree_1 source/tree_1/review/final/bevy_trunk.png
 uses tree_1 under_checks view paint tree_mutations
-expect_id "view.under_pale"  "L4d catches glossy leaf pieces glaring under the canopy" under_checks tree_1 "$(under_shot glossy_leaves)"
-expect_id "view.under_limbs" "L4d catches leaf undersides as dark as the bark" under_checks tree_1 "$(under_shot dark_underside)"
+expect_id "view.under_pale"  "L4e catches glossy leaf pieces glaring under the canopy" under_checks tree_1 "$(under_shot glossy_leaves)"
+expect_id "view.under_limbs" "L4e catches leaf undersides as dark as the bark" under_checks tree_1 "$(under_shot dark_underside)"
 
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 uses tracer bevy_lint
@@ -238,8 +255,9 @@ expect_id "spec.skeleton"            "L0 catches a missing limit on limbs seen f
 expect_id "spec.species"             "L0 catches a species with no recipe"     lint_tree 's["species"] = "zz_nope"'
 expect_id "spec.species"             "L0 catches a tree with no species"       lint_tree 'del s["species"]'
 expect_id "spec.growth_stage"        "L0 catches a growth stage older than the recipe draws" lint_tree 's["growth_stage"] = 5.0'
+expect_id "spec.growth_stage"        "L0 catches a growth stage younger than the recipe draws" lint_tree 's["growth_stage"] = 0.3'
 expect_id "spec.growth_stage"        "L0 catches a tree with no growth stage"  lint_tree 'del s["growth_stage"]'
-expect_id "spec.growth_height"       "L0 catches a mature tree's height called a sapling" lint_tree 's["growth_stage"] = 0.8'
+expect_id "spec.growth_height"       "L0 catches a mature tree's height called a sapling" lint_tree 's["growth_stage"] = 0.5'
 # Seasons (ADR 11, ADR 13): a season is another palette on its base asset's mesh, so its spec is the base's but for the palette.
 # `lint_season <python>` lints a copy of tree_1_autumn after that has changed its spec `s`.
 uses tree_1 tree_1_autumn lint_spec
@@ -279,6 +297,12 @@ expect_id "spec.top"                 "L0 catches a level share above the whole v
 expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+# L0, a pebble (source/pebble): low and rounded, each a share below 1.
+uses pebble_2 lint_spec
+expect 0 "L0 passes a pebble variant's spec" lint_pebble 'pass'
+expect_id "spec.low"                 "L0 catches a pebble allowed to be as tall as it is wide" lint_pebble 's["low"]["max_height_share"] = 1.0'
+expect_id "spec.rounded"             "L0 catches a steep plane allowed the whole surface" lint_pebble 's["rounded"]["max_steep_plane_share"] = 1.0'
+expect_id "brief.numbers_match_spec" "L0 catches a pebble's spec without the family's limit on height" lint_pebble 'del s["low"]'
 uses crag_1 lint_spec
 expect 0 "L0 passes a crag variant's spec"   lint_crag 'pass'
 expect_id "spec.cluster"             "L0 catches a height step that lets prisms of one height through" lint_crag 's["cluster"]["max_height_step"] = 1.0'
@@ -286,6 +310,16 @@ expect_id "spec.cluster"             "L0 catches a crag asked for one prism" lin
 expect_id "spec.cluster"             "L0 catches a lean spread of the whole compass" lint_crag 's["cluster"]["max_lean_spread_deg"] = 180.0'
 expect_id "spec.cluster"             "L0 catches a cluster block with a key missing" lint_crag 'del s["cluster"]["min_lean_deg"]'
 expect_id "spec.cluster"             "L0 catches prisms asked of one closed skin" lint_crag 'del s["overlap"]'
+# L0, blocks: block_2's spec with one thing wrong in what it asks of its box (`block`) and its crack (`cracks`).
+uses block_2 lint_spec
+expect 0 "L0 passes a block variant's spec"  lint_block 'pass'
+expect_id "spec.block"               "L0 catches a square share above the whole outline" lint_block 's["block"]["min_square_share"] = 1.5'
+expect_id "spec.block"               "L0 catches a block asked for chamfers of no width" lint_block 's["block"]["min_chamfer_m"] = 0.0'
+expect_id "spec.block"               "L0 catches a block block with a key missing" lint_block 'del s["block"]["min_chamfers"]'
+expect_id "spec.cracks"              "L0 catches a block asked for no cracks at all" lint_block 's["cracks"]["count"] = 0'
+expect_id "spec.cracks"              "L0 catches a crack of no depth" lint_block 's["cracks"]["depth_m"] = 0.0'
+expect_id "spec.cracks"              "L0 catches a crack that need cross none of the block" lint_block 's["cracks"]["min_span"] = 0.0'
+expect_id "spec.cracks"              "L0 catches cracks asked of something that is not a block" lint_block 'del s["block"]'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.
@@ -303,3 +337,11 @@ expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/ima
 uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
+# L0, table rocks: table_rock_1's spec with one thing wrong in what it asks of its cap and necks (`table`).
+uses table_rock_1 lint_spec
+expect 0 "L0 passes a table rock variant's spec" lint_table 'pass'
+expect_id "spec.table"               "L0 catches a clearance above the table rock's own height" lint_table 's["table"]["min_clear_m"] = 5.0'
+expect_id "spec.table"               "L0 catches necks allowed to fill the outline" lint_table 's["table"]["max_neck_share"] = 1.0'
+expect_id "spec.table"               "L0 catches a table block with a key missing" lint_table 'del s["table"]["min_overhang_m"]'
+expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
+expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'

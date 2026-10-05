@@ -1,4 +1,4 @@
-"""Gate L4d: a tree's canopy as a player under it sees it, measured in a Bevy screenshot.
+"""Gate L4e: a tree's canopy as a player under it sees it, measured in a Bevy screenshot.
 
 The gate takes the picture with `asset_view --stand 1 --pitch 78`: a player's
 eye 1 m from the trunk, looking up into the canopy. What each pixel shows is
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     greyest = max(min(colour) / max(colour) for row in palette for colour in row)
     grey_limit = (greyest + 1) / 2
 
-    checks = Checks("L4d-under", name)
+    checks = Checks("L4e-under", name)
     in_view = (
         found["sky_samples"] >= rules["min_samples"]
         and found["piece_samples"] >= rules["min_samples"]
@@ -209,6 +209,6 @@ if __name__ == "__main__":
             f"from below, foliage seen from its unlit side has luminance {found['canopy']:.4f} and bark {found['bark']:.4f}: {over:.2f} times; spec wants at least {limbs}, so that limbs stand out against the canopy",
         )
     else:
-        checks.check("view.under_pale", False, "not measured: see view.under_seen")
-        checks.check("view.under_limbs", False, "not measured: see view.under_seen")
-    checks.finish(Asset(name).report("L4d-under"))
+        checks.check("view.under_pale", False, "not measured: the picture is not this view of this tree")
+        checks.check("view.under_limbs", False, "not measured: the picture is not this view of this tree")
+    checks.finish(Asset(name).report("L4e-under"))

@@ -60,6 +60,10 @@ level_deg = 12.0            # a surface within this of level is one to stand on;
 # A crag: leaning prisms of different heights on one base, with low blocks at its foot.
 block_height = 0.3          # a piece lower than this share of the bounds' height is a block and not a prism: the height the foot's band stops at
 
+[table]
+# A table rock: a cap held off the ground on narrow necks. The clearance wanted under the cap is in each spec.
+neck_height = 0.5           # the necks are measured where a level cut passes this share of that clearance above the ground: above the blocks at their feet, below the cap
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 
@@ -124,6 +128,12 @@ min_grain_step = 0.25               # mean tone step half a grain width across t
 min_grain_along = 1.16              # that step, over the step the same distance along the grain: the least the benchmark trees show from 0.5 m (tools/view_checks.py)
 min_grain_patches = 0.8             # share of patches that must show both
 
+[shade]
+# Gate L4d: a painted solid's sides turned away from the viewer's sun, in the viewer's own picture
+# (asset_view --back --close --shade). Only the ambient light reaches them.
+min_luminance = 0.0543      # their median, linear: Rock_Medium_1 of the benchmark reads 0.05430 from the same camera under the viewer's light (ambient 900), and its pebble 0.0650. Measure it again when that light changes
+min_pixels = 200            # of the 65,536 sampled; the benchmark rock shows 6,680
+
 [foliage]
 # How leaf pieces take their colour (ADR 11). What a tree wants of its foliage is in its spec.
 swatch_px = 8               # side of one palette swatch, texels; a piece's UVs sit on its middle
@@ -143,14 +153,14 @@ rim_step_m = 0.05           # a point stands clear when there is sky this far pa
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
 
 [under_view]
-# A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4d). The picture is the
+# A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the
 # gate's `bevy_under` tile; tools/gate.sh takes it from the same place.
 stand_m = 1.0               # the eye's distance from the trunk
 pitch_deg = 78.0            # and how far above level it looks
 min_samples = 300           # samples of sky, of leaf pieces and of bark the view must hold to be measured
 min_agree = 0.9             # share of the samples at which the picture and the rays agree on sky or tree
 pale_light = 2.0            # a leaf sample is pale when it is this many times lighter than the typical unlit piece, and nearer grey than the palette allows
-max_pale_share = 0.001      # share of the leaf samples that may be pale: glare, not a leaf's colour
+max_pale_share = 0.0002     # share of the leaf samples that may be pale: glare, not a leaf's colour
 
 [palette]
 # Variants that are a change of palette on their base asset's mesh (ADR 11, ADR 13).
