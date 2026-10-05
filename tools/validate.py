@@ -21,6 +21,7 @@ from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import foliage
+import log_checks
 import skeleton
 from pipeline import VIEW_DIRECTIONS, Asset, Checks, conventions, linear_rgb, script_args
 
@@ -2131,6 +2132,9 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "spire" in spec:
             check_spire(checks, name, bm, spec, conv)
+        if "log" in spec:
+            # A fallen log (source/log): a trunk lying on the ground, measured at upright slices across its length.
+            log_checks.check(checks, name, bm, slot_names, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

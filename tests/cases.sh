@@ -56,6 +56,12 @@ expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
 # A boulder (source/boulder): drawn in to a trunk on a spread foot, notched into roots, and stretched into a column.
 uses boulder_2 validate paint
 expect 0 "L1 mutation tests: boulder_2" l1 boulder_2
+# A fallen log (source/log): a solid one tipped, lifted, straightened, left untapered and capped in bark; a hollow one
+# drawn solid, narrowed, given a paper wall, turned inside out, and held to a spec that asks no hollow.
+uses log_1 validate paint
+expect 0 "L1 mutation tests: log_1" l1 log_1
+uses log_3 validate paint
+expect 0 "L1 mutation tests: log_3" l1 log_3
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
@@ -148,6 +154,14 @@ uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
+# A mossy log lies: the top fifth of its bounds is its root plate, and the edges moss grows along are those of the
+# trunk's own upper sides, all along it. Its wood, at the ends, takes no growth.
+uses log_2_mossy smoke
+expect 0 "L4 passes an unbroken mossy log, whose upper edges run along its trunk" cover log_2_mossy
+uses log_2_mossy smoke paint cover_mutations
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a mossy log"       smoke "$(broken_cover log_2_mossy no_growth_edges)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_height"  "L4 catches growth all the way up a mossy log"     smoke "$(broken_cover log_2_mossy growth_everywhere)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_wood"    "L4 catches moss on the wood of a log's ends"      smoke "$(broken_cover log_2_mossy growth_on_wood)" assets/models/log_2_mossy.manifest.json
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
@@ -215,6 +229,13 @@ expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as expo
 uses table_rock_3 smoke
 expect 0 "L4 passes a table rock whose open faces lie at two heights" smoke assets/models/table_rock_3.glb assets/models/table_rock_3.manifest.json
 
+# A fallen log (source/log): its grain runs along x, level, where a standing trunk's runs up; the manifest says so
+# (`grain_along`) and the grain is then measured along that, on every face of its length and not only on upright ones.
+# log_3 as gated, and painted with its grain running round the trunk (tests/log_mutations.py).
+uses log_3 smoke
+expect 0 "L4 passes an unbroken hollow log, whose grain runs level" cover log_3
+uses log_3 smoke paint log_mutations
+expect_id "painted.grain_along" "L4 catches a log whose grain runs round it" smoke "$(broken_log hoops)" assets/models/log_3.manifest.json
 # A low stone (source/pebble): its open faces are its cap, almost all at one height, so the gradient
 # from base to top is between its foot and its cap. pebble_1 from seed 1, unbroken and with one tint all the way up;
 # that seed draws a stone of 104 triangles, which is all the manifest is changed to say.
@@ -512,3 +533,16 @@ expect_id "spec.arch"                "L0 catches piers and a span asked of one c
 expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
 expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
 expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
+
+# L0, fallen logs (source/log): log_3's spec with one thing wrong in what it asks of its trunk (`log`) and its hollow (`hollow`).
+uses log_3 lint_spec
+expect 0 "L0 passes a hollow log's spec" lint_log 'pass'
+expect_id "spec.log"                 "L0 catches a log block with a key missing" lint_log 'del s["log"]["max_taper"]'
+expect_id "spec.log"                 "L0 catches a butt the generator does not know" lint_log 's["log"]["butt"] = "burnt"'
+expect_id "spec.log"                 "L0 catches a log that need not taper" lint_log 's["log"]["max_taper"] = 1.0'
+expect_id "spec.log"                 "L0 catches a log whose wood is its bark" lint_log 's["log"]["wood"] = "m_log_bark"'
+expect_id "spec.log"                 "L0 catches a log thicker than its own bounds are tall" lint_log 's["log"]["thickness_m"] = [1.2, 1.9]'
+expect_id "spec.hollow"              "L0 catches a hollow wider than the log is thick" lint_log 's["hollow"]["min_clear_m"] = 1.3'
+expect_id "spec.hollow"              "L0 catches a hollow deeper than the log is long" lint_log 's["hollow"]["min_depth_m"] = 7.0'
+expect_id "spec.hollow"              "L0 catches a hollow with no wall asked" lint_log 'del s["hollow"]["min_wall_m"]'
+expect_id "spec.hollow"              "L0 catches a hollow asked of something that is not a log" lint_log 'del s["log"]'

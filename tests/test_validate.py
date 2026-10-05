@@ -1544,6 +1544,156 @@ def tall_boulder(spec):
     hi[2] = lo[2] + 3 * (hi[2] - lo[2])
 
 
+
+# A fallen log (source/log): a trunk lying on the ground. Most are drawn again by the generator with one of the
+# numbers it drew changed, in place of the log; the rest change the built mesh.
+
+
+def log_again(spec, tweak, name, **constants):
+    """The log drawn again with `tweak` applied to its numbers and the generator's constants set to `constants`, whatever it then measures."""
+    import plant_parts
+
+    generator = plant_parts.family_generator("log")
+    bpy.data.objects.remove(bpy.data.objects[name])
+    for held in (bpy.data.meshes, bpy.data.materials):
+        for block in list(held):
+            if not block.users:
+                held.remove(block)
+    # A broken log may fill its bounds only by being stretched further than a sound one is allowed.
+    kept = {key: getattr(generator, key) for key in ("MAX_STRETCH", "MAX_STRETCH_ACROSS", *constants)}
+    generator.MAX_STRETCH = generator.MAX_STRETCH_ACROSS = (0.2, 5.0)
+    for key, value in constants.items():
+        setattr(generator, key, value)
+    try:
+        generator.build_log(spec, tweak=tweak, strict=False)
+    finally:
+        for key, value in kept.items():
+            setattr(generator, key, value)
+
+
+def tipped_log(spec):
+    """The log raised toward its top end by 12 degrees: leaning on something, not lying."""
+    def tip(bm):
+        low = min(v.co.x for v in bm.verts)
+        for vert in bm.verts:
+            vert.co.z += (vert.co.x - low) * math.tan(math.radians(12))
+
+    edit(tip, "log_1")
+
+
+def perched_log(spec):
+    """The log lifted 5 cm clear of the ground: it touches nowhere."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, 0.05)), "log_1")
+
+
+def round_underside(spec):
+    """The log with no corner pressed onto the ground: a round trunk resting on a line."""
+    log_again(spec, lambda n: n.update(sink=0.002), "log_1", PRESS=0.003)
+
+
+def pole_log(spec):
+    """The log as thick at its top as at its butt."""
+    log_again(spec, lambda n: n.update(taper=0.0), "log_1")
+
+
+def thin_log(spec):
+    """The log drawn in to 0.6 of its thickness."""
+    def squeeze(bm):
+        for vert in bm.verts:
+            vert.co.y, vert.co.z = 0.6 * vert.co.y, 0.6 * vert.co.z
+
+    edit(squeeze, "log_1")
+
+
+def straight_log(spec):
+    """The log along a straight line, and on the ground all the way: a cylinder with ends."""
+    log_again(spec, lambda n: n.update(bend=(0.0, 0.0), lift=(0.5, 0.1, 0.0)), "log_1")
+
+
+def stepped_log(spec):
+    """Every other ring of the trunk a tenth thicker and the rest a tenth thinner: an outline that steps in and out like links."""
+    log_again(spec, lambda n: n.update(swell=[1.1 if k % 2 else 0.9 for k in range(len(n["swell"]))]), "log_1")
+
+
+def square_top(spec):
+    """The top cut square: every corner of its rim broken off at the same place, a ring and not a break."""
+    log_again(spec, lambda n: n["top"].update(out=[0.0] * n["sides"]), "log_1")
+
+
+def ragged_saw(spec):
+    """The sawn butt cut far off square, at 35 degrees: no saw cut."""
+    import math
+
+    log_again(spec, lambda n: n.update(saw=(n["saw"][0], math.radians(35))), "log_1")
+
+
+def bark_ends(spec):
+    """Every face of the log in its bark: ends capped, with no wood showing."""
+    def cover(bm):
+        for face in bm.faces:
+            face.material_index = 0
+
+    edit(cover, "log_1")
+
+
+def no_stubs(spec):
+    """The log with no branch stub."""
+    log_again(spec, lambda n: n.update(stubs=[]), "log_1")
+
+
+def solid_where_hollow(spec):
+    """The hollow log drawn solid: its spec still asks a hollow."""
+    hollow = spec.pop("hollow")
+    log_again(spec, None, "log_3")
+    spec["hollow"] = hollow
+
+
+def narrow_hollow(spec):
+    """The hollow log with a wall nearly half its radius thick: an opening too narrow to crawl into."""
+    log_again(spec, lambda n: n.update(wall=(0.45, *n["wall"][1:])), "log_3")
+
+
+def paper_wall(spec):
+    """The hollow log with a wall a sixteenth of its radius thick, 4 or 5 cm: nearer a surface than a wall."""
+    log_again(spec, lambda n: n.update(wall=(0.06, *n["wall"][1:])), "log_3")
+
+
+def hollow_not_asked(spec):
+    """The hollow log held to a spec that asks a solid one."""
+    del spec["hollow"]
+
+
+def hollow_inside_out(spec):
+    """The wall of the hollow turned to face the wood: seen from inside, it would not be drawn."""
+    def turn(bm):
+        low, high = min(v.co.x for v in bm.verts), max(v.co.x for v in bm.verts)
+        middle = [f for f in bm.faces if f.material_index == 1 and low + 0.3 * (high - low) < f.calc_center_median().x < high - 0.3 * (high - low)]
+        inside = max(log_pieces(bm, middle), key=len)
+        bmesh.ops.reverse_faces(bm, faces=inside)
+
+    edit(turn, "log_3")
+
+
+def log_pieces(bm, faces):
+    """The faces grouped by the edges they share."""
+    faces, groups, seen = set(faces), [], set()
+    for start in faces:
+        if start in seen:
+            continue
+        seen.add(start)
+        group, front = [], [start]
+        while front:
+            face = front.pop()
+            group.append(face)
+            for edge in face.edges:
+                for other in edge.link_faces:
+                    if other in faces and other not in seen:
+                        seen.add(other)
+                        front.append(other)
+        groups.append(group)
+    return groups
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1671,6 +1821,23 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
+    (tipped_log, "log_1.log_lies", "log_1"),
+    (perched_log, "log_1.log_lies", "log_1"),
+    (perched_log, "log_1.log_settled", "log_1"),
+    (round_underside, "log_1.log_settled", "log_1"),
+    (pole_log, "log_1.log_tapers", "log_1"),
+    (thin_log, "log_1.log_thick", "log_1"),
+    (straight_log, "log_1.log_bends", "log_1"),
+    (bark_ends, "log_1.log_ends", "log_1"),
+    (stepped_log, "log_1.log_even", "log_1"),
+    (square_top, "log_1.log_ragged", "log_1"),
+    (ragged_saw, "log_1.log_ragged", "log_1"),
+    (no_stubs, "log_1.log_stubs", "log_1"),
+    (solid_where_hollow, "log_3.log_hollow", "log_3"),
+    (narrow_hollow, "log_3.log_hollow", "log_3"),
+    (paper_wall, "log_3.log_wall", "log_3"),
+    (hollow_not_asked, "log_3.log_hollow", "log_3"),
+    (hollow_inside_out, "log_3.winding_consistent", "log_3"),
     (sparse_clump, "tall_grass_1.clump_dense", "tall_grass_1"),
     (splayed_clump, "tall_grass_1.clump_upright", "tall_grass_1"),
     (no_heads, "tall_grass_1.heads", "tall_grass_1"),

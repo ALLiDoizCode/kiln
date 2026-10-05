@@ -77,7 +77,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Fallen and hollow logs | Not started |
+| Fallen and hollow logs | The family `source/log`: three sizes, each a trunk of seven to nine flat sides lying along x, bent, tapering, twisted, pressed flat onto the ground, with one to three branch stubs and wood at both ends. `log_1` 0.26 to 0.36 m thick and 2.6 m long, sawn butt (stepped over); `log_2` 0.5 to 0.7 m thick and 4.4 m long, torn out with its roots (climbed over); `log_3` 1.2 to 1.5 m thick and 6.4 m long, hollow right through, about 0.95 m clear (crawled through). 372 to 540 triangles, two materials (bark, wood), 1024 and 2048 px textures. Lying, being settled, thickness, taper, bend, the wood at the ends, the stubs, the hollow and its wall are checked (`tools/log_checks.py`); 40 of 40 seeds build at each size. Open: the root end reads as a flared cone and not as roots, the broken ends are barely ragged, the stubs are pegs, the hollow's mouth is a plain polygon, and there is no hollow open at one end only. Twelve seeds of the middle size are in `benchmarks/out/log_2_candidates.png`. Covers: bare, and mossy for one (`log_2_mossy`, a palette variant on `log_2`'s mesh); it fails the load test's `painted.growth_edges`, which measures the top fifth of the bounds, where a lying log has only its root plate. Not approved. |
 | Log pile, stump, branches, roots | Not started |
 
 ## Not assets
