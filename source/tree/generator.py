@@ -90,7 +90,7 @@ MARGINS = {
     "skeleton.max_branch_taper": 0.72,
     "skeleton.min_flare": 2.3,
     "skeleton.min_seen_share": lambda least: round(least * 1.4, 3),
-    "skeleton.min_seen_views": 7,
+    "skeleton.min_seen_views": lambda views: views + 1,  # every view counted: seven for a tree with pads
     "foliage.piece_m": lambda span: [round(span[0] + 0.03, 3), round(span[1] - 0.03, 3)],
     "foliage.min_pointing_out": 0.84,
     "foliage.min_pointing_down": 0.75,
@@ -105,15 +105,8 @@ MARGINS = {
     "foliage.min_rim_points_per_m": 1.2,
 }
 
-# A conifer's (a spec with `tiers`), in place of or beside those: the leader shows from the four level views and from below,
-# and from none above, so no view is left to spare; the tiers' own limits are drawn in a little.
+# A conifer's (a spec with `tiers`), beside those: the limits of its `tiers` block, drawn in a little.
 TIER_MARGINS = {
-    "skeleton.min_seen_views": lambda views: views,
-    "skeleton.min_seen_share": lambda least: round(least * 1.15, 3),
-    "foliage.sky_share": [0.21, 0.49],
-    "foliage.max_core_seen": 0.095,
-    "foliage.max_seen_into": 0.14,
-    "skeleton.max_branch_taper": 0.78,
     "tiers.max_top_share": lambda most: round(most - 0.03, 3),
     "tiers.min_droop": lambda least: round(least + 0.03, 3),
     "tiers.max_tip_width_m": lambda most: round(most - 0.08, 3),
@@ -721,7 +714,10 @@ def grow_core(r, tree, rng, pad, lobe):
     # pad from below; narrower above, where the shell of pieces lies over it.
     def at(radius, height):
         if isinstance(lobe, Bough):
-            return lobe.inside(Vector((radius.x, radius.y, height * r.core.flat)) * r.core.size)
+            # A bough's core is a plate along its underside: it closes the view up into the tier, and from above and
+            # from the side it lies under the whole depth of the bough's pieces.
+            low, high = r.core.plate
+            return lobe.inside(Vector((radius.x * r.core.size, radius.y * r.core.size, low + (high - low) * (height + 0.8) / 1.7)))
         return lobe.centre + Vector((radius.x * lobe.radius, radius.y * lobe.radius, height * (lobe.up if height >= 0 else lobe.down))) * r.core.size
 
     spin = rng.uniform(0, 2 * math.pi)
@@ -739,9 +735,13 @@ def grow_core(r, tree, rng, pad, lobe):
     for j in range(r.core.sides):
         k = (j + 1) % r.core.sides
         triangles += [(top, upper[j], upper[k]), (upper[j], lower[j], upper[k]), (upper[k], lower[j], lower[k]), (bottom, lower[k], lower[j])]
+    # Faces turn outward from the lobe's middle; a bough's plate lies wholly below its middle line, and turns out from its own.
+    # (As the bough lies before it sags: sagging, the plate is a curved thing with no middle to turn out from.)
+    flat = {i: lobe.unit_of(tree.verts[i]) for i in upper + lower + [top, bottom]} if isinstance(lobe, Bough) else tree.verts
+    inner = (flat[top] + flat[bottom]) / 2 if isinstance(lobe, Bough) else lobe.centre
     for a, b, c in triangles:
-        middle = (tree.verts[a] + tree.verts[b] + tree.verts[c]) / 3
-        if (tree.verts[b] - tree.verts[a]).cross(tree.verts[c] - tree.verts[a]).dot(middle - lobe.centre) < 0:
+        middle = (flat[a] + flat[b] + flat[c]) / 3
+        if (flat[b] - flat[a]).cross(flat[c] - flat[a]).dot(middle - inner) < 0:
             b, c = c, b
         tree.face((a, b, c), CORE_FACE, pad)
     for i in upper + lower + [top, bottom]:
@@ -918,9 +918,10 @@ def grow_tiers(r, tree, rng, lo, hi):
             boughs.append(bough)
             # Its wood: out of the leader, level at first, and down into the foliage.
             start = root + out * parent * r.boughs.start
-            end = bough.at(r.boughs.wood * length - bough.middle, 0.0, -r.boughs.lift * thick[k])
-            control = start + out * (end - start).dot(out) * 0.5
             first = max(parent * r.boughs.radius, r.trunk.tip_radius * 1.2)
+            start = start - Z * first
+            end = bough.at(r.boughs.wood * length - bough.middle, 0.0, -r.boughs.down * thick[k] - first * 0.5)
+            control = start + out * (end - start).dot(out) * 0.5
             turns = equal_turns(start, control, end, r.boughs.rings[0 if k < 2 else 1])
             tube(tree, [bezier(start, control, end, s) for s in turns], [r.trunk.tip_radius * 0.7 + (first - r.trunk.tip_radius * 0.7) * (1 - s) ** 0.85 for s in turns],
                  r.boughs.sides[0 if k < 2 else 1], spin=rng.uniform(0, 2 * math.pi))

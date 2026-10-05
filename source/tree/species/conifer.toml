@@ -56,7 +56,7 @@ least_width = 0.2              # and never narrower than this
 inner = 0.12                   # a bough's foliage begins this far behind the leader's axis, so the boughs of a tier meet round it
 up = 0.2                       # foliage above a bough's middle line, in the widest tier
 down = 0.1                     # and below it
-lift = 0.08                    # the foliage's middle line above the wood
+lift = 0.1                     # the foliage's middle line above the wood
 scatter = 0.05                 # boughs of one whorl leave within this far above or below its height
 radius = 0.46                  # a bough's radius where it leaves, over the leader's there
 wood = 0.72                    # the wood runs this share of the bough's length, the rest is foliage alone
@@ -83,15 +83,15 @@ open = -0.3                    # the shell of pieces stops here (unit sphere hei
 buried = 0.9                   # a piece is left out when its place is this deep inside another bough
 
 [core]
-size = 0.66
+size = 0.8
 sides = 4
-flat = 0.45                    # a bough's core is this flat: its height over a pad core's, so the shell and the skirt hide it from the side
+plate = [-0.9, -0.15]           # a bough's core is a plate along its underside: from here to here, in the bough's depth below its middle line
 rough = 0.12
 
 [leaf]
 spacing = 0.29                 # between neighbouring pieces on a bough's surface
-length = [0.46, 0.68]
-width = [0.44, 0.52]           # over the length
+length = [0.5, 0.75] 
+width = [0.48, 0.56]           # over the length
 lift = [8.0, 26.0]             # degrees a piece is raised off the surface
 yaw = 30.0
 roll = 18.0
@@ -99,11 +99,11 @@ foot = 0.55                    # how much of a piece's length lies behind the po
 fall = 30.0                    # pieces point away from the leader and this far below level, along the surface
 round = 0.4
 up = 0.3
-outline = [[0.0, 0.0], [0.3, -0.5], [0.5, -0.22], [0.64, -0.36], [1.0, 0.0], [0.4, 0.5]]
+outline = [[0.0, 0.0], [0.28, -0.5], [0.47, -0.24], [0.6, -0.38], [1.0, 0.0], [0.38, 0.5]]  # the broadleaf's piece
 triangles = [[0, 1, 2], [2, 3, 4], [0, 2, 4], [0, 4, 5]]
 
 [skirt]
-spacing = 0.28                 # between neighbouring pieces round a bough's rim
+spacing = 0.26                 # between neighbouring pieces round a bough's rim
 droop = [38.0, 68.0]           # degrees below level
 foot = 0.4
 drop = 0.26                    # how far the skirt hangs below a bough's underside
