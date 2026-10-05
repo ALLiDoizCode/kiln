@@ -46,9 +46,9 @@
       0.57758
     ],
     "edge_light": 0.3,
-    "edge_width_m": 0.04,
+    "edge_width_m": 0.06,
     "crevice_shadow": 0.45,
-    "crevice_width_m": 0.12,
+    "crevice_width_m": 0.2,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -61,7 +61,7 @@
       240
     ],
     "blotch": 0.12,
-    "blotch_size_m": 0.2,
+    "blotch_size_m": 0.4,
     "side_shade": 0.22,
     "side_shade_normal_z": [
       0.3,

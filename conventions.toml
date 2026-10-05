@@ -120,7 +120,7 @@ growth_cover = [0.5, 1.5]           # measured cover of level faces, over the gr
 growth_patch_edges = 0.9            # least times growth starts or stops per growth_patch_m along a level face: the rock reads 1.32, and 0.60 with patches three times too large
 blotch_spread = [1.0, 2.5]          # tone spread of open faces (10th to 90th percentile), over the blotch asked for
 max_blotch_grain = 0.2              # mean tone step between neighbouring samples, over that spread: blotches are broad
-max_level_gap = 3                   # largest run of unused 8-bit levels inside the range open faces span: more is banding
+max_level_gap = 3                   # largest run of 8-bit levels no open face uses that two neighbouring texels of one face step over: more is banding
 # Grain (ADR 12), measured where a spec gives close_height_m: on the upright faces below it.
 grain_patch_m = 0.15                # a hand-sized patch: grain is asked of each one, not of the trunk on average
 min_grain_step = 0.25               # mean tone step half a grain width across the grain, over the grain asked for
@@ -130,7 +130,7 @@ min_grain_patches = 0.8             # share of patches that must show both
 [shade]
 # Gate L4d: a painted solid's sides turned away from the viewer's sun, in the viewer's own picture
 # (asset_view --back --close --shade). Only the ambient light reaches them.
-min_luminance = 0.0189      # their median, linear: Rock_Medium_1 of the benchmark reads 0.01895 from the same camera, and its pebble 0.0227
+min_luminance = 0.0543      # their median, linear: Rock_Medium_1 of the benchmark reads 0.05430 from the same camera under the viewer's light (ambient 900), and its pebble 0.0650. Measure it again when that light changes
 min_pixels = 200            # of the 65,536 sampled; the benchmark rock shows 6,680
 
 [foliage]

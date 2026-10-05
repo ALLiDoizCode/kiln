@@ -41,10 +41,11 @@ PAINTED = {
     "top_tint": str,
     "edge_light": float,
     "edge_width_m": float,
-    "crevice_shadow": float,
-    "crevice_width_m": float,
     "hidden_underside": bool,
 }
+# Optional, both or neither: the shadow in inside corners. A shape with none (a pebble) leaves them out, and the
+# load test then fails if it finds an inside corner; overlapping pieces always have them, for their joins (ADR 13).
+CREVICE = {"crevice_shadow": float, "crevice_width_m": float}
 GROWTH = {"growth": str, "growth_height_m": float}
 # Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
 # needs `growth`; `blotch` and `blotch_size_m` come together.
@@ -284,7 +285,7 @@ if not checks.failed():
     painted = spec.get("painted_shading")
     if painted is not None:
         keys = set(painted) if isinstance(painted, dict) else set()
-        wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
+        wanted = {**PAINTED, **(CREVICE if keys & set(CREVICE) else {}), **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
         optional = {**SIDE_SHADE, **({**GROWTH_WHERE, **GROWTH_LOOK} if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
         wanted.update({**(GRAIN if keys & set(GRAIN) else {}), **(CLOSE if keys & set(CLOSE) else {})})
@@ -293,7 +294,7 @@ if not checks.failed():
         checks.check(
             "spec.painted_shading",
             ok,
-            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
         )
         if ok:
             size = painted["texture_px"]
@@ -304,7 +305,9 @@ if not checks.failed():
                 luma(painted["base_tint"]) < luma(painted["top_tint"]),
                 f"base_tint {painted['base_tint']} is not darker than top_tint {painted['top_tint']} (ADR 9: darker toward the base)",
             )
-            amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted["crevice_shadow"] < 1 and painted["edge_width_m"] > 0 and painted["crevice_width_m"] > 0
+            amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted.get("crevice_shadow", 0.0) < 1 and painted["edge_width_m"] > 0 and painted.get("crevice_width_m", 1.0) > 0
+            if "overlap" in spec:
+                checks.check("spec.painted_joins", "crevice_shadow" in painted, "overlapping pieces are joined by what the crevice shadow hides (ADR 13): painted_shading needs crevice_shadow and crevice_width_m")
             strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
             strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0
             checks.check(

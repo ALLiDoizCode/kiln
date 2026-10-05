@@ -94,6 +94,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/paint_mutations.py) echo rock_mutations ;;
     tests/tree_mutations.py) echo tree_mutations ;;
     tests/slab_mutations.py) echo slab_mutations ;;
+    tests/pebble_mutations.py) echo pebble_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -112,9 +113,9 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 ;;
     source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
-    source/pebble/*) echo pebble_2 ;;  # the generator and the brief pebble_2 is built with
+    source/pebble/*) echo pebble_1 pebble_2 ;;  # the generator and the brief pebble_1 and pebble_2 are built with
     source/arch/*) echo arch_1 ;;  # the generator and the brief arch_1 is built with
-    tools/stone.py) echo slab_1 crag_1 pebble_2 ;;&  # the kit all three are built with
+    tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 ;;&  # the kit all three are built with
     tools/stone.py) echo arch_1 ;;  # and the arch
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
@@ -313,6 +314,7 @@ key_of() { # <files...> -> a hash of those files, every tool the builds import, 
 kept="$bin/../gate-test-fixtures"; mkdir -p "$kept" || die "cannot make $kept"
 rock_key="$(key_of tests/paint_mutations.py source/rock/build.py source/rock/spec.json)" || die "cannot hash the rock's sources"
 slab_key="$(key_of tests/slab_mutations.py source/slab_1/build.py source/slab_1/spec.json source/slab/*.py)" || die "cannot hash slab_1's sources"
+pebble_key="$(key_of tests/pebble_mutations.py source/pebble_1/build.py source/pebble_1/spec.json source/pebble/*.py)" || die "cannot hash pebble_1's sources"
 tree_key="$(key_of tests/tree_mutations.py source/tree_1/build.py source/tree_1/spec.json source/tree/*.py)" || die "cannot hash tree_1's sources"
 
 # The rock, or tree_1, built and painted with one thing wrong and exported. A mutation that only
@@ -333,6 +335,7 @@ broken_tree() {
   else fixture --key "$tree_key" "tree_1_$1.glb" mutated tests/tree_mutations.py "$1"; fi
 }
 broken_slab() { fixture --key "$slab_key" "slab_1_$1.glb" mutated tests/slab_mutations.py "$1"; }
+broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 
@@ -404,7 +407,7 @@ bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 
 # what the viewer measured in its own picture.
 shade_shot() { fixture "shade_$1.json" shade_view "$1"; }
 shade_report() { # <python statements changing a passing report r> -> path of the report
-  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.026, 'tenth': 0.02}, 'toward': {'pixels': 1800, 'median': 0.22}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
+  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.075, 'tenth': 0.058}, 'toward': {'pixels': 1800, 'median': 0.26}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
   echo "$tmp/shade.json"
 }
 shade_view() { view "$(broken_slab "$1")" "$slab_manifest" --back --close --screenshot "$2.png" --shade "$2"; [[ -e "$2" ]]; }

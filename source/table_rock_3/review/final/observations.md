@@ -28,7 +28,9 @@ Tiles read: `sheet.png` (all tiles; this variant has no `bevy_under`, since nobo
 
 ## 6. Materials
 
-- One material; blotches about a tenth of the cap's width across (brief: 0.2 m of 2.4 m).
+- One material; blotches about a sixth of the cap's width across (brief: 0.4 m of 2.4 m, the family's; the sheet was rebuilt on 2026-10-05 with the family's bands restored). material_top: five to six patches across the cap, lighter and darker by a step the eye reads as mottling; a light line along the rim about a fortieth of the cap's width wide (brief: 0.06 m).
+- material_front, material_back: the neck is darker than the cap all the way down and lighter along its two upright edges; the join under the cap is a dark ring.
+- L4: 43,228 open samples at heights 0.10 to 0.50 (the neck) and 0.70 to 1.00 (the cap) of the bounds, none between; no step in tone between neighbouring texels (`painted.banding`: run 0).
 
 ## 7. Scale
 

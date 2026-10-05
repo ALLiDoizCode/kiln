@@ -57,7 +57,7 @@ The grey is painted over by script (ADR 9, ADR 10; `tools/paint.py`), into one 2
 1. **Gradient.** Darker toward the ground and lighter toward the top, between the boulder's two tints: a light grey `#c8c8c8` at the top of the bounds and a cool grey `#8c8c9a` at the ground. This is the part that reads from a standing eye.
 2. **Blotches.** Within each plane the tone drifts lighter and darker by up to 12%, the boulder's strength, in soft-edged patches about one tenth of the stone's width across. The boulder's are a fifth of its width; a pebble's planes are at most about a third of its width across, and the slab found that a patch as wide as the open middle of a plane gives it one tone.
 3. **Edge light.** Exposed edges gain up to 30%, the boulder's strength, fading to nothing one thirtieth of the stone's width into each plane (the boulder: 0.08 m of 3.0 m, one thirty-seventh). The edge it stands on gets none.
-4. **Crevice shadow.** The boulder's 45%, fading out over one tenth of the stone's width (the boulder: 0.3 m of 3.0 m). A pebble is convex and has no inside corner, so this paints nothing, and the load test's `painted.crevices_darker` has nothing to measure. It is in the spec because a painted asset's spec must give it, and so that it is the boulder's if a later pebble has a notch.
+4. **No crevice shadow.** A pebble is convex: it has no inside corner for a shadow to lie in, so its spec asks none (`crevice_shadow` and `crevice_width_m` are left out), and the load test fails a pebble on which it finds an inside corner (`painted.crevices_darker`). A later pebble with a notch asks for the boulder's 45%, over one tenth of its width.
 
 No growth and no side shade. Moss is a cover, and covers are variants of the palette on the same mesh (ADR 13); these are the bare stone. A pebble's sides are all edge and no open face, as the slab's are.
 
@@ -96,7 +96,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.base_tint` | `"#8c8c9a"` | Painted shading 1: a cool grey at the ground |
 | `painted_shading.top_tint` | `"#c8c8c8"` | Painted shading 1: a light grey at the top |
 | `painted_shading.edge_light` | `0.3` | Painted shading 3: exposed edges gain up to 30% |
-| `painted_shading.crevice_shadow` | `0.45` | Painted shading 4: the boulder's 45% |
 | `painted_shading.blotch` | `0.12` | Painted shading 2: lighter and darker by up to 12% |
 | `painted_shading.hidden_underside` | `true` | Painted shading: the underside is never seen |
 | `fullness.min_volume_share` | `0.4` | Silhouette 3: at least 0.4 of the bounding box |
@@ -129,4 +128,4 @@ Proposed by the agent:
 - **One island of texture.** The generator marks the edge round the ground as the only seam, so the visible stone is unwrapped as one dome (`tools/paint.py` unwraps along seams a build script marks, as for a tree's limbs). Unwrapped by angle instead, into several islands, `pebble_2` used 0.344 of its texture where the conventions ask 0.4: the 8 px kept between islands is four times as large a share of a 256 px texture as of the boulder's 1024 px. As one island the three use 0.575 to 0.596. The texture's size was not changed.
 - That the generator draws at one metre wide and shrinks: the kit's least sizes (`tools/stone.py`: a plane must keep 4 cm2 inside its soft edges) are for metre rocks, and drawing at one metre leaves the kit untouched.
 - The budget of 150 triangles.
-- **The paint.** The boulder's colour, tints and strengths. Band widths as shares of the stone's width (a thirtieth, a tenth, a tenth), for the reason under Painted shading, which holds for any stone this size whatever the build looks like. A 256 px texture, by the sum under Texture size.
+- **The paint.** The boulder's colour, tints and strengths. Band widths as shares of the stone's width (a thirtieth for the edge light, a tenth for the blotches), for the reason under Painted shading, which holds for any stone this size whatever the build looks like. A 256 px texture, by the sum under Texture size.
