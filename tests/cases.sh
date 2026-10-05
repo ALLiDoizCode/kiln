@@ -156,6 +156,13 @@ uses pebble_1 smoke paint pebble_mutations
 expect 0 "L4 passes an unbroken pebble whose open faces are all cap" smoke "$(broken_pebble flat_cap)" "$(tamper 'm["triangles"] = 104' assets/models/pebble_1.manifest.json)"
 expect_id "painted.gradient" "L4 catches a pebble with no base-to-top gradient" smoke "$(broken_pebble no_gradient)" "$(tamper 'm["triangles"] = 104' assets/models/pebble_1.manifest.json)"
 
+# The crevice shadow is asked of a shape with inside corners and of no other: a convex stone has nothing to
+# measure it on, and a spec may leave it out only when the load test finds no inside corner either.
+uses pebble_1 smoke
+expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
+uses rock smoke
+expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
 
@@ -208,6 +215,7 @@ expect_id "spec.painted_base_darker" "L0 catches a base lighter than the top" li
 expect_id "spec.painted_amounts"     "L0 catches an impossible shadow amount" lint_rock 'p["crevice_shadow"] = 1.5'
 expect_id "spec.painted_needs_uvs"   "L0 catches painted shading with no UVs" lint_rock 's["attributes"].remove("TEXCOORD_0")'
 expect_id "spec.painted_shading"     "L0 catches a blotch with no size"       lint_rock 'del p["blotch_size_m"]'
+expect_id "spec.painted_shading"     "L0 catches a crevice shadow with no width" lint_rock 'del p["crevice_width_m"]'
 expect_id "spec.painted_shading"     "L0 catches growth placed with no growth colour" lint_rock 'del p["growth"], p["growth_height_m"]'
 expect_id "spec.painted_amounts"     "L0 catches a side shade that leaves no light" lint_rock 'p["side_shade"] = 1.0'
 expect_id "spec.fullness"            "L0 catches a fullness above the whole box" lint_rock 's["fullness"]["min_volume_share"] = 1.5'
@@ -295,6 +303,7 @@ uses slab_1 lint_spec
 expect 0 "L0 passes a slab variant's spec"   lint_slab 'pass'
 expect_id "spec.top"                 "L0 catches a level share above the whole view" lint_slab 's["top"]["min_level_share"] = 1.5'
 expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
+expect_id "spec.painted_joins"       "L0 catches overlapping pieces with no crevice shadow to hide their joins" lint_slab 'del s["painted_shading"]["crevice_shadow"], s["painted_shading"]["crevice_width_m"]'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 # L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
 # L0, a pebble (source/pebble): low and rounded, each a share below 1.

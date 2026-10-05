@@ -8,7 +8,7 @@ Variant 2 of the pebble. Everything about it is in the family's brief, `source/p
 
 ## Paint
 
-The family's brief gives each painted band as a share of the stone's width (Painted shading). At 0.25 m wide: edge light fading out 0.008 m into each plane (one thirtieth), blotches about 0.025 m across (one tenth), and a crevice shadow that would fade out over 0.025 m (one tenth) if the stone had an inside corner, which it has not.
+The family's brief gives each painted band as a share of the stone's width (Painted shading). At 0.25 m wide: edge light fading out 0.008 m into each plane (one thirtieth), and blotches about 0.025 m across (one tenth). No crevice shadow: the stone has no inside corner (the family's brief, Painted shading 4).
 
 ## Seed
 
@@ -25,5 +25,4 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `bounds_m.min` | `[-0.125, -0.1, 0.0]` | Real-world size |
 | `bounds_m.max` | `[0.125, 0.1, 0.05]` | Real-world size |
 | `painted_shading.edge_width_m` | `0.008` | Paint: one thirtieth of the width |
-| `painted_shading.crevice_width_m` | `0.025` | Paint: one tenth of the width |
 | `painted_shading.blotch_size_m` | `0.025` | Paint: one tenth of the width |

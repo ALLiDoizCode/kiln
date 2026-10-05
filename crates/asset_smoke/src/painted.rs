@@ -37,8 +37,11 @@ pub struct Painted {
     top_tint: [f32; 3],
     edge_light: f32,
     edge_width_m: f32,
-    crevice_shadow: f32,
-    crevice_width_m: f32,
+    /// Absent when the spec asks no crevice shadow: the shape has no inside corner, and the load test holds it to that.
+    #[serde(default)]
+    crevice_shadow: Option<f32>,
+    #[serde(default)]
+    crevice_width_m: Option<f32>,
     /// Faces lying on the floor of the bounds and facing down are never seen, and are not measured.
     hidden_underside: bool,
     min_texels_per_m: f32,
@@ -203,6 +206,7 @@ pub fn check(
     want: &Painted,
     triangles: &[Triangle],
     overlap: bool,
+    foliage: bool,
     image: &Image,
     floor: f32,
     top: f32,
@@ -323,6 +327,8 @@ pub fn check(
         .map(|t| (*t, normal(t).normalize_or_zero(), (t.positions[0] + t.positions[1] + t.positions[2]) / 3.0))
         .collect();
     let (base_tint, top_tint) = (Vec3::from(want.base_tint), Vec3::from(want.top_tint));
+    // With no crevice shadow asked, an inside corner is looked for as near as an exposed edge is.
+    let crevice_width_m = want.crevice_width_m.unwrap_or(want.edge_width_m);
     // Overlapping pieces (ADR 13): which piece each face is of. Surface inside another piece is
     // never seen, and what the paint did there is not measured.
     let corners: Vec<[Vec3; 3]> = faces.iter().map(|(t, _, _)| t.positions).collect();
@@ -394,12 +400,12 @@ pub fn check(
             // The edge an asset stands on is not exposed, and is not painted as one.
             let on_ground = want.hidden_underside && p.y - floor < want.edge_width_m * 2.0;
             let zone = if on_ground {
-                if p.y - floor < want.edge_width_m * FOOT_EDGE_WIDTHS && any_concave > want.crevice_width_m * 1.25 { Zone::Foot } else { Zone::Other }
-            } else if concave <= want.crevice_width_m * 0.25 {
+                if p.y - floor < want.edge_width_m * FOOT_EDGE_WIDTHS && any_concave > crevice_width_m * 1.25 { Zone::Foot } else { Zone::Other }
+            } else if concave <= crevice_width_m * 0.25 {
                 Zone::Crevice
-            } else if convex <= want.edge_width_m * 0.5 && any_concave > want.crevice_width_m {
+            } else if convex <= want.edge_width_m * 0.5 && any_concave > crevice_width_m {
                 Zone::Edge
-            } else if any_convex > want.edge_width_m * 2.0 && any_concave > want.crevice_width_m * 1.25 {
+            } else if any_convex > want.edge_width_m * 2.0 && any_concave > crevice_width_m * 1.25 {
                 Zone::Open
             } else {
                 Zone::Other
@@ -480,13 +486,26 @@ pub fn check(
             want.edge_light
         ));
     }
-    let crevice_ceiling = 1.0 - want.min_effect_share * want.crevice_shadow;
-    if crevice_count >= MIN_SAMPLES && crevice / open > crevice_ceiling {
-        fail(format!(
-            "painted.crevices_darker: inside corners are {:.3} times as light as open faces ({crevice_count} samples); crevice_shadow {} wants at most {crevice_ceiling:.3}",
-            crevice / open,
-            want.crevice_shadow
-        ));
+    // The crevice shadow is asked of a shape that has inside corners, and of no other: asked of a
+    // convex stone it would pass unmeasured, and left out of a spec it must not leave a corner unshaded.
+    match want.crevice_shadow {
+        Some(shadow) if crevice_count >= MIN_SAMPLES => {
+            let crevice_ceiling = 1.0 - want.min_effect_share * shadow;
+            if crevice / open > crevice_ceiling {
+                fail(format!(
+                    "painted.crevices_darker: inside corners are {:.3} times as light as open faces ({crevice_count} samples); crevice_shadow {shadow} wants at most {crevice_ceiling:.3}",
+                    crevice / open
+                ));
+            }
+        }
+        // Not yet asked of foliage: the stems of a bush or a tuft meet in corners too small for a sample, and their shadow is not measured.
+        Some(shadow) if !foliage => fail(format!(
+            "painted.crevices_darker: only {crevice_count} samples lie in inside corners; nothing to measure crevice_shadow {shadow} on. A shape with no inside corner leaves crevice_shadow and crevice_width_m out of its spec"
+        )),
+        None if crevice_count >= MIN_SAMPLES => fail(format!(
+            "painted.crevices_darker: {crevice_count} samples lie in inside corners, and the spec asks no crevice shadow of them (crevice_shadow, crevice_width_m)"
+        )),
+        _ => {}
     }
 
     // Banding: a smooth gradient uses every 8-bit level it passes through, so where two
