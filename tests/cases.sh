@@ -9,7 +9,7 @@
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `broken_slab`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
@@ -148,6 +148,13 @@ expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as expo
 # between, so the tones between the two are on no open face. That is no step in the texture (painted.banding).
 uses table_rock_3 smoke
 expect 0 "L4 passes a table rock whose open faces lie at two heights" smoke assets/models/table_rock_3.glb assets/models/table_rock_3.manifest.json
+
+# A low stone (source/pebble): its open faces are its cap, almost all at one height, so the gradient
+# from base to top is between its foot and its cap. pebble_1 from seed 1, unbroken and with one tint all the way up;
+# that seed draws a stone of 104 triangles, which is all the manifest is changed to say.
+uses pebble_1 smoke paint pebble_mutations
+expect 0 "L4 passes an unbroken pebble whose open faces are all cap" smoke "$(broken_pebble flat_cap)" "$(tamper 'm["triangles"] = 104' assets/models/pebble_1.manifest.json)"
+expect_id "painted.gradient" "L4 catches a pebble with no base-to-top gradient" smoke "$(broken_pebble no_gradient)" "$(tamper 'm["triangles"] = 104' assets/models/pebble_1.manifest.json)"
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"

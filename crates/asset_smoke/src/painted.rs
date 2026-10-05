@@ -8,7 +8,9 @@
 //! the geometry alone gives. That leaves a number that is 1 on an open face
 //! (give or take its blotches, which average out), above 1 on an exposed edge
 //! and below 1 in a crevice. Which of those a texel is comes from the
-//! geometry alone, never from the texture.
+//! geometry alone, never from the texture. The foot, the strip where a side
+//! meets the ground, is near 1 too: the paint gives the edge an asset stands
+//! on no light. It is measured only for the gradient from base to top.
 //!
 //! Growth is measured by hue: a texel divided by the tint, at the material's
 //! lightness, lies somewhere on the line from the material colour to the
@@ -118,11 +120,13 @@ pub struct Measured {
     open_samples: usize,
     edge_samples: usize,
     crevice_samples: usize,
+    /// Samples on the strip where a side meets the ground: measured with the open faces for the gradient alone.
+    foot_samples: usize,
     /// Mean of texel luminance over (material colour times tint) luminance, per zone.
     open_ratio: f32,
     edge_ratio: f32,
     crevice_ratio: f32,
-    /// Luminance of the lowest quarter of open samples over the highest quarter.
+    /// Luminance of the lowest quarter of the open and foot samples, by height, over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
     /// Largest run of 8-bit levels of the green channel that no open face uses and that two
@@ -153,6 +157,9 @@ const MIN_SAMPLES: usize = 50;
 const SAMPLE_GRID: u32 = 384;
 /// Faces closer in tilt than this are one surface.
 const SAME_SURFACE_DEG: f32 = 4.0;
+/// The foot is the surface within this many edge widths of the ground. The paint fades the edge light in over two
+/// edge widths from the ground (tools/paint.py), so the foot has at most an eighth of it.
+const FOOT_EDGE_WIDTHS: f32 = 0.25;
 /// Two samples next to each other in the texture are neighbours on the surface when no further apart than this many sample steps.
 const NEIGHBOUR_STEPS: f32 = 3.0;
 /// A point of a surface is buried when the space this far in front of it is inside another piece (as `[overlap] in_front_m` in conventions.toml).
@@ -187,6 +194,8 @@ enum Zone {
     Open,
     Edge,
     Crevice,
+    /// The strip where a side meets the ground it stands on: no edge light to speak of, and no shadow.
+    Foot,
     Other,
 }
 
@@ -385,7 +394,7 @@ pub fn check(
             // The edge an asset stands on is not exposed, and is not painted as one.
             let on_ground = want.hidden_underside && p.y - floor < want.edge_width_m * 2.0;
             let zone = if on_ground {
-                Zone::Other
+                if p.y - floor < want.edge_width_m * FOOT_EDGE_WIDTHS && any_concave > want.crevice_width_m * 1.25 { Zone::Foot } else { Zone::Other }
             } else if concave <= want.crevice_width_m * 0.25 {
                 Zone::Crevice
             } else if convex <= want.edge_width_m * 0.5 && any_concave > want.crevice_width_m {
@@ -429,6 +438,7 @@ pub fn check(
     let (edge_count, edge) = mean(Zone::Edge);
     let (crevice_count, crevice) = mean(Zone::Crevice);
     (measured.open_samples, measured.edge_samples, measured.crevice_samples) = (open_count, edge_count, crevice_count);
+    measured.foot_samples = samples.iter().filter(|s| s.zone == Zone::Foot).count();
     (measured.open_ratio, measured.edge_ratio, measured.crevice_ratio) = (open, edge, crevice);
     if open_count < MIN_SAMPLES {
         fail(format!("painted.open_faces: only {open_count} samples lie on open faces; nothing to measure the colour on"));
@@ -442,8 +452,13 @@ pub fn check(
         ));
     }
 
-    // Lowest and highest quarter of the open samples, by height.
-    let mut by_height: Vec<&Sample> = samples.iter().filter(|s| s.zone == Zone::Open).collect();
+    // Lowest and highest quarter, by height, of the surface whose tone the formula gives: the open
+    // faces and the foot. On a low stone the open faces are its cap, a few blotches across and
+    // almost one height: its low and high quarters differ by their blotches, by more than the
+    // tolerance either way, and by nothing the tints do (twelve seeds of pebble_1 read 0.21 over
+    // to 0.11 under what the tints give, and the same stone painted with no gradient 0.20 over).
+    // The gradient of such a stone is between its foot and its cap, so the foot is measured too.
+    let mut by_height: Vec<&Sample> = samples.iter().filter(|s| s.zone == Zone::Open || s.zone == Zone::Foot).collect();
     by_height.sort_by(|a, b| a.height.total_cmp(&b.height));
     let quarter = by_height.len() / 4;
     let total = |part: &[&Sample], value: fn(&Sample) -> f32| part.iter().map(|s| value(s)).sum::<f32>();
@@ -452,7 +467,7 @@ pub fn check(
     measured.gradient_expected = total(low, |s| s.expected) / total(high, |s| s.expected);
     if (measured.gradient - measured.gradient_expected).abs() > want.colour_tolerance {
         fail(format!(
-            "painted.gradient: the lowest quarter of the open faces is {:.3} times as light as the highest; the tints give {:.3} +/- {}",
+            "painted.gradient: the lowest quarter of the open faces and the foot is {:.3} times as light as the highest; the tints give {:.3} +/- {}",
             measured.gradient, measured.gradient_expected, want.colour_tolerance
         ));
     }
