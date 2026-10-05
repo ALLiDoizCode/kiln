@@ -13,7 +13,7 @@ Set dressing on a forested layer's ground, and the thing a forest is made of: ma
 First person, from as close as 0.5 m (ADR 7), and typically from 3 to 40 m. Two views decide what it must hold up to:
 
 - **From 3 m**, looking up at it: the trunk, the fork, the underside of the nearest pads and the branches going into them fill the view.
-- **From 0.5 m**, against the trunk: looking straight at it, bark fills the view at arm's length; looking up, the rest is the underside of the canopy with the branch skeleton against it. This is how a tree is mostly seen, and each variant's contact sheet shows both (`bevy_trunk`, `bevy_under`).
+- **From 0.5 m**, against the trunk: looking straight at it, bark is about half of what is seen, at arm's length; looking up, the rest is the underside of the canopy with the branch skeleton against it. This is how a tree is mostly seen, and each variant's contact sheet shows both (`bevy_trunk`, `bevy_under`).
 
 From further off it is an outline: a trunk, and several rounded pads with sky between them.
 
@@ -27,7 +27,7 @@ About 7 m tall with a crown 4 to 6 m across: a small street tree, or four player
 | `tree_2` | 5.5 m | 5.4 m | 6.2 m | lower and wider |
 | `tree_3` | 4.3 m | 4.3 m | 7.8 m | taller and narrower |
 
-The origin is on the ground at the middle of the foot of the trunk, so a tree is planted, and turned, about its trunk. The crown is not centred on it: a tree leans, and each variant's bounds say which way.
+The origin is on the ground at the middle of the foot of the trunk, so a tree is planted, and turned, about its trunk. The crown is not centred on it: a tree leans.
 
 ## Species
 
