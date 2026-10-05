@@ -450,6 +450,68 @@ def fanned_prisms(spec):
     edit(fan, "crag_1")
 
 
+# The stack (source/stack): flat stones piled one on another.
+
+
+def stack_stones(bm):
+    """The stack's stones as lists of vertices, lowest first."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(pieces, key=lambda verts: sum(v.co.z for v in verts) / len(verts))
+
+
+def stones_sunk(spec):
+    """Every stone but the lowest pushed down into the one below by 0.6 of its own height: still joined, nothing floats."""
+
+    def sink(bm):
+        down = 0.0
+        for verts in stack_stones(bm)[1:]:
+            down += 0.6 * (max(v.co.z for v in verts) - min(v.co.z for v in verts))
+            for v in verts:
+                v.co.z -= down
+
+    edit(sink, "stack_1")
+
+
+def tall_stones(spec):
+    """The whole stack stretched to three times its height: a pile of drums, not of flat stones."""
+
+    def stretch(bm):
+        for v in bm.verts:
+            v.co.z *= 3.0
+
+    edit(stretch, "stack_1")
+
+
+def even_stones(spec):
+    """Every stone widened about its own middle to the width and depth of the lowest: a column."""
+
+    def widen(bm):
+        stones = stack_stones(bm)
+        want = [max(v.co[i] for v in stones[0]) - min(v.co[i] for v in stones[0]) for i in range(2)]
+        for verts in stones[1:]:
+            for i in range(2):
+                low, high = min(v.co[i] for v in verts), max(v.co[i] for v in verts)
+                for v in verts:
+                    v.co[i] = (low + high) / 2 + (v.co[i] - (low + high) / 2) * want[i] / (high - low)
+
+    edit(widen, "stack_1")
+
+
+def pushed_over(spec):
+    """Every stone slid along x, each 0.8 of the lowest stone's half width further than the one below: the pile hangs past its base."""
+
+    def slide(bm):
+        stones = stack_stones(bm)
+        step = 0.4 * (max(v.co.x for v in stones[0]) - min(v.co.x for v in stones[0]))
+        for index, verts in enumerate(stones):
+            for v in verts:
+                v.co.x += index * step
+
+    edit(slide, "stack_1")
+
+
 # The block (source/block): a near-cuboid with big chamfers, parted along a crack.
 
 
@@ -974,6 +1036,10 @@ CASES = [
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
     (fanned_prisms, "crag_1.cluster_leans_together", "crag_1"),
+    (stones_sunk, "stack_1.pile_rests", "stack_1"),
+    (tall_stones, "stack_1.pile_flat", "stack_1"),
+    (even_stones, "stack_1.pile_smaller", "stack_1"),
+    (pushed_over, "stack_1.pile_balanced", "stack_1"),
     (cap_pressed_down, "table_rock_1.table_shelter", "table_rock_1"),
     (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),

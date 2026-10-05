@@ -41,6 +41,10 @@ expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
+# A stack (source/stack): its stones sunk, thickened, evened out and pushed over, one at a time.
+uses stack_1 validate paint
+expect 0 "L1 mutation tests: stack_1" l1 stack_1
+
 # A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
 uses block_2 validate paint
 expect 0 "L1 mutation tests: block_2" l1 block_2
@@ -346,6 +350,12 @@ expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/ima
 uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
+# L0, stacks: stack_1's spec with one thing wrong in what it asks of its stones (`pile`).
+uses stack_1 lint_spec
+expect 0 "L0 passes a stack variant's spec"  lint_stack 'pass'
+expect_id "spec.pile"                "L0 catches a size step that lets stones of one size through" lint_stack 's["pile"]["max_size_step"] = 1.0'
+expect_id "spec.pile"                "L0 catches a pile block with a key missing" lint_stack 'del s["pile"]["max_sink"]'
+expect_id "spec.pile"                "L0 catches a pile asked of one closed skin" lint_stack 'del s["overlap"]'
 # L0, table rocks: table_rock_1's spec with one thing wrong in what it asks of its cap and necks (`table`).
 uses table_rock_1 lint_spec
 expect 0 "L0 passes a table rock variant's spec" lint_table 'pass'
