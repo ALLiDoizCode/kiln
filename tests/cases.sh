@@ -403,7 +403,7 @@ expect_id "spec.growth_height"       "L0 catches a mature tree's height called a
 # `lint_season <python>` lints a copy of tree_1_autumn after that has changed its spec `s`.
 uses tree_1 tree_1_autumn lint_spec
 expect 0 "L0 passes a season's spec"         lint_season 'pass'
-expect_id "spec.season"              "L0 catches a season that is not one of the year's" lint_season 's["season"] = "monsoon"'
+expect_id "spec.season"              "L0 catches a season that is not one of the year's or dry" lint_season 's["season"] = "monsoon"'
 expect_id "spec.season"              "L0 catches a tree with no season"        lint_season 'del s["season"]'
 expect_id "spec.palette_of"          "L0 catches a season drawn from another seed than its base" lint_season 's["seed"] = 2'
 expect_id "spec.palette_of"          "L0 catches a season with a leaf shape of its own" lint_season 's["foliage"]["piece_m"] = [0.2, 0.9]'
@@ -412,6 +412,11 @@ expect_id "spec.palette_of"          "L0 catches a season in its base's own colo
 # A palette variant says what it is a palette of its base in: another season or another cover.
 expect_id "spec.palette_of"          "L0 catches a palette variant in its base's own season" lint_season 's["season"] = "summer"'
 expect_id "spec.palette_of"          "L0 catches a season with moss its base has not" lint_season 's["painted_shading"].update(growth="#7a8a4d", growth_height_m=0.9)'
+# Dry is a season of its own (the catalogue's "tall dry grass"): `lint_dry <python>` lints a copy of tall_grass_1_dry after that has changed its spec `s`.
+uses tall_grass_1 tall_grass_1_dry lint_spec
+expect 0 "L0 passes grass in its dry season" lint_dry 'pass'
+expect_id "spec.season"              "L0 catches dry grass in a season that is not one" lint_dry 's["season"] = "monsoon"'
+expect_id "spec.palette_of"          "L0 catches dry grass in its base's own season" lint_dry 's["season"] = "summer"'
 
 # L2c: a season's GLB carries its base's mesh, UVs included: only the texture differs.
 uses tree_1 tree_1_autumn same_mesh

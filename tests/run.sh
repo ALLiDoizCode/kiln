@@ -480,6 +480,7 @@ lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spe
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_grass() { lint_copy tall_grass_1 '' "$1"; } # <python statements changing spec s>
+lint_dry() { lint_copy tall_grass_1_dry '' "$1"; } # <python statements changing spec s>
 lint_reeds() { lint_copy reeds_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>

@@ -41,12 +41,12 @@ ADR 9: leaf-shaped geometry in flat colour, no leaf cards and no transparency. T
 
 ## Seasons
 
-The dry grass of the reference is a palette on a variant's mesh. The year's seasons in `conventions.toml` are summer, autumn and winter, and "dry" is not one, so the dry clump names its season as `autumn`: the season grass dries in.
+The dry grass of the reference is a palette on a variant's mesh. Its season is `dry`, which `conventions.toml` lists beside the year's summer, autumn and winter: grass dries in a drought, whatever the month.
 
 | Asset | Season | Leaf | Underside tint | Straw |
 | --- | --- | --- | --- | --- |
 | `tall_grass_1` | summer | `#9cb64e` | `#6f96a6` | `#b09a5e` |
-| `tall_grass_1_dry` | autumn | `#d8bf62`, a dry gold | `#b08a6a`, darker and browner | `#c2a468` |
+| `tall_grass_1_dry` | dry | `#d8bf62`, a dry gold | `#b08a6a`, darker and browner | `#c2a468` |
 
 ## Parts
 

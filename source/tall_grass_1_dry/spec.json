@@ -1,7 +1,7 @@
 {
   "asset": "tall_grass_1_dry",
   "family": "tall_grass",
-  "season": "autumn",
+  "season": "dry",
   "palette_of": "tall_grass_1",
   "objects": [
     "tall_grass_1_dry"
