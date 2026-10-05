@@ -2,7 +2,21 @@
 
 What the pipeline is to build, as our own assets. The owner's direction (2026-10-05): the whole catalogue of the nature reference and of the rock reference is the target, not a sample of it. The shapes and how they are built are described in `rock-shapes.md` and `nature-shapes.md`; this file is the list and its state. Nothing from either pack is used: these are our own versions in our style (ADR 9).
 
-An entry is a **family**: one generator and one brief, producing several assets from seeds and settings (ADR-less so far; see `source/tree/` for the first). A family is done when its variants pass their gates and the owner has approved their contact sheets.
+An entry is a **family**: one generator and one brief, producing several assets from seeds and settings (ADR 13; `source/tree/` is the first). A family is done when its variants pass their gates and the owner has approved their contact sheets.
+
+## Variants every family must cover
+
+The owner's direction: cover all the variants the references offer, not only shapes.
+
+| Kind | What varies | Applies to |
+| --- | --- | --- |
+| **Shape** | Seed: a different individual of the same kind. At least three per family. | Everything |
+| **Size or growth stage** | Sapling, young, mature, old for plants; small, medium, large for rocks and dead wood. | Everything |
+| **Season** | Summer green, autumn (yellow to orange to red), winter (bare branches, or snow lying on upward-facing surfaces), and dead or burnt. | Trees, bushes, ground plants, hanging growth |
+| **Colour** | Other foliage and flower colours for the same shape, including unnatural ones for deep layers; stone kinds for rocks (grey, sandstone, dark, ice). | Everything |
+| **Cover** | Bare, mossy, snow-capped. | Rocks, dead wood, trunks |
+
+Season, colour and cover are meant to be changes of palette and painted shading on the same mesh wherever possible, so a variant costs a texture and not a new model. Winter-bare trees and snow that changes the outline are the exceptions.
 
 ## Rocks
 
@@ -24,7 +38,7 @@ An entry is a **family**: one generator and one brief, producing several assets 
 
 ## Trees
 
-Every tree family is wanted in about four **growth stages** (sapling, young, mature, old), as the reference has them. Colour variants (autumn, snow) are out of scope until a layer needs them.
+Every tree family is wanted in four **growth stages** and in the seasons and colours above, as the reference has them.
 
 | Family | State |
 | --- | --- |
