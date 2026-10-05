@@ -85,6 +85,8 @@ expect_id "painted.growth_height"  "L4 catches growth all the way up the sides" 
 expect_id "painted.growth_up"      "L4 catches bare upward-facing surfaces"          smoke "$(broken no_growth_up)" "$rock_manifest"
 expect_id "painted.growth_up"      "L4 catches growth carpeting the top, not patchy" smoke "$(broken growth_carpets_the_top)" "$rock_manifest"
 expect_id "painted.growth_edges"   "L4 catches bare upper edges"                     smoke "$(broken no_growth_edges)" "$rock_manifest"
+expect_id "painted.growth_darker"  "L4 catches growth no darker than the rock"       smoke "$(broken growth_not_darker)" "$rock_manifest"
+expect_id "painted.growth_patches" "L4 catches growth in broad patches"              smoke "$(broken growth_broad_patches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
@@ -158,6 +160,18 @@ paint_copy 'p["side_shade"] = 1.0'
 expect_id "spec.painted_amounts"     "L0 catches a side shade that leaves no light" python tools/lint_spec.py zz_lint
 paint_copy 's["fullness"]["min_volume_share"] = 1.5'
 expect_id "spec.fullness"            "L0 catches a fullness above the whole box" python tools/lint_spec.py zz_lint
+paint_copy 'p["growth_darker"] = 1.0'
+expect_id "spec.painted_amounts"     "L0 catches growth darkened to black"    python tools/lint_spec.py zz_lint
+paint_copy 'del s["pieces"]["min_step_ratio"]'
+expect_id "spec.pieces"              "L0 catches a pieces block with a key missing" python tools/lint_spec.py zz_lint
+paint_copy 's["foot"]["min_sides"] = 5'
+expect_id "spec.foot"                "L0 catches a foot on more sides than there are" python tools/lint_spec.py zz_lint
+paint_copy 's["chamfers"]["min_m2"] = 0.5'
+expect_id "spec.chamfers"            "L0 catches a chamfer as big as a large plane" python tools/lint_spec.py zz_lint
+paint_copy 's["lean"]["max_upright_share"] = 1.5'
+expect_id "spec.lean"                "L0 catches an upright share above the whole" python tools/lint_spec.py zz_lint
+paint_copy 's["planes"]["ledge_plane_m2"] = 0.9'
+expect_id "spec.planes"              "L0 catches a ledge's smaller plane set above a large one" python tools/lint_spec.py zz_lint
 paint_copy 's["planes"]["min_ledge_views"] = 9'
 expect_id "spec.planes"              "L0 catches more ledge views than there are views" python tools/lint_spec.py zz_lint
 paint_copy 'del s["painted_shading"]'

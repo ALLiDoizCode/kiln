@@ -30,6 +30,23 @@ view_rays = 128             # parallel rays across the wider side of each view
 # The crown is the level slice through an asset this share of the way up its bounds.
 crown_height = 0.75
 
+[pieces]
+# How a shape built of several pieces (docs/style/rock-shapes.md) is held to what its build recorded.
+on_plane_m = 0.003          # a mesh face this close to a recorded piece's face lies on it
+grid = 24                   # points along each side of the bounds where the mesh and the pieces are compared
+max_mismatch = 0.04         # share of the space they fill where the two may differ; soft edges take about 0.02
+min_owned_share = 0.7       # share of the visible surface that lies on a recorded piece; the rest is soft edge
+
+[foot]
+# A foot is near-level surface low on a shape that nothing stands over, seen from straight above.
+band = 0.3                  # below this share of the height; the benchmark rock's weaker side reads 0.15 m2 here
+level_normal_z = 0.7        # within 45 degrees of level: a top, not a leaning wall
+
+[lean]
+upright_deg = 8.0           # a side within this of vertical is upright; the benchmark rock has 0.145 of its sides there
+side_normal_z = 0.7071      # faces steeper than 45 degrees are sides
+summit_height = 0.9         # the summit is what stands above this share of the height
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 
@@ -82,6 +99,7 @@ side_shade_normal_z = [0.3, 0.7]    # at or below the first a face is a side and
 side_shade_half_band = 0.35         # the shade is whole at mid height, and gone this share of the height above and below it
 growth_up_normal_z = [0.82, 0.94]   # growth settles on faces within 20 degrees of level, and not on faces past 35
 growth_cover = [0.5, 1.5]           # measured cover of level faces, over the growth_up asked for: patchy, neither bare nor carpeted
+growth_patch_edges = 0.9            # least times growth starts or stops per growth_patch_m along a level face: the rock reads 1.32, and 0.60 with patches three times too large
 blotch_spread = [1.0, 2.5]          # tone spread of open faces (10th to 90th percentile), over the blotch asked for
 max_blotch_grain = 0.2              # mean tone step between neighbouring samples, over that spread: blotches are broad
 max_level_gap = 3                   # largest run of unused 8-bit levels inside the range open faces span: more is banding

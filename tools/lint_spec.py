@@ -48,6 +48,13 @@ GROWTH = {"growth": str, "growth_height_m": float}
 # Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
 # needs `growth`; `blotch` and `blotch_size_m` come together.
 GROWTH_WHERE = {"growth_up": float, "growth_edges": float}
+# Optional, with `growth`: how much darker than the surface its patches are (0 to below 1), and how large they are, metres.
+GROWTH_LOOK = {"growth_darker": float, "growth_patch_m": float}
+# Optional; the habits of a designed rock (docs/style/rock-shapes.md). Every key of a block is required once the block is present.
+PIECES = {"min_count": int, "min_shown_m2": float, "min_dominant_ratio": float, "min_step_ratio": float}
+FOOT = {"min_sides": int, "min_side_m2": float}
+CHAMFERS = {"min_count": int, "min_m2": float, "min_width_m": float}
+LEAN = {"max_upright_share": float, "min_summit_offset": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 HEX = "#[0-9a-f]{6}"
@@ -82,8 +89,10 @@ if not checks.failed():
     if planes is not None:
         ok = (
             isinstance(planes, dict)
-            and set(planes) == set(PLANES)
+            and set(planes) - {"ledge_plane_m2"} == set(PLANES)
             and all(type(planes[key]) is kind and planes[key] >= 0 for key, kind in PLANES.items())
+            # Optional: the least area of the smaller plane of a ledge, when it need not be a large one.
+            and (("ledge_plane_m2" not in planes) or (type(planes["ledge_plane_m2"]) is float and 0 < planes["ledge_plane_m2"] <= planes["large_m2"]))
             and planes["large_m2"] > 0
             and 0 < planes["min_area_share"] <= 1
             and planes["min_count"] <= planes["max_count"]
@@ -95,19 +104,30 @@ if not checks.failed():
     if fullness is not None:
         ok = isinstance(fullness, dict) and set(fullness) == set(FULLNESS) and all(type(fullness[key]) is float and 0 < fullness[key] <= 1 for key in FULLNESS)
         checks.check("spec.fullness", ok and spec["watertight"], f"optional; needs exactly {sorted(FULLNESS)}, each a share in (0, 1], on a watertight asset")
+    # The habits of a designed rock: blocks of positive numbers, with shares in (0, 1].
+    for block, keys in (("pieces", PIECES), ("foot", FOOT), ("chamfers", CHAMFERS), ("lean", LEAN)):
+        wanted_block = spec.get(block)
+        if wanted_block is None:
+            continue
+        ok = isinstance(wanted_block, dict) and set(wanted_block) == set(keys) and all(type(wanted_block[key]) is kind and wanted_block[key] >= 0 for key, kind in keys.items())
+        ok = ok and all(wanted_block[key] <= 1 for key in ("max_upright_share", "min_summit_offset") if key in keys)
+        ok = ok and wanted_block.get("min_sides", 0) <= 4 and wanted_block.get("min_dominant_ratio", 1.0) >= 1 and wanted_block.get("min_step_ratio", 1.0) >= 1
+        # Chamfers are measured against what counts as a large plane, and all four against a closed shape.
+        ok = ok and spec["watertight"] and (block != "chamfers" or (isinstance(planes, dict) and wanted_block["min_m2"] < planes.get("large_m2", 0)))
+        checks.check(f"spec.{block}", ok, f"optional; needs exactly {sorted(keys)}, none negative, shares at most 1, ratios at least 1, on a watertight asset (chamfers: with `planes`, and min_m2 below planes.large_m2)")
     checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
     painted = spec.get("painted_shading")
     if painted is not None:
         keys = set(painted) if isinstance(painted, dict) else set()
         wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
-        optional = {**SIDE_SHADE, **(GROWTH_WHERE if "growth" in keys else {})}
+        optional = {**SIDE_SHADE, **({**GROWTH_WHERE, **GROWTH_LOOK} if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
         ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
         ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
         checks.check(
             "spec.painted_shading",
             ok,
-            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
         )
         if ok:
             size = painted["texture_px"]
@@ -120,10 +140,11 @@ if not checks.failed():
             )
             amounts_ok = 0 <= painted["edge_light"] <= 1 and 0 <= painted["crevice_shadow"] < 1 and painted["edge_width_m"] > 0 and painted["crevice_width_m"] > 0
             strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
+            strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0
             checks.check(
                 "spec.painted_amounts",
                 amounts_ok and strengths_ok and painted.get("growth_height_m", 1.0) > 0,
-                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow and side_shade in 0..1 (below 1); widths, growth height and blotch size above 0",
+                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow, side_shade and growth_darker in 0..1 (below 1); widths, growth height, growth patch size and blotch size above 0",
             )
     checks.check(
         "spec.painted_needs_uvs",

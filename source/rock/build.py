@@ -1,57 +1,94 @@
-"""Rock: a full boulder chiselled from a block by plane cuts, with three forms cut into it.
+"""Rock: a boulder of several plane-cut pieces pushed together into one closed mesh.
 
 Every surface is a deliberate plane (ADR 9); nothing is displaced by noise.
-The cuts are drawn from a seeded generator, role by role:
+The habits of docs/style/rock-shapes.md, as the script applies them:
 
-1. sides that lean in a little, round a footprint between an ellipse and the box;
-2. a tipped top;
-3. chamfers across the corners where the top meets the sides;
-4. a step: a notch in the top that leaves a raised slab above a lower shelf;
-5. a fracture: a V-shaped groove down one side, deepest at the top;
-6. a shoulder: a bench cut into another side at about half height.
+1. Several pieces with a clear size order. One dominant piece, a tall and a
+   low secondary piece set against it, and three small pieces at its foot.
+   Each is a solid of its own, cut from a block by planes; an exact boolean
+   union joins them into one closed surface.
+2. Nothing upright. Every side in sight leans in, by its own amount, and the
+   pieces' tops tip roughly the same way.
+3. The tallest part is off-centre: the dominant piece stands in one corner of
+   the bounds and the others gather round the opposite sides of it.
+4. A foot: the small pieces sit low against the base and reach out past it.
+5. Flat caps: every top is one gently tipped plane.
+6. Long vertical edges: each wall of the dominant piece is folded down its
+   length, and every piece stands astride one of that piece's upright edges.
+7. Big chamfers: corners and a stretch of the dominant piece's rim are cut by
+   planes wide enough to be faces of their own.
 
-The three forms sit about a third of the way round from each other, so each
-side of the rock shows one. A cut is redrawn when it would leave an edge too
-short to bevel or would eat a form already made. Nothing is left out: a seed
-whose cuts do not fit, or whose rock does not meet the spec, fails the build
-and says why. Edges are softened by a one-segment bevel whose strips blend
-between the normals of the planes on either side, so each plane is lit flat
-and each edge is lit round. The finished mesh is stretched to the spec's
-bounds. Run through tools/build.py.
+A seed draws whole rocks, one after another, until one meets the spec, and
+fails the build with the reasons when none does. Nothing is left out
+silently. What the pieces are is recorded beside the mesh (a text
+data-block, `rock.pieces`) for tools/validate.py to hold against the mesh.
+Edges are softened by a one-segment bevel whose strips blend between the
+normals of the planes on either side, so each plane is lit flat and each edge
+is lit round. The finished mesh is stretched to the spec's bounds. Run
+through tools/build.py.
 """
 
 import contextlib
 import io
+import json
 import math
 import random
 
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
-from mathutils.bvhtree import BVHTree
 from pipeline import Checks, conventions, linear_rgb
-from validate import check_fullness, check_planes
+from validate import check_chamfers, check_foot, check_fullness, check_lean, check_pieces, check_planes
 
-SEED = 2  # the shipped rock; see the brief for how it was chosen
-BEVEL = 0.07  # how far a soft edge eats into each plane beside it, metres
-MIN_EDGE = 0.24  # a cut may not leave a plane edge shorter than this
-BODY_EDGE = 0.4  # and the body, before the forms are cut into it, none shorter than this
-MIN_PLANE_M2 = 0.45  # nor a plane smaller than this once the bevel has eaten its border: every plane is a large one
+SEED = 5  # the shipped rock; see the brief for how it was chosen
+BEVEL = 0.05  # how far a soft edge eats into each plane beside it, metres
+MIN_EDGE = 0.15  # the joined pieces may not leave an edge shorter than this
 MIN_ANGLE = math.radians(12)  # nor two planes closer in tilt than this: they would read as one bent plane
-DRAWS = 60  # how often each cut is drawn
-ROCKS = 40  # how many whole rocks one seed may draw before it is given up
-SIDES = 9  # side planes round the footprint
-SQUARENESS = 0.5  # the footprint, from an ellipse inside the bounds (0) to the bounds' own rectangle (1)
-# The forms, in metres before the rock is stretched to its bounds, and the least area (m2) each must leave its planes.
-STEP_RISE = (0.38, 0.46)  # how far the shelf sits below the raised slab
-STEP_RISER_M2, STEP_TREAD_M2, SUMMIT_M2 = 0.7, 0.9, 1.3
-FRACTURE_DEPTH, FRACTURE_FOOT, FRACTURE_MOUTH = (0.5, 0.75), (0.3, 0.42), (0.3, 0.42)  # into the rock at the top and at the ground; along the rim
-FRACTURE_WALL_M2 = 0.7
-SHOULDER_LEVEL, SHOULDER_DEPTH = (0.4, 0.55), (0.5, 0.85)  # the shelf's height as a share of the rock's; how far in its wall stands
-SHOULDER_RISER_M2, SHOULDER_TREAD_M2 = 0.7, 0.7
+MIN_PLANE_M2 = 0.012  # nor a plane smaller than this once the bevel has eaten its border
+ROCKS = 200  # how many whole rocks one seed may draw before it is given up
+DRAWS = 40  # how often each piece is drawn
+CHAMFER_DRAWS = 12  # and each of its chamfers
+MIN_LEAN = 9.0  # no side is drawn closer to upright than this, degrees
 FLAT = 1e-4  # tolerance for "on this plane"
+FACING = 0.02  # the least a soft edge's normal may agree with the face it is on (cosine); the load test fails at 0, lit from behind
 
 Z = Vector((0, 0, 1))
+
+# The pieces, largest first. The dominant piece stands in one corner of the bounds: it touches
+# two of their sides and reaches `across` of the way over to the other two, which leaves an
+# L-shaped strip of ground free. Each of the other pieces is set against the dominant piece
+# astride one of its upright edges (`astride`: the two of its sides that meet there), so
+# that the dominant piece falls away from it on both flanks: the tall secondary and the
+# first foot on the strip's first side ("a"), the second and third foot on its second ("b"),
+# and the low secondary at the corner behind ("far"), so that no side of the rock is bare.
+# `out` is how far out the piece's centre is and `outer` how far out its outer side: from the
+# middle of the bounds as shares of the way to their edge, or, behind, in metres from the
+# edge it stands astride and from its own centre. `flank` is the range its flanks may stand
+# from its centre, metres; where one flank has another piece beyond it (`crowded`: the one
+# toward the strip's corner or the one toward its end), the other may reach `open`.
+# Its back stands under the middle of the dominant piece, where that piece is widest, so the
+# back stays inside it. `tall` is a piece's height as a share of the bounds'; `lean` the
+# range its sides lean in by, degrees; `corners` and `rims` how many of its rim's corners
+# and edges are cut by a chamfer.
+PIECES = (
+    dict(name="dominant", across=(0.84, 0.87), tall=(1.0, 1.0), sides=8, lean=(9.0, 12.0), corners=1, rims=2),
+    dict(name="tall secondary", side="a", astride=(0, 1), crowded="end", out=(0.66, 0.7), outer=(0.96, 1.0), flank=(0.45, 0.62), open=(0.5, 0.8), tall=(0.66, 0.74), sides=4, lean=(9.0, 12), corners=0, rims=0),
+    dict(name="low secondary", side="far", astride=(5, 6), out=(0.0, 0.06), outer=(0.26, 0.32), flank=(0.36, 0.5), tall=(0.44, 0.5), sides=4, lean=(10, 15), corners=0, rims=0),
+    dict(name="first foot", side="a", astride=(7, 0), crowded="corner", out=(0.7, 0.74), outer=(0.95, 0.99), flank=(0.28, 0.36), open=(0.4, 0.52), tall=(0.25, 0.29), sides=4, lean=(10, 15), corners=0, rims=0),
+    dict(name="second foot", side="b", astride=(2, 3), crowded="end", out=(0.7, 0.74), outer=(0.95, 0.99), flank=(0.28, 0.34), open=(0.45, 0.6), tall=(0.2, 0.24), sides=4, lean=(10, 15), corners=0, rims=0),
+    dict(name="third foot", side="b", astride=(3, 4), crowded="corner", out=(0.72, 0.76), outer=(0.9, 0.94), flank=(0.22, 0.28), open=(0.24, 0.32), tall=(0.12, 0.15), sides=4, lean=(10, 18), corners=0, rims=0),
+)
+TOP_TILT = (6, 10)  # how far a piece's top tips from level, degrees
+BURIED_LEAN = (3, 8)  # how far the back of a piece set against the dominant one tips outward, degrees
+SQUARENESS = 0.55  # the dominant piece's footprint, from an ellipse (0) to a rectangle (1)
+WALL_FOLD = (7, 17)  # each wall of the dominant piece is two faces, turned this far either way from square to the strip, degrees
+FAR_SIDES, FAR_JITTER = (60, 104, 160, 210), 8  # where the dominant piece's far sides face, in degrees on from its second wall, and how far each may stray
+ASTRIDE = 0.05  # how far to either side of its edge a piece's centre may stand, metres
+CLEAR_OF_EDGE = 0.18  # a flank stands at least this far along from each upright edge of the dominant piece, metres
+CLEAR_OF_SECONDARY = 1.0  # the dominant piece's chamfers keep this far round its rim from the tall secondary, radians
+GROUP_LEAN = (0.5, 2)  # how much further the sides facing away from the group's lean tip in, degrees
+CORNER_UP = 1.3  # how much more a corner's chamfer faces up than out: it takes the corner off the cap, not down the side
+CORNER_DEPTH, RIM_DEPTH = (0.26, 0.36), (0.16, 0.22)  # how far below a corner or a rim its chamfer is cut, metres
 
 
 def leaning(azimuth, lift):
@@ -59,88 +96,227 @@ def leaning(azimuth, lift):
     return Vector((math.cos(azimuth) * math.cos(lift), math.sin(azimuth) * math.cos(lift), math.sin(lift)))
 
 
-def cut(bm, normal, depth):
-    """Slice off everything further than `depth` inside the mesh's furthest point along `normal`."""
-    reach = max(v.co.dot(normal) for v in bm.verts)
-    result = bmesh.ops.bisect_plane(
-        bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-6,
-        plane_co=normal * (reach - depth), plane_no=normal, clear_outer=True,
-    )
-    rim = [g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge)]
-    if len(rim) < 3:
-        return False
-    bmesh.ops.holes_fill(bm, edges=rim)
+def meeting(*planes):
+    """The point where three planes (normal, offset) meet."""
+    return Matrix([normal for normal, _ in planes]).inverted() @ Vector([offset for _, offset in planes])
+
+
+def solid(planes):
+    """The convex solid behind every plane (normal, offset): one face per plane that touches it."""
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=20.0)
+    for normal, offset in planes:
+        result = bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-6, plane_co=normal * offset, plane_no=normal, clear_outer=True)
+        rim = [g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge)]
+        if len(rim) >= 3:
+            bmesh.ops.holes_fill(bm, edges=rim)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    return True
+    return bm
 
 
-def slice_through(bm, point, normal):
-    """Slice off everything in front of the plane through `point` facing `normal`."""
-    reach = max(v.co.dot(normal) for v in bm.verts)
-    return cut(bm, normal, reach - point.dot(normal))
+def clear_reach(rng, span, blocked):
+    """A distance within `span`, drawn evenly from the parts of it outside every `blocked` stretch, or None when there is none."""
+    free, start = [], span[0]
+    for low, high in sorted(blocked):
+        if low > start:
+            free.append((start, min(low, span[1])))
+        start = max(start, high)
+    free.append((start, span[1]))
+    free = [(low, high) for low, high in free if high > low]
+    if not free:
+        return None
+    pick = rng.uniform(0, sum(high - low for low, high in free))
+    for low, high in free:
+        if pick <= high - low:
+            return low + pick
+        pick -= high - low
+    return free[-1][1]
 
 
-def notch(bm, corner, first, second):
-    """Remove the part of the rock that is in front of both planes through `corner`.
+def piece(rng, plan, half, height, turn, hand, group, core, dominant):
+    """One piece drawn from its line in PIECES: its planes (the ground, the top, then the sides
+    in order round it), and which of its rim's corners may take a chamfer (corner i is where
+    side i meets the next one). `turn` is which corner of the bounds the free strip of ground
+    goes round, `hand` which of its two sides is the first, `core` the middle of the dominant piece
+    and `dominant` that piece's planes. Returns (None, None) when the piece cannot be placed."""
+    sides = plan["sides"]
+    tall = height * rng.uniform(*plan["tall"])
+    sign = Vector((1 if turn in (0, 3) else -1, 1 if turn in (0, 1) else -1, 0))  # the strip's corner
+    if "side" in plan:
+        # A piece set against the dominant one: an outer side, one on each flank, and a back
+        # that faces into the dominant piece and ends up inside it, tipping outward: the piece
+        # leans on the dominant one.
+        first = (plan["side"] == "a") == (hand == 1)
+        out = rng.uniform(*plan["out"])
+        edge = meeting(dominant[2 + plan["astride"][0]], dominant[2 + plan["astride"][1]], (Z, 0.0))
+        if plan["side"] == "far":
+            at = math.atan2(edge.y - core.y, edge.x - core.x)
+            centre = edge + leaning(at, 0) * out
+            outer = rng.uniform(*plan["outer"])
+        elif first:
+            at = math.atan2(0, sign.x)
+            centre = Vector((sign.x * half.x * out, edge.y + rng.uniform(-ASTRIDE, ASTRIDE), 0))
+            outer = half.x * (rng.uniform(*plan["outer"]) - out)
+        else:
+            at = math.atan2(sign.y, 0)
+            centre = Vector((edge.x + rng.uniform(-ASTRIDE, ASTRIDE), sign.y * half.y * out, 0))
+            outer = half.y * (rng.uniform(*plan["outer"]) - out)
+        facing = [at - rng.uniform(1.42, 1.72), at + rng.uniform(-0.25, 0.25), at + rng.uniform(1.42, 1.72), at + math.pi]
+        reach = [None, outer, None]
+        # Which flank has another piece beyond it, and so less room: the one toward the strip's
+        # corner or the one away from it.
+        toward_corner = [leaning(azimuth, 0).dot(sign) > 0 for azimuth in (facing[0], facing[2])]
+        spans = [plan["flank"] if plan.get("crowded") in (None, "corner" if corner_side else "end") else plan["open"] for corner_side in toward_corner]
+        spans = [spans[0], None, spans[1]]
+        buried, free = sides - 1, {True: [0, 1], False: [0]}
+    else:
+        # The dominant piece. A wall faces each side of the strip, folded down its length
+        # into two faces of unequal width; four more sides go round the far part, where the
+        # piece touches the bounds, and the chamfers are cut there.
+        centre = core
+        radii = [half.x - abs(core.x), half.y - abs(core.y)]
+        first, second = math.atan2(0, sign.x), math.atan2(sign.y, 0)
+        if hand != 1:
+            first, second = second, first
+        way = 1 if math.remainder(second - first, math.tau) > 0 else -1
+        fold = [math.radians(rng.uniform(*WALL_FOLD)) for _ in range(4)]
+        facing = [first - way * fold[0], first + way * fold[1], second - way * fold[2], second + way * fold[3]]
+        facing += [second + way * math.radians(turned + rng.uniform(-FAR_JITTER, FAR_JITTER)) for turned in FAR_SIDES]
+        through = []
+        for azimuth in facing:
+            # How far out a side stands: between an ellipse inside the dominant piece's share of the bounds (0) and that share's own rectangle (1).
+            round_, square = math.hypot(radii[0] * math.cos(azimuth), radii[1] * math.sin(azimuth)), radii[0] * abs(math.cos(azimuth)) + radii[1] * abs(math.sin(azimuth))
+            through.append(centre + leaning(azimuth, 0) * (round_ + (square - round_) * SQUARENESS) * rng.uniform(0.96, 1.0))
+        # The chamfers are cut toward the strip, above the pieces set there: the corner where the
+        # two walls meet, and the rims of the faces either side of it. That leaves the cap's
+        # highest part on the far side, off the middle of the bounds.
+        buried, free = None, {True: [1], False: [0, 1]}
+    faces = []
+    for i, azimuth in enumerate(facing):
+        # Each side leans in by its own amount; the ones facing away from the way the group leans tip in a little more.
+        lean = max(MIN_LEAN, rng.uniform(*plan["lean"]) - rng.uniform(*GROUP_LEAN) * math.cos(azimuth - group))
+        if i == buried:
+            lean = -rng.uniform(*BURIED_LEAN)
+        normal = leaning(azimuth, math.radians(lean))
+        if buried is None:
+            faces.append((normal, normal.dot(through[i])))
+        elif i == buried:
+            faces.append((normal, normal.dot(core)))
+        else:
+            far = reach[i]
+            if far is None:
+                # A flank: stood clear of every upright edge of the dominant piece on this side of
+                # it, at the ground and at this piece's height. A flank that meets the dominant
+                # piece close to one of its edges leaves a sliver between them too thin to bevel.
+                out = leaning(at, 0)
+                sides_of = dominant[2 : 2 + PIECES[0]["sides"]]
+                corners = [meeting(side, sides_of[(j + 1) % len(sides_of)], (Z, level)) for level in (0.0, tall) for j, side in enumerate(sides_of)]
+                level = math.cos(math.radians(lean))
+                blocked = [((normal.dot(corner - centre) - CLEAR_OF_EDGE) / level, (normal.dot(corner - centre) + CLEAR_OF_EDGE) / level) for corner in corners if (corner - core).dot(out) > 0]
+                far = clear_reach(rng, spans[i], blocked)
+                if far is None:
+                    return None, None
+            faces.append((normal, normal.dot(centre + leaning(azimuth, 0) * far)))
+    # The tops tip roughly the same way: down toward the strip's corner, so the dominant piece is highest on its far side.
+    cap = leaning(math.atan2(sign.y, sign.x) + rng.uniform(-0.6, 0.6), math.radians(90 - rng.uniform(*TOP_TILT)))
+    top = (cap, cap.dot(centre + Z * tall))
+    return [(-Z, 0.0), top] + faces, free
 
-    `first` and `second` are the planes' unit normals; `corner` is a point on
-    the line where they meet. Done with an exact boolean against a skewed
-    box, the one operation here that leaves an inward corner.
-    """
-    reach = 10.0
-    along = first.cross(second).normalized()
-    # The box's edges lie in the two planes: one runs up the first, one out along the second.
-    out, up = second.cross(along), along.cross(first)
-    frame = Matrix((out, up, along)).transposed().to_4x4()
-    frame.translation = corner
-    box = bmesh.new()
-    bmesh.ops.create_cube(box, size=reach, matrix=frame @ Matrix.Translation((reach / 2, reach / 2, 0)))
 
+def chamfer(rng, planes, free, corner):
+    """A plane cutting a corner of a piece's rim (facing between the top and the two sides
+    that meet there), or a stretch of the rim (facing between the top and one side)."""
+    top, faces = planes[1], planes[2:]
+    i = rng.choice(free[corner])
+    first, second = faces[i], faces[(i + 1) % len(faces)]
+    where = meeting(top, first, second)
+    if corner:
+        normal, depth = (first[0] + second[0] + top[0] * CORNER_UP).normalized(), rng.uniform(*CORNER_DEPTH)
+    else:
+        normal, depth = (second[0] + top[0]).normalized(), rng.uniform(*RIM_DEPTH)
+    return (normal, normal.dot(where) - depth)
+
+
+def chamfered(rng, plan, planes, free):
+    """One piece as a solid: its planes, then its chamfers one at a time, each redrawn until it
+    cuts a face of its own and swallows none. The dominant piece must also take soft edges as it
+    stands; the others are held to that once they are joined to it, since part of each is buried.
+    None when the piece itself, or a chamfer, will not do."""
+    alone = plan is PIECES[0]
+    part = solid(planes)
+    if len(part.faces) != len(planes) or (alone and unbevelable(part)) or (plan["corners"] + plan["rims"] and not free):
+        part.free()
+        return None
+    cuts = []
+    for corner in [True] * plan["corners"] + [False] * plan["rims"]:
+        for _ in range(CHAMFER_DRAWS):
+            cuts.append(chamfer(rng, planes, free, corner))
+            cut = solid(planes + cuts)
+            if len(cut.faces) == len(part.faces) + 1 and not (alone and unbevelable(cut)):
+                break
+            cut.free()
+            cuts.pop()
+        else:
+            part.free()
+            return None
+        part.free()
+        part = cut
+    return part
+
+
+def union(solids):
+    """Join solids into one closed surface with the exact boolean, one face per plane."""
     scene = bpy.context.scene
     temporary = []
-    for name, source in (("rock_uncut", bm), ("rock_cutter", box)):
-        mesh = bpy.data.meshes.new(name)
+    for index, source in enumerate(solids):
+        mesh = bpy.data.meshes.new(f"rock_piece_{index}")
         source.to_mesh(mesh)
-        obj = bpy.data.objects.new(name, mesh)
+        obj = bpy.data.objects.new(mesh.name, mesh)
         scene.collection.objects.link(obj)
         temporary.append(obj)
-    box.free()
-    uncut, cutter = temporary
-    modifier = uncut.modifiers.new("notch", "BOOLEAN")
-    modifier.operation, modifier.solver, modifier.object = "DIFFERENCE", "EXACT", cutter
-
-    bm.clear()
-    bm.from_object(uncut, bpy.context.evaluated_depsgraph_get())
+    whole = temporary[0]
+    for other in temporary[1:]:
+        modifier = whole.modifiers.new(other.name, "BOOLEAN")
+        modifier.operation, modifier.solver, modifier.object = "UNION", "EXACT", other
+    bm = bmesh.new()
+    bm.from_object(whole, bpy.context.evaluated_depsgraph_get())
     for obj in temporary:
         mesh = obj.data
         bpy.data.objects.remove(obj)
         bpy.data.meshes.remove(mesh)
-    # The solver leaves coplanar pieces; put each plane back as one face.
+    # The solver leaves coplanar pieces; put each plane back as one face. The underside first:
+    # every piece stands on the ground, so it is one outline, filled again as one face.
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    bm.normal_update()
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(abs(v.co.z) < FLAT for v in f.verts)], context="FACES")
+    bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary])
     bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(0.5), verts=bm.verts, edges=bm.edges)
+    # A vertex left part of the way along a straight edge supports nothing.
+    bmesh.ops.dissolve_verts(bm, verts=[v for v in bm.verts if len(v.link_edges) == 2])
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
 
 
-def area_on(bm, point, normal):
-    """The area of the mesh's faces that lie on the plane through `point` facing `normal`."""
-    return sum(f.calc_area() for f in bm.faces if f.normal.dot(normal) > 1 - 1e-5 and abs((f.calc_center_median() - point).dot(normal)) < FLAT)
-
-
-def surface(bm, azimuth, height):
-    """Where a level line from outside, aimed at the rock's middle from `azimuth`, meets it: (point, the plane's normal)."""
-    out = leaning(azimuth, 0)
-    point, normal, _, _ = BVHTree.FromBMesh(bm).ray_cast(out * 10 + Z * height, -out)
-    return point, normal
-
-
-def unbevelable(bm, min_edge=None):
-    """Why the mesh cannot take soft edges, or None: it must be closed, with every plane big and distinct enough."""
-    min_edge = min_edge or MIN_EDGE
+def unbevelable(bm):
+    """Why the joined mesh cannot take soft edges, or None."""
     bm.normal_update()
     if not bm.faces or any(not e.is_manifold for e in bm.edges):
         return "not a closed solid"
-    if any(e.calc_length() < min_edge for e in bm.edges):
-        return f"an edge shorter than {min_edge} m"
+    reached, front = {bm.verts[:][0]}, [bm.verts[:][0]]
+    while front:
+        for edge in front.pop().link_edges:
+            other = edge.verts[0] if edge.verts[1] in reached else edge.verts[1]
+            if other not in reached:
+                reached.add(other)
+                front.append(other)
+    if len(reached) != len(bm.verts):
+        return "pieces that do not touch"
+    if any(f.normal.z < -0.02 and not all(abs(v.co.z) < FLAT for v in f.verts) for f in bm.faces):
+        return "an overhanging side in sight"
+    if any(len(v.link_edges) != 3 for v in bm.verts):
+        return "a corner where more than three planes meet"
+    if any(e.calc_length() < MIN_EDGE for e in bm.edges):
+        return f"an edge shorter than {MIN_EDGE} m"
     if any(e.calc_face_angle() < MIN_ANGLE for e in bm.edges):
         return f"two planes within {math.degrees(MIN_ANGLE):.0f} degrees"
     # What the bevel leaves of a plane: its area less a strip along its border.
@@ -149,169 +325,15 @@ def unbevelable(bm, min_edge=None):
     return None
 
 
-def attempt(bm, rng, draw, what):
-    """Apply one drawn cut. Returns the new mesh and what the cut says must be kept.
-
-    `draw` cuts a copy of the mesh and returns why the cut will not do (a
-    string), or the planes it made that later cuts must not eat (a list). The
-    cut is drawn DRAWS times and, of the draws that fit, the one that leaves
-    the longest shortest edge is kept: the most room for the cuts still to
-    come. A cut that never fits fails the build, with what stopped it.
-    """
-    best, reasons = None, {}
-    for _ in range(DRAWS):
-        trial = bm.copy()
-        result = draw(trial, rng)
-        reason = result if isinstance(result, str) else unbevelable(trial)
-        if reason is None:
-            room = min(e.calc_length() for e in trial.edges)
-            if best is None or room > best[0]:
-                best, trial = (room, trial, result), (best[1] if best else None)
-        else:
-            reasons[reason] = reasons.get(reason, 0) + 1
-        if trial:
-            trial.free()
-    if best is None:
-        tally = ", ".join(f"{reason} ({count})" for reason, count in sorted(reasons.items(), key=lambda item: -item[1]))
-        raise RuntimeError(f"no room for {what} in {DRAWS} draws: {tally}")
-    bm.free()
-    return best[1], best[2]
-
-
 def fit(bm, lo, hi):
-    """Stretch the mesh so its bounding box is exactly lo..hi."""
+    """Stretch the mesh so its bounding box is exactly lo..hi. Returns the stretch as (scale, shift) per axis."""
     have_lo = [min(v.co[i] for v in bm.verts) for i in range(3)]
     have_hi = [max(v.co[i] for v in bm.verts) for i in range(3)]
+    scale = [(hi[i] - lo[i]) / (have_hi[i] - have_lo[i]) for i in range(3)]
+    shift = [lo[i] - have_lo[i] * scale[i] for i in range(3)]
     for vert in bm.verts:
-        vert.co = Vector(lo[i] + (vert.co[i] - have_lo[i]) / (have_hi[i] - have_lo[i]) * (hi[i] - lo[i]) for i in range(3))
-
-
-def chisel(lo, hi, rng):
-    """The rock as exact planes with hard edges: one face per plane."""
-    half = (hi - lo) / 2
-    height = hi.z - lo.z
-    bm = bmesh.new()
-    # Larger than the rock, so that the cuts remove every face of the block.
-    bmesh.ops.create_cube(bm, size=1.0)
-    for vert in bm.verts:
-        vert.co = Vector((vert.co.x * half.x * 3.2, vert.co.y * half.y * 3.2, (vert.co.z + 0.5) * height * 1.5))
-
-    def foot(azimuth, scale):
-        """How far out the footprint reaches at `azimuth`: between an ellipse and the bounds' rectangle."""
-        c, s = math.cos(azimuth), math.sin(azimuth)
-        ellipse, rectangle = math.hypot(half.x * c, half.y * s), half.x * abs(c) + half.y * abs(s)
-        return leaning(azimuth, 0) * (ellipse + (rectangle - ellipse) * SQUARENESS) * scale
-
-    # The sides, numbered round the rock from a random start, either way round, each a little
-    # wider or narrower than the next. The forms are placed by side number, so that each has
-    # rim to itself: the step runs from side 0 to side 3, the fracture opens the corner between
-    # sides 4 and 5, and the shoulder is cut across side 7. That puts the three about a third
-    # of the way round from each other, and every side of the rock shows one.
-    turn, hand = rng.uniform(0, math.tau), rng.choice((-1, 1))
-    widths = [rng.uniform(0.92, 1.1) for _ in range(SIDES)]
-    facing = [turn + hand * math.tau * (sum(widths[:i]) + widths[i] / 2) / sum(widths) for i in range(SIDES)]
-
-    def summit(trial):
-        return max(trial.faces, key=lambda f: f.normal.z)
-
-    def side(trial, i):
-        sides = [f for f in trial.faces if abs(f.normal.z) < 0.5 and any(abs(v.co.z) < FLAT for v in f.verts)]
-        return max(sides, key=lambda f: f.normal.dot(leaning(facing[i], 0)))
-
-    def shared(a, b):
-        return next((e for e in a.edges if b in e.link_faces), None)
-
-    kept = []  # (what, point, normal, least area) of planes that later cuts must not eat
-
-    def spoiled(trial, new=()):
-        """Why a cut will not do: it left a form's plane too small. Otherwise, the planes to keep from now on."""
-        for what, point, normal, least in kept + list(new):
-            if area_on(trial, point, normal) < least:
-                return f"leaves {what} under {least} m2"
-        return list(new)
-
-    def carve(draw, what):
-        nonlocal bm
-        bm, new = attempt(bm, rng, draw, what)
-        kept.extend(new)
-
-    # The body: a tipped top, and sides that lean in toward the top by different amounts, slight
-    # and steeper by turns. The base is the widest part and the top is still broad.
-    def body(trial, r):
-        slice_through(trial, Z * height * 0.95, leaning(r.uniform(0, math.tau), math.radians(r.uniform(84, 87.5))))
-        for i in range(SIDES):
-            lean = r.uniform(2, 7) if i % 2 else r.uniform(8, 13)
-            slice_through(trial, foot(facing[i], r.uniform(0.98, 1.03)), leaning(facing[i], math.radians(lean)))
-        return unbevelable(trial, BODY_EDGE) or []
-
-    carve(body, "the body")
-
-    # The step: a notch in the top that leaves a raised slab above a lower shelf. The riser runs
-    # from the rim of side 0 to the rim of side 3 and leans back from the shelf, as a fracture
-    # does; the shelf falls away from it, over sides 1 and 2.
-    def step(trial, r):
-        top = summit(trial)
-        centre, top_normal = top.calc_center_median(), top.normal.copy()
-        rims = [shared(side(trial, i), top) for i in (0, 3)]
-        if None in rims:
-            return "a side does not reach the top"
-        start, end = (e.verts[0].co.lerp(e.verts[1].co, r.uniform(0.35, 0.65)) for e in rims)
-        along = (end - start).normalized()
-        outward = along.cross(Z).normalized()
-        outward *= 1 if outward.dot(leaning(facing[1], 0) + leaning(facing[2], 0)) > 0 else -1
-        lean = math.radians(r.uniform(10, 20))
-        riser = outward * math.cos(lean) + Z * math.sin(lean)
-        riser = (riser - along * riser.dot(along)).normalized()
-        fall, roll = math.radians(r.uniform(3, 8)), math.radians(r.uniform(-4, 4))
-        tread = (Z * math.cos(fall) + outward * math.sin(fall) + along * math.sin(roll)).normalized()
-        down = (riser * riser.z - Z).normalized()  # straight down the riser
-        corner = (start + end) / 2 + down * (r.uniform(*STEP_RISE) / -down.z)
-        notch(trial, corner, riser, tread)
-        return spoiled(trial, [("the step's riser", corner, riser, STEP_RISER_M2), ("the step's shelf", corner, tread, STEP_TREAD_M2), ("the raised slab", centre, top_normal, SUMMIT_M2)])
-
-    carve(step, "the step")
-
-    # The fracture: the corner between sides 4 and 5 split open into a V-shaped groove, widest
-    # and deepest at the top and narrow at the ground. Each wall runs from a point on the rim, a
-    # little along from the corner, to the groove's line, which leans into the rock.
-    def fracture(trial, r):
-        edge = shared(side(trial, 4), side(trial, 5))
-        if edge is None:
-            return "sides 4 and 5 do not meet"
-        low, high = sorted(edge.verts, key=lambda v: v.co.z)
-        if len(high.link_edges) != 3 or len(low.link_edges) != 3 or low.co.z > FLAT:
-            return "the corner does not run from the ground to the rim"
-        # At each end: the two edges that leave the corner, one along each side.
-        rim = [e.other_vert(high).co - high.co for e in high.link_edges if e is not edge]
-        ground = [e.other_vert(low).co - low.co for e in low.link_edges if e is not edge]
-        top_in = high.co + sum((v.normalized() for v in rim), Vector()).normalized() * r.uniform(*FRACTURE_DEPTH)
-        low_in = low.co + sum((v.normalized() for v in ground), Vector()).normalized() * r.uniform(*FRACTURE_FOOT)
-        walls = []
-        for along in rim:
-            mouth = high.co + along.normalized() * min(r.uniform(*FRACTURE_MOUTH), along.length - MIN_EDGE - 0.1)
-            normal = (top_in - mouth).cross(low_in - mouth).normalized()
-            walls.append(normal if normal.dot(high.co - top_in) > 0 else -normal)
-        notch(trial, top_in, *walls)
-        return spoiled(trial, [("a wall of the fracture", top_in, wall, FRACTURE_WALL_M2) for wall in walls])
-
-    carve(fracture, "the fracture")
-
-    # The shoulder: a bench across side 7, a shelf at about half height with a wall behind it.
-    # The wall leans back, so it takes little of the rim.
-    def shoulder(trial, r):
-        normal = side(trial, 7).normal
-        azimuth = math.atan2(normal.y, normal.x)
-        point, _ = surface(trial, azimuth, height * r.uniform(*SHOULDER_LEVEL))
-        outward = leaning(azimuth, 0)
-        fall, roll = math.radians(r.uniform(4, 9)), math.radians(r.uniform(-4, 4))
-        tread = (Z * math.cos(fall) + outward * math.sin(fall) + leaning(azimuth + math.pi / 2, 0) * math.sin(roll)).normalized()
-        riser = leaning(azimuth + math.radians(r.uniform(-5, 5)), math.radians(r.uniform(16, 22)))
-        corner = point - outward * r.uniform(*SHOULDER_DEPTH)
-        notch(trial, corner, riser, tread)
-        return spoiled(trial, [("the shoulder's wall", corner, riser, SHOULDER_RISER_M2), ("the shoulder's shelf", corner, tread, SHOULDER_TREAD_M2)])
-
-    carve(shoulder, "the shoulder")
-    return bm
+        vert.co = Vector(vert.co[i] * scale[i] + shift[i] for i in range(3))
+    return scale, shift
 
 
 def soften(bm):
@@ -336,7 +358,12 @@ def soften(bm):
 
 def plane_normals(bm, tag):
     """One normal per face corner: a plane's own normal on the plane, and on a bevel face the
-    normal of the plane each corner touches, so the strip blends from one plane to the next."""
+    normal of the plane each corner touches, so the strip blends from one plane to the next.
+
+    Every face round a vertex gets the same blend there, which is what makes the edge soft. In
+    an inward corner that blend can face away from a little bevel face; lit_from_behind()
+    counts those, and a rock that has any is refused. (Turning the normal toward the face
+    instead would give that vertex two normals: a hard edge, which the load test also fails.)"""
     bm.normal_update()
     normals = []
     for face in bm.faces:
@@ -351,20 +378,35 @@ def plane_normals(bm, tag):
     return normals
 
 
-def unmet(bm, spec):
+def lit_from_behind(bm, tag):
+    """Bevel faces with a corner normal that faces against the face itself: the engine would light them wrongly."""
+    normals = iter(plane_normals(bm, tag))
+    return sum(1 for face in bm.faces if min([next(normals).dot(face.normal) for _ in face.loops]) <= FACING)
+
+
+def unmet(bm, tag, record, spec):
     """What the spec asks of the shape and this mesh does not give, as the gate's own failure lines."""
     checks = Checks("build", "rock")
     conv = conventions()
     with contextlib.redirect_stdout(io.StringIO()):
-        check_planes(checks, "rock", bm, spec, conv)
         check_fullness(checks, "rock", bm, spec, conv)
+        check_planes(checks, "rock", bm, spec, conv)
+        check_pieces(checks, "rock", bm, spec, conv, record)
+        check_foot(checks, "rock", bm, spec, conv)
+        check_chamfers(checks, "rock", bm, spec, conv)
+        check_lean(checks, "rock", bm, spec, conv)
     triangles = sum(len(f.verts) - 2 for f in bm.faces)
     checks.check("budget.triangles", triangles <= spec["max_triangles"], f"{triangles} > {spec['max_triangles']}")
+    # What the Bevy load test would find later (crates/asset_smoke): caught here, where the rock can still be redrawn.
+    hard = sum(1 for e in bm.edges if len(e.link_faces) == 2 and all(f[tag] for f in e.link_faces) and e.link_faces[0][tag] != e.link_faces[1][tag] and not all(abs(v.co.z) < FLAT for v in e.verts))
+    checks.check("rock.soft_edges", hard == 0, f"{hard} edges between planes were left hard: the bevel had no room")
+    behind = lit_from_behind(bm, tag)
+    checks.check("rock.normals_with_winding", behind == 0, f"{behind} soft-edge faces would be lit from behind")
     return [f"{r['id']}: {r['detail']}" for r in checks.failed()]
 
 
 def shape(spec, seed):
-    """The softened rock for one seed, at the spec's bounds, as (mesh, plane tags).
+    """The softened rock for one seed, at the spec's bounds, as (mesh, plane tags, the pieces it is made of).
 
     A seed draws whole rocks, one after another from the same generator, until
     one meets the spec. The gate measures the saved scene; this is the same
@@ -372,34 +414,74 @@ def shape(spec, seed):
     the reasons instead of shipping a lesser rock.
     """
     lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    half, height = (hi - lo) / 2, hi.z - lo.z
     rng = random.Random(seed)
-    refused = []
+    refused, measured = [], 0
     for take in range(1, ROCKS + 1):
-        try:
-            bm = chisel(lo, hi, rng)
-        except RuntimeError as error:
-            refused.append(f"rock {take}: {error}")
+        turn, hand = rng.randrange(4), rng.choice((-1, 1))
+        group = rng.uniform(0, math.tau)
+        # The pieces are pushed together one at a time, largest first. Each is redrawn until
+        # it joins what is there without leaving an edge too short to bevel.
+        bm, record, tally = None, [], {}
+        across = [rng.uniform(*PIECES[0]["across"]) for _ in range(2)]
+        sign = Vector((1 if turn in (0, 3) else -1, 1 if turn in (0, 1) else -1, 0))
+        core = Vector((-sign.x * half.x * (1 - across[0]), -sign.y * half.y * (1 - across[1]), 0))
+        for plan in PIECES:
+            for _ in range(DRAWS):
+                planes, free = piece(rng, plan, half, height, turn, hand, group, core, dominant if bm else None)
+                if planes is None:
+                    tally["no place for a flank clear of the dominant piece's edges"] = tally.get("no place for a flank clear of the dominant piece's edges", 0) + 1
+                    continue
+                if not bm:
+                    dominant = planes
+                part = chamfered(rng, plan, planes, free)
+                if part is None:
+                    tally["the piece alone cannot be softened"] = tally.get("the piece alone cannot be softened", 0) + 1
+                    continue
+                joined = union([bm, part]) if bm else part.copy()
+                reason = unbevelable(joined)
+                if reason is None:
+                    record.append({"name": plan["name"], "vertices": [list(v.co) for v in part.verts], "faces": [[v.index for v in f.verts] for f in part.faces]})
+                    part.free()
+                    break
+                tally[reason] = tally.get(reason, 0) + 1
+                part.free()
+                joined.free()
+            else:
+                reasons = ", ".join(f"{reason} ({count})" for reason, count in sorted(tally.items(), key=lambda item: -item[1]))
+                refused.append(f"rock {take}: no room for the {plan['name']} in {DRAWS} draws: {reasons}")
+                break
+            if bm:
+                bm.free()
+            bm = joined
+        if len(record) < len(PIECES):
+            if bm:
+                bm.free()
             continue
-        fit(bm, lo, hi)
+        stretches = [fit(bm, lo, hi)]
         tag = soften(bm)
-        fit(bm, lo, hi)
+        stretches.append(fit(bm, lo, hi))
+        for part in record:
+            for scale, shift in stretches:
+                part["vertices"] = [[c * scale[i] + shift[i] for i, c in enumerate(co)] for co in part["vertices"]]
         # Triangulation hands its faces back in an order that changes from run to run. The
         # shape is the same, but the exported file is not; put the faces in a fixed order.
         for index, face in enumerate(sorted(bm.faces, key=lambda face: tuple(round(c, 5) for c in face.calc_center_median()))):
             face.index = index
         bm.faces.sort()
         bm.normal_update()
-        problems = unmet(bm, spec)
+        problems = unmet(bm, tag, record, spec)
+        measured += 1
         if not problems:
-            print(f"rock seed {seed}: rock {take} of up to {ROCKS} meets the spec")
-            return bm, tag
+            print(f"rock seed {seed}: rock {take} of up to {ROCKS} meets the spec ({measured} measured)")
+            return bm, tag, record
         refused.append(f"rock {take}: " + "; ".join(problems))
         bm.free()
-    raise RuntimeError(f"rock seed {seed}: none of its {ROCKS} rocks meets the spec:\n  " + "\n  ".join(refused))
+    raise RuntimeError(f"rock seed {seed}: none of its rocks meets the spec:\n  " + "\n  ".join(refused))
 
 
 def build(spec, seed=SEED):
-    bm, tag = shape(spec, seed)
+    bm, tag, record = shape(spec, seed)
     normals = plane_normals(bm, tag)
     bm.faces.layers.int.remove(tag)
 
@@ -418,4 +500,8 @@ def build(spec, seed=SEED):
 
     obj = bpy.data.objects.new("rock", mesh)
     bpy.context.scene.collection.objects.link(obj)
+    # What the rock is made of, for the gate to hold against the mesh (tools/validate.py, check_pieces).
+    text = bpy.data.texts.get("rock.pieces") or bpy.data.texts.new("rock.pieces")
+    text.clear()
+    text.write(json.dumps([{**part, "vertices": [[round(c, 6) for c in co] for co in part["vertices"]]} for part in record]))
     return obj

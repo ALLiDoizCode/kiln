@@ -9,6 +9,7 @@ the material in place of the flat colour.
 The colour at a point, in linear RGB, is
 
     mix(material colour, growth colour at the material's own lightness, growth mask)
+      * (1 - growth_darker * the patches of growth above the reach of the growth at the base)
       * mix(base_tint, top_tint, height within the spec's bounds)
       * (1 - side_shade * how upright the face is * how near mid height the point is)
       * (1 + blotch * a broad patch pattern between -1 and 1)
@@ -18,8 +19,13 @@ The colour at a point, in linear RGB, is
 The growth mask is the largest of three: below `growth_height_m`, with a ragged
 top; patches covering about `growth_up` of the faces that are near level; and
 patches along about `growth_edges` of the exposed edges in the upper part.
-Growth changes hue and never value, and the blotch pattern averages nothing, so
-crates/asset_smoke can still measure the exported texture against these lines.
+Growth changes hue, and the blotch pattern averages nothing. Where a spec gives
+`growth_darker`, the patches on level faces and along edges are that much darker
+than the surface round them as well, as moss is on pale lit rock; the growth
+at the base stays at the material's lightness. The darkening multiplies the
+colour and leaves its hue alone, so crates/asset_smoke can still tell how much
+growth a texel shows by hue, and measure the rest against these lines. With
+`growth_patch_m` the patches are about that size and broken up by a finer pattern.
 Nothing here is random: the patterns are Blender's noise texture at fixed
 places in space and Cycles runs on the CPU with a fixed seed, so a rebuild
 gives the same texels.
@@ -47,6 +53,9 @@ GROWTH_FADE = 0.3
 GROWTH_PATCH_SCALE = 1.7
 PATCH_EDGE = 0.05
 NOISE_SPREAD = 0.2
+# With `growth_patch_m`: a second pattern, GROWTH_BREAK_SCALE times finer, knocks holes in the
+# patches and leaves GROWTH_BREAK_KEEP of each, and the patches are that much commoner to make up for it.
+GROWTH_BREAK_SCALE, GROWTH_BREAK_KEEP = 2.5, 0.7
 GROWTH_EDGE_M = 0.2  # how far in from an upper edge its growth reaches
 GROWTH_EDGES_FROM = (0.5, 0.75)  # share of the height over which edge growth comes in
 BLOTCH_EDGE = 0.1  # how much of the noise's range a blotch's border takes: soft, but a patch and not a haze
@@ -176,8 +185,17 @@ def paint_nodes(tree, colour_rgb, spec, conv):
 
     def patches(cover, shift):
         """A mask of irregular patches covering about `cover` of a surface."""
-        threshold = 0.5 + NOISE_SPREAD * (1 - 2 * cover)
-        return ramp(noise(GROWTH_PATCH_SCALE, 2.0, shift), threshold - PATCH_EDGE / 2, threshold + PATCH_EDGE / 2)
+
+        def above(scale, detail, share, offset):
+            threshold = 0.5 + NOISE_SPREAD * (1 - 2 * share)
+            return ramp(noise(scale, detail, offset), threshold - PATCH_EDGE / 2, threshold + PATCH_EDGE / 2)
+
+        if "growth_patch_m" not in paint:
+            return above(GROWTH_PATCH_SCALE, 2.0, cover, shift)
+        # Small patches of the size asked for, with ragged outlines and holes knocked in them.
+        scale = 1 / paint["growth_patch_m"]
+        whole = above(scale, 3.0, min(0.95, cover / GROWTH_BREAK_KEEP), shift)
+        return math_node("MULTIPLY", whole, above(scale * GROWTH_BREAK_SCALE, 2.0, GROWTH_BREAK_KEEP, shift + 5.0))
 
     def hidden(inside, distance):
         occlusion = node("ShaderNodeAmbientOcclusion", samples=16, only_local=True, inside=inside)
@@ -198,16 +216,22 @@ def paint_nodes(tree, colour_rgb, spec, conv):
         # Where the growth stops at this spot: reach, raised or lowered by the noise.
         wander = math_node("MULTIPLY", math_node("SUBTRACT", noise(GROWTH_NOISE_SCALE, 3.0, 0.0), 0.5), 2 * GROWTH_RAGGED * reach)
         top = math_node("ADD", wander, z0 + reach)
-        mask = math_node("DIVIDE", math_node("SUBTRACT", top, z), GROWTH_FADE * reach, clamp=True)
+        mask = base = math_node("DIVIDE", math_node("SUBTRACT", top, z), GROWTH_FADE * reach, clamp=True)
+        settled = 0.0  # the patches, apart from the growth at the base
         if paint.get("growth_up"):
             # On faces near level, where it would settle.
-            mask = math_node("MAXIMUM", mask, math_node("MULTIPLY", ramp(up, *rules["growth_up_normal_z"]), patches(paint["growth_up"], 11.0)))
+            settled = math_node("MULTIPLY", ramp(up, *rules["growth_up_normal_z"]), patches(paint["growth_up"], 11.0))
         if paint.get("growth_edges"):
             # Along exposed edges, in the upper part of the asset.
             rim = math_node("DIVIDE", hidden(True, GROWTH_EDGE_M), FULL_EDGE_OCCLUSION, clamp=True)
             upper = ramp(z, *(z0 + share * (z1 - z0) for share in GROWTH_EDGES_FROM))
-            mask = math_node("MAXIMUM", mask, math_node("MULTIPLY", math_node("MULTIPLY", rim, upper), patches(paint["growth_edges"], 23.0)))
+            settled = math_node("MAXIMUM", settled, math_node("MULTIPLY", math_node("MULTIPLY", rim, upper), patches(paint["growth_edges"], 23.0)))
+        mask = math_node("MAXIMUM", mask, settled)
         colour = mix("MIX", mask, colour, growth_colour(colour_rgb, paint["growth"]))
+        if paint.get("growth_darker"):
+            # The patches are darker than what they grow on; the growth at the base is not, and where it reaches they are not either.
+            darker = math_node("MULTIPLY", math_node("MULTIPLY", settled, math_node("SUBTRACT", 1.0, base)), paint["growth_darker"])
+            colour = times(colour, math_node("SUBTRACT", 1.0, darker))
 
     height = node("ShaderNodeMapRange", clamp=True)
     tree.links.new(z, height.inputs["Value"])

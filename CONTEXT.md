@@ -127,7 +127,7 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Painted shading**: colour variation computed from an asset's shape and baked into it: a base-to-top gradient, light along exposed edges, shadow in crevices. Ours is baked into one texture per asset (ADR 10). _Avoid_: baked lighting (no light is involved), vertex paint.
 - **Tint**: a colour the material colour is multiplied by. White leaves it as it is. The gradient of painted shading runs from a base tint at the ground to a top tint at the top of the bounds.
 - **Edge light**: the part of painted shading that lightens exposed (outward, convex) edges. **Crevice shadow**: the part that darkens inside corners.
-- **Growth**: moss, lichen or the like, painted from the ground up to a height, in patches on faces near level and along upper edges, at the material's own lightness so that it changes hue and not value.
+- **Growth**: moss, lichen or the like, painted from the ground up to a height, and in patches on faces near level and along upper edges. At the base it is at the material's own lightness, so it changes hue and not value; a spec may make the patches darker than the surface round them (`growth_darker`) and set their size (`growth_patch_m`).
 - **Side shade**: the part of painted shading that darkens upright faces at mid height. **Blotch**: a broad, soft-edged patch of lighter or darker tone within a plane; blotches lighten as much as they darken.
 - **Banding**: a smooth gradient shown as flat steps. In a texture it is too few levels; in a review image it is a viewer reducing a file deeper than 8 bits per channel to a palette.
 - **Open face**: surface far enough from every edge and inside corner that only the material colour and the tint reach it. The checks measure colour there.
@@ -137,12 +137,19 @@ The shared vocabulary for this repo. Use these terms, with these meanings, in br
 - **Benchmark**: a professional asset run through the gates and viewer to compare ours against. It is never shipped.
 - **Plane**: a connected set of faces that lie in one flat surface, however they are triangulated. A **large plane** is one at or above the area a spec's `planes.large_m2` gives. _Avoid_: facet (a plane too small to be deliberate), face (one polygon of the mesh).
 - **Plane cut**: slicing a solid with one flat cut and capping the hole; how rock is shaped (ADR 9). A **notch** is two cuts that meet, removing only what is in front of both.
-- **Ledge**: an inward (concave) corner between two large planes: a shelf and the wall behind it. _Avoid_: step (also a stair), crevice.
+- **Ledge**: an inward (concave) corner between two large planes: a shelf and the wall behind it. Where a spec says so (`planes.ledge_plane_m2`), one of the two may be smaller: the corner between a wall and a piece set against it. _Avoid_: step (also a stair), crevice.
 - **Soft edge**: an edge lit as if rounded, because the faces either side share normals across it. Ours is a narrow bevel strip whose normals blend from one plane to the next. The opposite of a hard edge.
 - **Step, fracture, shoulder**: the three forms cut into a rock, each a ledge. A step is a raised slab above a lower shelf on top; a fracture is a V-shaped groove down a side; a shoulder is a bench part of the way up a side. _Avoid_: step for a stair.
 - **Fullness**: how much of its bounding box a closed shape fills, as a share of the box's volume. **Crown**: the level slice through a shape three quarters of the way up its bounds, as a share of the bounds' footprint; it tells a boulder (broad high up) from a wedge.
 - **Outline**: what a shape covers when seen from one direction with parallel rays. A plane's **view share** is the part of the outline it fills from that direction.
 - **Recess**: how far a face sits below the asset's bounding box, measured along the face's normal.
+- **Piece**: one of the solids a shape is pushed together from, each cut from a block by planes, before they are joined into one mesh. The **dominant piece** is the largest; **secondary pieces** are set against it. A piece's size is the surface it shows in the finished mesh, not its volume, because part of each is buried. _Avoid_: part (a separately moving object), chunk.
+- **Piece record**: what a build script says a shape's pieces are, saved beside the mesh for the gate to hold against it. Never taken on trust: a piece counts only by the surface the mesh shows of it.
+- **Size order**: the pieces of a shape ranked by size, each clearly larger than the next; two of nearly one size are **twins**.
+- **Foot**: low, near-level surface that nothing stands over, reaching out past a shape's main mass, so the shape looks settled into the ground and not placed on it.
+- **Chamfer**: a plane that cuts off a corner or a rim, of a middle size: smaller than a large plane, and wide enough to be lit as a face of its own. _Avoid_: bevel (the narrow strip of a soft edge).
+- **Upright**: within a few degrees of vertical (`[lean]` in `conventions.toml`). A shape's **upright share** is how much of its side surface is upright.
+- **Summit**: the part of a shape above nine tenths of its height. It is **off-centre** by how far its middle is from the middle of the bounds.
 
 **Game**
 

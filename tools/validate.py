@@ -5,6 +5,7 @@ Expected values come from the spec, never from the build script.
 Usage: tools/bl tools/validate.py <asset>
 """
 
+import json
 import math
 import re
 import statistics
@@ -66,8 +67,11 @@ def planes_of(bm, floor_z, tol, conv):
         if all(f.normal.dot(normal) >= cos_flat for f in faces):
             planes[root] = (sum(f.calc_area() for f in faces), normal)
 
-    def ledges(large_m2, ledge_m):
+    def ledges(large_m2, ledge_m, other_m2=None):
         """Pairs of large planes meeting in a concave corner at least ledge_m long.
+
+        With `other_m2`, one plane of the pair need only be that large: the corner
+        between a wall and a smaller piece set against it.
 
         The corner is either an edge the two planes share, or one soft-edge
         face (a bevel strip) with an edge on each. Returns, per pair, the
@@ -75,6 +79,7 @@ def planes_of(bm, floor_z, tol, conv):
         direction out of the corner into the open).
         """
         large = {root for root, (area, _) in planes.items() if area >= large_m2}
+        other = large if other_m2 is None else {root for root, (area, _) in planes.items() if area >= other_m2}
         runs = {}
 
         def add(a, b, length, ends):
@@ -88,18 +93,18 @@ def planes_of(bm, floor_z, tol, conv):
 
         for edge in bm.edges:
             roots = [find(f) for f in edge.link_faces if f in group]
-            if len(roots) == 2 and all(r in large for r in roots) and not edge.is_convex:
+            if len(roots) == 2 and all(r in other for r in roots) and any(r in large for r in roots) and not edge.is_convex:
                 add(roots[0], roots[1], edge.calc_length(), (edge.verts[0].co.copy(), edge.verts[1].co.copy()))
         for face in visible:
-            if find(face) in large:
+            if find(face) in other:
                 continue
             # (large plane across this edge, the edge) for each side of the strip
-            sides = [(find(other), e) for e in face.edges for other in e.link_faces if other is not face and other in group and find(other) in large]
+            sides = [(find(beside), e) for e in face.edges for beside in e.link_faces if beside is not face and beside in group and find(beside) in other]
             for i, (a, edge_a) in enumerate(sides):
                 for b, edge_b in sides[i + 1 :]:
                     across = midpoint(edge_b) - midpoint(edge_a)
                     # Concave: each plane's edge sits in front of the other plane.
-                    if a is not b and across.dot(planes[a][1]) > tol and -across.dot(planes[b][1]) > tol:
+                    if a is not b and (a in large or b in large) and across.dot(planes[a][1]) > tol and -across.dot(planes[b][1]) > tol:
                         shorter = min(edge_a, edge_b, key=lambda e: e.calc_length())
                         # The strip's own middle line, as long as its shorter side.
                         ends = tuple(v.co + across * (0.5 if shorter is edge_a else -0.5) for v in shorter.verts)
@@ -121,7 +126,7 @@ def check_planes(checks, name, bm, spec, conv):
     large = sorted((a for a in areas if a >= want["large_m2"]), reverse=True)
     share = sum(large) / visible if visible else 0.0
     ratio = large[0] / statistics.median(large) if large else 0.0
-    found = ledges(want["large_m2"], want["ledge_m"])
+    found = ledges(want["large_m2"], want["ledge_m"], want.get("ledge_plane_m2"))
     print(
         f"{name} planes: {len(large)} large (>= {want['large_m2']} m2) holding {share:.3f} of {visible:.2f} m2 visible, "
         f"largest/median {ratio:.2f}, ledges {sorted(round(length, 2) for length, _ in found.values())} m, areas {[round(a, 2) for a in large]}"
@@ -221,6 +226,238 @@ def check_fullness(checks, name, bm, spec, conv):
         f"{name}.crown",
         crown >= want["min_crown_share"],
         f"the slice {conv['fullness']['crown_height']} of the way up is {crown:.3f} of the footprint; spec wants at least {want['min_crown_share']}",
+    )
+
+
+# The habits of a designed rock (docs/style/rock-shapes.md), each as a measurement: several
+# pieces in a size order, a foot, big chamfers, nothing upright, the tallest part off-centre.
+
+
+def visible_faces(bm, spec, conv):
+    """Every face but the hidden underside: faces lying on the floor of the bounds and facing down."""
+    floor, tol = spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"]
+    cos_flat = math.cos(math.radians(conv["planes"]["coplanar_deg"]))
+    return [f for f in bm.faces if not (f.normal.z < -cos_flat and all(abs(v.co.z - floor) <= tol for v in f.verts))]
+
+
+def seen_from_above(bm, spec, conv):
+    """What parallel rays from straight above land on: (x, y, z, the face's normal), and the area each ray stands for."""
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    cell = max(hi.x - lo.x, hi.y - lo.y) / conv["planes"]["view_rays"]
+    tree = BVHTree.FromBMesh(bm)
+    hits = []
+    x = lo.x + cell / 2
+    while x < hi.x:
+        y = lo.y + cell / 2
+        while y < hi.y:
+            point, normal, index, _ = tree.ray_cast(Vector((x, y, hi.z + 1.0)), Vector((0, 0, -1)))
+            if index is not None:
+                hits.append((x, y, point.z, normal))
+            y += cell
+        x += cell
+    return hits, cell * cell
+
+
+def recorded_pieces(name):
+    """What the build script says the object is made of (a text data-block, `<object>.pieces`), or None."""
+    text = bpy.data.texts.get(f"{name}.pieces")
+    return json.loads(text.as_string()) if text else None
+
+
+def check_pieces(checks, name, bm, spec, conv, record):
+    """The shape is several pieces pushed together, in a clear size order.
+
+    Pieces cannot be read back from a merged mesh, so the build records each as
+    a convex solid. The record is not taken on trust. A piece counts only by
+    the surface it shows: mesh faces that lie on one of its faces, inside its
+    outline. That is measured on the mesh, so a piece that is buried, or is
+    not there, counts for nothing. And the pieces together must fill the same
+    space as the mesh, so the record cannot leave out or add what the mesh shows.
+    """
+    want, rules = spec["pieces"], conv["pieces"]
+    ids = [f"{name}.pieces_match", f"{name}.pieces_count", f"{name}.pieces_size_order"]
+    if not record:
+        for check_id in ids:
+            checks.check(check_id, False, "the build recorded no pieces; spec wants a shape of several")
+        return
+    solids = []  # per piece: its faces as planes (outward normal, offset)
+    for piece in record:
+        corners = [Vector(co) for co in piece["vertices"]]
+        middle = sum(corners, Vector()) / len(corners)
+        planes = []
+        for face in piece["faces"]:
+            ring = [corners[i] for i in face]
+            normal = sum((ring[i].cross(ring[(i + 1) % len(ring)]) for i in range(len(ring))), Vector()).normalized()
+            if normal.dot(ring[0] - middle) < 0:
+                normal = -normal
+            planes.append((normal, normal.dot(ring[0])))
+        solids.append(planes)
+
+    def within(point, planes, slack):
+        return all(normal.dot(point) - offset <= slack for normal, offset in planes)
+
+    # The surface each piece shows.
+    cos_flat, on_plane = math.cos(math.radians(conv["planes"]["coplanar_deg"])), rules["on_plane_m"]
+    shown, visible = [0.0] * len(solids), 0.0
+    for face in visible_faces(bm, spec, conv):
+        centre, area = face.calc_center_median(), face.calc_area()
+        visible += area
+        for index, planes in enumerate(solids):
+            if any(face.normal.dot(normal) >= cos_flat and abs(normal.dot(centre) - offset) <= on_plane for normal, offset in planes) and within(centre, planes, on_plane):
+                shown[index] += area
+                break
+    # The space the mesh fills against the space the pieces fill, on a grid through the bounds.
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    tree = BVHTree.FromBMesh(bm)
+    steps = rules["grid"]
+    either = differ = 0
+    for i in range(steps):
+        for j in range(steps):
+            for k in range(steps):
+                point = Vector(lo[axis] + (hi[axis] - lo[axis]) * (n + 0.5) / steps for axis, n in enumerate((i, j, k)))
+                nearest, normal, _, _ = tree.find_nearest(point)
+                in_mesh = (point - nearest).dot(normal) < 0
+                in_pieces = any(within(point, planes, 0.0) for planes in solids)
+                either += in_mesh or in_pieces
+                differ += in_mesh != in_pieces
+    mismatch = differ / max(1, either)
+    owned = sum(shown) / visible if visible else 0.0
+    sizes = sorted((area for area in shown if area >= want["min_shown_m2"]), reverse=True)
+    steps_down = [sizes[i] / sizes[i + 1] for i in range(len(sizes) - 1)]
+    print(
+        f"{name} pieces: {len(record)} recorded, showing {[round(area, 2) for area in shown]} m2 ({owned:.3f} of the visible surface); "
+        f"mesh and pieces differ over {mismatch:.3f} of the space they fill; size steps {[round(step, 2) for step in steps_down]}"
+    )
+    checks.check(
+        ids[0],
+        mismatch <= rules["max_mismatch"] and owned >= rules["min_owned_share"],
+        f"the recorded pieces and the mesh differ over {mismatch:.3f} of the space they fill (conventions allow {rules['max_mismatch']}), "
+        f"and {owned:.3f} of the visible surface lies on a recorded piece (conventions want {rules['min_owned_share']})",
+    )
+    checks.check(
+        ids[1],
+        len(sizes) >= want["min_count"],
+        f"{len(sizes)} pieces each show at least {want['min_shown_m2']} m2 of surface; spec wants {want['min_count']}; shown {[round(area, 2) for area in shown]}",
+    )
+    checks.check(
+        ids[2],
+        len(sizes) >= 2 and steps_down[0] >= want["min_dominant_ratio"] and min(steps_down) >= want["min_step_ratio"],
+        f"pieces show {[round(area, 2) for area in sizes]} m2, each over the next {[round(step, 2) for step in steps_down]}; "
+        f"spec wants the largest at least {want['min_dominant_ratio']} times the next and every step at least {want['min_step_ratio']}",
+    )
+
+
+def check_foot(checks, name, bm, spec, conv):
+    """Low, near-level surface reaches out past the main mass on several sides: the shape is settled into the ground."""
+    want, rules = spec["foot"], conv["foot"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    size, centre = hi - lo, (lo + hi) / 2
+    hits, cell = seen_from_above(bm, spec, conv)
+    sides = {"front": 0.0, "right": 0.0, "back": 0.0, "left": 0.0}
+    for x, y, z, normal in hits:
+        # Seen from above, so nothing of the main mass stands over it; near level, so it is a top and not a leaning wall.
+        if z - lo.z < rules["band"] * size.z and normal.z >= rules["level_normal_z"]:
+            across, along = (x - centre.x) / size.x, (y - centre.y) / size.y
+            sides[("right" if across > 0 else "left") if abs(across) > abs(along) else ("back" if along > 0 else "front")] += cell
+    having = [side for side, area in sides.items() if area >= want["min_side_m2"]]
+    print(f"{name} foot: near-level surface below {rules['band']} of the height, seen from above, m2 by side {({side: round(area, 2) for side, area in sides.items()})}")
+    checks.check(
+        f"{name}.foot",
+        len(having) >= want["min_sides"],
+        f"{len(having)} sides have at least {want['min_side_m2']} m2 of near-level surface below {rules['band']} of the height that nothing stands over; "
+        f"spec wants {want['min_sides']}; m2 by side {({side: round(area, 2) for side, area in sides.items()})}",
+    )
+
+
+def check_chamfers(checks, name, bm, spec, conv):
+    """Corners are cut by planes of a middle size, each wide enough to be a face of its own, between large planes."""
+    want, large_m2 = spec["chamfers"], spec["planes"]["large_m2"]
+    tol = spec["bounds_tolerance_m"]
+    _, _, _, plane_of = planes_of(bm, spec["bounds_m"]["min"][2], tol, conv)
+    faces = {}
+    for face in visible_faces(bm, spec, conv):
+        faces.setdefault(plane_of(face), []).append(face)
+    faces.pop(None, None)
+    area = {root: sum(f.calc_area() for f in members) for root, members in faces.items()}
+    normal = {root: sum((f.normal * f.calc_area() for f in members), Vector()).normalized() for root, members in faces.items()}
+    middling = {root for root in faces if want["min_m2"] <= area[root] < large_m2}
+    large = {root for root in faces if area[root] >= large_m2}
+
+    def midpoint(edge):
+        return (edge.verts[0].co + edge.verts[1].co) / 2
+
+    # Large planes each middling plane turns away from across an outward (convex) corner:
+    # a shared edge, or one soft-edge strip with an edge on each.
+    beside = {root: set() for root in middling}
+    for face in visible_faces(bm, spec, conv):
+        root = plane_of(face)
+        if root in middling:
+            for edge in face.edges:
+                for other in edge.link_faces:
+                    if plane_of(other) in large and edge.is_convex:
+                        beside[root].add(plane_of(other))
+            continue
+        if root in large:
+            continue
+        touching = [(plane_of(other), edge) for edge in face.edges for other in edge.link_faces if other is not face and plane_of(other) in middling | large]
+        for a, edge_a in touching:
+            for b, edge_b in touching:
+                across = midpoint(edge_b) - midpoint(edge_a)
+                if a in middling and b in large and across.dot(normal[a]) < -tol and -across.dot(normal[b]) < -tol:
+                    beside[a].add(b)
+
+    def width(root):
+        """The narrowest the plane is, measured across it."""
+        corners = [v.co for f in faces[root] for v in f.verts]
+        narrowest = float("inf")
+        for face in faces[root]:
+            for edge in face.edges:
+                along = (edge.verts[1].co - edge.verts[0].co).normalized()
+                sideways = [normal[root].cross(along).dot(co) for co in corners]
+                narrowest = min(narrowest, max(sideways) - min(sideways))
+        return narrowest
+
+    found = {root: (area[root], width(root), len(beside[root])) for root in middling}
+    chamfers = [root for root, (_, wide, neighbours) in found.items() if wide >= want["min_width_m"] and neighbours >= 2]
+    print(
+        f"{name} chamfers: {len(chamfers)} planes of {want['min_m2']} to {large_m2} m2, at least {want['min_width_m']} m wide, between two or more large planes; "
+        f"planes of that size (m2, narrowest m, large planes beside) {sorted((round(a, 2), round(w, 2), n) for a, w, n in found.values())}"
+    )
+    checks.check(
+        f"{name}.chamfers",
+        len(chamfers) >= want["min_count"],
+        f"{len(chamfers)} planes of {want['min_m2']} to {large_m2} m2 are at least {want['min_width_m']} m wide and cut the corner between two or more large planes; "
+        f"spec wants {want['min_count']}; planes of that size (m2, narrowest m, large planes beside) {sorted((round(a, 2), round(w, 2), n) for a, w, n in found.values())}",
+    )
+
+
+def check_lean(checks, name, bm, spec, conv):
+    """Nothing is upright: little of the side surface stands within a few degrees of vertical. And the tallest part is off-centre."""
+    want, rules = spec["lean"], conv["lean"]
+    sides = [f for f in visible_faces(bm, spec, conv) if abs(f.normal.z) < rules["side_normal_z"]]
+    side_area = sum(f.calc_area() for f in sides)
+    upright = sum(f.calc_area() for f in sides if abs(f.normal.z) < math.sin(math.radians(rules["upright_deg"]))) / side_area if side_area else 1.0
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    size, centre = hi - lo, (lo + hi) / 2
+    hits, _ = seen_from_above(bm, spec, conv)
+    summit = [(x, y) for x, y, z, _ in hits if z >= lo.z + rules["summit_height"] * size.z]
+    offset = 0.0
+    if summit:
+        x, y = (sum(axis) / len(summit) for axis in zip(*summit))
+        offset = math.hypot((x - centre.x) / (size.x / 2), (y - centre.y) / (size.y / 2))
+    print(
+        f"{name} lean: {upright:.3f} of {side_area:.2f} m2 of side surface is within {rules['upright_deg']} degrees of upright; "
+        f"the summit (above {rules['summit_height']} of the height) is {offset:.3f} of the bounds' half extents from the middle"
+    )
+    checks.check(
+        f"{name}.lean",
+        upright <= want["max_upright_share"],
+        f"{upright:.3f} of the side surface ({side_area:.2f} m2) is within {rules['upright_deg']} degrees of upright; spec wants at most {want['max_upright_share']}",
+    )
+    checks.check(
+        f"{name}.summit_off_centre",
+        offset >= want["min_summit_offset"],
+        f"the surface above {rules['summit_height']} of the height is centred {offset:.3f} of the bounds' half extents from the middle; spec wants at least {want['min_summit_offset']}",
     )
 
 
@@ -327,6 +564,11 @@ def check_scene(checks, spec, conv):
             check_planes(checks, name, bm, spec, conv)
         if "fullness" in spec and spec["watertight"]:
             check_fullness(checks, name, bm, spec, conv)
+        if "pieces" in spec:
+            check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
+        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean)):
+            if block in spec:
+                check(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:
