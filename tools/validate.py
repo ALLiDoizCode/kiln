@@ -1003,6 +1003,90 @@ def check_discs(checks, name, bm, slots, spec, conv):
     return discs
 
 
+def check_mat(checks, name, bm, slots, spec, conv):
+    """The foliage is a mat (source/leaf_mat/brief.md): small leaf pieces lying near level, over each other, in a ragged patch with gaps.
+
+    What the leaves cover is counted on a grid seen from straight above: a cell
+    is covered when its middle lies under a leaf. A disc or a rectangle of
+    leaves covers the whole convex hull of what it covers; a ragged patch with
+    gaps covers part of it."""
+    want, size, rules = spec["mat"], spec["foliage"], conv["foliage"]
+    pieces = foliage.pieces_of(bm, slots.index(size["material"]))
+    shapes = [foliage.piece_shape(piece) for piece in pieces]
+    lengths = sorted(shape["length_m"] for shape in shapes)
+    low, high = size["piece_m"]
+    odd = sum(1 for length in lengths if not low <= length <= high)
+    bent = sum(1 for shape in shapes if shape["off_plane_m"] > rules["flat_m"])
+    blunt = sum(1 for shape in shapes if shape["sharpest_deg"] > rules["pointed_deg"])
+    checks.check(
+        f"{name}.mat_leaves",
+        len(pieces) >= size["min_pad_pieces"] and not (odd or bent or blunt),
+        f"{len(pieces)} leaf pieces, {odd} of them not {low} to {high} m long (they run {lengths[0] if lengths else 0:.3f} to {lengths[-1] if lengths else 0:.3f} m), {bent} not flat (within {rules['flat_m']} m) "
+        f"and {blunt} with no corner of {rules['pointed_deg']} degrees or less; spec wants at least {size['min_pad_pieces']}, all of that length, flat and pointed",
+    )
+    tilts = [math.degrees(math.acos(min(1.0, abs(piece[0].normal.z)))) for piece in pieces]
+    tipped = sum(1 for tilt in tilts if tilt > want["max_tilt_deg"])
+    checks.check(
+        f"{name}.mat_lying",
+        pieces and not tipped,
+        f"{tipped} of {len(pieces)} leaves lie more than {want['max_tilt_deg']} degrees from level (the steepest is {max(tilts, default=0):.1f}); a mat's leaves lie down",
+    )
+    cell = conv["mat"]["cell_m"]
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    nx, ny = (max(1, math.ceil((hi[i] - lo[i]) / cell)) for i in range(2))
+    over = numpy.zeros((nx, ny), dtype=numpy.int32)
+    for piece in pieces:
+        mine = numpy.zeros((nx, ny), dtype=bool)
+        for face in piece:
+            corners = [((v.co.x - lo[0]) / cell - 0.5, (v.co.y - lo[1]) / cell - 0.5) for v in face.verts]
+            for k in range(1, len(corners) - 1):
+                (ax, ay), (bx, by), (cx, cy) = corners[0], corners[k], corners[k + 1]
+                x0, x1 = max(0, math.floor(min(ax, bx, cx))), min(nx - 1, math.ceil(max(ax, bx, cx)))
+                y0, y1 = max(0, math.floor(min(ay, by, cy))), min(ny - 1, math.ceil(max(ay, by, cy)))
+                if x1 < x0 or y1 < y0:
+                    continue
+                xs, ys = numpy.meshgrid(numpy.arange(x0, x1 + 1), numpy.arange(y0, y1 + 1), indexing="ij")
+                d1 = (xs - bx) * (ay - by) - (ax - bx) * (ys - by)
+                d2 = (xs - cx) * (by - cy) - (bx - cx) * (ys - cy)
+                d3 = (xs - ax) * (cy - ay) - (cx - ax) * (ys - ay)
+                mine[x0 : x1 + 1, y0 : y1 + 1] |= ~(((d1 < 0) | (d2 < 0) | (d3 < 0)) & ((d1 > 0) | (d2 > 0) | (d3 > 0)))
+        over += mine
+    covered = over > 0
+    cells = [(int(i), int(j)) for i, j in zip(*numpy.nonzero(covered))]
+    hull = hull_area_2d([(i + a, j + b) for i, j in cells for a in (0, 1) for b in (0, 1)]) if cells else 0.0
+    of_hull = len(cells) / hull if hull else 0.0
+    of_footprint = len(cells) / (nx * ny)
+    # A leaf lies over or under another when a cell it covers is covered twice.
+    twice = over > 1
+    lapped = 0
+    for piece in pieces:
+        hit = False
+        for face in piece:
+            at = face.calc_center_median()
+            i, j = int((at.x - lo[0]) / cell), int((at.y - lo[1]) / cell)
+            hit = hit or any(0 <= i + a < nx and 0 <= j + b < ny and twice[i + a, j + b] for a in (-1, 0, 1) for b in (-1, 0, 1))
+        lapped += hit
+    share = lapped / max(len(pieces), 1)
+    print(f"{name} mat: {len(pieces)} leaves {lengths[0] if lengths else 0:.3f} to {lengths[-1] if lengths else 0:.3f} m long, tilted up to {max(tilts, default=0):.1f} degrees, {share:.2f} of them lapping another; "
+          f"they cover {of_hull:.3f} of their convex hull and {of_footprint:.3f} of the bounds' footprint")
+    checks.check(
+        f"{name}.mat_overlap",
+        share >= want["min_overlap_share"],
+        f"seen from above, {lapped} of {len(pieces)} leaves ({share:.2f}) lie partly over or under another; spec wants at least {want['min_overlap_share']}: overlapping leaves",
+    )
+    low, high = want["hull_cover"]
+    checks.check(
+        f"{name}.mat_ragged",
+        cells and of_hull <= high,
+        f"seen from above, the leaves cover {of_hull:.3f} of the convex hull of what they cover; spec wants at most {high}: a ragged outline with gaps, not a disc or a rectangle of leaves",
+    )
+    checks.check(
+        f"{name}.mat_cover",
+        of_hull >= low and of_footprint >= want["min_footprint_cover"],
+        f"seen from above, the leaves cover {of_hull:.3f} of their convex hull and {of_footprint:.3f} of the bounds' footprint; spec wants at least {low} and {want['min_footprint_cover']}: a mat, not scattered leaves",
+    )
+
+
 def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
     """The plant has blooms (flowers): closed pieces of the closed material, each a star of petals and not a ball, and, among discs, standing between them.
 
@@ -2290,6 +2374,9 @@ def check_scene(checks, spec, conv):
                 discs = check_discs(checks, name, bm, slot_names, spec, conv)
                 if "blooms" in spec:
                     check_blooms(checks, name, bm, slot_names, spec, conv, discs)
+            elif "mat" in spec:
+                # Or, where it has `mat`, a mat of leaf pieces lying on the ground.
+                check_mat(checks, name, bm, slot_names, spec, conv)
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)

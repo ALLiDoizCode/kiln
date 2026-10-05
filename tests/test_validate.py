@@ -1738,6 +1738,73 @@ def bloom_on_a_disc(spec):
     each_bloom(spec, move)
 
 
+# A leaf mat (source/leaf_mat): leaf pieces lying on the ground in a ragged patch.
+
+
+def each_mat_leaf(spec, change):
+    """Apply change(its number, its vertices, its middle, bm) to every leaf piece of the mat."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def run(bm):
+        for number, piece in enumerate(foliage.pieces_of(bm, slot)):
+            verts = list({v for face in piece for v in face.verts})
+            change(number, verts, sum((v.co for v in verts), Vector()) / len(verts), bm)
+
+    edit(run, name)
+
+
+def big_leaves(spec):
+    """Every leaf drawn to three times its size, about its own middle."""
+
+    def grow(number, verts, middle, bm):
+        for v in verts:
+            v.co = middle + (v.co - middle) * 3
+
+    each_mat_leaf(spec, grow)
+
+
+def standing_leaves(spec):
+    """Every leaf stood up 60 degrees about its own middle."""
+    each_mat_leaf(spec, lambda number, verts, middle, bm: bmesh.ops.rotate(bm, verts=verts, cent=middle, matrix=Matrix.Rotation(math.radians(60), 3, "X")))
+
+
+def sparse_mat(spec):
+    """Two leaves in three taken away."""
+    each_mat_leaf(spec, lambda number, verts, middle, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS") if number % 3 else None)
+
+
+def leaves_apart(spec):
+    """Every leaf drawn to a third of its size about its own middle: none lies over another."""
+
+    def shrink(number, verts, middle, bm):
+        for v in verts:
+            v.co = middle + (v.co - middle) * 0.34
+
+    each_mat_leaf(spec, shrink)
+
+
+def disc_mat(spec):
+    """The leaves laid evenly over a disc as wide as the bounds are deep, and half as many again laid between them: a round plate of leaves."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    radius = min(hi[0] - lo[0], hi[1] - lo[1]) / 2
+    golden = math.pi * (3 - math.sqrt(5))
+    total = []
+    each_mat_leaf(spec, lambda number, verts, middle, bm: total.append(number))
+
+    def lay(number, verts, middle, bm):
+        at = Vector((math.cos(golden * number), math.sin(golden * number))) * radius * 0.9 * math.sqrt((number + 0.5) / len(total))
+        for v in verts:
+            v.co.xy += at - middle.xy
+        copy = bmesh.ops.duplicate(bm, geom=verts + list({f for v in verts for f in v.link_faces}))
+        turned = [g for g in copy["geom"] if isinstance(g, bmesh.types.BMVert)]
+        bmesh.ops.rotate(bm, verts=turned, cent=(0, 0, 0), matrix=Matrix.Rotation(golden / 2, 3, "Z"))
+
+    each_mat_leaf(spec, lay)
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1865,6 +1932,11 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
+    (big_leaves, "leaf_mat_1.mat_leaves", "leaf_mat_1"),
+    (standing_leaves, "leaf_mat_1.mat_lying", "leaf_mat_1"),
+    (sparse_mat, "leaf_mat_1.mat_cover", "leaf_mat_1"),
+    (leaves_apart, "leaf_mat_1.mat_overlap", "leaf_mat_1"),
+    (disc_mat, "leaf_mat_1.mat_ragged", "leaf_mat_1"),
     (few_discs, "lily_pad_1.discs", "lily_pad_1"),
     (even_discs, "lily_pad_1.discs_sizes", "lily_pad_1"),
     (tipped_disc, "lily_pad_1.discs_level", "lily_pad_1"),

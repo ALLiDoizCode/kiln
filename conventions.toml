@@ -181,6 +181,10 @@ core_min_triangles = 12     # an open part of the foliage material with this man
 # A group of discs floating at one level (source/lily_pad). What a group wants of its discs is in each spec.
 twin = 1.1                  # two discs are twins when the wider is less than this many times the narrower
 
+[mat]
+# A mat of leaves lying on the ground (source/leaf_mat). What a mat wants is in each spec.
+cell_m = 0.01               # what its leaves cover, seen from above, is counted on a grid of squares this size
+
 [under_view]
 # A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the
 # gate's `bevy_under` tile; tools/gate.sh takes it from the same place.

@@ -47,6 +47,9 @@ expect 0 "L1 mutation tests: tall_grass_1" l1 tall_grass_1
 # set adrift and drawn flat, and its heads taken off, thinned and put on every stalk.
 uses reeds_1 reeds_2 reeds_3 validate paint
 expect 0 "L1 mutation tests: reeds_1" l1 reeds_1
+# A leaf mat (source/leaf_mat): its leaves grown, stood up, thinned out, shrunk apart, and laid as a round plate.
+uses leaf_mat_1 leaf_mat_2 leaf_mat_3 validate paint
+expect 0 "L1 mutation tests: leaf_mat_1" l1 leaf_mat_1
 # A group of lily pads (source/lily_pad): its discs taken away, made one size, tipped, lifted, flattened, closed, squashed, slid over each other
 # and laid in a row and in a ring, and its blooms taken away, blown into balls and stood on a disc.
 uses lily_pad_1 lily_pad_2 lily_pad_3 validate paint
@@ -421,6 +424,13 @@ expect_id "spec.discs_amounts"       "L0 catches discs asked of a plant of blade
 expect_id "spec.blooms"              "L0 catches a missing blooms key"         lint_lily 'del s["blooms"]["max_hull_share"]'
 expect_id "spec.blooms_amounts"      "L0 catches a bloom allowed to fill its hull" lint_lily 's["blooms"]["max_hull_share"] = 1.0'
 expect_id "spec.blooms_colour"       "L0 catches a flower in the green of its leaves" lint_lily 's["materials"]["m_lily_flower"] = "#6a9a50"'
+# L0, a mat of leaves: leaf_mat_1's spec with one thing wrong. `lint_mat <python>` lints a copy of leaf_mat_1 after that has changed its spec `s`.
+uses leaf_mat_1 lint_spec
+expect 0 "L0 passes a leaf mat's spec"      lint_mat 'pass'
+expect_id "spec.mat"                 "L0 catches a missing mat key"            lint_mat 'del s["mat"]["min_overlap_share"]'
+expect_id "spec.mat_amounts"         "L0 catches a mat's cover given backwards" lint_mat 's["mat"]["hull_cover"] = [0.8, 0.45]'
+expect_id "spec.mat_amounts"         "L0 catches a mat allowed to fill its hull" lint_mat 's["mat"]["hull_cover"] = [0.45, 1.0]'
+expect_id "spec.mat_amounts"         "L0 catches a mat asked of a group of discs" lint_mat 's["discs"] = json.load(open("source/lily_pad_1/spec.json"))["discs"]'
 # A colour (docs/style/catalogue.md): another flower or foliage colour as a palette on its base's mesh. `lint_colour <python>` lints a copy of lily_pad_1_pink.
 uses lily_pad_1_pink lily_pad_1 lint_spec
 expect 0 "L0 passes a colour variant's spec" lint_colour 'pass'
