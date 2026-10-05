@@ -24,7 +24,7 @@ The footprint is 9.0 m2; a hundredth of it, 0.09 m2, is the low near-level surfa
 
 ## Seed
 
-Seed 1. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_1 1 40`), with 584 to 828 triangles. Seeds 1 to 12 are in `benchmarks/out/spire_1_candidates.png` for the owner to pick from; seed 1 was not picked from them: it is the first, and not the best of the twelve (a small block stands on its ledge like a headstone). It took the thirty-sixth spire it drew of the forty a seed may draw, so this seed is close to not building. It measures: 698 triangles; 3 tiers, 2.11, 1.36 and 0.62 m wide, steps 0.64 and 0.45, differing by 1.42; each tier 0.191 and 0.511 of its width off the middle of the one below; leaning 8.7 degrees; standing 0.994 and 0.966; ledges 0.168, 0.381 and 0.516 of each tier's level cut; 14 flutes; 0.356 of the surface buried; smallest size step 1.23; 155 texels per metre.
+Seed 5, chosen by the owner's agreement from the twelve in `benchmarks/out/spire_1_candidates.png` in place of seed 1, whose ledge block read as a headstone. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_1 1 40`), with 584 to 828 triangles. Seed 5 kept the eighth spire it drew, and passes every gate with no other value of the spec changed. It measures: 656 triangles; 7 pieces, with no block on the ledge; 3 tiers, 2.11, 1.01 and 0.59 m wide, steps 0.48 and 0.59, differing by 1.23 (1.2 asked); the tiers 0.500 and 0.345 of their width off the middle of the one below; leaning 10.5 degrees; standing 1.0 and 0.909 (0.9 asked: the top tier sits at the very edge of the second's cap); ledges 0.408, 0.255 and 0.413 of each tier's level cut; 15 flutes; 0.309 of the surface buried; smallest size step 1.38; 175 texels per metre at 2048 px.
 
 ## Numbers
 
@@ -33,7 +33,7 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | Spec key | Value | From |
 | --- | --- | --- |
 | `objects` | `["spire_1"]` | Parts: one object |
-| `seed` | `1` | Seed |
+| `seed` | `5` | Seed |
 | `bounds_m.min` | `[-1.6, -1.4, 0.0]` | Real-world size |
 | `bounds_m.max` | `[1.6, 1.4, 6.0]` | Real-world size |
 | `max_triangles` | `960` | Budget |
