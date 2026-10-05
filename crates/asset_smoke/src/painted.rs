@@ -46,6 +46,13 @@ pub struct Painted {
     hidden_underside: bool,
     min_texels_per_m: f32,
     min_uv_coverage: f32,
+    /// A palette-coloured asset (ADR 11): the height of the strip of swatches along the top of the texture, which the
+    /// leaves read and the layout stays out of, and how far round each island the painter bakes its margin. Absent on
+    /// an asset with no palette, whose coverage is its triangles' share of the whole texture.
+    #[serde(default)]
+    palette_strip_px: u32,
+    #[serde(default)]
+    island_margin_px: u32,
     max_uv_overlap: f32,
     /// Lowest and highest 8-bit sRGB value a texel's brightest channel may have.
     texel_range: [u8; 2],
@@ -150,6 +157,8 @@ pub struct Triangle {
 pub struct Measured {
     texture_px: [u32; 2],
     uv_coverage: f32,
+    /// The share of the whole texture under a triangle, whatever the asset: what `uv_coverage` is on an asset with no palette.
+    uv_triangle_coverage: f32,
     uv_overlap: f32,
     min_texels_per_m: f32,
     texel_range: [u8; 2],
@@ -343,7 +352,28 @@ pub fn check(
     }
     let covered = cover.iter().filter(|&&c| c > 0).count();
     let overlapped = cover.iter().filter(|&&c| c > 1).count();
-    measured.uv_coverage = covered as f32 / (size * size) as f32;
+    measured.uv_triangle_coverage = covered as f32 / (size * size) as f32;
+    measured.uv_coverage = measured.uv_triangle_coverage;
+    let strip = (want.palette_strip_px as usize).min(size);
+    if strip > 0 {
+        // A palette-coloured asset. The strip is the palette's, and used: the layout was never given it. And the few
+        // small parts painted under it are each baked with a margin that the texture filter reads at their edges; round
+        // a flower a few texels across that margin is most of what it needs. Used, here, is every texel under the strip
+        // that holds paint something reads: under a triangle, or within the baked margin of one.
+        let reach = want.island_margin_px as usize;
+        let rows = size - strip; // v = 1 is the top row of the image, where the strip lies
+        let mut along = vec![false; size * size];
+        for y in 0..size {
+            for x in 0..size {
+                along[y * size + x] = (x.saturating_sub(reach)..=(x + reach).min(size - 1)).any(|at| cover[y * size + at] > 0);
+            }
+        }
+        let used = (0..rows)
+            .flat_map(|y| (0..size).map(move |x| (x, y)))
+            .filter(|&(x, y)| (y.saturating_sub(reach)..=(y + reach).min(size - 1)).any(|at| along[at * size + x]))
+            .count();
+        measured.uv_coverage = used as f32 / (rows * size).max(1) as f32;
+    }
     measured.uv_overlap = overlapped as f32 / covered.max(1) as f32;
     if measured.uv_overlap > want.max_uv_overlap {
         fail(format!(
@@ -353,8 +383,11 @@ pub fn check(
     }
     if measured.uv_coverage < want.min_uv_coverage {
         fail(format!(
-            "uv.coverage: triangles use {:.3} of the texture; conventions want at least {}",
-            measured.uv_coverage, want.min_uv_coverage
+            "uv.coverage: {} use {:.3} of {}; conventions want at least {}",
+            if strip > 0 { "the painted parts, with the margin baked round them," } else { "triangles" },
+            measured.uv_coverage,
+            if strip > 0 { "the texture under the palette's strip" } else { "the texture" },
+            want.min_uv_coverage
         ));
     }
     let visible: Vec<&Triangle> = triangles.iter().filter(|t| !hidden(t)).collect();

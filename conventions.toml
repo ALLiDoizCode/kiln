@@ -131,6 +131,7 @@ bake_samples = 16           # Cycles samples per texel
 # sampler blends neighbouring texels, so 1 cm texels do not show as blocks.
 min_texels_per_m = 100
 min_uv_coverage = 0.4       # share of the texture the triangles use; the painter's packer reaches 0.58 on the rock (0.43 when it packed boxes)
+                            # on a palette-coloured asset (ADR 11): the share of the texture under the palette's strip that the painted parts use, the margin baked round each island counted
 max_uv_overlap = 0.001      # share of used texels claimed by more than one triangle
 # Brightest channel of any texel, 8-bit sRGB. Outside this a surface clips to black or white once lit.
 texel_range_srgb = [30, 240]
