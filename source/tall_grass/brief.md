@@ -35,7 +35,7 @@ The height is that of the seed heads; the leaves stop lower. The benchmark's tal
 
 ADR 9: leaf-shaped geometry in flat colour, no leaf cards and no transparency. The benchmark's grass is cards with a painted, transparent texture; ours is one strip of geometry per blade.
 
-- **Straw** `m_tall_grass_straw`, `#b09a5e`: the rootstock and the seed heads, one closed material with painted shading (ADR 10): dark toward the ground (`#8a8278`), so the rootstock is a dull brown, and the plain pale straw at the top, where the seed heads are.
+- **Straw** `m_tall_grass_straw`, `#b09a5e`: the rootstock and the seed heads, one closed material with painted shading (ADR 10): dark toward the ground (`#8a8278`), so the rootstock is a dull brown, and the plain pale straw at the top, where the seed heads are. No crevice shadow is asked: the rootstock is one convex mound and the seed heads lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without).
 - **Leaf** `m_tall_grass_leaf`, `#9cb64e`: the colour of the tallest blade. The underside tint `#6f96a6` is the tree's. 4 shades in 3 tones up to 14% lighter or darker, as the grass tuft.
 - Blades take their colour from a palette in the texture (ADR 11), so dry grass or another colour is a second texture on the same mesh (ADR 13).
 
@@ -83,8 +83,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | As the grass tuft |
 | `painted_shading.edge_width_m` | `0.002` | The seed heads' faces are about 1 cm wide |
-| `painted_shading.crevice_shadow` | `0.5` | As the grass tuft |
-| `painted_shading.crevice_width_m` | `0.005` | A band half a centimetre wide |
 | `painted_shading.hidden_underside` | `true` | The rootstock stands on the ground |
 | `foliage.material` | `"m_tall_grass_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 1: blades from one clump have no clear air between their feet, on the tree's 6 cm grid |

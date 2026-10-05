@@ -40,7 +40,7 @@ Seeds differ in how many stalks there are, how tall each is, which way and how f
 
 ADR 9: geometry in flat colour, no cards and no transparency.
 
-- **Brown** `m_reeds_brown`, `#553a26`: the heads and the mud, one closed material with painted shading (ADR 10): darker toward the ground (`#c8c0b8`), and the plain dark brown at the top, where the heads are.
+- **Brown** `m_reeds_brown`, `#553a26`: the heads and the mud, one closed material with painted shading (ADR 10): darker toward the ground (`#c8c0b8`), and the plain dark brown at the top, where the heads are. No crevice shadow is asked: the mud is one convex mound and the heads lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without).
 - **Leaf** `m_reeds_leaf`, `#8fae52`: the colour of the tallest stalk, a duller green than the tall grass's. The underside tint `#6f96a6` is the tree's. 4 shades in 3 tones up to 14% lighter or darker.
 - Stalks and leaves take their colour from a palette in the texture (ADR 11), so a season is a second texture on the same mesh (ADR 13).
 
@@ -88,8 +88,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top, where the heads are |
 | `painted_shading.edge_light` | `0.2` | As the tall grass |
 | `painted_shading.edge_width_m` | `0.002` | A head's faces are about 2.5 cm wide |
-| `painted_shading.crevice_shadow` | `0.5` | As the tall grass |
-| `painted_shading.crevice_width_m` | `0.005` | A band half a centimetre wide |
 | `painted_shading.hidden_underside` | `true` | The mud lies on the ground |
 | `foliage.material` | `"m_reeds_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.3` | Silhouette 3: stalks of one bed stand less than 0.3 m from a neighbour |

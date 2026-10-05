@@ -34,7 +34,7 @@ The benchmark's short grass tuft is 0.6 by 0.7 m and 1.3 m tall, and its tall on
 
 ADR 9: leaf-shaped geometry in flat colour, no leaf cards and no transparency. The benchmark's grass is cards with a painted, transparent texture; ours is one strip of geometry per blade.
 
-- **Rootstock** `m_grass_rootstock`, `#5c5234`: a dark straw brown, with painted shading (ADR 10): darker toward the ground (`#a8a098`), light along its edges, shadow in its corners.
+- **Rootstock** `m_grass_rootstock`, `#5c5234`: a dark straw brown, with painted shading (ADR 10): darker toward the ground (`#a8a098`), light along its edges. No crevice shadow is asked: the rootstock is one convex mound and the blades lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without).
 - **Leaf** `m_grass_leaf`, `#a4bc50`: the colour of the tallest blade, yellower than the blade plant's and the bush's. The underside tint `#6f96a6` is the tree's. 4 shades in 3 tones up to 14% lighter or darker, as the blade plant.
 - Blades take their colour from a palette in the rootstock's texture (ADR 11), so dry grass, autumn or another colour is a second texture on the same mesh (ADR 13).
 
@@ -73,8 +73,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | Style and colour: light along the rootstock's edges |
 | `painted_shading.edge_width_m` | `0.002` | The rootstock's faces are about 3 cm wide |
-| `painted_shading.crevice_shadow` | `0.5` | Style and colour: shadow in its corners |
-| `painted_shading.crevice_width_m` | `0.005` | A band half a centimetre wide |
 | `painted_shading.hidden_underside` | `true` | The rootstock stands on the ground |
 | `foliage.material` | `"m_grass_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 1: blades from one point have no clear air between their feet, on the tree's 6 cm grid |

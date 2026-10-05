@@ -262,7 +262,6 @@ pub fn check(
     want: &Painted,
     triangles: &[Triangle],
     overlap: bool,
-    foliage: bool,
     image: &Image,
     floor: f32,
     top: f32,
@@ -598,8 +597,7 @@ pub fn check(
                 ));
             }
         }
-        // Not yet asked of foliage: the stems of a bush or a tuft meet in corners too small for a sample, and their shadow is not measured.
-        Some(shadow) if !foliage => fail(format!(
+        Some(shadow) => fail(format!(
             "painted.crevices_darker: only {crevice_count} samples lie in inside corners; nothing to measure crevice_shadow {shadow} on. A shape with no inside corner leaves crevice_shadow and crevice_width_m out of its spec"
         )),
         None if crevice_count >= MIN_SAMPLES => fail(format!(

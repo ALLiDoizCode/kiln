@@ -34,7 +34,7 @@ The benchmark's nearest plant (`Plant_1`) is 1.3 by 1.4 m and 1.0 m tall. The or
 
 ADR 9: foliage is leaf-shaped geometry in flat colour, with no leaf cards and no transparency. A blade is one leaf, so it is not flat: it bends along its length and is folded a little along its middle. There is no core: a rosette is open, and the ground shows through it.
 
-- **Rootstock** `m_blade_rootstock`, `#5a4a36`: dark brown, with painted shading (ADR 10): darker toward the ground (`#a8a098`), light along its edges, shadow in its corners.
+- **Rootstock** `m_blade_rootstock`, `#5a4a36`: dark brown, with painted shading (ADR 10): darker toward the ground (`#a8a098`), light along its edges. No crevice shadow is asked: the rootstock is one convex mound and the blades lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without).
 - **Leaf** `m_blade_leaf`, `#8cb24a`: the colour of the highest blade; a little deeper than the bush's. The underside tint `#6f96a6` is the tree's. Between the two there are 4 shades in 3 tones up to 14% lighter or darker: a plant of a dozen blades has no use for the tree's 24 colours.
 - Blades take their colour from a palette in the rootstock's texture (ADR 11), so a season or another colour is a second texture on the same mesh (ADR 13).
 
@@ -75,8 +75,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | Style and colour: light along the rootstock's edges |
 | `painted_shading.edge_width_m` | `0.004` | The rootstock's faces are about 6 cm wide |
-| `painted_shading.crevice_shadow` | `0.5` | Style and colour: shadow in its corners |
-| `painted_shading.crevice_width_m` | `0.01` | A band 1 cm wide |
 | `painted_shading.hidden_underside` | `true` | The rootstock stands on the ground |
 | `foliage.material` | `"m_blade_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 1: blades from one point have no clear air between their feet, on the tree's 6 cm grid |

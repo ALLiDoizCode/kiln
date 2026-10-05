@@ -37,7 +37,7 @@ The benchmark's bush is 1.9 by 2.0 m and 1.35 m above the ground: between the fi
 
 ADR 9 as amended: leaf-shaped pieces over a dark core, no leaf cards, no transparency. The bush stands beside the trees (`source/tree_1`) and is judged beside the benchmark's bush.
 
-- **Stem** `m_bush_stem`, `#6b5540`: a mid brown a little greyer than the tree's bark, with painted shading (ADR 10): darker toward the ground (`#a89c94` at the foot), light along its corners, shadow where stems meet. No grain: a stem is 3 to 4 cm thick and mostly hidden.
+- **Stem** `m_bush_stem`, `#6b5540`: a mid brown a little greyer than the tree's bark, with painted shading (ADR 10): darker toward the ground (`#a89c94` at the foot), light along its corners. No crevice shadow is asked: the stems are tubes that bend and lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without). No grain: a stem is 3 to 4 cm thick and mostly hidden.
 - **Leaf** `m_bush_leaf`, `#9ab552`: the colour of a piece at the top of the dome, a little greener and deeper than the tree's `#a8b846`, so a bush under a tree is not the tree's colour. The underside tint `#6f96a6`, the 6 shades, 4 tones and 16% variation are the tree's.
 - **Core**: in the leaf material, the leaf colour times `#527a86`, as the tree's.
 - Leaf pieces and cores take their colour from a palette in the stems' texture (ADR 11), so a season or another colour is a second texture on the same mesh (ADR 13). Nothing here blocks that: no colour is in the mesh.
@@ -79,8 +79,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | Style and colour: light along the corners, as the tree's bark |
 | `painted_shading.edge_width_m` | `0.004` | A stem's side is about 3 cm wide; the light is an eighth of it |
-| `painted_shading.crevice_shadow` | `0.5` | Style and colour: shadow where stems meet |
-| `painted_shading.crevice_width_m` | `0.01` | A band 1 cm wide, a third of a stem's thickness |
 | `painted_shading.hidden_underside` | `true` | The feet of the stems stand on the ground |
 | `foliage.material` | `"m_bush_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 1: clear air is measured on a 6 cm grid, as on the tree |
