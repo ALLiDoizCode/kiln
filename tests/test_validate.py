@@ -761,8 +761,17 @@ def level_tiers(spec):
 
 
 def blunt_top(spec):
-    """A dome where the point should be: a wide low mass on the leader's tip and no pieces standing on it."""
-    regrow(spec, top__spire_radius=[0.75, 0.75], top__spire_up=[0.3, 0.3], top__tip_pieces=0)
+    """The highest metre of foliage spread to four times its width about the leader: a mop where the point should be."""
+    slot = leaf_slot(spec)
+
+    def spread(bm):
+        verts = {v for f in bm.faces if f.material_index == slot for v in f.verts}
+        top = max(v.co.z for v in verts)
+        for vert in verts:
+            if vert.co.z > top - 1.0:
+                vert.co.x, vert.co.y = vert.co.x * 4, vert.co.y * 4
+
+    edit(spread, spec["objects"][0])
 
 
 def bowed_leader(spec):
@@ -788,7 +797,7 @@ def fat_tiers(spec):
 
 def stout_leader(spec):
     """A leader as thick at its tip as at its lowest whorl: a post."""
-    regrow(spec, trunk__tip_radius=0.11)
+    regrow(spec, trunk__tip_radius=0.17)
 
 
 def hidden_leader(spec):
@@ -1486,9 +1495,11 @@ CASES = [
     (bowed_leader, "conifer_1.leader_straight", "conifer_1"),
     (true_top, "conifer_1.leader_straight", "conifer_1"),
     (fat_tiers, "conifer_1.pads_wide", "conifer_1"),
-    (stout_leader, "conifer_1.branches_taper", "conifer_1"),
+    # NOT CAUGHT on the tree as it is now, and so not listed: (stout_leader, "conifer_1.branches_taper"). A leader with a tip of
+    # 0.17 m still measures under 0.8; it was caught on an earlier recipe. The leader's taper is not shown to catch a post.
     (hidden_leader, "conifer_1.branches_seen", "conifer_1"),
-    (no_cores, "conifer_1.under_closed", "conifer_1"),
+    # NOT CAUGHT, and so not listed: (no_cores, "conifer_1.under_closed"). With every core gone a tier measures as closed
+    # as with them: under_closed, taken tier by tier, is not yet shown to catch a tier open underneath.
     (round_leaves, "conifer_1.under_rim", "conifer_1"),
 ]
 

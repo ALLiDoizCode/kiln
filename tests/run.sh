@@ -443,7 +443,7 @@ lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the 
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_conifer() { lint_copy conifer_1 '' "$1"; }  # <python statements changing spec s>
-lint_conifer_names() { lint_conifer "$1" | grep -qF "$2"; }  # <python statements> <text the lint must print>
+lint_conifer_names() { local said; said="$(lint_conifer "$1")"; grep -qF "$2" <<< "$said"; }  # <python statements> <text the lint must print>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
