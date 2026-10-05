@@ -38,6 +38,22 @@ pub struct Wanted {
     min_grain_along: f32,
     #[serde(default)]
     min_grain_patches: f32,
+    /// A limb that lies (a fallen log): the direction its grain runs, in glTF space. Absent, the
+    /// grain runs up, as on a standing trunk. See `lying`.
+    #[serde(default)]
+    grain_along: Option<[f32; 3]>,
+}
+
+/// A triangle of a lying limb is measured when it runs along the limb: its normal within this of
+/// square to `grain_along` (the cosine between them). An end, broken or sawn, faces along it.
+const ALONG_LIMB: f32 = 0.5;
+
+/// Where grain is measured, and which way "along" is there, on a limb that lies (`grain_along`):
+/// on every triangle that runs along the limb, at any height and facing any way (a log is seen
+/// from above, and the wall of a hollow from inside), along the limb's direction laid into the
+/// triangle's plane. None: the triangle is an end, or a stub standing square to the limb.
+fn lying(axis: Vec3, n: Vec3) -> Option<Vec3> {
+    (n.dot(axis).abs() <= ALONG_LIMB).then(|| (axis - n * n.dot(axis)).normalize())
 }
 
 #[derive(Serialize, Default)]
@@ -105,10 +121,18 @@ pub fn check(want: &Wanted, triangles: &[Triangle], image: &Image, floor: f32, t
     let mut patches: HashMap<(i32, i32, i32), (usize, f32, f32)> = HashMap::new();
     for t in &close {
         let n = normal(t).normalize_or_zero();
-        if n.y.abs() > UPRIGHT || t.positions.iter().any(|p| p.y < floor + ABOVE_ROOTS_M) {
-            continue;
-        }
-        let along = (Vec3::Y - n * n.y).normalize();
+        let along = match want.grain_along {
+            Some(axis) => match lying(Vec3::from(axis).normalize_or_zero(), n) {
+                Some(along) => along,
+                None => continue,
+            },
+            None => {
+                if n.y.abs() > UPRIGHT || t.positions.iter().any(|p| p.y < floor + ABOVE_ROOTS_M) {
+                    continue;
+                }
+                (Vec3::Y - n * n.y).normalize()
+            }
+        };
         let across = n.cross(along);
         let [a, b, c] = t.positions;
         let uv = t.uvs.unwrap();

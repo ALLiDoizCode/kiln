@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, tree_sapling_1, blade_plant_1 and slab_1 first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, tree_sapling_1, blade_plant_1, tall_grass_1, reeds_1 and slab_1 first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
@@ -90,7 +90,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     # Run by the gate and by no case here: a change to one is proved by tools/gate.sh, not by this suite.
     tools/gate.sh|tools/build.py|tools/export.py|tools/review_render.py|tools/variants_sheet.sh|tools/side_by_side.sh) echo NONE ;;
     tools/lint_spec.py) echo lint_spec ;;
-    tools/validate.py|tools/skeleton.py|tests/test_validate.py|tests/fixtures/*) echo validate ;;
+    tools/validate.py|tools/skeleton.py|tools/log_checks.py|tests/test_validate.py|tests/fixtures/*) echo validate ;;
     tools/paint.py|tools/foliage.py) echo paint ;;
     tests/paint_mutations.py) echo rock_mutations ;;
     tests/bake_check.py) echo bake_check ;;
@@ -98,6 +98,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/slab_mutations.py) echo slab_mutations ;;
     tests/pebble_mutations.py) echo pebble_mutations ;;
     tests/cover_mutations.py) echo cover_mutations ;;
+    tests/log_mutations.py) echo log_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -111,6 +112,8 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
+    source/tall_grass/*) echo tall_grass_1 tall_grass_2 tall_grass_3 tall_grass_1_dry ;;
+    source/reeds/*) echo reeds_1 reeds_2 reeds_3 reeds_1_winter ;;
     source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
     source/standing_stone/*) echo standing_stone_1_mossy ;;  # the one standing stone a case reads
@@ -122,6 +125,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/pebble/*) echo pebble_1 pebble_2 pebble_3_mossy ;;  # the generator and the brief pebble_1 and pebble_2 are built with
     source/arch/*) echo arch_1 ;;  # the generator and the brief arch_1 is built with
     source/rubble/*) echo rubble_1 ;;  # the generator and the brief rubble_1 is built with
+    source/log/*|tools/wood.py) echo log_1 log_2 log_3 log_2_mossy ;;  # the generator, the kit and the brief every log is built with
     tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 stack_1 ;;&  # the kit all four are built with
     tools/stone.py) echo arch_1 ;;  # and the arch
     tools/try_seeds.py) ;;  # an aid, read by no case
@@ -350,6 +354,7 @@ broken_cover() { # <asset> <mutation>
   fixture --key "$(key_of tests/cover_mutations.py "source/$1/build.py" "source/$1/spec.json" "source/$family"/*.py)" "$1_$2.glb" mutated_cover "$1" "$2"
 }
 mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
+broken_log() { fixture --key "$(key_of tests/log_mutations.py source/log_3/build.py source/log_3/spec.json source/log/*.py)" "log_3_$1.glb" mutated tests/log_mutations.py "$1"; }
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
@@ -445,6 +450,8 @@ lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spe
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
+lint_grass() { lint_copy tall_grass_1 '' "$1"; } # <python statements changing spec s>
+lint_reeds() { lint_copy reeds_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
@@ -454,6 +461,7 @@ lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spe
 lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>
 lint_spire() { lint_copy spire_1 '' "$1"; }   # <python statements changing spec s>
 lint_arch() { lint_copy arch_1 '' "$1"; }     # <python statements changing spec s>
+lint_log() { lint_copy log_3 '' "$1"; }       # <python statements changing spec s>
 lint_boulder() { lint_copy boulder_2 '' "$1"; } # <python statements changing spec s>
 seed_passes() { # <asset> <seed>: the asset drawn from that seed builds and passes gate L1
   tools/bl tools/try_seeds.py "$1" "$2" "$2" > "$tmp/seed" 2>&1; cat "$tmp/seed"
