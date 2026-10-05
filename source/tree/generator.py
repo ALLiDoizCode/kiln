@@ -297,6 +297,12 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
                 face(SIDE, (k, middle), (k, last), (k + 1, upper[1]))
         # Each stretch between two rings is cut once along its length, to unroll flat.
         tree.seams.append((rings[k][0], rings[k + 1][0]))
+        # The foot does not unroll: a band of fins folds over itself. It is cut along every valley, so each
+        # root lies flat by itself, its two flanks either side of its crest.
+        if len(rings[k]) > count:
+            for j in range(sides):
+                lower, upper = chain(k, j), chain(k + 1, j)
+                tree.seams.append((rings[k][lower[1]], rings[k + 1][upper[1] % len(rings[k + 1])]))
     # And every ring is a cut, so no painted island is longer than one stretch of a limb.
     for ring in rings:
         tree.seams += [(ring[i], ring[(i + 1) % len(ring)]) for i in range(len(ring))]
