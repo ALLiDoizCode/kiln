@@ -65,6 +65,8 @@ ROUNDED = {"max_steep_plane_share": float}
 OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
 # Optional, with `overlap`: a cluster of leaning prisms on one base (a crag).
 CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "max_lean_spread_deg": float}
+# Optional, with `overlap`: flat stones piled one on another (a stack).
+PILE = {"max_sink": float, "max_thickness": float, "max_size_step": float}
 # Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
 TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
 # Optional, with `overlap`: two piers that reach the ground and a span resting on both, with open air right through under it (an arch).
@@ -208,6 +210,16 @@ if not checks.failed():
         # and a piece record is held against a surface with nothing inside it.
         one_skin = sorted(block for block in ("fullness", "pieces") if block in spec)
         checks.check("spec.one_skin_checks", not one_skin, f"{one_skin} measure one closed skin and cannot be asked of overlapping pieces (`overlap`)")
+    pile = spec.get("pile")
+    if pile is not None:
+        ok = (
+            isinstance(pile, dict)
+            and set(pile) == set(PILE)
+            and all(type(pile[key]) is kind for key, kind in PILE.items())
+            and all(0 < pile[key] < 1 for key in PILE)
+            and isinstance(overlap, dict)
+        )
+        checks.check("spec.pile", ok, f"optional; needs exactly {sorted(PILE)}, each in 0..1 (below 1), on an asset of overlapping pieces (`overlap`)")
     cluster = spec.get("cluster")
     if cluster is not None:
         ok = (

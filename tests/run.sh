@@ -112,10 +112,11 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 ;;
+    source/stack/*) echo stack_1 ;;
     source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
     source/pebble/*) echo pebble_1 pebble_2 ;;  # the generator and the brief pebble_1 and pebble_2 are built with
     source/arch/*) echo arch_1 ;;  # the generator and the brief arch_1 is built with
-    tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 ;;&  # the kit all three are built with
+    tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 stack_1 ;;&  # the kit all four are built with
     tools/stone.py) echo arch_1 ;;  # and the arch
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
@@ -428,6 +429,7 @@ lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changin
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
+lint_stack() { lint_copy stack_1 '' "$1"; }    # <python statements changing spec s>
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
 lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
 lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>
