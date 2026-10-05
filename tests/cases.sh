@@ -288,6 +288,14 @@ expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a plan
 # edges they are, and failed it. What a surface has does not depend on how finely it is sampled.
 uses dome_bush_2 smoke paint plant_mutations
 expect 0 "L4 finds no inside corner on a bush's stems, however fine its texture" smoke "$(broken_plant dome_bush_2 fine_texture)" "$(tamper 'm["painted"]["texture_px"] *= 2' assets/models/dome_bush_2.manifest.json)"
+# A palette-coloured plant (ADR 11): its leaves read the strip of swatches along the top of the texture, and only its few small
+# closed parts (a lily pad's one flower) are painted under it. The load test took coverage of the whole texture, strip and
+# all, and counted only texels under a triangle: lily_pad_1's flower, laid as large as the texture under the strip lets it
+# be, read 0.277 and failed. The same flower at half that size must still be caught.
+uses lily_pad_1 smoke
+expect 0 "L4 passes an unbroken lily pad, whose one flower is all that is painted under its palette" cover lily_pad_1
+uses lily_pad_1 smoke paint plant_mutations
+expect_id "uv.coverage" "L4 catches a mostly unused texture on a palette-coloured plant" smoke "$(broken_plant lily_pad_1 shrunk_uvs)" assets/models/lily_pad_1.manifest.json
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
