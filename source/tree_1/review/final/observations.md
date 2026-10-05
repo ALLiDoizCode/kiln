@@ -70,3 +70,12 @@ From `sheet.png`, seed 1, 3,554 triangles (850 bark, 384 core, 2,320 leaf), two 
 - The bark reads as bark from 0.5 m by measurement and in the tile, but it is softer than the benchmark's: at 250 texels per metre a furrow's edge is a blur about 1 cm wide. The brief's numbers are met; whether the softness is acceptable is the owner's to judge on `tree_variants.png` and `tree_bark_study.png`.
 - From straight below, 36% of the foliage seen is core (limit 45%). The pads read as dark masses with leafy rims, and pieces inside a pad's outline are dark on dark: they can be made out in the tile but do not read one by one.
 - No other mismatch found in the items above.
+
+## After the fixes of 2026-10-05 (review findings 3 and 4)
+
+The leaf material has no gloss, the underside and core tints are about twice as light, and nothing else changed: the mesh's positions, triangle counts and every L1 figure above are as they were. Lines above that describe `bevy_under` or the underside's tone are from before; these replace them.
+
+- L4e, from 1 m beside the trunk looking 78 degrees up: pale leaf samples (grey and light) are 0.00007 of the leaf samples, before 0.02393 (at most 0.001); foliage over the limbs among it is 1.63, before 1.18 (at least 1.25).
+- bevy_under, read with its value map and squint view: no near-white piece; the pieces that were pale (upper left at about x 380, y 240 and left at x 150 to 280, y 600 to 680 of 1024) are now yellow-green, lighter than their neighbours and not grey. Limbs are brown against green and darker than the leaves beside them. In the five-level value map the canopy is one grey and the limbs share that grey over most of their length, with darker patches along the leader (x 560 to 680, y 100 to 450) and the right limb; only the left limb's sunlit flank is a level lighter. So the limbs separate by hue and by their dark grain, not yet by a full level of value. Squint: "trunk under leaves"; the eye lands on the leader.
+- bevy, beside the picture saved before: the undersides and skirts of the pads are lighter, so the step from a pad's top to its underside is smaller (L4: 1.63 where the tints give 1.75; before 2.71 where they gave 3.60). The foot is unchanged: one flat-sided skirt about three trunk widths across.
+- Differences from the brief still standing: the foot (finding 1), the limbs' elbows (finding 2) and the grain on the foot (finding 5) are not fixed.

@@ -13,7 +13,7 @@ Set dressing on a forested layer's ground, and the thing a forest is made of: ma
 First person, from as close as 0.5 m (ADR 7), and typically from 3 to 40 m. Two views decide what it must hold up to:
 
 - **From 3 m**, looking up at it: the trunk, the fork, the underside of the nearest pads and the branches going into them fill the view.
-- **From 0.5 m**, against the trunk: looking straight at it, bark fills the view at arm's length; looking up, the rest is the underside of the canopy with the branch skeleton against it. This is how a tree is mostly seen, and each variant's contact sheet shows both (`bevy_trunk`, `bevy_under`).
+- **From 0.5 m**, against the trunk: looking straight at it, bark is about half of what is seen, at arm's length; looking up, the rest is the underside of the canopy with the branch skeleton against it. This is how a tree is mostly seen, and each variant's contact sheet shows both (`bevy_trunk`, `bevy_under`).
 
 From further off it is an outline: a trunk, and several rounded pads with sky between them.
 
@@ -27,7 +27,7 @@ About 7 m tall with a crown 4 to 6 m across: a small street tree, or four player
 | `tree_2` | 5.5 m | 5.4 m | 6.2 m | lower and wider |
 | `tree_3` | 4.3 m | 4.3 m | 7.8 m | taller and narrower |
 
-The origin is on the ground at the middle of the foot of the trunk, so a tree is planted, and turned, about its trunk. The crown is not centred on it: a tree leans, and each variant's bounds say which way.
+The origin is on the ground at the middle of the foot of the trunk, so a tree is planted, and turned, about its trunk. The crown is not centred on it: a tree leans.
 
 ## Species
 
@@ -77,9 +77,9 @@ A season is a palette on the same mesh (ADR 11, ADR 13). A season asset is a spe
 
 | Season | Leaf, top of a pad | Underside tint | Core tint | What it shows |
 | --- | --- | --- | --- | --- |
-| Summer | `#a8b846` | `#6f96a6` | `#527a86` | Light yellow-green above, darker and bluer below (Style and colour) |
-| Autumn | `#e0a23a` | `#b86a50` | `#8a4a3c` | Golden yellow at the top of a pad through orange to deep red underneath |
-| Winter | `#d8dcde` | `#507359` | `#3a5442` | Snow lying on the pads: near-white on top, through pale grey-green, to dark green underneath |
+| Summer | `#a8b846` | `#9ad0e6` | `#71a9b9` | Light yellow-green above, darker and bluer below (Style and colour) |
+| Autumn | `#e0a23a` | `#ff936f` | `#bf6653` | Golden yellow at the top of a pad through orange to deep red underneath |
+| Winter | `#d8dcde` | `#6f9f7b` | `#51755c` | Snow lying on the pads: near-white on top, through pale grey-green, to dark green underneath |
 
 Winter here is snow on the foliage only, and it is a ramp of six shades, not a snow line. Snow on the bark's upward faces is not done: painted growth keeps the bark's own lightness and the load test finds it by hue (ADR 10), and snow is a change of lightness with no hue, so it needs a growth that lightens and checks that measure it by lightness. A bare winter tree is a separate mesh (ADR 13): the generator without leaf pieces and cores, with the twigs the cores now hide put back, and a spec without the `foliage` block, whose sky and bark-seen checks would need other limits.
 
@@ -100,15 +100,16 @@ What must read, taken from the nature reference (`docs/style/nature-shapes.md`, 
 5. **Colour by piece.** Each piece is one flat colour. Pieces differ from their neighbours, and they run from a light yellow-green at the top of a pad to a darker, bluer green underneath. The core is darker than any piece.
 6. **Bark that reads as bark at arm's length.** Grain runs along every limb: fine streaks, plates of bark, dark furrows wandering between them and a few knots. Seen from 0.5 m in Bevy, in a hand-sized patch of trunk, the typical step in tone 4 mm across the trunk is at least 1.4% of the mean tone, and at least 1.25 times the step the same distance along it; both numbers are the least of the benchmark's five trees from the same camera under the viewer's light (ambient 900), and are measured again when that light changes. The trunk to its fork, the roots and the feet of the lowest branches (everything that reaches below 2.5 m) get at least 250 texels per metre.
 7. **A canopy that reads as foliage from below.** Looking straight up at a pad: its underside is closed (no more than 15% of its outline shows the inside of the pad, a piece more than 0.6 m above its underside, or sky through a gap); its rim is leaves (at least one point of a piece stands clear against the sky per metre of its outline); and although the core closes the view, pieces hanging under it keep it to no more than 45% of the foliage seen.
+8. **Limbs that stand out, and no glare, from below.** Looking up from 1 m beside the trunk, in Bevy: foliage seen from the side the sun does not reach is at least 1.25 times as light as the limbs among it, so the branch skeleton reads against the canopy; and no leaf piece shows the sun's glare, a near-white piece among dark ones (`tools/under_checks.py`, gate L4e).
 
 ## Style and colour
 
 ADR 9 as amended: foliage is leaf-shaped pieces, never leaf cards, with no transparency; a solid may sit under the pieces as long as the pieces are what is seen. The tree stands beside the rock (`source/rock`) and is judged beside the benchmark tree.
 
 - **Bark** `m_tree_bark`, `#7a5a44`: a warm mid brown, with painted shading (ADR 10): darker toward the ground (`#b9a8a0` tint at the foot, none at the top), light along the corners between its flat sides, shadow where a branch leaves the trunk and between the roots, and grain (ADR 12). The grain is its variation: no blotches are painted, and no growth.
-- **Leaf** `m_tree_leaf`, `#a8b846`: the light yellow-green of a piece at the top of a pad. The underside tint `#6f96a6` takes most of the red out, less of the green and least of the blue, which gives the darker, bluer green underneath. Between the two there are 6 shades, and each shade comes in 4 tones up to 16% lighter or darker, so that neighbouring pieces differ. A piece's shade comes from how high it sits within its own pad; its tone is drawn from a fixed shuffle.
-- **Core**: in the leaf material, the leaf colour times the tint `#527a86`: about three quarters as light as the darkest piece, so that it is dark and not black.
-- Leaf pieces and cores take their colour from a palette, not from a bake (ADR 11): a strip of swatches along the top of the bark's texture, with all of a piece's UVs on one swatch and all of every core's on the one after the leaves'. The leaf material is two-sided.
+- **Leaf** `m_tree_leaf`, `#a8b846`: the light yellow-green of a piece at the top of a pad. The underside tint `#9ad0e6` takes most of the red out, less of the green and least of the blue, which gives the darker, bluer green underneath. Between the two there are 6 shades, and each shade comes in 4 tones up to 16% lighter or darker, so that neighbouring pieces differ. A piece's shade comes from how high it sits within its own pad; its tone is drawn from a fixed shuffle.
+- **Core**: in the leaf material, the leaf colour times the tint `#71a9b9`: about three quarters as light as the darkest piece, so that it is dark and not black.
+- Leaf pieces and cores take their colour from a palette, not from a bake (ADR 11): a strip of swatches along the top of the bark's texture, with all of a piece's UVs on one swatch and all of every core's on the one after the leaves'. The leaf material is two-sided and has no gloss (exported as `KHR_materials_specular` with a factor of 0, ADR 4 as amended): with the default gloss a flat piece the sun grazes shows the sun and none of its own colour to a player under the canopy.
 
 Bevy lights the back of a two-sided face with its normal turned round, so the underside of a pad is lit only by the ambient light: dark green under the viewer's light, never black, which is the reference's "deep green underneath". Each piece's normal is part its own and part the direction out of its lobe and upward, so a lobe is lit as one round mass and its pieces still differ.
 
@@ -183,6 +184,7 @@ Every value the trees' `spec.json` files share, and the sentence above it comes 
 | `skeleton.min_seen_views` | `6` | Silhouette 2: in six of seven views |
 | `skeleton.min_view_tone` | `0.014` | Silhouette 6: the typical step in tone across a hand-sized patch of trunk seen from 0.5 m |
 | `skeleton.min_view_grain` | `1.25` | Silhouette 6: and faster across the trunk than along it |
+| `skeleton.min_canopy_over_limbs` | `1.25` | Silhouette 8: seen from below, foliage is lighter than the limbs among it |
 | `foliage.material` | `"m_tree_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 3: clear air between pads, measured on a 6 cm grid |
 | `foliage.min_pads` | `3` | Silhouette 3 |
@@ -193,12 +195,12 @@ Every value the trees' `spec.json` files share, and the sentence above it comes 
 | `foliage.min_pointing_down` | `0.7` | Silhouette 4: and downward |
 | `foliage.sky_share` | `[0.2, 0.5]` | Silhouette 3: sky through the canopy |
 | `foliage.min_sky_views` | `5` | Silhouette 3: from five of six directions |
-| `foliage.under_tint` | `"#6f96a6"` | Style and colour: darker and bluer underneath |
+| `foliage.under_tint` | `"#9ad0e6"` | Style and colour: darker and bluer underneath |
 | `foliage.top_tint` | `"#ffffff"` | Style and colour: the leaf colour itself at the top |
 | `foliage.shades` | `6` | Style and colour |
 | `foliage.tones` | `4` | Style and colour |
 | `foliage.variation` | `0.16` | Style and colour: tones up to 16% lighter or darker |
-| `foliage.core_tint` | `"#527a86"` | Style and colour: the core, darker than the darkest piece |
+| `foliage.core_tint` | `"#71a9b9"` | Style and colour: the core, darker than the darkest piece |
 | `foliage.lobes` | `[2, 4]` | Silhouette 3: two to four lobes, a core in each |
 | `foliage.min_lobe_ratio` | `1.2` | Silhouette 3: lobes of different sizes |
 | `foliage.max_core_seen` | `0.1` | Silhouette 3: the pieces are what is seen from the side |
@@ -238,6 +240,10 @@ And on 2026-10-05, after two attempts at a sapling kept no tree:
 
 - **The sapling stage has its own limits for three checks** tuned on large pads (`foliage.min_pad_pieces`, `foliage.min_pointing_out`, `skeleton.min_seen_share`), written here with their reasons before it is built; none is switched off, and each must still fail a bad sapling (Growth stages).
 
+And on 2026-10-05, after the review of the three mature trees (`source/tree_1/review/final/review.md`):
+
+- **Limbs stand out from the leaves when looking up into the tree**, by lightening the leaf undersides, not by changing the bark. The underside and core tints were lightened for it (summer `#6f96a6` to `#9ad0e6` and `#527a86` to `#71a9b9`; autumn and winter by the same share); how far is the agent's, see below.
+
 **Proposed by the agent**, and open to change at review:
 
 - **Three assets, one generator.** Each variant is an asset (`tree_1`, `tree_2`, `tree_3`) with its own spec, build script, GLB and contact sheet, because the pipeline's unit is one asset, one GLB, and the game places trees one at a time. The generator and this brief live here, in `source/tree`, which is not an asset and has no spec. A variant's spec carries its `seed`.
@@ -270,6 +276,8 @@ And on 2026-10-05, after two attempts at a sapling kept no tree:
 - **Asset names**: `tree_<n>` stays the mature summer tree, a stage is `tree_<stage>_<n>` and a season `<base>_<season>`. The three mature trees were not renamed `tree_mature_<n>`: the tests, baselines and the game's look tests name them, and the default stage needs no word.
 - **`variants.min_difference` moved** from this table to the mature variants' own briefs: it compares seeds of one stage, and a stage or season with one seed has no sibling to compare with.
 - **Stage and season numbers** (Growth stages, Seasons): every one is the agent's. The stage curves in the recipe were set so that the generator keeps trees; the autumn and winter colours were chosen without the owner seeing them.
+- **How far the undersides were lightened, and the two limits of gate L4e.** Measured under the viewer's ambient light of 900, on all eight trees, each built as it was before the fix (glossy leaves, the old tints) and as it is now. `skeleton.min_canopy_over_limbs` 1.25: foliage over the limbs among it was 0.94 to 1.22 before (the review called it one dark mass) and is 1.29 to 1.70 now, and the limit sits between; `tree_old_1` before (1.22) and `tree_2` now (1.29) are each within 0.04 of it. The lighter ambient does not separate limbs from leaves by itself: the ratio is the two colours', and it measured the same under 300. The tints are 1.39 times their old values in each sRGB channel, about twice as light: more than "a little", because taking the gloss off the leaf material (below) also took away the underside's reflected light (without the gloss and with the old tints the foliage is 0.67 to 0.88 of the limbs). It is about the least that passes: at 1.35 times `tree_2` measures 1.23. The pale limit (`conventions.toml`, `under_view`): at most 0.0002 of the leaf samples may be nearer grey than halfway from the palette's greyest swatch to white and twice as light as the typical unlit piece. With glossy leaves the trees measure 0.0009 to 0.022, and without, under 0.00001. It cannot see glare on the winter palette, whose own swatches are near white (0.00035 with gloss).
+- **The leaf material has no gloss, and leaf normals are not lifted on pieces that face the ground.** The near-white pieces under `tree_1` were the sun's glare: Bevy's default reflectance on a flat piece the sun grazes, seen from the other side of the sun. `KHR_materials_specular` with a factor of 0 removes it and needs no cargo feature (ADR 4 as amended); it is a change to the glTF profile that **the owner should confirm**. Bark keeps its gloss. Separately, a piece's normal is no longer tipped toward the sky when its face is level or faces down (`corner_normals`), which lit a few pieces the sun could not reach; no check measures that.
 - **Seams.** The generator marks seams on the bark (round every ring, and once along each stretch of a limb) and `tools/paint.py` unwraps along them. The grain does not match across the one seam that runs along each limb; it reads as one more furrow.
 - **Seeds**: see each variant's brief.
 

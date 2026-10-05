@@ -97,6 +97,7 @@ SKELETON = {
     "min_seen_views": int,
     "min_view_tone": float,
     "min_view_grain": float,
+    "min_canopy_over_limbs": float,
 }
 # Optional; foliage of leaf pieces in pads, coloured from a palette (ADR 11). All keys are required once it is present.
 FOLIAGE = {
@@ -376,8 +377,8 @@ if not checks.failed():
     if skeleton:
         checks.check(
             "spec.skeleton_view",
-            0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1,
-            "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it",
+            0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1 and skeleton["min_canopy_over_limbs"] > 1,
+            "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it; min_canopy_over_limbs above 1: seen from below the foliage is the lighter of the two",
         )
     bladed = "blades" in spec
     blades = block("blades", BLADES)
