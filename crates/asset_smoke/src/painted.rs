@@ -125,7 +125,8 @@ pub struct Measured {
     /// Luminance of the lowest quarter of open samples over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
-    /// Largest run of unused 8-bit levels within the range the open faces' green channel spans.
+    /// Largest run of 8-bit levels of the green channel that no open face uses and that two
+    /// neighbouring samples of one open face lie either side of: a step in the texture.
     level_gap: u8,
     /// Share of growth, 0 to 1, by hue: low on the asset, on upright open faces high up, on level
     /// open faces high up, and along upper edges.
@@ -152,12 +153,15 @@ const MIN_SAMPLES: usize = 50;
 const SAMPLE_GRID: u32 = 384;
 /// Faces closer in tilt than this are one surface.
 const SAME_SURFACE_DEG: f32 = 4.0;
+/// Two samples next to each other in the texture are neighbours on the surface when no further apart than this many sample steps.
+const NEIGHBOUR_STEPS: f32 = 3.0;
 /// A point of a surface is buried when the space this far in front of it is inside another piece (as `[overlap] in_front_m` in conventions.toml).
 const BURIED_IN_FRONT_M: f32 = 0.0001;
 
 struct Sample {
-    /// Texel position, to find neighbours.
+    /// Texel position, to find neighbours, and the point of the surface it paints.
     at: (u32, u32),
+    point: Vec3,
     /// Metres above the floor, and the upward part of the face's normal.
     above: f32,
     up: f32,
@@ -393,6 +397,7 @@ pub fn check(
             };
             samples.push(Sample {
                 at: (x, y),
+                point: p,
                 above: p.y - floor,
                 up: n.y,
                 shade,
@@ -469,15 +474,40 @@ pub fn check(
         ));
     }
 
-    // Banding: a smooth gradient uses every 8-bit level it passes through. Levels left unused
-    // inside the range the open faces span are steps the eye sees as bands.
-    let mut greens: Vec<u8> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.green).collect();
+    // Banding: a smooth gradient uses every 8-bit level it passes through, so where two
+    // neighbouring samples of one face lie either side of levels that no open face uses, the
+    // texture steps over them, and the eye sees the step as a band. Levels unused only because
+    // no open face lies at the height that would have them (a cap and a neck with air between,
+    // stones piled on each other) are not passed through by any pair, and are no step.
+    let open_at: std::collections::HashMap<(u32, u32), &Sample> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| (s.at, s)).collect();
+    let mut greens: Vec<u8> = open_at.values().map(|s| s.green).collect();
     greens.sort_unstable();
     let inner = &greens[greens.len() / 50..greens.len() - greens.len() / 50];
-    measured.level_gap = inner.windows(2).map(|pair| (pair[1] - pair[0]).saturating_sub(1)).max().unwrap_or(0);
+    let mut used = [false; 256];
+    for &level in inner {
+        used[level as usize] = true;
+    }
+    let mut stepped_over = [false; 256];
+    for (&(x, y), sample) in &open_at {
+        for next in [(x + stride, y), (x, y + stride)] {
+            let Some(other) = open_at.get(&next) else { continue };
+            // Neighbours in the texture that are not neighbours on the surface lie on two islands of the layout.
+            if sample.point.distance(other.point) > NEIGHBOUR_STEPS * sample.step_m.max(other.step_m) {
+                continue;
+            }
+            for level in sample.green.min(other.green) as usize + 1..sample.green.max(other.green) as usize {
+                stepped_over[level] = true;
+            }
+        }
+    }
+    let mut run = 0;
+    for level in inner[0]..=inner[inner.len() - 1] {
+        run = if stepped_over[level as usize] && !used[level as usize] { run + 1 } else { 0 };
+        measured.level_gap = measured.level_gap.max(run);
+    }
     if measured.level_gap > want.max_level_gap {
         fail(format!(
-            "painted.banding: open faces span 8-bit levels {}..{} of the green channel but leave a run of {} unused; conventions allow {}",
+            "painted.banding: open faces span 8-bit levels {}..{} of the green channel, and neighbouring texels step over a run of {} that none of them uses; conventions allow {}",
             inner[0],
             inner[inner.len() - 1],
             measured.level_gap,

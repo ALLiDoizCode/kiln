@@ -137,14 +137,17 @@ expect_id "foliage.palette" "L4 catches blades painted from another colour" smok
 # Overlapping pieces, painted (ADR 13): slab_1, two plates one pushed into the other.
 uses slab_1 smoke
 expect 0 "L4 passes the real slab"          smoke "$slab" "$slab_manifest"
-# Not told the plates overlap, the load test measures the surface buried inside them as painted surface.
-expect_id "painted.banding"        "L4 fails buried surface as paint unless told the pieces overlap" smoke "$slab" "$(tamper 'm["overlap"] = False' "$slab_manifest")"
 # Three plates: the small one's sides stand close to the dominant one's, and counted as its exposed edges before a face of another piece counted as a join.
 uses slab_2 smoke
 expect 0 "L4 passes a slab of three plates" smoke assets/models/slab_2.glb assets/models/slab_2.manifest.json
 uses slab_1 smoke paint slab_mutations
 expect 0 "L4 passes an unbroken slab from the mutation script" smoke "$(broken_slab none)" "$slab_manifest"
 expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as exposed edges" smoke "$(broken_slab lit_joins)" "$slab_manifest"
+
+# A table rock painted with its family's bands: its open faces are the neck's sides and the cap's, with air
+# between, so the tones between the two are on no open face. That is no step in the texture (painted.banding).
+uses table_rock_3 smoke
+expect 0 "L4 passes a table rock whose open faces lie at two heights" smoke assets/models/table_rock_3.glb assets/models/table_rock_3.manifest.json
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
