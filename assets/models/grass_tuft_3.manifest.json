@@ -108,6 +108,8 @@
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
+    "max_level_gap": 3,
+    "palette_strip_px": 16,
+    "island_margin_px": 4
   }
 }

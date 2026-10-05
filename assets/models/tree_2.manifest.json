@@ -120,6 +120,8 @@
     ],
     "max_blotch_grain": 0.2,
     "max_level_gap": 3,
+    "palette_strip_px": 16,
+    "island_margin_px": 4,
     "grain": 0.3,
     "grain_width_m": 0.02,
     "close_height_m": 2.5,
