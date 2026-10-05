@@ -80,7 +80,8 @@ def inside(low, high):
 
 
 # A value is the stricter limit itself, or a function of the spec's own limit where the brief gives
-# each growth stage its own (for the mature tree: 3,800 triangles, a fork between 2.2 and 3.3 m, a lean of 0.22 to 0.7 m).
+# each growth stage its own (for the mature tree: 3,800 triangles, a fork between 2.2 and 3.3 m, a lean of 0.22 to 0.7 m,
+# bark 0.028 of what is seen above the fork).
 MARGINS = {
     "max_triangles": lambda most: round(most * 0.95),
     "skeleton.fork_m": inside(2 / 15, 2 / 15),
@@ -88,7 +89,7 @@ MARGINS = {
     "skeleton.max_taper": 0.85,
     "skeleton.max_branch_taper": 0.72,
     "skeleton.min_flare": 2.3,
-    "skeleton.min_seen_share": 0.028,
+    "skeleton.min_seen_share": lambda least: round(least * 1.4, 3),
     "skeleton.min_seen_views": 7,
     "foliage.piece_m": lambda span: [round(span[0] + 0.03, 3), round(span[1] - 0.03, 3)],
     "foliage.min_pointing_out": 0.84,
@@ -150,6 +151,7 @@ def grown(recipe, stage):
     for table, key in (("leaf", "spacing"), ("skirt", "spacing"), ("skirt", "under_spacing")):
         scale(table, key, by["leaf_spacing"])
     scale("pads", "floor", by["pad_floor"])
+    scale("leaf", "foot", by["leaf_foot"])
     scale("trunk", "rings", by["trunk_rings"])
     recipe["pads"]["count_share"] = by["pad_count"]
     return SimpleNamespace(**{name: SimpleNamespace(**table) for name, table in recipe.items()})

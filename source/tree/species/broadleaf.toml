@@ -97,4 +97,5 @@ pad_width = [0.5, 0.8, 1.0, 1.15]  # half-widths of the pads
 trunk_rings = [0.8125, 1.0, 1.0, 1.0] # `trunk.rings`: a sapling's upper ring is 1.3 m up, where its girth is taken, so that it tapers from there to its fork
 pad_floor = [0.0, 1.0, 1.0, 1.0]   # `pads.floor`: below nought a pad may hang past the fork, as a sapling's lower tuft does
 leaf      = [0.84, 1.0, 1.0, 1.0]    # a leaf piece's length, the skirt's drop and how far tips stand off a pad
-leaf_spacing = [0.72, 1.0, 1.0, 1.0] # the spacing between pieces, on a lobe, round its rim and under it
+leaf_spacing = [0.84, 1.0, 1.0, 1.0] # the spacing between pieces, on a lobe, round its rim and under it
+leaf_foot = [0.625, 1.0, 1.0, 1.0]  # `leaf.foot`: how much of a shell piece lies behind the lobe's surface; half of a sapling's, whose lobes are no wider than a piece is long
