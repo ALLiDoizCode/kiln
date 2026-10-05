@@ -37,8 +37,8 @@
     "max_branch_taper": 0.8,
     "min_seen_share": 0.02,
     "min_seen_views": 6,
-    "min_view_tone": 0.021,
-    "min_view_grain": 1.16
+    "min_view_tone": 0.014,
+    "min_view_grain": 1.25
   },
   "foliage": {
     "material": "m_tree_leaf",
