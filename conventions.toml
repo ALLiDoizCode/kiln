@@ -68,6 +68,11 @@ seat_deg = 20.0             # a stone rests on surface within this of level: a c
 # A table rock: a cap held off the ground on narrow necks. The clearance wanted under the cap is in each spec.
 neck_height = 0.5           # the necks are measured where a level cut passes this share of that clearance above the ground: above the blocks at their feet, below the cap
 
+[mass]
+# A boulder: one convex mass with sloping flanks (source/boulder). The amounts wanted are in each spec.
+grid = 64                   # upright columns across the wider side of the bounds, where the solid is measured
+steep_deg = 20.0            # a side within this of vertical is a wall; the benchmark's three rocks have 0.54 to 0.83 of their sides there, the first boulder (source/rock) 0.95
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 

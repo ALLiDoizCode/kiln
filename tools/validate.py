@@ -1347,6 +1347,88 @@ def check_cracks(checks, name, bm, spec, conv):
     )
 
 
+# One mass (source/boulder): a boulder is one heavy lump, not a trunk on a spread foot and not a pile of prisms.
+
+
+def filled_columns(bm, lo, hi, cell):
+    """Where the shape is solid, on a grid of upright columns `cell` apart: {(i, j): [(from z, to z), ...]}.
+
+    A column is solid between entering a piece and leaving the last one it is inside, so closed
+    pieces that pass into each other (ADR 13) are read as the one solid they make. Nothing below lo.z counts."""
+    tree = BVHTree.FromBMesh(bm)
+    up = Vector((0, 0, 1))
+    columns = {}
+    for i in range(math.ceil((hi.x - lo.x) / cell - 1e-9)):
+        for j in range(math.ceil((hi.y - lo.y) / cell - 1e-9)):
+            origin = Vector((lo.x + (i + 0.5) * cell, lo.y + (j + 0.5) * cell, min(lo.z, min(v.co.z for v in bm.verts)) - 1.0))
+            inside, entered, spans = 0, None, []
+            while True:
+                point, normal, index, _ = tree.ray_cast(origin, up)
+                if index is None:
+                    break
+                step = -1 if normal.z > 0 else 1
+                if inside <= 0 < inside + step:
+                    entered = point.z
+                if inside + step <= 0 < inside and max(entered, lo.z) < point.z:
+                    spans.append((max(entered, lo.z), point.z))
+                inside += step
+                origin = point + up * 1e-5
+            if spans:
+                columns[i, j] = spans
+    return columns
+
+
+def hull_area_2d(points):
+    """The area of the convex hull of points in a plane."""
+    points = sorted(set(points))
+
+    def chain(run):
+        kept = []
+        for p in run:
+            while len(kept) >= 2 and (kept[-1][0] - kept[-2][0]) * (p[1] - kept[-2][1]) - (kept[-1][1] - kept[-2][1]) * (p[0] - kept[-2][0]) <= 0:
+                kept.pop()
+            kept.append(p)
+        return kept[:-1]
+
+    ring = chain(points) + chain(reversed(points))
+    return abs(sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(ring, ring[1:] + ring[:1]))) / 2
+
+
+def check_mass(checks, name, bm, spec, conv):
+    """The shape is one convex mass with sloping flanks: it fills most of its own convex hull, its outline
+    seen from above fills most of that outline's hull, and not all of its side surface is near upright.
+
+    A trunk on a spread foot, a lump with blocks standing out of its base and a cluster of prisms each leave
+    their hull part empty; a column's flanks are all wall. What is below the floor of the bounds is not counted."""
+    want, rules = spec["mass"], conv["mass"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    cell = max(hi.x - lo.x, hi.y - lo.y) / rules["grid"]
+    columns = filled_columns(bm, lo, hi, cell)
+    volume = sum(top - bottom for spans in columns.values() for bottom, top in spans) * cell * cell
+    hull = bmesh.new()
+    for vert in bm.verts:
+        hull.verts.new((vert.co.x, vert.co.y, max(vert.co.z, lo.z)))
+    bmesh.ops.convex_hull(hull, input=hull.verts)
+    hull_volume = hull.calc_volume(signed=False)
+    hull.free()
+    filled = volume / hull_volume if hull_volume > 0 else 0.0
+    outline = len(columns) / hull_area_2d([(i + a, j + b) for i, j in columns for a in (0, 1) for b in (0, 1)]) if columns else 0.0
+    sides = [f for f in visible_faces(bm, spec, conv) if abs(f.normal.z) < conv["lean"]["side_normal_z"] and f.calc_center_median().z > lo.z]
+    side_area = sum(f.calc_area() for f in sides)
+    steep = sum(f.calc_area() for f in sides if abs(f.normal.z) < math.sin(math.radians(rules["steep_deg"]))) / side_area if side_area else 1.0
+    print(
+        f"{name} mass: {filled:.3f} of its convex hull's volume; its outline from above is {outline:.3f} of that outline's hull; "
+        f"{steep:.3f} of {side_area:.2f} m2 of side surface is within {rules['steep_deg']} degrees of upright"
+    )
+    checks.check(f"{name}.mass_convex", filled >= want["min_hull_share"], f"the shape holds {filled:.3f} of its convex hull's volume ({volume:.3f} of {hull_volume:.3f} m3); spec wants at least {want['min_hull_share']}")
+    checks.check(f"{name}.mass_outline", outline >= want["min_outline_share"], f"seen from above the shape covers {outline:.3f} of its outline's convex hull; spec wants at least {want['min_outline_share']}")
+    checks.check(
+        f"{name}.mass_slopes",
+        steep <= want["max_steep_share"],
+        f"{steep:.3f} of the side surface ({side_area:.2f} m2) is within {rules['steep_deg']} degrees of upright; spec wants at most {want['max_steep_share']}",
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -1485,6 +1567,8 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "table" in spec:
             check_table(checks, name, bm, spec, conv)
+        if "mass" in spec:
+            check_mass(checks, name, bm, spec, conv)
         for block, check in (("block", check_block), ("cracks", check_cracks)):
             if block in spec:
                 check(checks, name, bm, spec, conv)

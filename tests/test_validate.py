@@ -980,6 +980,47 @@ def cut_block(spec):
     edit(cut, "pebble_2")
 
 
+# A boulder (source/boulder): one heavy lump. Each mutation keeps the mesh closed and at its bounds.
+
+
+def stump_boulder(spec):
+    """The boulder above three tenths of its height drawn in to 0.55 of its width: a trunk on a spread foot, the
+    stump that `source/rock` read as while passing every gate."""
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+
+    def pinch(bm):
+        for vert in bm.verts:
+            if vert.co.z > lo.z + 0.3 * (hi.z - lo.z):
+                vert.co.x, vert.co.y = 0.55 * vert.co.x, 0.55 * vert.co.y
+        fit_to_bounds(bm, spec)
+
+    edit(pinch, "boulder_2")
+
+
+def rooted_boulder(spec):
+    """Three sectors of the boulder drawn in to 0.4 of their reach: seen from above, a lump with roots between notches."""
+
+    def notch(bm):
+        for vert in bm.verts:
+            if math.cos(3 * math.atan2(vert.co.y, vert.co.x)) < -0.3:
+                vert.co.x, vert.co.y = 0.4 * vert.co.x, 0.4 * vert.co.y
+        fit_to_bounds(bm, spec)
+
+    edit(notch, "boulder_2")
+
+
+def tall_boulder(spec):
+    """The boulder stretched to three times its height, and its spec with it: every flank a wall."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+
+    def raise_it(bm):
+        for vert in bm.verts:
+            vert.co.z = lo[2] + (vert.co.z - lo[2]) * 3
+
+    edit(raise_it, "boulder_2")
+    hi[2] = lo[2] + 3 * (hi[2] - lo[2])
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1032,6 +1073,10 @@ CASES = [
     (plate_inside_out, "slab_1.normals_outward", "slab_1"),
     (tall_pebble, "pebble_2.low", "pebble_2"),
     (cut_block, "pebble_2.rounded", "pebble_2"),
+    (stump_boulder, "boulder_2.mass_convex", "boulder_2"),
+    (rooted_boulder, "boulder_2.mass_outline", "boulder_2"),
+    (tall_boulder, "boulder_2.mass_slopes", "boulder_2"),
+    (tall_boulder, "boulder_2.low", "boulder_2"),
     (even_heights, "crag_1.cluster_steps_down", "crag_1"),
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
