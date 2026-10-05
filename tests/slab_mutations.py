@@ -8,9 +8,9 @@ Usage: tools/bl tests/slab_mutations.py <mutation> <out.glb>
   lit_joins  painted as one solid and not piece by piece (ADR 13): where one plate passes through
              another it counts as an exposed edge and is lit, and the join gets only the shadow a
              fifth of the sky hidden would give
-  dark_paint painted with tints a quarter as light as the brief's: every texture check still
-             holds the texels to the manifest's own tints, and only the picture shows the sides
-             the sun does not reach gone to black
+  dark_paint painted with tints a quarter as light as the brief's: in the viewer's picture the
+             sides the sun does not reach are lost (gate L4d). The load test, which holds texels
+             to the manifest's tints, fails it too; a spec that asked for such tints would not
 """
 
 import runpy
