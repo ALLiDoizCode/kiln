@@ -353,6 +353,20 @@ broken_cover() { # <asset> <mutation>
   local family; family="$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['family'])" "source/$1/spec.json")" || return 3
   fixture --key "$(key_of tests/cover_mutations.py "source/$1/build.py" "source/$1/spec.json" "source/$family"/*.py)" "$1_$2.glb" mutated_cover "$1" "$2"
 }
+same_patches() { # <asset>: the gated cover and the same cover laid out another way read their patches of growth alike
+  local other first second; other="$(broken_cover "$1" packed_as_boxes)" || return 3
+  first="$(smoke "assets/models/$1.glb" "assets/models/$1.manifest.json")"; second="$(smoke "$other" "assets/models/$1.manifest.json")"
+  python - "$first" "$second" <<'PY'
+import json, sys
+laid, boxes = (json.loads(text) for text in sys.argv[1:])
+reads = [report["painted"]["growth_patch_edges"] for report in (laid, boxes)]
+fails = [any(f.startswith("painted.growth_patches") for f in report["failures"]) for report in (laid, boxes)]
+apart = abs(reads[0] - reads[1]) / max(reads)
+print(f"growth patches read {reads[0]:.3f} as gated ({'fails' if fails[0] else 'passes'}) and {reads[1]:.3f} packed as boxes ({'fails' if fails[1] else 'passes'}): {apart:.3f} apart")
+# One surface, one paint: one verdict, and readings within a twentieth of each other.
+sys.exit(0 if fails[0] == fails[1] and apart <= 0.05 else 1)
+PY
+}
 mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 broken_log() { fixture --key "$(key_of tests/log_mutations.py source/log_3/build.py source/log_3/spec.json source/log/*.py)" "log_3_$1.glb" mutated tests/log_mutations.py "$1"; }
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }

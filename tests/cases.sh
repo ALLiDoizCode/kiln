@@ -162,6 +162,10 @@ expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone o
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a stack"    smoke "$(broken_cover stack_2_mossy growth_broad_patches)" assets/models/stack_2_mossy.manifest.json
 uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
+# Patches of growth are a property of the surface: the same paint on the same arch, laid out in the texture two ways, reads alike and gets one verdict.
+uses arch_3_mossy smoke paint cover_mutations
+expect 0 "L4 reads an arch's patches of growth alike under two layouts" same_patches arch_3_mossy
+uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
 # A mossy log lies: the top fifth of its bounds is its root plate, and the edges moss grows along are those of the
