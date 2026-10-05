@@ -80,13 +80,11 @@ GROWTH_BREAK_SCALE, GROWTH_BREAK_KEEP = 2.5, 0.7
 GROWTH_EDGE_M = 0.2  # how far in from an upper edge its growth reaches
 GROWTH_EDGES_FROM = (0.5, 0.75)  # share of the height over which edge growth comes in
 BLOTCH_EDGE = 0.1  # how much of the noise's range a blotch's border takes: soft, but a patch and not a haze
-# The crevice shadow is full where a fifth of the sky is hidden, as in the corner of a
-# ledge whose wall leans back; the edge light is full where a sixteenth of the solid behind
-# the face is missing, as beside the bevel strip of a right-angled corner.
-FULL_SHADE_OCCLUSION = 0.2
+# The crevice shadow is full where `crevice_sky_hidden` of the sky is hidden (conventions.toml, which
+# crates/asset_smoke reads too: one definition of a crevice), and where pieces overlap (ADR 13) the shadow
+# at a join is full where another piece hides `join_sky_hidden` of it. The edge light is full where a
+# sixteenth of the solid behind the face is missing, as beside the bevel strip of a right-angled corner.
 FULL_EDGE_OCCLUSION = 0.06
-# Where pieces overlap (ADR 13), the shadow at a join is full where another piece hides a sixteenth of the sky.
-FULL_JOIN_OCCLUSION = 0.06
 # Faces within this of straight down, at the floor of the bounds, are the hidden underside.
 UNDERSIDE_COS = 0.999
 UNDERSIDE_UV_SCALE = 0.05  # texel density of an underside nobody sees, beside the rest
@@ -455,13 +453,13 @@ def paint_nodes(tree, colour_rgb, spec, conv):
     # A spec for a shape with no inside corner asks none (tools/lint_spec.py asks it of overlapping pieces always).
     shade = None
     if "crevice_shadow" in paint:
-        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
+        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), rules["crevice_sky_hidden"], clamp=True)
     if apart and shade is not None:
         # A join: the sky another piece hides, over and above what the face's own piece hides. Two
         # pieces often meet in a groove too open to hide a fifth of the sky, and the join must
         # still be dark, since that is what hides it.
         by_others = math_node("SUBTRACT", hidden(False, paint["crevice_width_m"]), hidden(False, paint["crevice_width_m"], own_piece=True), clamp=True)
-        shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, FULL_JOIN_OCCLUSION, clamp=True))
+        shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, rules["join_sky_hidden"], clamp=True))
     if shade is not None:
         colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
 

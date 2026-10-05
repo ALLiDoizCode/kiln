@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, blade_plant_1 and slab_1 first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1, tree_2, tree_1_autumn, tree_sapling_1, blade_plant_1 and slab_1 first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case

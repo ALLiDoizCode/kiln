@@ -121,6 +121,11 @@ expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"     
 # Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
 uses tree_1 smoke
 expect 0 "L4 passes the real tree"          smoke "$tree" "$tree_manifest"
+# The sapling's roots meet the ground between them in valleys folded 30 to 50 degrees, which the painter shades in
+# part: its shadow is whole where a fifth of the sky is hidden (conventions.toml, crevice_sky_hidden), a fold of 53.
+# A load test that calls every fold of 30 degrees a crevice holds those valleys to the whole shadow and fails the tree.
+uses tree_sapling_1 smoke
+expect 0 "L4 passes a tree whose root valleys are too open to be crevices" smoke assets/models/tree_sapling_1.glb assets/models/tree_sapling_1.manifest.json
 uses tree_1 smoke paint tree_mutations
 expect 0 "L4 passes an unbroken tree from the mutation script" smoke "$(broken_tree none)" "$tree_manifest"
 expect_id "foliage.two_sided"      "L4 catches leaves seen from one side only"      smoke "$(broken_tree single_sided)" "$tree_manifest"

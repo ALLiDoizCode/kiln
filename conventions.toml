@@ -114,7 +114,12 @@ min_uv_coverage = 0.4       # share of the texture the triangles use; the box pa
 max_uv_overlap = 0.001      # share of used texels claimed by more than one triangle
 # Brightest channel of any texel, 8-bit sRGB. Outside this a surface clips to black or white once lit.
 texel_range_srgb = [30, 240]
-feature_deg = 30.0          # two faces at least this far apart in tilt make an edge or a crevice
+feature_deg = 30.0          # two faces at least this far apart in tilt make an exposed edge
+# What a crevice is, for the painter and for the load test alike. The painter's shadow is whole where this share of
+# the sky above a face is hidden (weighted toward straight up, as its ambient occlusion weighs it); the load test
+# measures the shadow beside a fold that hides as much at its own line: two faces tilted t apart hide (1 - cos t) / 2.
+crevice_sky_hidden = 0.2    # a fold of 53 degrees, as in the corner of a ledge whose wall leans back; a shallower valley is shaded in part, and is neither crevice nor open face
+join_sky_hidden = 0.06      # where pieces overlap (ADR 13), the sky another piece hides: 28 degrees. Two pieces often meet in a groove too open to hide a fifth of the sky
 colour_tolerance = 0.08     # open faces: measured over (material colour times tint)
 min_effect_share = 0.5      # share of edge_light, crevice_shadow, side_shade and growth_edges the measured zones must average
 # Variation a spec may ask for. The upward part (z) of a face's normal decides what it gets.

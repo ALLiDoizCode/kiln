@@ -49,8 +49,15 @@ pub struct Painted {
     max_uv_overlap: f32,
     /// Lowest and highest 8-bit sRGB value a texel's brightest channel may have.
     texel_range: [u8; 2],
-    /// Two faces at least this far apart in tilt form an edge or a crevice.
+    /// Two faces at least this far apart in tilt form an exposed edge.
     feature_deg: f32,
+    /// What a crevice is, as `tools/paint.py` paints one: its shadow is whole where this share of the sky above a
+    /// face is hidden, and where another overlapping piece hides the second share of it. A fold is a crevice
+    /// when it hides as much at its own line: faces tilted t apart hide (1 - cos t) / 2.
+    #[serde(default = "crevice_hidden")]
+    crevice_sky_hidden: f32,
+    #[serde(default = "join_hidden")]
+    join_sky_hidden: f32,
     /// How far an open face's colour may be from material colour times tint, as a share.
     colour_tolerance: f32,
     /// The share of `edge_light` and `crevice_shadow` the measured zones must show on average.
@@ -94,6 +101,8 @@ pub struct Painted {
 }
 
 // Used only by manifests written before these rules existed (the tests' tampered ones).
+fn crevice_hidden() -> f32 { 0.2 }
+fn join_hidden() -> f32 { 0.06 }
 fn side_normal() -> [f32; 2] { [0.3, 0.7] }
 fn half_band() -> f32 { 0.35 }
 fn up_normal() -> [f32; 2] { [0.82, 0.94] }
@@ -321,6 +330,8 @@ pub fn check(
     // Sample the texture over the visible surface.
     let stride = (want.texture_px / SAMPLE_GRID).max(1);
     let feature_cos = want.feature_deg.to_radians().cos();
+    // The tilt at which a fold hides, at its line, the share of the sky the paint's shadow is whole at.
+    let (crevice_cos, join_cos) = (1.0 - 2.0 * want.crevice_sky_hidden, 1.0 - 2.0 * want.join_sky_hidden);
     let same_cos = SAME_SURFACE_DEG.to_radians().cos();
     let faces: Vec<(&Triangle, Vec3, Vec3)> = visible
         .iter()
@@ -390,10 +401,15 @@ pub fn check(
                 // A face of another piece near a point that is not buried is that piece coming out
                 // of this one or standing against it: a join, whichever side its middle lies. Only
                 // a point's own piece can turn away from it and make an exposed edge there.
-                let rises = (*centre - p).dot(*n) > 0.0 || piece_of[other_index] != piece_of[index];
+                let other_piece = piece_of[other_index] != piece_of[index];
+                let rises = (*centre - p).dot(*n) > 0.0 || other_piece;
                 let (near, any) = if rises { (&mut concave, &mut any_concave) } else { (&mut convex, &mut any_convex) };
                 *any = any.min(distance);
-                if cos <= feature_cos {
+                // An exposed edge is two faces `feature_deg` apart. A crevice is a fold the paint gives its whole
+                // shadow: one definition, the painter's (conventions.toml). A shallower valley is shaded in
+                // part, and is neither a crevice nor, being near a face that rises, an open face.
+                let sharp = if !rises { feature_cos } else if other_piece { join_cos } else { crevice_cos };
+                if cos <= sharp {
                     *near = near.min(distance);
                 }
             }
