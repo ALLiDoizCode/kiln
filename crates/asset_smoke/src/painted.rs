@@ -666,19 +666,29 @@ pub fn check(
         if want.growth_patch_m > 0.0 {
             // How often growth starts or stops between neighbouring samples of level open faces, per patch length:
             // small, broken patches have a lot of outline for their area, and broad ones little.
-            let grown: std::collections::HashMap<(u32, u32), (bool, f32)> =
-                samples.iter().filter(|s| s.zone == Zone::Open && level(s) && s.above > high).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
-            let (mut edges, mut metres) = (0usize, 0.0f32);
-            for (&(x, y), &(here, step)) in &grown {
-                if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
-                    edges += usize::from(here != next);
-                    metres += step;
+            let outline = |pick: &dyn Fn(&Sample) -> bool| {
+                let grown: std::collections::HashMap<(u32, u32), (bool, f32)> = samples.iter().filter(|s| pick(s)).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
+                let (mut edges, mut metres) = (0usize, 0.0f32);
+                for (&(x, y), &(here, step)) in &grown {
+                    if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
+                        edges += usize::from(here != next);
+                        metres += step;
+                    }
                 }
+                (edges, metres)
+            };
+            let (mut edges, mut metres) = outline(&|s| s.zone == Zone::Open && level(s) && s.above > high);
+            let mut on = "level open faces";
+            if metres < 1.0 {
+                // Under a metre of level open face: every surface the patches are asked on in full, the level faces
+                // there are and the exposed edges of the top fifth.
+                (edges, metres) = outline(&|s| seen(s) && (level(s) || (s.rim && s.height > 0.8)));
+                on = "level faces and the exposed edges of the top fifth";
             }
             measured.growth_patch_edges = edges as f32 / metres.max(1e-6) * want.growth_patch_m;
             if metres < 1.0 || measured.growth_patch_edges < want.growth_patch_edges {
                 fail(format!(
-                    "painted.growth_patches: on level open faces above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
+                    "painted.growth_patches: on {on} above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
                     measured.growth_patch_edges, want.growth_patch_m, want.growth_patch_edges, want.growth_patch_m
                 ));
             }
