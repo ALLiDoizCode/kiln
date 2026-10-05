@@ -12,3 +12,13 @@ Read from `benchmarks/out/tree_stages.png` (the Bevy views) and the gate's repor
 ## After the fixes of 2026-10-05
 
 Not looked at tile by tile after the change; only measured. L4e, from 1 m beside the trunk looking 78 degrees up: pale leaf samples 0.00008 of the leaf samples (at most 0.001); foliage over the limbs among it 1.78 (at least 1.25). The underside and core tints are about twice as light as when the lines above were written.
+
+## After the swept foot and the limbs' rings (branch `treefoot`, 2026-10-05)
+
+Read from the rebuilt `bevy.png`, `bevy_under.png` and `bevy_trunk.png`, and the gate's reports; the Blender tiles of the sheet were opened only for `tree_young_1`. Where a line above speaks of the foot as a skirt or of elbows, this replaces it.
+
+- Triangles: 5,438. L1: 4 roots in 4 ridges, the sharpest turn between two stretches of a limb 15.0 degrees (it was 19.9).
+- `bevy`: the foot is four separate roots, thin ridges that run out over the ground from the trunk, with bare ground between them; no skirt joins their tips. Between two roots the trunk comes straight down to the ground, flat-sided: it does not widen there.
+- `bevy`, the roots' flanks: fine streaks run out along each root. The grain is not seen stretched into patches at this distance.
+- `bevy_under`: each limb curves in even stretches; no single stretch turns more sharply than its neighbours. A limb is still flat-sided, and its corners show as straight lines.
+- L4: on open faces the grain's furrows are 1.015 of the tone the paint gives a furrow and its plates 1.007 of a plate's (0.44 of the open samples are furrow); inside corners are 0.55 times as light as open faces; the sparsest triangle has 372 texels per metre.
