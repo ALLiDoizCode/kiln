@@ -4,7 +4,13 @@ Each mutation builds the rock, paints it from a changed spec or changes the
 result, and exports it as tools/export.py would. The real manifest still
 says what the brief wants, so the named check must fail.
 
-Usage: tools/bl tests/paint_mutations.py <mutation> <out.glb>
+Usage: tools/bl tests/paint_mutations.py <mutation> <out.glb> [painted.blend]
+       tools/bl tests/paint_mutations.py painted <out.blend>
+
+`painted` saves the rock built and painted with nothing wrong. A mutation in
+AFTER_PAINT changes only what painting left, so given that file it starts from
+it instead of building and baking a rock of its own; the export is the same
+either way, byte for byte.
 """
 
 import runpy
@@ -18,12 +24,22 @@ sys.path.insert(0, str(ROOT / "tools"))
 import paint
 from pipeline import Asset, conventions, script_args
 
-mutation, out = script_args()
+AFTER_PAINT = ("shrunk_uvs", "stacked_uvs", "uvs_off_the_texture", "tinted_factor", "jpeg")
+
+mutation, out, *painted = script_args()
 asset = Asset("rock")
 spec = asset.spec()
 want = spec["painted_shading"]
-bpy.ops.wm.read_factory_settings(use_empty=True)
-rock = runpy.run_path(str(asset.source / "build.py"))["build"](spec)
+if painted:
+    if mutation not in AFTER_PAINT:
+        raise RuntimeError(f"{mutation} is not in AFTER_PAINT: it must build and paint a rock of its own")
+    result = bpy.ops.wm.open_mainfile(filepath=painted[0])
+    if result != {"FINISHED"}:
+        raise RuntimeError(f"open failed: {result}")
+    rock = bpy.data.objects["rock"]
+else:
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    rock = runpy.run_path(str(asset.source / "build.py"))["build"](spec)
 bsdf = rock.data.materials[0].node_tree.nodes["Principled BSDF"]
 options = {}
 
@@ -75,8 +91,13 @@ elif mutation == "speckle":
 elif mutation == "no_side_shade":
     want["side_shade"] = 0.0
 
-if mutation != "unpainted":
+if mutation != "unpainted" and not painted:
     image = paint.apply(spec, conventions())
+if mutation == "painted":
+    result = bpy.ops.wm.save_as_mainfile(filepath=out, check_existing=False)
+    if result != {"FINISHED"}:
+        raise RuntimeError(f"save failed: {result}")
+    sys.exit(0)
 
 if mutation == "banded":
     # The gradient in a dozen flat steps per channel, as a texture saved with too few levels would be.

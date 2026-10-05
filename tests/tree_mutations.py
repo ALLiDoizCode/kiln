@@ -4,7 +4,13 @@ Each mutation builds the tree, paints it from a changed spec or changes the
 result, and exports it as tools/export.py would. The real manifest still says
 what the brief wants, so the named check must fail.
 
-Usage: tools/bl tests/tree_mutations.py <mutation> <out.glb>
+Usage: tools/bl tests/tree_mutations.py <mutation> <out.glb> [painted.blend]
+       tools/bl tests/tree_mutations.py painted <out.blend>
+
+`painted` saves the tree built and painted with nothing wrong. A mutation in
+AFTER_PAINT changes only what painting left, so given that file it starts from
+it instead of building and baking a tree of its own; the export is the same
+either way, byte for byte.
 """
 
 import runpy
@@ -20,13 +26,23 @@ import foliage
 import paint
 from pipeline import Asset, conventions, script_args, share_textures
 
-mutation, out = script_args()
+AFTER_PAINT = ("none", "single_sided", "gradient_within_piece", "no_cores", "core_open", "bark_inside_out", "two_textures")
+
+mutation, out, *painted = script_args()
 asset = Asset("tree_1")
 spec = asset.spec()
 want = spec["foliage"]
 conv = conventions()
-bpy.ops.wm.read_factory_settings(use_empty=True)
-tree = runpy.run_path(str(asset.source / "build.py"))["build"](spec)
+if painted:
+    if mutation not in AFTER_PAINT:
+        raise RuntimeError(f"{mutation} is not in AFTER_PAINT: it must build and paint a tree of its own")
+    result = bpy.ops.wm.open_mainfile(filepath=painted[0])
+    if result != {"FINISHED"}:
+        raise RuntimeError(f"open failed: {result}")
+    tree = bpy.data.objects["tree_1"]
+else:
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    tree = runpy.run_path(str(asset.source / "build.py"))["build"](spec)
 leaf = bpy.data.materials[want["material"]]
 slot = [s.material.name for s in tree.material_slots].index(want["material"])
 
@@ -58,7 +74,13 @@ elif mutation == "grain_across":
     values[0::3], values[1::3] = values[1::3], values[0::3]
     tree.data.attributes["grain"].data.foreach_set("vector", values)
 
-paint.apply(spec, conv)
+if not painted:
+    paint.apply(spec, conv)
+if mutation == "painted":
+    result = bpy.ops.wm.save_as_mainfile(filepath=out, check_existing=False)
+    if result != {"FINISHED"}:
+        raise RuntimeError(f"save failed: {result}")
+    sys.exit(0)
 
 # Changed after painting.
 if mutation == "single_sided":

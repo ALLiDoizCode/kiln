@@ -1,11 +1,17 @@
 """Proves each L1 check goes red: breaks the tracer one way at a time and
 asserts that the matching check, by id, fails.
 
-Usage: tools/bl tests/test_validate.py
+Usage: tools/bl tests/test_validate.py [--asset <name>] [--only <regex>] [--part <i>/<n> | --unbroken]
+       With no arguments every mutation runs, after each asset has been checked unbroken.
+       --asset keeps the mutations of one asset, and --only those whose name or check id
+       matches. tests/run.sh splits an asset's run to do the pieces side by side: --part runs
+       the i-th of n shares of the mutations and no unbroken check, --unbroken that check alone.
+       Selecting nothing is an error.
 """
 
 import json
 import math
+import re
 import runpy
 import sys
 from pathlib import Path
@@ -17,7 +23,7 @@ from mathutils import Vector, noise
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import paint
-from pipeline import Asset, Checks, conventions
+from pipeline import Asset, Checks, conventions, script_args
 from validate import check_scene
 
 def edit(fn, name="tracer"):
@@ -606,21 +612,52 @@ def failures_after(mutate, name="tracer"):
     return {r["id"] for r in checks.failed()}
 
 
+def asset_of(case):
+    return case[2] if len(case) > 2 else "tracer"
+
+
+def selected(args):
+    """The cases the arguments ask for, and the assets to check unbroken first."""
+
+    def option(flag):
+        return args[args.index(flag) + 1] if flag in args else None
+
+    cases = CASES
+    if asset := option("--asset"):
+        cases = [case for case in cases if asset_of(case) == asset]
+    if only := option("--only"):
+        cases = [case for case in cases if re.search(only, case[0].__name__) or re.search(only, case[1])]
+    unbroken = sorted({asset_of(case) for case in cases})
+    if "--unbroken" in args:
+        return [], unbroken
+    if share := option("--part"):
+        part, parts = (int(n) for n in share.split("/"))
+        # A mutation stays whole in one part, however many checks it must turn red.
+        mutations = list(dict.fromkeys(case[0] for case in cases))[part - 1 :: parts]
+        return [case for case in cases if case[0] in mutations], []
+    return cases, unbroken
+
+
+cases, unbroken = selected(script_args())
+if not cases and not unbroken:
+    sys.exit(f"no mutation is selected by {script_args()}")
 problems = []
 seen = {}  # one build per mutation, however many checks it must turn red
-for name in sorted({case[2] if len(case) > 2 else "tracer" for case in CASES}):
-    if clean := failures_after(None, name):
+for name in unbroken:
+    clean = failures_after(None, name)
+    print(f"unbroken   {name:24} {'passes every check' if not clean else f'FAILS {sorted(clean)}'}")
+    if clean:
         problems.append(f"unmodified {name} fails {sorted(clean)}")
-for mutate, expected, *asset_name in CASES:
+for mutate, expected, *asset_name in cases:
     if mutate not in seen:
         seen[mutate] = failures_after(mutate, *asset_name)
     failed = seen[mutate]
     status = "ok" if expected in failed else "NOT CAUGHT"
-    print(f"{status:10} {mutate.__name__:24} -> {sorted(failed)}")
+    print(f"{status:10} {mutate.__name__:24} {expected:28} -> {sorted(failed)}")
     if expected not in failed:
         problems.append(f"{mutate.__name__} did not fail {expected}")
 
 for problem in problems:
     print("FAIL", problem)
-print(f"{len(CASES) - len(problems)}/{len(CASES)} mutations caught" if not problems else f"{len(problems)} problems")
+print(f"{len(cases) - len(problems)}/{len(cases)} mutations caught" if not problems else f"{len(problems)} problems")
 sys.exit(1 if problems else 0)

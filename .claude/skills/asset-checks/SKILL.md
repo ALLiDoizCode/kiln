@@ -24,7 +24,7 @@ Each gate reads a different thing: L1 reads the scene inside Blender, L2 and L2b
 
 1. **Red on the spec.** Before modelling, run `tools/gate.sh <asset>`. It must fail, and for the right reason: no build yet, or a blockout outside the budget or bounds. A gate that is green before the asset exists is checking nothing.
 2. **One slice at a time.** Build the next part of the asset, then run the gate. Fix what goes red before adding more geometry.
-3. **New property, new check.** When the spec gains a property no check covers, add the check and its red case together, in that order: write the mutation in `tests/`, watch it report NOT CAUGHT, then write the check until `tests/run.sh` passes.
+3. **New property, new check.** When the spec gains a property no check covers, add the check and its red case together, in that order: write the mutation in `tests/`, watch it report NOT CAUGHT or FAIL, then write the check until the case passes. Iterate on that case alone with `tests/run.sh --only <its name or check id>`, or on everything your edits touch with `tests/run.sh --changed`.
 4. **Escaped defect, new check.** When a review render or the user finds a defect every gate passed, reproduce it as a mutation first, then close it as in step 3.
 
-Done when `tools/gate.sh <asset>` and `tests/run.sh` both exit 0, and every property in the spec is named by at least one check id in the reports under `source/<asset>/out/reports/`.
+Done when `tools/gate.sh <asset>` and the whole suite, `tests/run.sh` with no selection, both exit 0, the suite's last line reads `ran ALL <n> cases` (a `PARTIAL RUN` line proves only the part it names), and every property in the spec is named by at least one check id in the reports under `source/<asset>/out/reports/`.

@@ -1,25 +1,250 @@
 #!/usr/bin/env bash
-# Tests for the gates themselves: every check must be able to fail.
+# Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
 # Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds, exports and review tiles).
+#
+# Usage: tests/run.sh [selector...] [options]
+#   no selector, no option   every case
+#   <asset>                  the cases that read that asset: tracer, crate, rock, tree_1, ...
+#   <gate>                   the cases of that gate: L0, L1, L2b, L4, L4b, L4c, L5b, L5c
+#   <tool>                   the cases behind one tool: smoke, view, paint, validate, ... (`--list` shows every tag)
+#       Several assets or tools select the cases with any of them, several gates likewise, and
+#       gates together with assets or tools select the cases with both: `tests/run.sh L4 rock`.
+#   --only <regex>           only the cases whose name or check id matches (grep -E, any case)
+#   --changed                only the cases affected by the files changed since the last commit
+#   --list                   name the selected cases with what each expects and its tags, and run nothing
+#   -j, --jobs <n>           how many cases run at once (default: one per core)
+#   --order <file|reverse|random>  the order cases are started in (default: file); the outcomes must not depend on it
+#   --timings                after the run, the seconds each case took, slowest first
+#   --results <file>         write `<outcome> <tab> <name>` for every case that ran, in file order
+#   --fresh                  build every fixture again instead of reusing the kept ones (see "Fixtures" below)
+#   --keep                   keep the scratch directory, with each case's output, and say where it is
+# Exit code: 0 when every selected case passed, 1 when one failed, 2 when the run could not start
+# or the selection named nothing. The last line always says how many cases ran and how many the
+# selection skipped; only a line saying ALL ran is a full run.
+#
+# Fixtures: the rock and tree_1 built and painted with one thing wrong are most of the suite's
+# work, a minute of one core each. They are kept in target/gate-test-fixtures beside a hash of
+# everything they are made from, and built again only when that changes. --fresh builds them all.
 set -uo pipefail
 cd "$(dirname "$0")/.."
-glb=assets/models/tracer.glb
-manifest=assets/models/tracer.manifest.json
-tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
-failures=0
+cases_file=tests/cases.sh
 
-expect() { # <expected exit code> <name> <command...>
-  local want="$1" name="$2"; shift 2
-  "$@" > "$tmp/out" 2>&1; local got=$?
-  if [[ $got -eq $want ]]; then echo "ok         $name"
-  else echo "FAIL       $name: exit $got, wanted $want"; tail -5 "$tmp/out"; failures=$((failures + 1)); fi
+usage() { sed -n '2,/^set /p' "$0" | sed '$d; s/^# \{0,1\}//'; }
+die() { echo "tests/run.sh: $*" >&2; exit 2; }
+
+# The work is arithmetic on one thread per case (tests/run.sh gives each Blender cores / jobs
+# threads), so one case per core is quickest; measured on 16 threads, 8 at a time is no quicker.
+cores=$(nproc); jobs=$cores
+selectors=(); only=""; changed=0; list=0; order=file; timings=0; results_file=""; keep=0; fresh=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -j|--jobs) jobs="${2:-}"; shift ;;
+    -j[0-9]*) jobs="${1#-j}" ;;
+    --only) only="${2:-}"; [[ -n $only ]] || die "--only needs a pattern"; shift ;;
+    --changed) changed=1 ;;
+    --list) list=1 ;;
+    --order) order="${2:-}"; shift ;;
+    --timings) timings=1 ;;
+    --results) results_file="${2:-}"; [[ -n $results_file ]] || die "--results needs a file"; shift ;;
+    --fresh) fresh=1 ;;
+    --keep) keep=1 ;;
+    -*) die "unknown option $1 (see --help)" ;;
+    *) selectors+=("$1") ;;
+  esac
+  shift
+done
+[[ $jobs =~ ^[1-9][0-9]*$ ]] || die "--jobs needs a number, got '$jobs'"
+[[ $order =~ ^(file|reverse|random)$ ]] || die "--order is file, reverse or random, got '$order'"
+
+# ---- the cases: one per line of tests/cases.sh, read without running anything
+
+kinds=(); wants=(); names=(); tags=(); lines=()
+declare -A seen_name=() known_tag=()
+uses=""
+while IFS= read -r text || [[ -n $text ]]; do
+  if [[ $text =~ ^[[:space:]]*(#|$) ]]; then continue
+  elif [[ $text =~ ^uses[[:space:]]+(.+)$ ]]; then uses="${BASH_REMATCH[1]}"; continue
+  elif [[ $text =~ ^expect[[:space:]]+([0-9]+)[[:space:]]+\"([^\"]+)\"[[:space:]] ]]; then kinds+=(exit); wants+=("${BASH_REMATCH[1]}"); names+=("${BASH_REMATCH[2]}")
+  elif [[ $text =~ ^expect_id[[:space:]]+\"([^\"]+)\"[[:space:]]+\"([^\"]+)\"[[:space:]] ]]; then kinds+=(id); wants+=("${BASH_REMATCH[1]}"); names+=("${BASH_REMATCH[2]}")
+  else die "$cases_file: not a case, a comment or a \`uses\` line: $text"
+  fi
+  name="${names[-1]}"; gate="${name%% *}"
+  [[ $gate =~ ^L[0-9][a-z]?$ ]] || die "$cases_file: the name of a case starts with its gate: $name"
+  [[ -z ${seen_name[$name]:-} ]] || die "$cases_file: two cases are named: $name"
+  [[ -n $uses ]] || die "$cases_file: no \`uses\` line above: $name"
+  seen_name[$name]=1
+  tags+=("$gate $uses"); lines+=("$text")
+  for tag in $gate $uses; do known_tag[$tag]=1; done
+done < "$cases_file"
+total=${#names[@]}
+
+has_tag() { [[ " ${tags[$1]} " == *" $2 "* ]]; }
+
+# ---- --changed: from the files changed since the last commit to the tags of the cases they affect
+
+tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing when no case reads it
+  case "$1" in
+    docs/*|*.md|.claude/*|.gitignore|benchmarks/*|third_party/*) ;;
+    # Run by the gate and by no case here: a change to one is proved by tools/gate.sh, not by this suite.
+    tools/gate.sh|tools/build.py|tools/export.py|tools/review_render.py|tools/variants_sheet.sh|tools/side_by_side.sh) echo NONE ;;
+    tools/lint_spec.py) echo lint_spec ;;
+    tools/validate.py|tools/skeleton.py|tests/test_validate.py|tests/fixtures/*) echo validate ;;
+    tools/paint.py|tools/foliage.py) echo paint ;;
+    tests/paint_mutations.py) echo rock_mutations ;;
+    tests/tree_mutations.py) echo tree_mutations ;;
+    tests/flip_normals.py) echo flip_normals ;;
+    crates/asset_smoke/*) echo smoke ;;
+    crates/asset_view/*) echo view ;;
+    tools/view_checks.py) echo view_checks ;;
+    tools/bevy_lint.py) echo bevy_lint ;;
+    tools/baseline.py) echo baseline ;;
+    tools/image_lint.py) echo image_lint ;;
+    tools/review_aids.py) echo review_aids ;;
+    source/tree/*) echo tree_1 tree_2 tree_3 ;;  # the generator and brief the variants share
+    source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
+    assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
+    # The suite itself, what every script imports, the pinned tools and the standards they all read.
+    *) echo ALL ;;
+  esac
 }
 
+changed_tags=""; changed_all=0
+if [[ $changed -eq 1 ]]; then
+  files="$( { git diff --name-only HEAD && git ls-files --others --exclude-standard; } 2> /dev/null)" \
+    || die "--changed needs git and a commit to compare with"
+  echo "changed since the last commit:"
+  while IFS= read -r file; do
+    [[ -n $file ]] || continue
+    found="$(tags_of_file "$file")"
+    case "$found" in
+      "") echo "  $file: not read by any case" ;;
+      NONE) echo "  $file: run by tools/gate.sh and by no case here" ;;
+      ALL) echo "  $file: may affect every case"; changed_all=1 ;;
+      *) read_by=0; for tag in $found; do [[ -n ${known_tag[$tag]:-} ]] && read_by=1; done
+         if [[ $read_by -eq 1 ]]; then echo "  $file: $found"; changed_tags+=" $found"; else echo "  $file: not read by any case"; fi ;;
+    esac
+  done <<< "$(sort -u <<< "$files")"
+  [[ -n $files ]] || echo "  nothing"
+  echo
+fi
+
+# ---- the selection
+
+gate_selectors=(); tag_selectors=()
+for selector in ${selectors[@]+"${selectors[@]}"}; do
+  [[ -n ${known_tag[$selector]:-} ]] || die "no case has the tag '$selector'; the tags are: $(printf '%s\n' "${!known_tag[@]}" | sort | xargs)"
+  if [[ $selector =~ ^L[0-9][a-z]?$ ]]; then gate_selectors+=("$selector"); else tag_selectors+=("$selector"); fi
+done
+
+selected() { # <case index>
+  local i=$1 tag hit
+  if [[ ${#gate_selectors[@]} -gt 0 ]]; then
+    hit=0; for tag in "${gate_selectors[@]}"; do has_tag "$i" "$tag" && hit=1; done; [[ $hit -eq 1 ]] || return 1
+  fi
+  if [[ ${#tag_selectors[@]} -gt 0 ]]; then
+    hit=0; for tag in "${tag_selectors[@]}"; do has_tag "$i" "$tag" && hit=1; done; [[ $hit -eq 1 ]] || return 1
+  fi
+  if [[ -n $only ]]; then
+    grep -qiE -- "$only" <<< "${names[i]}"$'\n'"$([[ ${kinds[i]} == id ]] && echo "${wants[i]}")" || return 1
+  fi
+  if [[ $changed -eq 1 && $changed_all -eq 0 ]]; then
+    hit=0; for tag in $changed_tags; do has_tag "$i" "$tag" && hit=1; done; [[ $hit -eq 1 ]] || return 1
+  fi
+  return 0
+}
+
+chosen=()
+for ((i = 0; i < total; i++)); do selected "$i" && chosen+=("$i"); done
+ran=${#chosen[@]}; skipped=$((total - ran))
+selection="${selectors[*]:-}"
+[[ -n $only ]] && selection+="${selection:+ }--only $only"
+[[ $changed -eq 1 ]] && selection+="${selection:+ }--changed"
+
+tally() { # the last line of every run: how much of the suite this was
+  if [[ $skipped -eq 0 ]]; then echo "ran ALL $total cases$1"
+  else echo "PARTIAL RUN: ran $ran of $total cases, $skipped skipped by the selection ($selection)$1"; fi
+}
+
+if [[ $list -eq 1 ]]; then
+  for i in ${chosen[@]+"${chosen[@]}"}; do
+    if [[ ${kinds[i]} == id ]]; then want="fails ${wants[i]}"; else want="exits ${wants[i]}"; fi
+    printf '%s\t%s\t%s\n' "${names[i]}" "$want" "${tags[i]}"
+  done
+  echo; echo "listed, not run: $ran of $total cases${selection:+ ($selection)}"
+  exit 0
+fi
+if [[ $ran -eq 0 ]]; then
+  if [[ $changed -eq 1 ]]; then echo "no case is affected by those files"; tally ""; exit 0; fi
+  die "the selection ($selection) names none of the $total cases; --list shows them all"
+fi
+
+# ---- what the cases run
+
+run_id=$$
+scratch="$(mktemp -d)"; fx="$scratch/fixtures"; out="$scratch/results"; mkdir -p "$fx" "$out"
+cleanup() {
+  rm -rf source/zz_lint_"${run_id}"_* source/tracer/review/zz_base_"${run_id}"_*
+  if [[ $keep -eq 1 ]]; then echo "kept: $scratch (results/<n>.log is the output of case n, counted from 0 in file order)"; else rm -rf "$scratch"; fi
+}
+trap cleanup EXIT
+trap 'kill $(jobs -p) 2> /dev/null; exit 130' INT TERM
+
+glb=assets/models/tracer.glb; manifest=assets/models/tracer.manifest.json
+rock=assets/models/rock.glb; rock_manifest=assets/models/rock.manifest.json
+tree=assets/models/tree_1.glb; tree_manifest=assets/models/tree_1.manifest.json
+
+# The Bevy binaries are built once, here, and run directly: `cargo run` checks the whole workspace
+# for changes every time it is called.
+bin="${CARGO_TARGET_DIR:-target}/debug"
+packages=()
+for ((n = 0; n < ran; n++)); do
+  has_tag "${chosen[n]}" smoke && [[ " ${packages[*]:-} " != *" asset_smoke "* ]] && packages+=(asset_smoke)
+  has_tag "${chosen[n]}" view && [[ " ${packages[*]:-} " != *" asset_view "* ]] && packages+=(asset_view)
+done
+if [[ ${#packages[@]} -gt 0 ]]; then
+  cargo build -q $(printf -- '-p %s ' "${packages[@]}") || die "cargo build failed"
+fi
+# A bake is all arithmetic and takes every thread it is given, so Blenders running side by side
+# share the cores out between them. What a script builds does not depend on the number (tools/bl).
+export KILN_BLENDER_THREADS="${KILN_BLENDER_THREADS:-$(( cores / jobs > 0 ? cores / jobs : 1 ))}"
+smoke() { "$bin/asset_smoke" "$@"; }
+view() {
+  "$bin/asset_view" "$@"; local code=$?
+  # Not retried: a crash is reported as the failure it is, with what is known about it.
+  if [[ $code -ge 128 ]]; then
+    echo "asset_view was killed by signal $((code - 128)) as it exited. It is known to crash now and then in the graphics" >&2
+    echo "driver's teardown, mostly on a file it cannot load; run the case again alone (--only) to tell that from a real failure." >&2
+  fi
+  return $code
+}
+view_checks() { tools/bl tools/view_checks.py "$@"; }
+
+# A case passes or fails here. Each runs in a shell of its own with $tmp to itself.
+verdict() { # <ok|FAIL> <name> [why]
+  if [[ $1 == ok ]]; then echo "ok         $2"; else echo "FAIL       $2: $3"; fi
+  echo "$1" > "$out/$case_n.verdict"
+}
+fixtures_built() { # <name>: false, with the case failed, when something it was to read could not be made
+  [[ ! -e "$tmp/fixture_failed" ]] && return 0
+  verdict FAIL "$1" "$(sort -u "$tmp/fixture_failed" | paste -sd ';')"; cat "$tmp"/fixture_failed.log 2> /dev/null | tail -5
+  return 1
+}
+expect() { # <expected exit code> <name> <command...>
+  local want="$1" name="$2"; shift 2
+  fixtures_built "$name" || return 1
+  "$@" > "$tmp/out" 2>&1; local got=$?
+  fixtures_built "$name" || return 1
+  if [[ $got -eq $want ]]; then verdict ok "$name"
+  else verdict FAIL "$name" "exit $got, wanted $want"; tail -6 "$tmp/out"; fi
+}
 expect_id() { # <check id> <name> <command...>: the command must fail, and name that check
   local id="$1" name="$2"; shift 2
+  fixtures_built "$name" || return 1
   "$@" > "$tmp/out" 2>&1; local got=$?
-  if [[ $got -eq 1 ]] && grep -q -- "$id" "$tmp/out"; then echo "ok         $name"
-  else echo "FAIL       $name: exit $got, wanted 1 and a failure of $id"; grep -E '^FAIL|"(painted|uv|flat)\.' "$tmp/out" | tail -5; failures=$((failures + 1)); fi
+  fixtures_built "$name" || return 1
+  if [[ $got -eq 1 ]] && grep -q -- "$id" "$tmp/out"; then verdict ok "$name"
+  else verdict FAIL "$name" "exit $got, wanted 1 and a failure of $id"; grep -E '^FAIL|"(painted|uv|flat|foliage)\.|asset_view|driver' "$tmp/out" | tail -6; fi
 }
 
 tamper() { # <python expression mutating m> [manifest] -> path of a tampered manifest
@@ -27,32 +252,85 @@ tamper() { # <python expression mutating m> [manifest] -> path of a tampered man
   echo "$tmp/m.json"
 }
 
-expect 0 "L1 mutation tests" tools/bl tests/test_validate.py
+# Fixtures: files several cases read, or that take long to make. Each is made once per run, by
+# whichever case asks first; the others wait for it. A fixture that cannot be made fails the
+# cases that asked for it, so that none passes because the file it was to load is missing.
+#
+# A fixture given a key is also kept between runs, in $kept, and reused while its key is the same.
+# The key is a hash of everything the fixture is made from (`key_of`), so a kept fixture is the
+# file a rebuild would give: the builds are deterministic, byte for byte. --fresh rebuilds them all.
+fixture() { # [--key <hash>] <file name> <command...> -> the path of that file, made by `command <path>`
+  local key=""; if [[ $1 == --key ]]; then key="$2"; shift 2; fi
+  local name="$1" file="$fx/$1"; shift
+  (
+    flock 9
+    if [[ ! -e "$file.made" ]]; then
+      if [[ -n $key && $fresh -eq 0 && "$(cat "$kept/$name.key" 2> /dev/null)" == "$key" ]] && cp "$kept/$name" "$file" 2> /dev/null; then
+        echo yes > "$file.made"; : > "$file.reused"
+      elif "$@" "$file" > "$file.log" 2>&1 && [[ -e "$file" ]]; then
+        echo yes > "$file.made"
+        if [[ -n $key ]]; then
+          : > "$file.built"
+          rm -f "$kept/$name.key"; cp "$file" "$kept/$name.new.$run_id" && mv "$kept/$name.new.$run_id" "$kept/$name" && echo "$key" > "$kept/$name.key"
+        fi
+      else echo no > "$file.made"; fi
+    fi
+  ) 9> "$file.lock"
+  if [[ $(< "$file.made") != yes ]]; then
+    echo "could not make ${file##*/}" >> "$tmp/fixture_failed"; cat "$file.log" >> "$tmp/fixture_failed.log"
+  fi
+  echo "$file"
+}
+once() { # <key> <command...>: the output and exit code of the command, run once per run however many cases ask
+  local key="$fx/once_$1"; shift
+  (
+    flock 9
+    [[ -e "$key.code" ]] || { "$@" > "$key.out" 2>&1; echo $? > "$key.code"; }
+  ) 9> "$key.lock"
+  cat "$key.out"; return "$(< "$key.code")"
+}
 
-smoke() { cargo run -q -p asset_smoke -- "$@"; }
-cat_fail() { cat "$1"; return 1; }
-expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
-expect 1 "L4 catches a triangle mismatch"   smoke "$glb" "$(tamper 'm["triangles"] += 1')"
-expect 1 "L4 catches a missing node"        smoke "$glb" "$(tamper 'm["nodes"] = ["nope"]')"
-expect 1 "L4 catches a missing attribute"   smoke "$glb" "$(tamper 'm["attributes"] += ["TANGENT"]')"
-expect 1 "L4 catches reversed facing"       smoke "$glb" "$(tamper 'b=m["bounds"]; b["min"][2], b["max"][2] = -b["max"][2], -b["min"][2]')"
-expect 1 "L4 catches a Z-up export"         smoke "$glb" "$(tamper 'b=m["bounds"]; b["min"] = [-0.5, -1.5, 0.0]; b["max"] = [1.0, 0.5, 1.0]')"
-expect 1 "L4 catches a wrong scale"         smoke "$glb" "$(tamper 'b=m["bounds"]; b["max"] = [v * 100 for v in b["max"]]')"
-expect 1 "L4 catches a wrong colour"         smoke "$glb" "$(tamper 'm["materials"]["m_tracer"][0] += 0.05')"
-expect 1 "L4 catches a renamed material"    smoke "$glb" "$(tamper 'm["materials"] = {"m_other": [0.5, 0.5, 0.5]}')"
-python tests/flip_normals.py "$glb" "$tmp/flipped_normals.glb"
-expect 1 "L4 catches normals against winding" smoke "$tmp/flipped_normals.glb" "$manifest"
-cat > "$tmp/inside_out.py" <<PY
+key_of() { # <files...> -> a hash of those files, every tool the builds import, the standards and the pinned Blender
+  { stat -c '%n %s %Y' .tools/blender/blender; sha256sum tools/bl tools/*.py conventions.toml "$@"; } | sha256sum | cut -d' ' -f1
+}
+kept="$bin/../gate-test-fixtures"; mkdir -p "$kept" || die "cannot make $kept"
+rock_key="$(key_of tests/paint_mutations.py source/rock/build.py source/rock/spec.json)" || die "cannot hash the rock's sources"
+tree_key="$(key_of tests/tree_mutations.py source/tree_1/build.py source/tree_1/spec.json source/tree/*.py)" || die "cannot hash tree_1's sources"
+
+# The rock, or tree_1, built and painted with one thing wrong and exported. A mutation that only
+# changes what painting left starts from the one painted asset of the run (the scripts say which
+# may, and refuse the others); the rest build and bake their own.
+rock_after_paint=" shrunk_uvs stacked_uvs uvs_off_the_texture tinted_factor jpeg "
+tree_after_paint=" none single_sided gradient_within_piece no_cores core_open bark_inside_out two_textures "
+mutated() { tools/bl "$1" "$2" "${@:3}"; }                 # <script> <mutation> <out.glb>
+mutated_painted() { tools/bl "$1" "$2" "$4" "$("$3")"; }  # <script> <mutation> <function naming the painted asset> <out.glb>
+painted_rock() { fixture --key "$rock_key" rock_painted.blend mutated tests/paint_mutations.py painted; }
+painted_tree() { fixture --key "$tree_key" tree_1_painted.blend mutated tests/tree_mutations.py painted; }
+broken() {
+  if [[ $rock_after_paint == *" $1 "* ]]; then fixture --key "$rock_key" "rock_$1.glb" mutated_painted tests/paint_mutations.py "$1" painted_rock
+  else fixture --key "$rock_key" "rock_$1.glb" mutated tests/paint_mutations.py "$1"; fi
+}
+broken_tree() {
+  if [[ $tree_after_paint == *" $1 "* ]]; then fixture --key "$tree_key" "tree_1_$1.glb" mutated_painted tests/tree_mutations.py "$1" painted_tree
+  else fixture --key "$tree_key" "tree_1_$1.glb" mutated tests/tree_mutations.py "$1"; fi
+}
+flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
+bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
+
+# A built asset changed in Blender and exported with the exporter's defaults.
+exported() { fixture "$1.glb" export_scene "$1"; }
+export_scene() { # <inside_out|hard_edges|draco> <out.glb>
+  local script="$fx/$1.py"
+  case "$1" in
+    inside_out) cat > "$script" <<PY
 import bmesh, bpy
 bpy.ops.wm.open_mainfile(filepath="source/tracer/out/tracer.blend")
 mesh = bpy.data.objects["tracer"].data
 bm = bmesh.new(); bm.from_mesh(mesh); bmesh.ops.reverse_faces(bm, faces=bm.faces); bm.to_mesh(mesh)
-bpy.ops.export_scene.gltf(filepath="$tmp/inside_out.glb", export_format="GLB")
+bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
 PY
-tools/bl "$tmp/inside_out.py" > /dev/null 2>&1
-expect 1 "L4 catches an inside-out mesh"    smoke "$tmp/inside_out.glb" "$manifest"
-# The rock with every face lit flat: the same triangles, but no soft edges.
-cat > "$tmp/hard_edges.py" <<PY
+    ;;
+    hard_edges) cat > "$script" <<PY
 import bmesh, bpy
 bpy.ops.wm.open_mainfile(filepath="source/rock/out/rock.blend")
 rock = bpy.data.objects["rock"]
@@ -60,229 +338,125 @@ bm = bmesh.new(); bm.from_mesh(rock.data)
 for face in bm.faces: face.smooth = False
 flat = bpy.data.meshes.new("rock_flat"); bm.to_mesh(flat); flat.materials.append(rock.data.materials[0])
 rock.data = flat
-bpy.ops.export_scene.gltf(filepath="$tmp/hard_edges.glb", export_format="GLB")
+bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
 PY
-tools/bl "$tmp/hard_edges.py" > /dev/null 2>&1
-expect 0 "L4 passes the real rock"          smoke assets/models/rock.glb assets/models/rock.manifest.json
-expect 1 "L4 catches hard edges on a soft-edged asset" smoke "$tmp/hard_edges.glb" assets/models/rock.manifest.json
-
-# Painted shading: the rock painted wrongly, or laid out wrongly, against the real manifest.
-rock=assets/models/rock.glb; rock_manifest=assets/models/rock.manifest.json
-broken() { tools/bl tests/paint_mutations.py "$1" "$tmp/$1.glb" > /dev/null 2>&1; echo "$tmp/$1.glb"; }
-expect_id "flat.no_texture"        "L4 catches a texture on a flat-coloured asset"  smoke "$rock" "$(tamper 'del m["painted"]' "$rock_manifest")"
-expect_id "painted.present"        "L4 catches a painted asset with no texture"     smoke "$(broken unpainted)" "$rock_manifest"
-expect_id "painted.present"        "L4 catches painted shading asked of a flat asset" smoke "$glb" "$(tamper 'm["painted"] = json.load(open("'$rock_manifest'"))["painted"]')"
-expect_id "painted.factor"         "L4 catches a tint multiplied over the texture"  smoke "$(broken tinted_factor)" "$rock_manifest"
-expect_id "painted.texture_size"   "L4 catches a texture of the wrong size"         smoke "$(broken small_texture)" "$rock_manifest"
-expect_id "painted.colour"         "L4 catches paint over the wrong colour"         smoke "$(broken wrong_colour)" "$rock_manifest"
-expect_id "painted.gradient"       "L4 catches a missing base-to-top gradient"      smoke "$(broken no_gradient)" "$rock_manifest"
-expect_id "painted.edges_lighter"  "L4 catches missing edge light"                  smoke "$(broken no_edge_light)" "$rock_manifest"
-expect_id "painted.crevices_darker" "L4 catches a missing crevice shadow"           smoke "$(broken no_crevice_shadow)" "$rock_manifest"
-expect_id "painted.range"          "L4 catches texels burnt out to white"           smoke "$(broken burnt_out)" "$rock_manifest"
-expect_id "painted.banding"        "L4 catches a gradient in visible steps"          smoke "$(broken banded)" "$rock_manifest"
-expect_id "painted.growth_height"  "L4 catches a rock with no growth at its base"    smoke "$(broken no_growth)" "$rock_manifest"
-expect_id "painted.growth_height"  "L4 catches growth all the way up the sides"      smoke "$(broken growth_everywhere)" "$rock_manifest"
-expect_id "painted.growth_up"      "L4 catches bare upward-facing surfaces"          smoke "$(broken no_growth_up)" "$rock_manifest"
-expect_id "painted.growth_up"      "L4 catches growth carpeting the top, not patchy" smoke "$(broken growth_carpets_the_top)" "$rock_manifest"
-expect_id "painted.growth_edges"   "L4 catches bare upper edges"                     smoke "$(broken no_growth_edges)" "$rock_manifest"
-expect_id "painted.growth_darker"  "L4 catches growth no darker than the rock"       smoke "$(broken growth_not_darker)" "$rock_manifest"
-expect_id "painted.growth_patches" "L4 catches growth in broad patches"              smoke "$(broken growth_broad_patches)" "$rock_manifest"
-expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
-expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
-expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
-expect_id "painted.side_shade"     "L4 catches sides not darker at mid height"       smoke "$(broken no_side_shade)" "$rock_manifest"
-expect_id "painted.open_faces"     "L4 catches an edge width that leaves no open face" smoke "$rock" "$(tamper 'm["painted"]["edge_width_m"] = 5.0' "$rock_manifest")"
-expect_id "uv.no_overlap"          "L4 catches overlapping UVs"                     smoke "$(broken stacked_uvs)" "$rock_manifest"
-expect_id "uv.in_unit_square"      "L4 catches UVs off the texture"                 smoke "$(broken uvs_off_the_texture)" "$rock_manifest"
-smoke "$(broken shrunk_uvs)" "$rock_manifest" > "$tmp/shrunk.out" 2>&1
-expect_id "uv.coverage"            "L4 catches a mostly unused texture"             cat_fail "$tmp/shrunk.out"
-expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"         cat_fail "$tmp/shrunk.out"
-
-# Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
-tree=assets/models/tree_1.glb; tree_manifest=assets/models/tree_1.manifest.json
-broken_tree() { tools/bl tests/tree_mutations.py "$1" "$tmp/$1.glb" > /dev/null 2>&1; echo "$tmp/$1.glb"; }
-expect 0 "L4 passes the real tree"          smoke "$tree" "$tree_manifest"
-expect 0 "L4 passes an unbroken tree from the mutation script" smoke "$(broken_tree none)" "$tree_manifest"
-expect_id "foliage.two_sided"      "L4 catches leaves seen from one side only"      smoke "$(broken_tree single_sided)" "$tree_manifest"
-expect_id "foliage.flat_colour"    "L4 catches a gradient within a leaf piece"      smoke "$(broken_tree gradient_within_piece)" "$tree_manifest"
-expect_id "foliage.palette"        "L4 catches leaves painted from another colour"  smoke "$(broken_tree wrong_leaf_colour)" "$tree_manifest"
-expect_id "foliage.colour_varies"  "L4 catches neighbouring leaves all one tone"    smoke "$(broken_tree one_tone)" "$tree_manifest"
-expect_id "foliage.lighter_above"  "L4 catches pads no lighter above than below"    smoke "$(broken_tree no_gradient)" "$tree_manifest"
-expect_id "foliage.bluer_below"    "L4 catches undersides darker but no bluer"      smoke "$(broken_tree grey_underside)" "$tree_manifest"
-expect_id "foliage.pieces"         "L4 catches foliage asked of an asset with none" smoke "$rock" "$(tamper 'm["foliage"] = json.load(open("'$tree_manifest'"))["foliage"]; m["foliage"]["material"] = "m_rock"' "$rock_manifest")"
-expect_id "painted.present"        "L4 catches bark and leaf on two copies of the texture" smoke "$(broken_tree two_textures)" "$tree_manifest"
-expect_id "signed volume"          "L4 catches inside-out bark under open leaves"   smoke "$(broken_tree bark_inside_out)" "$tree_manifest"
-# The core under the leaf pieces (ADR 9 as amended), and the bark's grain and close-range texels (ADR 12).
-expect_id "foliage.cores"          "L4 catches pads with no core under their leaves" smoke "$(broken_tree no_cores)" "$tree_manifest"
-expect_id "foliage.cores"          "L4 catches cores that are not closed"           smoke "$(broken_tree core_open)" "$tree_manifest"
-expect_id "foliage.core_colour"    "L4 catches a core as light as the leaves"       smoke "$(broken_tree light_core)" "$tree_manifest"
-expect_id "painted.grain"          "L4 catches bark with no grain"                  smoke "$(broken_tree no_grain)" "$tree_manifest"
-expect_id "painted.grain_along"    "L4 catches grain running round the limbs"       smoke "$(broken_tree grain_across)" "$tree_manifest"
-expect_id "uv.close_density"       "L4 catches a trunk with no more texels than a twig" smoke "$(broken_tree no_close_texels)" "$tree_manifest"
-
-printf 'not a glb' > "$tmp/bad.glb"
-expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
-
-view() { cargo run -q -p asset_view -- "$@"; }
-expect 0 "L4b renders the real asset"       view "$glb" "$manifest" --screenshot "$tmp/shot.png"
-expect 1 "L4b fails on an unloadable file"  view "$tmp/bad.glb" "$manifest" --screenshot "$tmp/bad.png"
-expect 0 "L4b renders the asset's back"     view "$glb" "$manifest" --back --screenshot "$tmp/back.png"
-# The manifest's bounds moved 300 m off: the camera frames empty ground, and no picture may be saved.
-expect_id "asset.in_picture" "L4b fails when the asset is not in the picture" view "$glb" "$(tamper 'b=m["bounds"]; b["min"][0] += 300; b["max"][0] += 300')" --screenshot "$tmp/away.png"
-expect 1 "L4b saves no picture without the asset in it" test -e "$tmp/away.png"
-
-# L4c: bark seen from 0.5 m, as the gate takes it, with and without its grain.
-view_checks() { tools/bl tools/view_checks.py "$@"; }
-expect 0 "L4c passes the real tree's bark"  view_checks tree_1 source/tree_1/review/final/bevy_trunk.png
-view "$(broken_tree no_grain)" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$tmp/flat_bark.png" > /dev/null 2>&1
-expect_id "view.bark_tone"  "L4c catches bark that is flat brown at arm's length" view_checks tree_1 "$tmp/flat_bark.png"
-view "$(broken_tree grain_across)" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$tmp/hoop_bark.png" > /dev/null 2>&1
-expect_id "view.bark_grain" "L4c catches grain seen running round the trunk" view_checks tree_1 "$tmp/hoop_bark.png"
-
-# A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
-cat > "$tmp/draco.py" <<PY
+    ;;
+    draco) cat > "$script" <<PY
 import bpy
 bpy.ops.wm.open_mainfile(filepath="source/tracer/out/tracer.blend")
-bpy.ops.export_scene.gltf(filepath="$tmp/draco.glb", export_format="GLB", export_draco_mesh_compression_enable=True)
+bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB", export_draco_mesh_compression_enable=True)
 PY
-tools/bl "$tmp/draco.py" > /dev/null 2>&1
-expect 0 "L2b passes the real export"       python tools/bevy_lint.py "$glb"
-expect 1 "L2b catches Draco compression"    python tools/bevy_lint.py "$tmp/draco.glb"
-expect 0 "L2b passes the real painted rock" python tools/bevy_lint.py "$rock"
-expect_id "images.decodable" "L2b catches a JPEG texture" python tools/bevy_lint.py "$(broken jpeg)"
-
-# L0: a brief whose numbers disagree with its spec, and a spec number with no row in the brief.
-lint_copy() { # <sed expression applied to the copied brief>
-  rm -rf source/zz_lint; cp -r source/crate source/zz_lint
-  sed -i 's/"asset": "crate"/"asset": "zz_lint"/; s/"objects": \["crate"\]/"objects": ["zz_lint"]/' source/zz_lint/spec.json
-  sed -i "$1" source/zz_lint/brief.md
+    ;;
+  esac
+  tools/bl "$script"
 }
-trap 'rm -rf "$tmp" source/zz_lint' EXIT
-lint_copy 's/`\["crate"\]`/`["zz_lint"]`/'
-expect 0 "L0 passes a consistent brief"     python tools/lint_spec.py zz_lint
-lint_copy 's/`\["crate"\]`/`["zz_lint"]`/; s/| `recess_m.m_crate_panel` | `0.05` |/| `recess_m.m_crate_panel` | `0.03` |/'
-expect 1 "L0 catches a brief/spec mismatch" python tools/lint_spec.py zz_lint
-lint_copy 's/`\["crate"\]`/`["zz_lint"]`/; /`max_triangles`/d'
-expect 1 "L0 catches an untraced spec number" python tools/lint_spec.py zz_lint
-rm -rf source/zz_lint
-# L0, painted shading: the rock's spec with one thing wrong.
-paint_copy() { # <python expression mutating spec s and its painted block p>
-  rm -rf source/zz_lint; mkdir source/zz_lint; cp source/rock/brief.md source/zz_lint/
-  sed -i 's/`\["rock"\]`/`["zz_lint"]`/' source/zz_lint/brief.md
-  python -c "import json; s=json.load(open('source/rock/spec.json')); s['asset']='zz_lint'; s['objects']=['zz_lint']; p=s['painted_shading']; $1; json.dump(s, open('source/zz_lint/spec.json','w'))"
+
+# L1: one asset's mutations in one Blender process, or one share of them, or the asset unbroken.
+l1() { # <asset> [--part <i>/<n> | --unbroken]
+  tools/bl tests/test_validate.py --asset "$@" > "$tmp/l1" 2>&1; local code=$?
+  grep -E '^(ok|NOT CAUGHT) ' "$tmp/l1" > "$out/$case_n.mutations"
+  cat "$tmp/l1"; return $code
 }
-paint_copy 'pass'
-expect 0 "L0 passes the painted rock's spec"  python tools/lint_spec.py zz_lint
-paint_copy 'del p["edge_width_m"]'
-expect_id "spec.painted_shading"     "L0 catches a missing painted key"       python tools/lint_spec.py zz_lint
-paint_copy 'p["growth"] = "moss green"'
-expect_id "spec.painted_shading"     "L0 catches a colour that is not hex"    python tools/lint_spec.py zz_lint
-paint_copy 'p["texture_px"] = 1000'
-expect_id "spec.painted_texture_px"  "L0 catches an odd texture size"         python tools/lint_spec.py zz_lint
-paint_copy 'p["base_tint"], p["top_tint"] = p["top_tint"], p["base_tint"]'
-expect_id "spec.painted_base_darker" "L0 catches a base lighter than the top" python tools/lint_spec.py zz_lint
-paint_copy 'p["crevice_shadow"] = 1.5'
-expect_id "spec.painted_amounts"     "L0 catches an impossible shadow amount" python tools/lint_spec.py zz_lint
-paint_copy 's["attributes"].remove("TEXCOORD_0")'
-expect_id "spec.painted_needs_uvs"   "L0 catches painted shading with no UVs" python tools/lint_spec.py zz_lint
-paint_copy 'del p["blotch_size_m"]'
-expect_id "spec.painted_shading"     "L0 catches a blotch with no size"       python tools/lint_spec.py zz_lint
-paint_copy 'del p["growth"], p["growth_height_m"]'
-expect_id "spec.painted_shading"     "L0 catches growth placed with no growth colour" python tools/lint_spec.py zz_lint
-paint_copy 'p["side_shade"] = 1.0'
-expect_id "spec.painted_amounts"     "L0 catches a side shade that leaves no light" python tools/lint_spec.py zz_lint
-paint_copy 's["fullness"]["min_volume_share"] = 1.5'
-expect_id "spec.fullness"            "L0 catches a fullness above the whole box" python tools/lint_spec.py zz_lint
-paint_copy 'p["growth_darker"] = 1.0'
-expect_id "spec.painted_amounts"     "L0 catches growth darkened to black"    python tools/lint_spec.py zz_lint
-paint_copy 'del s["pieces"]["min_step_ratio"]'
-expect_id "spec.pieces"              "L0 catches a pieces block with a key missing" python tools/lint_spec.py zz_lint
-paint_copy 's["foot"]["min_sides"] = 5'
-expect_id "spec.foot"                "L0 catches a foot on more sides than there are" python tools/lint_spec.py zz_lint
-paint_copy 's["chamfers"]["min_m2"] = 0.5'
-expect_id "spec.chamfers"            "L0 catches a chamfer as big as a large plane" python tools/lint_spec.py zz_lint
-paint_copy 's["lean"]["max_upright_share"] = 1.5'
-expect_id "spec.lean"                "L0 catches an upright share above the whole" python tools/lint_spec.py zz_lint
-paint_copy 's["planes"]["ledge_plane_m2"] = 0.9'
-expect_id "spec.planes"              "L0 catches a ledge's smaller plane set above a large one" python tools/lint_spec.py zz_lint
-paint_copy 's["planes"]["min_ledge_views"] = 9'
-expect_id "spec.planes"              "L0 catches more ledge views than there are views" python tools/lint_spec.py zz_lint
-paint_copy 'del s["painted_shading"]'
-expect_id "spec.painted_needs_uvs"   "L0 catches UVs on a flat-coloured asset" python tools/lint_spec.py zz_lint
-rm -rf source/zz_lint
-# L0, trees: tree_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
-tree_copy() { # <python expression mutating spec s>
-  rm -rf source/zz_lint; mkdir source/zz_lint; cp source/tree_1/brief.md source/zz_lint/
-  sed -i 's/`\["tree_1"\]`/`["zz_lint"]`/' source/zz_lint/brief.md
-  python -c "import json; s=json.load(open('source/tree_1/spec.json')); s['asset']='zz_lint'; s['objects']=['zz_lint']; $1; json.dump(s, open('source/zz_lint/spec.json','w'))"
+
+# L4b: the viewer with the manifest's bounds moved 300 m off. Two cases read the one run.
+away_view() { once away view "$glb" "$(tamper 'b=m["bounds"]; b["min"][0] += 300; b["max"][0] += 300')" --screenshot "$fx/away.png"; }
+away_picture_exists() { away_view > /dev/null 2>&1; test -e "$fx/away.png"; }
+
+# L4c: tree_1 with its bark broken, seen as the gate takes the trunk. The check reads the picture,
+# so only the picture is asked of the viewer here; L4b is where its exit code is tested.
+bark_shot() { fixture "bark_$1.png" bark_view "$1"; }
+bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$2"; [[ -e "$2" ]]; }
+
+# L0: a copy of an asset's brief and spec under a name of its own, linted and removed.
+lint_copy() { # <asset> <sed expression for the brief> <python statements for the spec s> -> lints the copy
+  local name="zz_lint_${run_id}_${case_n}"
+  rm -rf "source/$name"; mkdir "source/$name"
+  sed "s/\`\\[\"$1\"\\]\`/\`[\"$name\"]\`/; $2" "source/$1/brief.md" > "source/$name/brief.md"
+  python -c "import json; name='$name'; s=json.load(open('source/$1/spec.json')); s['asset']=name; s['objects']=[name]; p=s.get('painted_shading'); $3; json.dump(s, open('source/$name/spec.json','w'))"
+  python tools/lint_spec.py "$name"; local code=$?
+  rm -rf "source/$name"; return $code
 }
-tree_copy 'pass'
-expect 0 "L0 passes a tree variant's spec"   python tools/lint_spec.py zz_lint
-tree_copy 's["max_triangles"] = 6000'
-expect_id "brief.numbers_match_spec" "L0 catches a variant that disagrees with its family's brief" python tools/lint_spec.py zz_lint
-tree_copy 's["family"] = "zz_nope"'
-expect_id "spec.family"              "L0 catches a family with no brief"       python tools/lint_spec.py zz_lint
-tree_copy 's["open_materials"] = ["m_zz_nope"]'
-expect_id "spec.open_materials"      "L0 catches an open material the asset does not have" python tools/lint_spec.py zz_lint
-tree_copy 's["open_materials"] = []'
-expect_id "spec.foliage_amounts"     "L0 catches foliage that is not an open material" python tools/lint_spec.py zz_lint
-tree_copy 'del s["foliage"]["tones"]'
-expect_id "spec.foliage"             "L0 catches a missing foliage key"        python tools/lint_spec.py zz_lint
-tree_copy 'f=s["foliage"]; f["under_tint"], f["top_tint"] = f["top_tint"], f["under_tint"]'
-expect_id "spec.foliage_under_darker" "L0 catches an underside lighter than the top" python tools/lint_spec.py zz_lint
-tree_copy 'del s["painted_shading"]; s["attributes"].remove("TEXCOORD_0")'
-expect_id "spec.foliage_needs_paint" "L0 catches foliage with no texture to take colour from" python tools/lint_spec.py zz_lint
-tree_copy 's["materials"]["m_tree_bark"] = "#e0e0d0"'
-expect_id "spec.bark_darker"         "L0 catches bark lighter than the leaves" python tools/lint_spec.py zz_lint
-tree_copy 'del s["skeleton"]["min_roots"]'
-expect_id "spec.skeleton"            "L0 catches a missing skeleton key"       python tools/lint_spec.py zz_lint
-tree_copy 's["skeleton"]["fork_m"] = [3.5, 2.0]'
-expect_id "spec.skeleton_amounts"    "L0 catches a fork range given backwards" python tools/lint_spec.py zz_lint
-tree_copy 's["variants"]["siblings"] = ["zz_lint"]'
-expect_id "spec.variants_amounts"    "L0 catches a variant listed as its own sibling" python tools/lint_spec.py zz_lint
-# The core, the lobes, the view from below and the bark's grain (ADR 9 as amended, ADR 12).
-tree_copy 's["foliage"]["core_tint"] = "#9fc0c8"'
-expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" python tools/lint_spec.py zz_lint
-tree_copy 's["foliage"]["lobes"] = [4, 2]'
-expect_id "spec.foliage_core"        "L0 catches a lobe count given backwards" python tools/lint_spec.py zz_lint
-tree_copy 's["foliage"]["max_core_seen"] = 1.5'
-expect_id "spec.foliage_core"        "L0 catches more core seen than there is foliage" python tools/lint_spec.py zz_lint
-tree_copy 'del s["foliage"]["max_seen_into"]'
-expect_id "spec.foliage"             "L0 catches a missing limit on the view from below" python tools/lint_spec.py zz_lint
-tree_copy 'del s["painted_shading"]["grain_width_m"]'
-expect_id "spec.painted_shading"     "L0 catches grain with no width"          python tools/lint_spec.py zz_lint
-tree_copy 's["painted_shading"]["grain"] = 1.5'
-expect_id "spec.painted_grain"       "L0 catches an impossible grain"          python tools/lint_spec.py zz_lint
-tree_copy 'del s["painted_shading"]["close_height_m"]'
-expect_id "spec.painted_shading"     "L0 catches close texels with no height"  python tools/lint_spec.py zz_lint
-tree_copy 's["painted_shading"]["close_texels_per_m"] = 50.0'
-expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" python tools/lint_spec.py zz_lint
-tree_copy 's["skeleton"]["min_view_grain"] = 0.5'
-expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" python tools/lint_spec.py zz_lint
-rm -rf source/zz_lint
+lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the copied brief>
+lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
+lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 
-# L5b: an approved sheet, then the same sheet with something drawn on it.
-base=source/tracer/review/zz_base
-trap 'rm -rf "$tmp" source/zz_lint "$base"' EXIT
-mkdir -p "$base"; cp source/tracer/review/final/sheet.png "$base/sheet.png"
-expect 0 "L5b passes when never approved"   python tools/baseline.py check tracer zz_base
-python tools/baseline.py approve tracer zz_base > /dev/null
-expect 0 "L5b passes an unchanged sheet"    python tools/baseline.py check tracer zz_base
-magick "$base/sheet.png" -fill red -draw 'rectangle 100,100 700,700' "$base/sheet.png"
-expect 1 "L5b catches a changed sheet"      python tools/baseline.py check tracer zz_base
-rm -rf "$base"
+# L5b: a copy of the tracer's sheet as a review phase of its own.
+baseline_check() { # <never_approved|approved|drawn_on>
+  local phase="zz_base_${run_id}_${case_n}"; local dir="source/tracer/review/$phase"
+  mkdir -p "$dir"; cp source/tracer/review/final/sheet.png "$dir/sheet.png"
+  if [[ $1 != never_approved ]]; then python tools/baseline.py approve tracer "$phase" > /dev/null || return 3; fi
+  if [[ $1 == drawn_on ]]; then magick "$dir/sheet.png" -fill red -draw 'rectangle 100,100 700,700' "$dir/sheet.png" || return 3; fi
+  python tools/baseline.py check tracer "$phase"; local code=$?
+  rm -rf "$dir"; return $code
+}
 
-# L5c: a sheet saved as viewers show it, then the same sheet 16 bits deep with alpha, which they band.
-expect 0 "L5c passes the real sheet"        python tools/image_lint.py source/rock/review/final/sheet.png
-magick source/rock/review/final/sheet.png -depth 16 "PNG48:$tmp/deep.png"
-expect_id "image.eight_bit" "L5c catches a 16-bit sheet"        python tools/image_lint.py "$tmp/deep.png"
-magick source/rock/review/final/sheet.png -alpha on "PNG32:$tmp/alpha.png"
-expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/image_lint.py "$tmp/alpha.png"
-# The review aids are review images too.
-cp source/rock/review/final/sheet.png "$tmp/aid.png"; python tools/review_aids.py views "$tmp/aid.png" > /dev/null
-expect 0 "L5c passes a review aid"          python tools/image_lint.py "$tmp/aid_aids.png"
-python tools/review_aids.py blind "$tmp/aid.png" "$tmp/aid.png" "$tmp/blind.png" > /dev/null
-expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$tmp/blind.png"
+# L5c: the rock's sheet saved another way, and the review aids made from it.
+sheet_as() { magick source/rock/review/final/sheet.png "${@:2}" "$1:$tmp/sheet.png"; echo "$tmp/sheet.png"; }  # <PNG format> <magick options...>
+review_aid() { # <views|blind>
+  cp source/rock/review/final/sheet.png "$tmp/aid.png"
+  if [[ $1 == views ]]; then python tools/review_aids.py views "$tmp/aid.png" > /dev/null; echo "$tmp/aid_aids.png"
+  else python tools/review_aids.py blind "$tmp/aid.png" "$tmp/aid.png" "$tmp/blind.png" > /dev/null; echo "$tmp/blind.png"; fi
+}
 
-echo; [[ $failures -eq 0 ]] && echo "all gate tests passed" || echo "$failures gate tests failed"
+# ---- the run: up to $jobs cases at once, reported in file order as they finish
+
+run_case() { # <case index>
+  case_n=$1; tmp="$scratch/case_$1"; mkdir -p "$tmp"
+  # Reports written by a tool under test go to the case, not over the asset's own from the gate.
+  export KILN_REPORTS="$tmp/reports"
+  local started=$EPOCHREALTIME
+  eval "${lines[$1]}" > "$out/$1.log" 2>&1
+  [[ -e "$out/$1.verdict" ]] || { echo "FAIL       ${names[$1]}: the case did not reach a verdict" >> "$out/$1.log"; echo FAIL > "$out/$1.verdict"; }
+  awk -v a="$started" -v b="$EPOCHREALTIME" 'BEGIN { printf "%.1f\n", b - a }' > "$out/$1.seconds"
+  [[ $keep -eq 1 ]] || rm -rf "$tmp"
+  : > "$out/$1.done"
+}
+
+case "$order" in
+  file) started_in=("${chosen[@]}") ;;
+  reverse) started_in=(); for ((n = ran - 1; n >= 0; n--)); do started_in+=("${chosen[n]}"); done ;;
+  random) mapfile -t started_in < <(printf '%s\n' "${chosen[@]}" | shuf) ;;
+esac
+
+failures=0; failed_names=(); mutations=0; next=0
+report() { # print the cases that have finished, as far as file order allows
+  while [[ $next -lt $ran && -e "$out/${chosen[next]}.done" ]]; do
+    local i=${chosen[next]}
+    cat "$out/$i.log"
+    if [[ $(< "$out/$i.verdict") != ok ]]; then failures=$((failures + 1)); failed_names+=("${names[i]}"); fi
+    [[ -e "$out/$i.mutations" ]] && mutations=$((mutations + $(wc -l < "$out/$i.mutations")))
+    next=$((next + 1))
+  done
+}
+
+began=$SECONDS; running=0
+for i in "${started_in[@]}"; do
+  while [[ $running -ge $jobs ]]; do wait -n; running=$((running - 1)); report; done
+  run_case "$i" &
+  running=$((running + 1))
+done
+while [[ $running -gt 0 ]]; do wait -n; running=$((running - 1)); report; done
+report
+
+if [[ -n $results_file ]]; then
+  for i in "${chosen[@]}"; do
+    printf '%s\t%s\n' "$(< "$out/$i.verdict")" "${names[i]}"
+    [[ -e "$out/$i.mutations" ]] && awk '{ status = ($1 == "ok") ? "ok" : "FAIL"; sub(/^(ok|NOT CAUGHT) +/, ""); print status "\t  L1 " $1 " fails " $2 }' "$out/$i.mutations"
+  done > "$results_file"
+fi
+if [[ $timings -eq 1 ]]; then
+  echo; echo "seconds per case, slowest first (cases run $jobs at a time, so these add up to more than the run took):"
+  for i in "${chosen[@]}"; do printf '%8s  %s\n' "$(< "$out/$i.seconds")" "${names[i]}"; done | sort -rn
+fi
+
+echo
+[[ $mutations -gt 0 ]] && echo "$mutations L1 mutations were checked inside the L1 cases"
+reused=$(find "$fx" -name '*.reused' | wc -l); built=$(find "$fx" -name '*.built' | wc -l)
+[[ $((reused + built)) -gt 0 ]] && echo "$reused built assets were reused from $kept, $built were built (--fresh builds them all)"
+if [[ $failures -eq 0 ]]; then
+  [[ $skipped -eq 0 ]] && echo "all gate tests passed" || echo "the selected gate tests passed"
+else
+  echo "$failures gate tests failed:"; printf '  %s\n' "${failed_names[@]}"
+fi
+tally " in $((SECONDS - began)) s, $jobs at a time"
 exit $((failures > 0))

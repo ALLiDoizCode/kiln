@@ -5,6 +5,7 @@ module level uses the standard library only.
 """
 
 import json
+import os
 import struct
 import sys
 import tomllib
@@ -53,7 +54,9 @@ class Asset:
             return json.load(f)
 
     def report(self, gate):
-        path = self.out / "reports" / f"{gate}.json"
+        # tests/run.sh runs the tools on broken assets, and points their reports away from the gate's own.
+        reports = Path(os.environ["KILN_REPORTS"]) / self.name if "KILN_REPORTS" in os.environ else self.out / "reports"
+        path = reports / f"{gate}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
