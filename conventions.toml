@@ -64,6 +64,16 @@ block_height = 0.3          # a piece lower than this share of the bounds' heigh
 # A table rock: a cap held off the ground on narrow necks. The clearance wanted under the cap is in each spec.
 neck_height = 0.5           # the necks are measured where a level cut passes this share of that clearance above the ground: above the blocks at their feet, below the cap
 
+[spire]
+# A stepped spire: tiers stacked like a telescope on a fluted base. What a spire wants of its tiers is in each spec.
+foot_height = 0.02          # a tier's foot is the level cut this share of its own height above its bottom; the tier below is the piece that holds most of it
+min_standing_share = 0.9    # share of a tier, cut just above the top of the tier below, that has that tier under it: nothing hangs off
+cut_cells = 48              # a level cut through a piece is measured on a grid of this many cells along its wider side
+flute_height = 0.6          # a side of a piece on the ground is a flute's when it is this share of the base's height from bottom to top,
+flute_tall = 1.2            # this many times as tall as it is wide,
+flute_shown = 0.5           # and at least this share of it is outside every other piece
+flute_samples = 24          # points along the base's height where a side is tested for being shown
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 

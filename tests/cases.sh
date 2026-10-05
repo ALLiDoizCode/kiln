@@ -49,6 +49,10 @@ expect 0 "L1 mutation tests: block_2" l1 block_2
 uses table_rock_1 validate paint
 expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
 
+# A stepped spire (source/spire): its tiers taken away, pushed off, widened and pinched, and its base cut into bands.
+uses spire_1 validate paint
+expect 0 "L1 mutation tests: spire_1" l1 spire_1
+
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
 expect 1 "L4 catches a triangle mismatch"   smoke "$glb" "$(tamper 'm["triangles"] += 1')"
@@ -335,3 +339,13 @@ expect_id "spec.table"               "L0 catches necks allowed to fill the outli
 expect_id "spec.table"               "L0 catches a table block with a key missing" lint_table 'del s["table"]["min_overhang_m"]'
 expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
 expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'
+
+# L0, stepped spires: spire_1's spec with one thing wrong in what it asks of its tiers (`spire`).
+uses spire_1 lint_spec
+expect 0 "L0 passes a spire variant's spec"  lint_spire 'pass'
+expect_id "spec.spire"               "L0 catches a width step that lets tiers of one width through" lint_spire 's["spire"]["max_width_step"] = 1.0'
+expect_id "spec.spire"               "L0 catches a spire asked for a base and one tier" lint_spire 's["spire"]["tiers"] = 2'
+expect_id "spec.spire"               "L0 catches a spire asked for no ledge at all" lint_spire 's["spire"]["min_ledge_share"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire block with a key missing" lint_spire 'del s["spire"]["min_flutes"]'
+expect_id "spec.spire"               "L0 catches tiers asked of one closed skin" lint_spire 'del s["overlap"]'
+expect_id "spec.spire"               "L0 catches a spire with as many tiers as pieces, and no foot" lint_spire 's["overlap"]["min_count"] = 3; s["overlap"]["max_count"] = 3'

@@ -426,6 +426,7 @@ lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spe
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
 lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
 lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>
+lint_spire() { lint_copy spire_1 '' "$1"; }   # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

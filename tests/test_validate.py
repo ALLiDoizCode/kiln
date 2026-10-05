@@ -450,6 +450,107 @@ def fanned_prisms(spec):
     edit(fan, "crag_1")
 
 
+# The stepped spire (source/spire): a fluted base and narrower tiers stacked on it like a telescope.
+
+
+def spire_pieces(bm, spec):
+    """The spire's pieces as lists of vertices: (those that stand on the ground, those that stand on another piece from the lowest up)."""
+    from validate import pieces_in
+
+    floor = spec["bounds_m"]["min"][2]
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    ground = [verts for verts in pieces if min(v.co.z for v in verts) <= floor + 0.001]
+    raised = sorted((verts for verts in pieces if min(v.co.z for v in verts) > floor + 0.001), key=lambda verts: max(v.co.z for v in verts))
+    return ground, raised
+
+
+def middle_of(verts):
+    return sum((v.co for v in verts), Vector()) / len(verts)
+
+
+def top_tier_removed(spec):
+    """The spire's top tier taken away: one tier fewer than its spec asks."""
+
+    def remove(bm):
+        top = spire_pieces(bm, spec)[1][-1]
+        bmesh.ops.delete(bm, geom=top, context="VERTS")
+
+    edit(remove, "spire_1")
+
+
+def tier_hangs_off(spec):
+    """The spire's top tier pushed sideways by half its own width: still sunk into the one below, but with much of its foot over open air."""
+
+    def push(bm):
+        top = spire_pieces(bm, spec)[1][-1]
+        width = max(v.co.x for v in top) - min(v.co.x for v in top)
+        for v in top:
+            v.co.x += 0.5 * width
+
+    edit(push, "spire_1")
+
+
+def plain_column(spec):
+    """Every tier above the base widened to nearly the width of the one below: a column with lines round it, not steps."""
+
+    def widen(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base = max(ground, key=lambda verts: max(v.co.z for v in verts))
+        below = max(v.co.x for v in base) - min(v.co.x for v in base)
+        for verts in raised:
+            centre = middle_of(verts)
+            scale = 0.6 * below / (max(v.co.x for v in verts) - min(v.co.x for v in verts))
+            for v in verts:
+                v.co.x = centre.x + (v.co.x - centre.x) * scale
+                v.co.y = centre.y + (v.co.y - centre.y) * scale
+            below *= 0.95
+
+    edit(widen, "spire_1")
+
+
+def pointed_caps(spec):
+    """Every tier's cap drawn in to a point and raised: cones on cones, with no flat cap and no ledge."""
+
+    def pinch(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base = max(ground, key=lambda verts: max(v.co.z for v in verts))
+        for verts in [base] + raised:
+            cap = {v for v in verts for f in v.link_faces if f.normal.z > 0.97}
+            centre = middle_of(cap)
+            rise = 0.5 * max((v.co - centre).to_2d().length for v in cap)
+            for v in cap:
+                v.co.x = centre.x + (v.co.x - centre.x) * 0.05
+                v.co.y = centre.y + (v.co.y - centre.y) * 0.05
+                v.co.z += rise
+
+    edit(pinch, "spire_1")
+
+
+def banded_base(spec):
+    """Every piece on the ground cut level into bands, each second ring of the cut pushed out: sides in horizontal bands, with no edge running up them."""
+
+    def band(bm):
+        ground, _ = spire_pieces(bm, spec)
+        top = max(v.co.z for verts in ground for v in verts)
+        cuts = [top * (i + 1) / 9 for i in range(8)]
+        for verts in ground:
+            centre = middle_of(verts)
+            for index, height in enumerate(cuts):
+                faces = list({f for v in verts if v.is_valid for f in v.link_faces})
+                geom = list({e for f in faces for e in f.edges}) + faces + list({v for f in faces for v in f.verts})
+                cut = bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-5, plane_co=(0, 0, height), plane_no=(0, 0, 1))
+                ring = [g for g in cut["geom_cut"] if isinstance(g, bmesh.types.BMVert)]
+                verts.extend(ring)
+                for v in ring:
+                    push = 1.12 if index % 2 == 0 else 0.97
+                    v.co.x = centre.x + (v.co.x - centre.x) * push
+                    v.co.y = centre.y + (v.co.y - centre.y) * push
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+        bm.normal_update()
+
+    edit(band, "spire_1")
+
+
 # The block (source/block): a near-cuboid with big chamfers, parted along a crack.
 
 
@@ -978,6 +1079,11 @@ CASES = [
     (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
     (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
+    (top_tier_removed, "spire_1.spire_tiers", "spire_1"),
+    (tier_hangs_off, "spire_1.spire_stands_on", "spire_1"),
+    (plain_column, "spire_1.spire_steps_in", "spire_1"),
+    (pointed_caps, "spire_1.spire_ledges", "spire_1"),
+    (banded_base, "spire_1.spire_flutes", "spire_1"),
     (tapered_block, "block_2.block_square", "block_2"),
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),
