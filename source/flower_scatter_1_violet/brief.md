@@ -12,7 +12,8 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `seed` | `1` | Seed |
 | `bounds_m.min` | `[-0.25, -0.225, 0.0]` | Real-world size |
 | `bounds_m.max` | `[0.25, 0.225, 0.22]` | Real-world size |
-| `max_triangles` | `300` | Family brief, Budget |
+| `max_triangles` | `480` | Family brief, Budget |
+| `blooms.width_m` | `[0.08, 0.12]` | Family brief, Real-world size: each across |
 | `blooms.count` | `[5, 8]` | Real-world size: flowers |
 | `colour` | `"violet"` | Family brief, Colours |
 | `palette_of` | `"flower_scatter_1"` | The asset whose mesh this is |

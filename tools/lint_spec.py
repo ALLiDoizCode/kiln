@@ -155,12 +155,12 @@ HEADS = {"count": list, "size_m": list, "min_height": float}
 # Optional; a group of discs floating at one level (source/lily_pad/brief.md), in place of pads over cores, blades and stalks. All keys are required once it is present.
 DISCS = {
     "count": list, "narrowest_m": list, "widest_m": list, "max_size_step": float, "max_twins": int,
-    "level_m": float, "rim_share": list, "notch_deg": list, "min_round": float, "min_scatter": float,
+    "level_m": float, "rim_share": list, "notch_deg": list, "min_round": float, "min_scatter": float, "max_side_m": float,
 }
 # Optional; a mat of leaf pieces lying on the ground (source/leaf_mat/brief.md), in place of pads over cores, blades, stalks and discs. All keys are required once it is present.
-MAT = {"max_tilt_deg": float, "min_overlap_share": float, "hull_cover": list, "min_footprint_cover": float}
+MAT = {"max_tilt_deg": float, "min_overlap_share": float, "hull_cover": list, "min_footprint_cover": float, "runner_reach_m": float, "min_growing_share": float}
 # Optional, with `blooms` (`flowers`; `scatter` is separate stones); a scatter of flowers on stems with leaves at their feet (source/flower_scatter/brief.md), in place of pads over cores, blades, stalks, discs and a mat. All keys are required once it is present.
-FLOWERS = {"max_height_share": float, "min_lean_deg": float, "max_lean_together": float, "min_apart_m": float, "leaves_per_bloom": list, "foot_m": float}
+FLOWERS = {"max_height_share": float, "min_lean_deg": float, "max_lean_together": float, "min_apart_m": float, "leaves_per_bloom": list, "foot_m": float, "min_bloom_share": float, "min_scatter": float}
 # Optional, on a plant with foliage: blooms (flowers), closed pieces of the closed material with petals. Every key is required once it is present.
 BLOOMS = {"count": list, "width_m": list, "max_hull_share": float, "min_colour_apart": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
@@ -545,28 +545,30 @@ if not checks.failed():
             "blades" not in spec and "stalks" not in spec and whole(discs["count"])
             and all(span(discs[key]) and discs[key][0] > 0 for key in ("narrowest_m", "widest_m", "rim_share", "notch_deg"))
             and discs["narrowest_m"][1] <= discs["widest_m"][0] and discs["max_size_step"] > 1 and discs["max_twins"] >= 0 and discs["level_m"] > 0
-            and discs["rim_share"][1] < 1 and discs["notch_deg"][1] < 180 and 0 < discs["min_round"] <= 1 and 0 < discs["min_scatter"] < 1,
+            and discs["rim_share"][1] < 1 and discs["notch_deg"][1] < 180 and 0 < discs["min_round"] <= 1 and 0 < discs["min_scatter"] < 1 and discs["max_side_m"] > 0,
             "not on a plant of blades or of stalks (`blades`, `stalks`: a plant is one of the three); count as [least, most] whole numbers, at least 1; "
             "narrowest_m, widest_m, rim_share and notch_deg as [least, most], above 0, the narrowest no wider than the widest, a rim share below 1 and a notch below 180 degrees; "
-            "max_size_step above 1; max_twins not negative; level_m above 0; min_round in (0, 1]; min_scatter above 0 and below 1",
+            "max_size_step above 1; max_twins not negative; level_m above 0; min_round in (0, 1]; min_scatter above 0 and below 1; max_side_m above 0",
         )
     mat = block("mat", MAT)
     if mat:
         checks.check(
             "spec.mat_amounts",
             not bladed and "discs" not in spec and 0 < mat["max_tilt_deg"] < 90 and 0 < mat["min_overlap_share"] <= 1
-            and span(mat["hull_cover"]) and mat["hull_cover"][0] > 0 and mat["hull_cover"][1] < 1 and 0 < mat["min_footprint_cover"] < 1,
+            and span(mat["hull_cover"]) and mat["hull_cover"][0] > 0 and mat["hull_cover"][1] < 1 and 0 < mat["min_footprint_cover"] < 1
+            and spec["watertight"] and mat["runner_reach_m"] > 0 and 0 < mat["min_growing_share"] <= 1,
             "not on a plant of blades, of stalks or of discs (a plant is one of them); max_tilt_deg in 0..90; min_overlap_share in (0, 1]; "
-            "hull_cover as [least, most], above 0 and below 1 (at 1 it asks nothing: a disc of leaves covers its hull); min_footprint_cover above 0 and below 1",
+            "hull_cover as [least, most], above 0 and below 1 (at 1 it asks nothing: a disc of leaves covers its hull); min_footprint_cover above 0 and below 1; on a watertight asset (its runners are closed), runner_reach_m above 0 and min_growing_share in (0, 1]",
         )
     flowers = block("flowers", FLOWERS)
     if flowers:
         checks.check(
             "spec.flowers_amounts",
             not bladed and "discs" not in spec and "mat" not in spec and "blooms" in spec and 0 < flowers["max_height_share"] < 1 and 0 < flowers["min_lean_deg"] < 90
-            and 0 < flowers["max_lean_together"] < 1 and flowers["min_apart_m"] > 0 and span(flowers["leaves_per_bloom"]) and flowers["leaves_per_bloom"][0] > 0 and flowers["foot_m"] > 0,
+            and 0 < flowers["max_lean_together"] < 1 and flowers["min_apart_m"] > 0 and span(flowers["leaves_per_bloom"]) and flowers["leaves_per_bloom"][0] > 0 and flowers["foot_m"] > 0
+            and 0 < flowers["min_bloom_share"] < 1 and 0 < flowers["min_scatter"] < 1,
             "not on a plant of blades, of stalks, of discs or a mat (a plant is one of them), and with a `blooms` block, which says what its flowers are; max_height_share and max_lean_together above 0 and below 1 (at 1 they ask nothing); "
-            "min_lean_deg in 0..90; min_apart_m and foot_m above 0; leaves_per_bloom as [least, most], above 0",
+            "min_lean_deg in 0..90; min_apart_m and foot_m above 0; leaves_per_bloom as [least, most], above 0; min_bloom_share and min_scatter above 0 and below 1",
         )
     blooms = block("blooms", BLOOMS)
     if blooms:

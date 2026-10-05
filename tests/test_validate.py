@@ -1784,6 +1784,19 @@ def squashed_discs(spec):
     each_disc(spec, squash)
 
 
+def coarse_discs(spec):
+    """Every second corner of every disc's rim slid up against the one before it: each rim has half as many sides, twice as long."""
+
+    def coarsen(place, radius, middle, verts, piece, bm):
+        at = middle.co.xy
+        floor = {e.other_vert(middle) for e in middle.link_edges}
+        rim = sorted((v for v in verts if v is not middle and v not in floor), key=lambda v: math.atan2(v.co.y - at.y, v.co.x - at.x))
+        for before, v in zip(rim[::2], rim[1::2]):
+            v.co.xy = before.co.xy + (v.co.xy - before.co.xy) * 0.02
+
+    each_disc(spec, coarsen)
+
+
 def overlapping_discs(spec):
     """The second widest disc slid half over the widest."""
     first = []
@@ -1999,6 +2012,43 @@ def bunched_scatter(spec):
             v.co.xy *= 0.05
 
     edit(gather, spec["objects"][0])
+
+
+def speck_blooms(spec):
+    """Every bloom drawn to two fifths of its size about its own middle: specks."""
+
+    def shrink(verts, middle, bm):
+        for v in verts:
+            v.co = middle + (v.co - middle) * 0.4
+
+    each_bloom(spec, shrink)
+
+
+def blooms_on_a_ring(spec):
+    """Every bloom moved, level, onto one circle about the middle of them all: a ring of flowers."""
+    found = []
+    each_bloom(spec, lambda verts, middle, bm: found.append(middle.copy()))
+    centre = sum(found, Vector()) / len(found)
+    radius = sum((middle - centre).xy.length for middle in found) / len(found)
+
+    def ring(verts, middle, bm):
+        out = (middle - centre).xy
+        move = out.normalized() * radius - out
+        for v in verts:
+            v.co.xy += move
+
+    each_bloom(spec, ring)
+
+
+def leaves_blown(spec):
+    """Every leaf turned a quarter turn about its own middle and moved 4 cm along x: none starts at a runner."""
+
+    def blow(number, verts, middle, bm):
+        bmesh.ops.rotate(bm, verts=verts, cent=middle, matrix=Matrix.Rotation(math.radians(90), 3, "Z"))
+        for v in verts:
+            v.co.x += 0.04 if number % 2 else -0.04
+
+    each_mat_leaf(spec, blow)
 
 
 def no_foot_leaves(spec):
@@ -2308,6 +2358,9 @@ CASES = [
     (sparse_mat, "leaf_mat_1.mat_cover", "leaf_mat_1"),
     (leaves_apart, "leaf_mat_1.mat_overlap", "leaf_mat_1"),
     (disc_mat, "leaf_mat_1.mat_ragged", "leaf_mat_1"),
+    (leaves_blown, "leaf_mat_1.mat_grows", "leaf_mat_1"),
+    (speck_blooms, "flower_scatter_1.flowers_size", "flower_scatter_1"),
+    (blooms_on_a_ring, "flower_scatter_1.flowers_scattered", "flower_scatter_1"),
     (blooms_adrift, "flower_scatter_1.flowers_carried", "flower_scatter_1"),
     (blooms_sunk, "flower_scatter_1.flowers_above_leaves", "flower_scatter_1"),
     (blooms_one_height, "flower_scatter_1.flowers_heights", "flower_scatter_1"),
@@ -2322,6 +2375,7 @@ CASES = [
     (lifted_disc, "lily_pad_1.discs_level", "lily_pad_1"),
     (flat_rims, "lily_pad_1.discs_rim", "lily_pad_1"),
     (closed_notches, "lily_pad_1.discs_notch", "lily_pad_1"),
+    (coarse_discs, "lily_pad_1.discs_sides", "lily_pad_1"),
     (squashed_discs, "lily_pad_1.discs_round", "lily_pad_1"),
     (overlapping_discs, "lily_pad_1.discs_apart", "lily_pad_1"),
     (discs_in_a_row, "lily_pad_1.discs_scattered", "lily_pad_1"),

@@ -1,6 +1,6 @@
 # lily_pad
 
-A group of lily pads floating on still water: flat round leaves of clearly different sizes, each with a raised rim and a notch, all at one level, with one or two flowers standing between them. Made by a generator that takes a seed. This is the brief for the family (ADR 13): the generator (`generator.py`, beside this file) and everything its groups share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/lily_pad_1`, `source/lily_pad_2`, `source/lily_pad_3`. Their specs name this folder as their `family`. One other flower colour is drawn as a palette on the first variant's mesh: `source/lily_pad_1_pink`.
+A group of lily pads floating on still water: flat round leaves of clearly different sizes, each with a raised rim and a slit of a notch, all at one level, with one or two cupped water lilies standing between them. Made by a generator that takes a seed. This is the brief for the family (ADR 13): the generator (`generator.py`, beside this file) and everything its groups share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/lily_pad_1`, `source/lily_pad_2`, `source/lily_pad_3`. Their specs name this folder as their `family`. One other flower colour is drawn as a palette on the first variant's mesh: `source/lily_pad_1_pink`.
 
 It is the **lily pad** row of the nature reference (`docs/style/nature-shapes.md`): "a flat disc with a raised rim, from hand-sized to large enough to stand on, with flowers between". The reference's swamp scene uses pink lilies as its one accent colour.
 
@@ -26,12 +26,12 @@ On every variant the narrowest pad is hand-sized, 0.08 to 0.2 m across. The heig
 
 Seen from above, which is how it is seen.
 
-1. **Discs.** Each pad is one disc: a round, level floor with a raised rim. Its rim stands 0.02 to 0.08 of the disc's width above its floor. Round, not a compass circle: the nearest point of its outline is at least 0.7 as far from its middle as the furthest.
-2. **A notch.** Each disc has one notch cut from its rim in to its middle, 15 to 60 degrees wide.
+1. **Discs.** Each pad is one disc: a round, level floor with a raised rim. Its rim stands 0.02 to 0.08 of the disc's width above its floor, and is creased where it leaves the floor, so that from above it is a lip the light catches: a ring lighter toward the sun and darker away from it, not a slope that fades into the floor. Round, not a compass circle: the nearest point of its outline is at least 0.7 as far from its middle as the furthest. And round from standing height, not a polygon: no straight side of a rim is longer than 0.2 m, which is 27 sides on a pad 1.5 m across (at 16 its corners showed).
+2. **A notch.** Each disc has one notch cut from its rim in to its middle: a slit, 6 to 20 degrees wide. (First 15 to 60: at 17 to 34 degrees the pads read as mouths.)
 3. **One level.** Every disc's floor lies within 2 cm of one height, and no part of a floor is more than 2 cm from it. No disc lies over another: seen from above no two overlap.
 4. **A run of sizes.** From hand-sized to the widest, with no step of more than 2.0 times between one size and the next, and at most one pair of twins (two within a tenth of each other in width).
 5. **Scattered.** Not a row and not a ring: the middles of the discs spread at least 0.3 as far across the group as along it, and their distances from the group's middle differ, the spread of those distances being at least 0.3 of their mean.
-6. **Flowers between.** One flower on the smallest variant and two on the others: a closed star of pointed petals, a low open ring round a raised pointed middle, standing on the water between the pads and not on one. A flower fills at most 0.6 of its convex hull: petals, not a ball.
+6. **Flowers between.** One flower on the smallest variant and two on the others: a cupped water lily, closed, of three rings of eight pointed petals: the outer ring lying open on the water, the second standing between its petals, half raised, and the third standing round an open cup. It stands on the water between the pads and not on one. A flower fills at most 0.6 of its convex hull: petals, not a ball.
 7. **The pad to stand on** (`lily_pad_3`). Its widest disc is at least 1.2 m across and its floor is level, as 3 asks of every disc. Seen from straight above, at least 0.6 of the whole group is within 12 degrees of level (`top`): the rest is rims and flowers.
 8. **Flat.** The group is no taller than a tenth of its wider side (`low`).
 
@@ -40,7 +40,7 @@ Seen from above, which is how it is seen.
 ADR 9: leaf-shaped geometry in flat colour, no cards and no transparency.
 
 - **Pad** `m_lily_pad`, `#6fa04c`: the colour of the widest disc. Each disc is one flat colour from the palette in the texture (ADR 11), 4 shades in 3 tones up to 8% lighter or darker. The painter picks a piece's shade from how high it sits, and a wider disc's rim stands higher, so the wide discs are the light yellow-green and the small ones a little darker and bluer (underside tint `#b4d0c8`, a mild one: nothing here is in shadow).
-- **Flower** `m_lily_flower`, `#d8d0c6`, a warm white: the closed surface, with painted shading (ADR 10): rosy toward the water (`#c9a8b4`) and plain at the petal tips, a little light on the petals' edges and shadow in the cup. White is kept under the texel range's 240, which is why it is not whiter.
+- **Flower** `m_lily_flower`, `#d8d0c6`, a warm white: the closed surface, with painted shading (ADR 10): rosy toward the water (`#c9a8b4`) and plain at the petal tips, a little light on the petals' edges and shadow in the cup and between the rings. Every face of a petal is lit as itself, flat, as a leaf piece is: a cup lit smooth has corners lit from behind. White is kept under the texel range's 240, which is why it is not whiter.
 - The flower's colour is far from every colour of the pads' palette: at least 0.3 apart in linear RGB.
 - No plate under anything, of mud or of water: the reeds' mud plate was the first thing the eye landed on. What is between the pads is the game's water.
 
@@ -59,7 +59,7 @@ One object and one mesh per variant, with two materials. The pad material holds 
 
 ## Budget
 
-Cheap dressing, seen at the player's feet and often several groups at once: at most 320, 420 and 500 triangles, and two materials on one 128 px texture: the smallest that holds a flower at the conventions' 100 texels a metre, since the palette's strip takes 24 px of it and the gap round an island 8 px (at 64 px the first variant's 14 cm flower was painted at 11 texels a metre). A disc is three triangles a side, of 8 to 16 sides by its size: 24 to 48. A flower is 40. The benchmark's nearest things, its clover and flower groups, are flat cards.
+Cheap dressing, seen at the player's feet and often several groups at once: at most 480, 720 and 820 triangles, and two materials on one 128 px texture: the smallest that holds a flower at the conventions' 100 texels a metre, since the palette's strip takes 24 px of it and the gap round an island 8 px (at 64 px the first variant's 14 cm flower was painted at 11 texels a metre). A disc is three triangles a side, of 12 to 30 sides by its width (Silhouette 1): 36 to 90. A flower is 96. (First 320, 420 and 500, for discs of 8 to 16 sides and a flower of 40.) The benchmark's nearest things, its clover and flower groups, are flat cards.
 
 ## References
 
@@ -102,14 +102,15 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `discs.max_twins` | `1` | Silhouette 4 |
 | `discs.level_m` | `0.02` | Silhouette 3 |
 | `discs.rim_share` | `[0.02, 0.08]` | Silhouette 1 |
-| `discs.notch_deg` | `[15.0, 60.0]` | Silhouette 2 |
+| `discs.notch_deg` | `[6.0, 20.0]` | Silhouette 2 |
+| `discs.max_side_m` | `0.2` | Silhouette 1 |
 | `discs.min_round` | `0.7` | Silhouette 1 |
 | `discs.min_scatter` | `0.3` | Silhouette 5 |
 | `blooms.max_hull_share` | `0.6` | Silhouette 6 |
 | `blooms.min_colour_apart` | `0.3` | Style and colour: far from the pads' palette |
 | `low.max_height_share` | `0.1` | Silhouette 8 |
 | `top.min_level_share` | `0.6` | Silhouette 7 |
-| `soft_edges` | `true` | Discs and flowers are lit smooth |
+| `soft_edges` | `false` | Silhouette 1 and Style and colour: a rim's crease and a petal's faces are hard edges, by design |
 | `watertight` | `true` | Parts: a flower is closed |
 | `open_materials` | `["m_lily_pad"]` | Parts: discs are open pieces |
 | `attributes` | `["POSITION", "NORMAL", "TEXCOORD_0"]` | Style and colour: one texture, so UVs |

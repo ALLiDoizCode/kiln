@@ -19,7 +19,7 @@
     ]
   },
   "bounds_tolerance_m": 0.001,
-  "max_triangles": 720,
+  "max_triangles": 880,
   "materials": {
     "m_mat_runner": "#7a6a48",
     "m_mat_leaf": "#7da348"
@@ -53,7 +53,9 @@
       0.45,
       0.8
     ],
-    "min_footprint_cover": 0.3
+    "min_footprint_cover": 0.3,
+    "runner_reach_m": 0.02,
+    "min_growing_share": 0.8
   },
   "low": {
     "max_height_share": 0.08

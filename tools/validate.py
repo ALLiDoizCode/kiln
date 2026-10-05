@@ -975,6 +975,13 @@ def check_discs(checks, name, bm, slots, spec, conv):
         discs and not off,
         f"{off} of {len(discs)} discs have no notch {low} to {high} degrees wide cut in to their middle (their notches run {span('notch', 0)} degrees; 0 is none)",
     )
+    # The longest straight side of a rim, seen from above (the two sides of a notch, which run in to the middle, are not rim).
+    sides = [max(((a - b).length for a, b in zip(disc["outline"], disc["outline"][1:]) if (a - disc["middle"]).length > 1e-9 and (b - disc["middle"]).length > 1e-9), default=0.0) for disc in discs]
+    checks.check(
+        f"{name}.discs_sides",
+        discs and max(sides) <= want["max_side_m"],
+        f"the longest straight side of a disc's rim is {max(sides, default=0):.3f} m (the discs' longest run {min(sides, default=0):.3f} to {max(sides, default=0):.3f} m); spec wants at most {want['max_side_m']}: from standing height a rim is round, not a polygon",
+    )
     oval = sum(1 for disc in discs if disc["round"] < want["min_round"])
     checks.check(
         f"{name}.discs_round",
@@ -1092,6 +1099,47 @@ def check_mat(checks, name, bm, slots, spec, conv):
     )
 
 
+def check_mat_grows(checks, name, bm, slots, spec, conv):
+    """A mat grows: its leaves stand along its runners and point away from them (source/leaf_mat/brief.md).
+
+    A runner is a closed piece of the closed surface, read as the straight line between its two corners furthest
+    apart. A leaf grows from a runner when its nearest corner is within `runner_reach_m` of that line and its
+    furthest corner from the same line stands at least half the leaf's own length off it: fallen leaves lie anywhere
+    and point any way, and a leaf laid along a runner does not point away from it."""
+    want = spec["mat"]
+    leaf = slots.index(spec["foliage"]["material"])
+    runners = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        runners.append(max(((a.co.xy, b.co.xy) for a in verts for b in verts), key=lambda ends: (ends[0] - ends[1]).length))
+
+    def off(point, runner):
+        a, b = runner
+        along = b - a
+        share = min(1.0, max(0.0, (point - a).dot(along) / max(along.length_squared, 1e-12)))
+        return (point - (a + along * share)).length
+
+    pieces = foliage.pieces_of(bm, leaf)
+    growing, gaps = 0, []
+    for piece in pieces:
+        corners = [v.co.xy for v in {v for face in piece for v in face.verts}]
+        length = max((a - b).length for a in corners for b in corners)
+        near = min(runners, key=lambda runner: min(off(corner, runner) for corner in corners), default=None)
+        if near is None:
+            continue
+        gaps.append(min(off(corner, near) for corner in corners))
+        if gaps[-1] <= want["runner_reach_m"] and max(off(corner, near) for corner in corners) >= 0.5 * length:
+            growing += 1
+    share = growing / max(len(pieces), 1)
+    print(f"{name} mat: {len(runners)} runners; {growing} of {len(pieces)} leaves ({share:.2f}) start within {want['runner_reach_m']} m of one and point away from it (the leaves start {min(gaps, default=0):.3f} to {max(gaps, default=0):.3f} m from the nearest)")
+    checks.check(
+        f"{name}.mat_grows",
+        pieces and runners and share >= want["min_growing_share"],
+        f"{growing} of {len(pieces)} leaves ({share:.2f}) start within {want['runner_reach_m']} m of one of the {len(runners)} runners and point away from it; spec wants at least {want['min_growing_share']}: "
+        f"ground cover grows along its runners, where fallen leaves lie anywhere",
+    )
+
+
 def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
     """The plant has blooms (flowers): closed pieces of the closed material, each a star of petals and not a ball, and, among discs, standing between them.
 
@@ -1196,6 +1244,28 @@ def check_flowers(checks, name, bm, slots, spec, conv, blooms):
         f"{name}.flowers_apart",
         len(middles) >= 2 and nearest >= want["min_apart_m"],
         f"the two nearest blooms' middles are {nearest:.3f} m apart; spec wants at least {want['min_apart_m']}: a scatter, not a bunch",
+    )
+    # Found from across a clearing: a typical bloom's width as a share of the scatter's wider side.
+    wider = max(spec["bounds_m"]["max"][i] - spec["bounds_m"]["min"][i] for i in range(2))
+    typical_width = statistics.median(bloom["width"] for bloom in blooms) if blooms else 0.0
+    checks.check(
+        f"{name}.flowers_size",
+        blooms and typical_width / wider >= want["min_bloom_share"],
+        f"the typical bloom is {typical_width:.3f} m across, {typical_width / wider:.2f} of the scatter's wider side ({wider:.2f} m); spec wants at least {want['min_bloom_share']}: spots of colour, not specks",
+    )
+    # Scattered, as discs are: neither a row nor a ring.
+    across, ring = 0.0, 0.0
+    if len(middles) >= 3:
+        points = numpy.array([tuple(middle.xy) for middle in middles])
+        spread = numpy.sqrt(numpy.maximum(numpy.linalg.eigvalsh(numpy.cov((points - points.mean(axis=0)).T)), 0.0))
+        across = float(spread[0] / max(spread[1], 1e-9))
+        out = numpy.linalg.norm(points - points.mean(axis=0), axis=1)
+        ring = float(out.std() / max(out.mean(), 1e-9))
+    checks.check(
+        f"{name}.flowers_scattered",
+        len(middles) >= 3 and min(across, ring) >= want["min_scatter"],
+        f"seen from above, the blooms' middles spread {across:.2f} as far across the scatter as along it, and their distances from its middle differ by {ring:.2f} of their mean; "
+        f"spec wants both at least {want['min_scatter']}: not a row, and not a ring",
     )
     low, high = want["leaves_per_bloom"]
     each = len(leaves) / max(len(blooms), 1)
@@ -2591,6 +2661,7 @@ def check_scene(checks, spec, conv):
             elif "mat" in spec:
                 # Or, where it has `mat`, a mat of leaf pieces lying on the ground.
                 check_mat(checks, name, bm, slot_names, spec, conv)
+                check_mat_grows(checks, name, bm, slot_names, spec, conv)
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)

@@ -20,6 +20,6 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `seed` | `3` | Seed |
 | `bounds_m.min` | `[-0.2, -0.175, 0.0]` | Real-world size |
 | `bounds_m.max` | `[0.2, 0.175, 0.03]` | Real-world size |
-| `max_triangles` | `200` | Family brief, Budget |
+| `max_triangles` | `280` | Family brief, Budget |
 | `variants.siblings` | `["leaf_mat_1", "leaf_mat_2"]` | The other two variants |
 | `variants.min_difference` | `0.3` | As the trees: how far its outline differs from each of the others' |

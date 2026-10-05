@@ -20,7 +20,8 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `seed` | `1` | Seed |
 | `bounds_m.min` | `[-0.25, -0.225, 0.0]` | Real-world size |
 | `bounds_m.max` | `[0.25, 0.225, 0.22]` | Real-world size |
-| `max_triangles` | `300` | Family brief, Budget |
+| `max_triangles` | `480` | Family brief, Budget |
+| `blooms.width_m` | `[0.08, 0.12]` | Family brief, Real-world size: each across |
 | `blooms.count` | `[5, 8]` | Real-world size: flowers |
 | `variants.siblings` | `["flower_scatter_2", "flower_scatter_3"]` | The other two variants |
 | `variants.min_difference` | `0.3` | As the trees: how far its outline differs from each of the others' |

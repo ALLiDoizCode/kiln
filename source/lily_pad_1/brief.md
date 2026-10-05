@@ -20,7 +20,7 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `seed` | `1` | Seed |
 | `bounds_m.min` | `[-0.55, -0.45, 0.0]` | Real-world size |
 | `bounds_m.max` | `[0.55, 0.45, 0.09]` | Real-world size |
-| `max_triangles` | `320` | Family brief, Budget |
+| `max_triangles` | `480` | Family brief, Budget |
 | `painted_shading.texture_px` | `128` | Family brief, Budget |
 | `foliage.piece_m` | `[0.08, 0.6]` | Real-world size: a disc's width, from hand-sized to the widest |
 | `discs.count` | `[5, 7]` | Real-world size: pads |

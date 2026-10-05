@@ -1,6 +1,6 @@
 # leaf_mat
 
-A flat, irregular patch of small overlapping leaves lying on the ground or on water: ground cover, a few centimetres thick, with a ragged outline and gaps in it, and a few thin runners showing between the leaves. Made by a generator that takes a seed. This is the brief for the family (ADR 13): the generator (`generator.py`, beside this file) and everything its mats share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/leaf_mat_1`, `source/leaf_mat_2`, `source/leaf_mat_3`. Their specs name this folder as their `family`.
+A flat, irregular patch of small overlapping leaves growing on the ground or on water: ground cover, a few centimetres thick, creeping out from its middle along thin runners, its leaves in pairs along them, with a ragged outline and gaps in it. Made by a generator that takes a seed. This is the brief for the family (ADR 13): the generator (`generator.py`, beside this file) and everything its mats share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/leaf_mat_1`, `source/leaf_mat_2`, `source/leaf_mat_3`. Their specs name this folder as their `family`.
 
 It is the **leaf mat** row of the nature reference (`docs/style/nature-shapes.md`): "a flat patch of small leaves lying on the ground or water".
 
@@ -10,7 +10,7 @@ The lowest of the three heights of growth: what covers bare ground at the foot o
 
 ## Viewing
 
-First person (ADR 7). A player's eye is 1.7 m up and a mat lies at the player's feet, so it is seen from standing height looking down, from 0.5 to 5 m away, and never from the side or from below. From there it must read as leaves, not as a green plate: its outline ragged, ground showing through it.
+First person (ADR 7). A player's eye is 1.7 m up and a mat lies at the player's feet, so it is seen from standing height looking down, from 0.5 to 5 m away, and never from the side or from below. From there it must read as a plant that grows there, not as a green plate and not as leaves that fell there: its leaves in rows along its runners, its outline ragged, ground showing through it.
 
 ## Real-world size
 
@@ -32,7 +32,8 @@ Seen from above, which is how it is seen.
 4. **Overlapping.** Seen from above, at least half of the leaves lie partly over or under another.
 5. **Ragged, with gaps.** Seen from above, the leaves cover 0.45 to 0.8 of the convex hull of what they cover: a disc or a rectangle of leaves covers all of its own, and a few scattered leaves almost none.
 6. **A patch.** The leaves cover at least 0.3 of the bounds' footprint.
-7. **Runners.** Two thin, straight woody runners lie among the leaves, each a closed spindle. They are what the closed surface is; no plate lies under the mat.
+7. **Runners.** Three to five runners creep out from the middle of the mat, each in two or three straight lengths with a turn between them, each length a thin closed spindle. They are what the closed surface is; no plate lies under the mat.
+8. **Growing.** The leaves stand along the runners in pairs, one either side, pointing away from the runner and toward its end, with a leaf at the end and a few round the middle where the runners start: at least 0.8 of the leaves start within 2 cm of a runner and point away from it. Denser at the middle, where the runners are close, and ragged at the edge, where each ends on its own. (First: leaves at chance places pointing every way, which read as leaves that had fallen there.)
 
 ## Style and colour
 
@@ -48,7 +49,7 @@ One object and one mesh per variant, with two materials. The leaf material holds
 
 ## Budget
 
-The cheapest foliage there is, laid by the dozen: a leaf is 4 triangles and a runner 16. Leaves 9 to 14 cm long that cover a third of the footprint are about 170 to the square metre, so at most 340, 720 and 200 triangles, with two materials and one 128 px texture. (First set at 320, 560 and 180, before the leaves were counted: at those the mats covered 0.24 to 0.31 of their footprint.)
+The cheapest foliage there is, laid by the dozen: a leaf is 4 triangles and a length of runner 16. Leaves 9 to 14 cm long that cover a third of the footprint are about 170 to the square metre, and a mat has 6 to 12 lengths of runner, so at most 420, 880 and 280 triangles, with two materials and one 128 px texture. (First set at 320, 560 and 180, before the leaves were counted, and then at 340, 720 and 200 with two runners.)
 
 ## References
 
@@ -90,6 +91,8 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `mat.min_overlap_share` | `0.5` | Silhouette 4 |
 | `mat.hull_cover` | `[0.45, 0.8]` | Silhouette 5 |
 | `mat.min_footprint_cover` | `0.3` | Silhouette 6 |
+| `mat.runner_reach_m` | `0.02` | Silhouette 8 |
+| `mat.min_growing_share` | `0.8` | Silhouette 8 |
 | `low.max_height_share` | `0.08` | Silhouette 3 |
 | `soft_edges` | `true` | The runners are lit smooth |
 | `watertight` | `true` | Parts: a runner is closed |
@@ -101,7 +104,7 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 All proposed by the agent, from the task the owner set, and open to change at review:
 
 - **A mat is leaf pieces lying down**, the tree's own leaf piece, checked by a `mat` block of its own and not as pads over cores: it has no core, no lobes and nothing to see from below. `low` is the pebble's check, reused as it is.
-- **The closed surface is a few runners**, because an asset with open pieces needs one and a plate under the leaves is what the owner refused under the reeds.
+- **The closed surface is the runners**, which are what the leaves grow from; a plate under the leaves is what the owner refused under the reeds.
 - **No crevice shadow is asked**: a runner is a convex spindle.
 - **Thresholds made up here, with nothing measured behind them**: every number in the `mat` block, `low.max_height_share`, `piece_m`, `min_pad_pieces` and `max_triangles`.
 

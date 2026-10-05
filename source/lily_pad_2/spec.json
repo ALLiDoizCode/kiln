@@ -20,7 +20,7 @@
     ]
   },
   "bounds_tolerance_m": 0.001,
-  "max_triangles": 420,
+  "max_triangles": 720,
   "materials": {
     "m_lily_flower": "#d8d0c6",
     "m_lily_pad": "#6fa04c"
@@ -70,11 +70,12 @@
       0.08
     ],
     "notch_deg": [
-      15.0,
-      60.0
+      6.0,
+      20.0
     ],
     "min_round": 0.7,
-    "min_scatter": 0.3
+    "min_scatter": 0.3,
+    "max_side_m": 0.2
   },
   "blooms": {
     "count": [
@@ -94,7 +95,7 @@
   "top": {
     "min_level_share": 0.6
   },
-  "soft_edges": true,
+  "soft_edges": false,
   "watertight": true,
   "open_materials": [
     "m_lily_pad"
