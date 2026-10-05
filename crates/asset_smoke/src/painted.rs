@@ -629,12 +629,36 @@ pub fn check(
         if want.growth_darker > 0.0 {
             // Open faces above the base's growth: where they show growth against where they show none.
             // The tint and the side shade are already divided out, and blotches average out.
-            let (grown_count, grown) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth >= 0.8, &|s| s.bare_ratio);
-            let (bare_count, bare) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth <= 0.2, &|s| s.bare_ratio);
+            let (mut grown_count, grown) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth >= 0.8, &|s| s.bare_ratio);
+            let (mut bare_count, bare) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth <= 0.2, &|s| s.bare_ratio);
+            let mut on = "open faces";
             measured.growth_darker = 1.0 - grown / bare.max(1e-6);
+            if grown_count < MIN_SAMPLES || bare_count < MIN_SAMPLES {
+                // Too little open face with growth on it, or without. Off open faces the edge light and the shadow at a
+                // join change the tone as well, so a sample that shows growth is held against its own neighbour in the
+                // texture that shows none: the two are a few centimetres apart and get the same of both. A patch's edge is
+                // soft, so the pair shows growth g and h, not 1 and 0, and is darker by growth_darker times each: the tones
+                // t and u are as (1 - d g) to (1 - d h), which gives d = (u - t) / (g u - h t), summed over the pairs.
+                let near: std::collections::HashMap<(u32, u32), (f32, f32)> = samples.iter().filter(|s| seen(s)).map(|s| (s.at, (s.growth, s.bare_ratio))).collect();
+                let (mut pairs, mut step, mut scale) = (0usize, 0.0f32, 0.0f32);
+                for (&(x, y), &(growth, tone)) in &near {
+                    for next in [(x + stride, y), (x, y + stride)] {
+                        let Some(&(other, other_tone)) = near.get(&next) else { continue };
+                        if growth.max(other) >= 0.8 && growth.min(other) <= 0.2 {
+                            let ((g, t), (h, u)) = if growth > other { ((growth, tone), (other, other_tone)) } else { ((other, other_tone), (growth, tone)) };
+                            pairs += 1;
+                            step += u - t;
+                            scale += g * u - h * t;
+                        }
+                    }
+                }
+                (grown_count, bare_count) = (pairs, pairs);
+                on = "neighbouring samples, on any face";
+                measured.growth_darker = step / scale.max(1e-6);
+            }
             if grown_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || (measured.growth_darker - want.growth_darker).abs() > want.colour_tolerance {
                 fail(format!(
-                    "painted.growth_darker: open faces above {high:.2} m are {:.3} darker where they show growth ({grown_count} samples) than where they show none ({bare_count} samples); growth_darker {} wants that within {}",
+                    "painted.growth_darker: {on} above {high:.2} m are {:.3} darker where they show growth ({grown_count} samples) than where they show none ({bare_count} samples); growth_darker {} wants that within {}",
                     measured.growth_darker, want.growth_darker, want.colour_tolerance
                 ));
             }
