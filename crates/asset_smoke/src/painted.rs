@@ -456,7 +456,12 @@ pub fn check(
                 // shadow: one definition, the painter's (conventions.toml). A shallower valley is shaded in
                 // part, and is neither a crevice nor, being near a face that rises, an open face.
                 let sharp = if !rises { feature_cos } else if other_piece { join_cos } else { crevice_cos };
-                if cos <= sharp {
+                // A fold is two faces that face each other: the other rises in front of this point, and this point
+                // lies in front of the other. Round a tube that bends, a face of the next length may reach a hair in
+                // front of this one's plane while turning away from it: the same exposed edge, carried round the bend,
+                // and no inside corner (a bush's stems had 51 samples "in" such corners, all lit as the edges they are).
+                let faces_back = !rises || other_piece || (p - *centre).dot(*m) > 0.0;
+                if cos <= sharp && faces_back {
                     *near = near.min(distance);
                 }
             }
