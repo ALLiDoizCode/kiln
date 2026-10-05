@@ -12,6 +12,14 @@
 # is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
+# The build's bake, when it is done on the graphics card (KILN_BAKE=gpu): a card out of memory leaves a wrong
+# texture and reports the bake finished, so tools/paint.py compares it with a small bake on the CPU. Filed under L1, the first gate after the build.
+uses paint bake_check
+expect 0 "L1 bake check passes a right bake on the graphics card"                              tools/bl tests/bake_check.py right
+expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that left the texture black"    tools/bl tests/bake_check.py black
+expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake wrong in a fifth of the texture" tools/bl tests/bake_check.py part_wrong
+expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that missed one island"         tools/bl tests/bake_check.py island_missing
+
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
 uses tracer validate
 expect 0 "L1 mutation tests: tracer" l1 tracer
