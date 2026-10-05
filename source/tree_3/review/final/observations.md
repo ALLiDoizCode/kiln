@@ -70,3 +70,11 @@ From `sheet.png`, seed 5, 3,364 triangles (732 bark, 336 core, 2,296 leaf), two 
 - The bark reads as bark from 0.5 m by measurement and in the tile, but it is softer than the benchmark's: at 250 texels per metre a furrow's edge is a blur about 1 cm wide. The brief's numbers are met; whether the softness is acceptable is the owner's to judge on `tree_variants.png` and `tree_bark_study.png`.
 - From straight below, 35% of the foliage seen is core (limit 45%). The pads read as dark masses with leafy rims, and pieces inside a pad's outline are dark on dark: they can be made out in the tile but do not read one by one.
 - No other mismatch found in the items above.
+
+## After the fixes of 2026-10-05 (review findings 3 and 4)
+
+The leaf material has no gloss, the underside and core tints are about twice as light, and nothing else changed: the mesh's positions, triangle counts and every L1 figure above are as they were. Lines above that describe `bevy_under` or the underside's tone are from before; these replace them.
+
+- L4d, from 1 m beside the trunk looking 78 degrees up: pale leaf samples (grey and light) are 0.00004 of the leaf samples, before 0.00195 (at most 0.001); foliage over the limbs among it is 1.69, before 1.16 (at least 1.25).
+- bevy_under: no near-white piece. Three limbs read as dark brown against mid green; one thin lit piece at about x 700, y 480 of 1024 is light green. The left limb still bends at two elbows (about x 290, y 900 and x 240, y 720).
+- Differences from the brief still standing: the foot (finding 1), the limbs' elbows (finding 2) and the grain on the foot (finding 5) are not fixed.
