@@ -109,7 +109,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/baseline.py) echo baseline ;;
     tools/image_lint.py) echo image_lint ;;
     tools/review_aids.py) echo review_aids ;;
-    source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
+    source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn conifer_1 ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
     source/table_rock/*) echo table_rock_1 ;;  # the generator and the brief table_rock_1 is built with
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
@@ -443,6 +443,7 @@ lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the 
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
 lint_conifer() { lint_copy conifer_1 '' "$1"; }  # <python statements changing spec s>
+lint_conifer_names() { lint_conifer "$1" | grep -qF "$2"; }  # <python statements> <text the lint must print>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>

@@ -138,7 +138,7 @@ def limb_bends(bark, floor):
     return found
 
 
-def measure(bark, conv):
+def measure(bark, conv, leader=False):
     """What the slices say about a skeleton, as a dict; an entry is None when it cannot be measured."""
     rules = conv["skeleton"]
     if not bark.verts:

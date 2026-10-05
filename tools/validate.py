@@ -276,7 +276,7 @@ def check_skeleton(checks, name, bm, slots, spec, conv):
     """The bark is a designed trunk that forks into tapering limbs (source/tree/brief.md). Returns the fork's height, or None."""
     want = spec["skeleton"]
     bark = skeleton.only(bm, slots.index(want["material"]))
-    found = skeleton.measure(bark, conv)
+    found = skeleton.measure(bark, conv, leader="tiers" in spec)
     bark.free()
     breast = conv["skeleton"]["breast_height_m"]
     shown = {key: round(value, 3) if isinstance(value, float) else value for key, value in found.items()}
@@ -305,7 +305,7 @@ def check_skeleton(checks, name, bm, slots, spec, conv):
     checks.check(
         f"{name}.branches_taper",
         found["branch_taper"] is not None and found["branch_taper"] <= want["max_branch_taper"],
-        f"four fifths of the way from the fork to the top, limbs are {shown['branch_taper']} as thick as one fifth of the way; spec wants at most {want['max_branch_taper']}",
+        f"four fifths of the way from the fork to the top, {'the leader is' if 'tiers' in spec else 'limbs are'} {shown['branch_taper']} as thick as one fifth of the way; spec wants at most {want['max_branch_taper']}",
     )
     checks.check(
         f"{name}.roots",
@@ -410,13 +410,17 @@ def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
     )
     if "skeleton" in spec:
         share = {view: round(seen[view][1], 3) for view in seen}
+        # A tree of tiers (a spec with `tiers`) is not asked to show bark to a view that looks down on it: its tiers cover
+        # the leader from above as tiles cover a roof, and a player sees a tree from the ground (ADR 7).
+        counted = [view for view in seen if not ("tiers" in spec and view in views and views[view][2] > 0)]
+        seen = {view: seen[view] for view in counted}
         showing = [view for view in seen if share[view] >= spec["skeleton"]["min_seen_share"]]
         print(f"{name} skeleton seen above the fork: {share}")
         checks.check(
             f"{name}.branches_seen",
             len(showing) >= spec["skeleton"]["min_seen_views"],
             f"bark is at least {spec['skeleton']['min_seen_share']} of what is seen above the fork from {len(showing)} of {len(seen)} views; "
-            f"spec wants {spec['skeleton']['min_seen_views']}; shares {share}",
+            f"spec wants {spec['skeleton']['min_seen_views']}; shares {share}" + (f"; counted {counted}: no view that looks down on tiers" if "tiers" in spec else ""),
         )
 
 

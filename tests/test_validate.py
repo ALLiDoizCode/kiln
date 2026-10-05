@@ -780,8 +780,18 @@ def fat_tiers(spec):
     regrow(spec, boughs__up=1.6, boughs__down=1.0, tiers__droop=[0.0, 0.0], tiers__counts=[[3, 1.0]])
 
 
+def stout_leader(spec):
+    """A leader as thick at its tip as at its lowest whorl: a post."""
+    regrow(spec, trunk__tip_radius=0.11)
+
+
+def hidden_leader(spec):
+    """A leader and boughs no thicker than twigs above the lowest whorl: no bark shows between the tiers."""
+    regrow(spec, trunk__leader=0.12, trunk__tip_radius=0.004, boughs__radius=0.05)
+
+
 def leaf_slot(spec):
-    names = [slot.material.name for slot in bpy.data.objects["tree_1"].material_slots]
+    names = [slot.material.name for slot in bpy.data.objects[spec["objects"][0]].material_slots]
     return names.index(spec["foliage"]["material"])
 
 
@@ -794,7 +804,7 @@ def each_piece(spec, change):
             verts = list({v for face in piece for v in face.verts})
             change(verts, sum((v.co for v in verts), Vector()) / len(verts), piece, bm)
 
-    edit(run, "tree_1")
+    edit(run, spec["objects"][0])
 
 
 def bark_hole(spec):
@@ -977,7 +987,7 @@ def edit_cores(spec, change):
     """Apply change(bm, the cores as lists of faces) to the tree."""
     import foliage
 
-    edit(lambda bm: change(bm, foliage.cores_of(bm, leaf_slot(spec))), "tree_1")
+    edit(lambda bm: change(bm, foliage.cores_of(bm, leaf_slot(spec))), spec["objects"][0])
 
 
 def no_cores(spec):
@@ -1464,10 +1474,16 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
-    # The conifer's (source/tree/species/conifer.md), written before its checks and not yet run: no conifer is kept by the
-    # generator, and a case builds its asset first. To be listed when conifer_1 builds, each then seen NOT CAUGHT before its check:
-    # (even_tiers, "conifer_1.tiers_narrow"), (level_tiers, "conifer_1.tiers_droop"), (blunt_top, "conifer_1.top_pointed"),
-    # (bowed_leader, "conifer_1.leader_straight"), (true_top, "conifer_1.leader_straight"), (fat_tiers, "conifer_1.pads_wide").
+    (even_tiers, "conifer_1.tiers_narrow", "conifer_1"),
+    (level_tiers, "conifer_1.tiers_droop", "conifer_1"),
+    (blunt_top, "conifer_1.top_pointed", "conifer_1"),
+    (bowed_leader, "conifer_1.leader_straight", "conifer_1"),
+    (true_top, "conifer_1.leader_straight", "conifer_1"),
+    (fat_tiers, "conifer_1.pads_wide", "conifer_1"),
+    (stout_leader, "conifer_1.branches_taper", "conifer_1"),
+    (hidden_leader, "conifer_1.branches_seen", "conifer_1"),
+    (no_cores, "conifer_1.under_closed", "conifer_1"),
+    (round_leaves, "conifer_1.under_rim", "conifer_1"),
 ]
 
 
