@@ -38,6 +38,9 @@ expect 0 "L1 mutation tests: slab_1" l1 slab_1
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
+# A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
+uses block_2 validate paint
+expect 0 "L1 mutation tests: block_2" l1 block_2
 
 # A table rock (source/table_rock): its cap and neck broken one way at a time.
 uses table_rock_1 validate paint
@@ -281,6 +284,16 @@ expect_id "spec.cluster"             "L0 catches a crag asked for one prism" lin
 expect_id "spec.cluster"             "L0 catches a lean spread of the whole compass" lint_crag 's["cluster"]["max_lean_spread_deg"] = 180.0'
 expect_id "spec.cluster"             "L0 catches a cluster block with a key missing" lint_crag 'del s["cluster"]["min_lean_deg"]'
 expect_id "spec.cluster"             "L0 catches prisms asked of one closed skin" lint_crag 'del s["overlap"]'
+# L0, blocks: block_2's spec with one thing wrong in what it asks of its box (`block`) and its crack (`cracks`).
+uses block_2 lint_spec
+expect 0 "L0 passes a block variant's spec"  lint_block 'pass'
+expect_id "spec.block"               "L0 catches a square share above the whole outline" lint_block 's["block"]["min_square_share"] = 1.5'
+expect_id "spec.block"               "L0 catches a block asked for chamfers of no width" lint_block 's["block"]["min_chamfer_m"] = 0.0'
+expect_id "spec.block"               "L0 catches a block block with a key missing" lint_block 'del s["block"]["min_chamfers"]'
+expect_id "spec.cracks"              "L0 catches a block asked for no cracks at all" lint_block 's["cracks"]["count"] = 0'
+expect_id "spec.cracks"              "L0 catches a crack of no depth" lint_block 's["cracks"]["depth_m"] = 0.0'
+expect_id "spec.cracks"              "L0 catches a crack that need cross none of the block" lint_block 's["cracks"]["min_span"] = 0.0'
+expect_id "spec.cracks"              "L0 catches cracks asked of something that is not a block" lint_block 'del s["block"]'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.

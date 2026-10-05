@@ -1117,6 +1117,118 @@ def check_table(checks, name, bm, spec, conv):
     print(
         f"{name} table: {share:.3f} of the outline has {want['min_clear_m']} m of open air under it; {len(through)} necks fill {neck_share:.3f} of the outline {cut - lo.z:.2f} m up, "
         f"and stand {overhang:.2f} m in from the rim at the nearest"
+# A block (docs/style/rock-shapes.md): a near-cuboid with big chamfers and one or two cracks.
+
+
+def seen_along(bm, toward, rays):
+    """What parallel rays travelling along `toward` land on: (the point, the face's normal) for each ray that hits."""
+    toward = Vector(toward).normalized()
+    across = toward.cross(Vector((0, 0, 1)) if abs(toward.z) < 0.9 else Vector((0, 1, 0))).normalized()
+    up = across.cross(toward)
+    spans = [[v.co.dot(axis) for v in bm.verts] for axis in (across, up, toward)]
+    cell = max(max(span) - min(span) for span in spans[:2]) / rays
+    tree = BVHTree.FromBMesh(bm)
+    hits = []
+    x = min(spans[0]) + cell / 2
+    while x < max(spans[0]):
+        y = min(spans[1]) + cell / 2
+        while y < max(spans[1]):
+            point, normal, index, _ = tree.ray_cast(across * x + up * y + toward * (min(spans[2]) - 1.0), toward)
+            if index is not None:
+                hits.append((point, normal))
+            y += cell
+        x += cell
+    return hits
+
+
+def check_block(checks, name, bm, spec, conv):
+    """The shape is a near-cuboid: from above and from each side most of its outline is surface square to the view.
+    And its corners are cut by big chamfers: planes well off every face of the box, each wide enough to be a face of its own."""
+    want = spec["block"]
+    square = math.cos(math.radians(conv["lean"]["upright_deg"]))
+    views = {"top": (0, 0, -1), "front": (0, 1, 0), "back": (0, -1, 0), "right": (-1, 0, 0), "left": (1, 0, 0)}
+    shares = {}
+    for view, toward in views.items():
+        hits = seen_along(bm, toward, conv["planes"]["view_rays"])
+        shares[view] = sum(1 for _, normal in hits if -normal.dot(Vector(toward)) >= square) / len(hits) if hits else 0.0
+    worst = min(shares, key=shares.get)
+    checks.check(
+        f"{name}.block_square",
+        shares[worst] >= want["min_square_share"],
+        f"from {worst}, {shares[worst]:.3f} of the outline is surface within {conv['lean']['upright_deg']} degrees of square to the view; "
+        f"spec wants at least {want['min_square_share']} from each of {list(views)}; all {({view: round(share, 3) for view, share in shares.items()})}",
+    )
+
+    # Chamfers: planes at least `ledge_min_deg` from every face of the box, by the way they face; one way counts once.
+    _, _, _, plane_of = planes_of(bm, spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"], conv)
+    faces = {}
+    for face in visible_faces(bm, spec, conv):
+        faces.setdefault(plane_of(face), []).append(face)
+    faces.pop(None, None)
+    off_box = math.cos(math.radians(conv["planes"]["ledge_min_deg"]))
+    same_way = math.cos(math.radians(conv["planes"]["coplanar_deg"]))
+    ways = []  # (the way a chamfer faces, the widest plane facing that way at its narrowest)
+    for members in faces.values():
+        normal = sum((f.normal * f.calc_area() for f in members), Vector()).normalized()
+        if max(abs(c) for c in normal) > off_box:
+            continue
+        corners = [v.co for f in members for v in f.verts]
+        narrowest = float("inf")
+        for face in members:
+            for edge in face.edges:
+                along = (edge.verts[1].co - edge.verts[0].co).normalized()
+                sideways = [normal.cross(along).dot(co) for co in corners]
+                narrowest = min(narrowest, max(sideways) - min(sideways))
+        for index, (way, wide) in enumerate(ways):
+            if way.dot(normal) >= same_way:
+                ways[index] = (way, max(wide, narrowest))
+                break
+        else:
+            ways.append((normal, narrowest))
+    widths = sorted((round(wide, 3) for _, wide in ways), reverse=True)
+    chamfers = [wide for wide in widths if wide >= want["min_chamfer_m"]]
+    print(f"{name} block: square to the view {({view: round(share, 3) for view, share in shares.items()})}; chamfers (planes off every face of the box), narrowest m, by the way they face {widths}")
+    checks.check(
+        f"{name}.block_chamfers",
+        len(chamfers) >= want["min_chamfers"],
+        f"{len(chamfers)} chamfers (planes at least {conv['planes']['ledge_min_deg']} degrees from every face of the box, counted once for each way they face) are at least "
+        f"{want['min_chamfer_m']} m across at their narrowest; spec wants {want['min_chamfers']}; narrowest m of each {widths}",
+    )
+
+
+def check_cracks(checks, name, bm, spec, conv):
+    """A crack reads as a crack: seen from above it is a groove, deep enough and narrow, running across the block."""
+    want = spec["cracks"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    cell = max(hi.x - lo.x, hi.y - lo.y) / conv["planes"]["view_rays"]
+    reach = max(1, math.ceil(want["width_m"] / 2 / cell))
+    tree = BVHTree.FromBMesh(bm)
+    columns, rows = round((hi.x - lo.x) / cell), round((hi.y - lo.y) / cell)
+    heights = numpy.full((columns, rows), numpy.nan)
+    for i in range(columns):
+        for j in range(rows):
+            point = tree.ray_cast(Vector((lo.x + (i + 0.5) * cell, lo.y + (j + 0.5) * cell, hi.z + 1.0)), Vector((0, 0, -1)))[0]
+            if point is not None:
+                heights[i, j] = point.z
+    found = {}
+    for axis, across in ((0, "from front to back"), (1, "from side to side")):
+        # A point is in a groove when the surface `reach` cells to either side of it, along this axis, stands `depth_m` higher.
+        lines = heights if axis == 0 else heights.T
+        before, after = numpy.roll(lines, reach, axis=0), numpy.roll(lines, -reach, axis=0)
+        before[:reach], after[-reach:] = numpy.nan, numpy.nan
+        with numpy.errstate(invalid="ignore"):
+            groove = numpy.logical_and(before - lines >= want["depth_m"], after - lines >= want["depth_m"])
+        # How many separate grooves each line across the block meets, going along it.
+        counts = [int(numpy.count_nonzero(numpy.diff(numpy.concatenate(([0], groove[:, line].astype(int)))) == 1)) for line in range(lines.shape[1]) if not numpy.isnan(lines[:, line]).all()]
+        span = sum(1 for count in counts if count == want["count"]) / len(counts) if counts else 0.0
+        found[across] = round(span, 3)
+    best = max(found, key=found.get)
+    print(f"{name} cracks: lines across the block that meet {want['count']} grooves at least {want['depth_m']} m deep within {want['width_m']} m, as a share: {found}")
+    checks.check(
+        f"{name}.cracks",
+        found[best] >= want["min_span"],
+        f"seen from above, {found[best]:.3f} of the lines along the block meet exactly {want['count']} grooves (points with the surface {reach * cell:.3f} m to either side at least "
+        f"{want['depth_m']} m higher) running {best}; spec wants {want['min_span']}; both ways {found}",
     )
 
 
@@ -1258,6 +1370,9 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "table" in spec:
             check_table(checks, name, bm, spec, conv)
+        for block, check in (("block", check_block), ("cracks", check_cracks)):
+            if block in spec:
+                check(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

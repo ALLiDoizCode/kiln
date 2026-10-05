@@ -110,6 +110,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 ;;
+    source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
     tools/stone.py) echo slab_1 crag_1 ;;  # the kit both are built with
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
@@ -411,6 +412,7 @@ lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing 
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
+lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

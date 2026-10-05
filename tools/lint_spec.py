@@ -62,6 +62,9 @@ OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_s
 CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "max_lean_spread_deg": float}
 # Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
 TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
+# Optional; a near-cuboid with big chamfers (a block), and, with it, the cracks across it. Every key of a block is required once it is present.
+BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
+CRACKS = {"count": int, "depth_m": float, "width_m": float, "min_span": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -222,6 +225,30 @@ if not checks.failed():
             and table["necks"] < overlap.get("min_count", 0)
         )
         checks.check("spec.table", ok, f"optional; needs exactly {sorted(TABLE)}: at least 1 neck and fewer than `overlap.min_count` (the cap is a piece too), min_clear_m above 0 and below the bounds' height, max_neck_share above 0 and min_shelter_share at most 1 with the two together at most 1, min_overhang_m above 0 and below half the bounds' lesser side, on an asset of overlapping pieces (`overlap`)")
+    box = spec.get("block")
+    if box is not None:
+        ok = (
+            isinstance(box, dict)
+            and set(box) == set(BLOCK)
+            and all(type(box[key]) is kind for key, kind in BLOCK.items())
+            and 0 < box["min_square_share"] <= 1
+            and box["min_chamfers"] >= 0
+            and box["min_chamfer_m"] > 0
+        )
+        checks.check("spec.block", ok and spec["watertight"], f"optional; needs exactly {sorted(BLOCK)}: min_square_share in (0, 1], min_chamfers not negative, min_chamfer_m above 0, on a watertight asset")
+    cracks = spec.get("cracks")
+    if cracks is not None:
+        ok = (
+            isinstance(cracks, dict)
+            and set(cracks) == set(CRACKS)
+            and all(type(cracks[key]) is kind for key, kind in CRACKS.items())
+            and cracks["count"] >= 1
+            and cracks["depth_m"] > 0
+            and cracks["width_m"] > 0
+            and 0 < cracks["min_span"] <= 1
+            and isinstance(box, dict)
+        )
+        checks.check("spec.cracks", ok, f"optional; needs exactly {sorted(CRACKS)}: at least 1 crack, depth_m and width_m above 0, min_span in (0, 1], on a block (`block`)")
     top = spec.get("top")
     if top is not None:
         ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
