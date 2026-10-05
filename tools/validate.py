@@ -1159,6 +1159,110 @@ def check_table(checks, name, bm, spec, conv):
     )
 
 
+# An arch (source/arch): two piers that reach the ground and a span resting on both, with open air right through under it.
+
+
+def check_arch(checks, name, bm, spec, conv):
+    """The shape is an arch: seen from the front, it and the ground close round one hole of open air; inside that hole a
+    stretch of a width a spec gives is open from the ground up to a height it gives; and on each side of that stretch
+    rock stands without a break from the ground up into the span."""
+    want = spec["arch"]
+    floor = spec["bounds_m"]["min"][2]
+    left, right = min(v.co.x for v in bm.verts), max(v.co.x for v in bm.verts)
+    front, back, top = min(v.co.y for v in bm.verts), max(v.co.y for v in bm.verts), max(v.co.z for v in bm.verts)
+    cell = max(right - left, top - floor) / conv["planes"]["view_rays"]
+    columns, rows = math.ceil((right - left) / cell), math.ceil((top - floor) / cell)
+    tree = BVHTree.FromBMesh(bm)
+    # The view from the front, with parallel rays: the cells the shape covers, and the cells of open air.
+    covered = {
+        (i, j)
+        for i in range(columns)
+        for j in range(rows)
+        if tree.ray_cast(Vector((left + (i + 0.5) * cell, front - 1.0, floor + (j + 0.5) * cell)), Vector((0, 1, 0)))[0] is not None
+    }
+    beside = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+    def spread(start, allowed):
+        """The cells reached from `start` through neighbours for which `allowed` holds."""
+        reached, edge = set(start), list(start)
+        while edge:
+            i, j = edge.pop()
+            for di, dj in beside:
+                cell_ = (i + di, j + dj)
+                if cell_ not in reached and allowed(cell_):
+                    reached.add(cell_)
+                    edge.append(cell_)
+        return reached
+
+    # Open air outside the shape is what the sky reaches: from a ring of cells to the left, to the right and above. The ground closes the bottom.
+    ring = [(-1, j) for j in range(rows + 1)] + [(columns, j) for j in range(rows + 1)] + [(i, rows) for i in range(columns)]
+    sky = spread(ring, lambda c: -1 <= c[0] <= columns and 0 <= c[1] <= rows and c not in covered)
+    enclosed = {(i, j) for i in range(columns) for j in range(rows)} - covered - sky
+    holes = []
+    while enclosed:
+        hole = spread([next(iter(enclosed))], lambda c: c in enclosed)
+        holes.append(hole)
+        enclosed -= hole
+    holes.sort(key=len, reverse=True)
+    checks.check(
+        f"{name}.arch_through",
+        len(holes) == 1,
+        f"seen from the front, the shape and the ground close round {len(holes)} separate holes of open air, of {[round(len(hole) * cell * cell, 3) for hole in holes]} m2; "
+        f"an arch has exactly one: its piers reach the ground and its span closes it over, with no daylight between them",
+    )
+    # The opening: the widest stretch of the largest hole that is open from the ground up to the height wanted.
+    hole = holes[0] if holes else set()
+    high = [j for j in range(rows) if floor + (j + 0.5) * cell < floor + want["min_clear_m"]]
+    clear = [all((i, j) in hole for j in high) for i in range(columns)]
+    first, last, start = 0, -1, None
+    for i in range(columns + 1):
+        if i < columns and clear[i]:
+            start = i if start is None else start
+        elif start is not None:
+            if i - start > last - first + 1:
+                first, last = start, i - 1
+            start = None
+    width = (last - first + 1) * cell
+    tallest = (max((j for i, j in hole), default=-1) + 1) * cell
+    checks.check(
+        f"{name}.arch_opening",
+        width >= want["min_opening_m"],
+        f"seen from the front, the widest stretch of open air right through that reaches from the ground up to {want['min_clear_m']} m is {width:.2f} m wide; "
+        f"spec wants at least {want['min_opening_m']} m (the hole is {tallest:.2f} m tall at its tallest)",
+    )
+    # The span rests on both piers: beside the opening, on each side, rock without a break straight up from the ground
+    # to the middle of what closes the opening over there. A pier alone does not reach that high, and a span alone does not reach the ground.
+    solids = [Solid(piece) for piece in pieces_in(bm.faces)]
+    bearing = []
+    for column, side in ((first, range(0, first)), (last, range(last + 1, columns))):
+        under = max((j for i, j in hole if i == column), default=None)
+        if last < first or under is None:
+            bearing.append(0.0)
+            continue
+        over = under + 1
+        while over < rows and (column, over) in covered:
+            over += 1
+        reach = floor + (under + 1 + (over - under - 1) / 2) * cell
+        heights = [floor + (k + 0.5) * cell for k in range(0, rows, 2) if floor + (k + 0.5) * cell < reach] + [reach]
+        count = 0
+        for i in side:
+            x, y = left + (i + 0.5) * cell, front + cell / 2
+            while y < back:
+                count += all(any(solid.holds(Vector((x, y, z))) for solid in solids) for z in heights)
+                y += cell
+        bearing.append(count * cell * cell)
+    checks.check(
+        f"{name}.arch_rests",
+        min(bearing) >= want["min_bearing_m2"],
+        f"beside the opening, rock stands without a break from the ground up into the span over {bearing[0]:.2f} m2 on the left and {bearing[1]:.2f} m2 on the right; "
+        f"spec wants at least {want['min_bearing_m2']} m2 on each side",
+    )
+    print(
+        f"{name} arch: {len(holes)} holes seen from the front; the opening is {width:.2f} m wide up to {want['min_clear_m']} m and {tallest:.2f} m tall at its tallest; "
+        f"the span rests on {bearing[0]:.2f} m2 of pier on the left and {bearing[1]:.2f} m2 on the right"
+    )
+
+
 # A block (docs/style/rock-shapes.md): a near-cuboid with big chamfers and one or two cracks.
 
 
@@ -1412,6 +1516,8 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "table" in spec:
             check_table(checks, name, bm, spec, conv)
+        if "arch" in spec:
+            check_arch(checks, name, bm, spec, conv)
         for block, check in (("block", check_block), ("cracks", check_cracks)):
             if block in spec:
                 check(checks, name, bm, spec, conv)

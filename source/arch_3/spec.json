@@ -1,0 +1,61 @@
+{
+  "asset": "arch_3",
+  "family": "arch",
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 600,
+  "materials": {
+    "m_arch": "#a1a7a1"
+  },
+  "painted_shading": {
+    "texture_px": 2048,
+    "base_tint": "#8c8c9a",
+    "top_tint": "#c8c8c8",
+    "edge_light": 0.3,
+    "edge_width_m": 0.06,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.2,
+    "blotch": 0.12,
+    "blotch_size_m": 0.4,
+    "side_shade": 0.22,
+    "hidden_underside": true
+  },
+  "objects": [
+    "arch_3"
+  ],
+  "seed": 3,
+  "bounds_m": {
+    "min": [
+      -1.9,
+      -0.65,
+      0.0
+    ],
+    "max": [
+      1.9,
+      0.65,
+      3.4
+    ]
+  },
+  "overlap": {
+    "min_count": 7,
+    "max_count": 7,
+    "max_buried_share": 0.3,
+    "min_step_ratio": 1.15
+  },
+  "arch": {
+    "span": "wedged",
+    "min_opening_m": 1.2,
+    "min_clear_m": 2.0,
+    "min_bearing_m2": 0.1
+  },
+  "foot": {
+    "min_sides": 2,
+    "min_side_m2": 0.08
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ]
+}

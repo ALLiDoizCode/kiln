@@ -887,6 +887,60 @@ def neck_at_rim(spec):
     edit(move, "table_rock_1")
 
 
+# The arch (source/arch): two piers that reach the ground and a span resting on both, with open air right through.
+
+
+def arch_pieces(bm, spec):
+    """The arch's pieces as lists of vertices: (the span, the widest piece held off the ground; the other pieces held
+    off the ground; the pier blocks on the ground, the two tallest; the rubble, the rest on the ground)."""
+    from validate import pieces_in
+
+    floor = spec["bounds_m"]["min"][2]
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    held = sorted((verts for verts in pieces if min(v.co.z for v in verts) > floor + 0.01), key=lambda verts: max(v.co.x for v in verts) - min(v.co.x for v in verts), reverse=True)
+    standing = sorted((verts for verts in pieces if min(v.co.z for v in verts) <= floor + 0.01), key=lambda verts: max(v.co.z for v in verts), reverse=True)
+    return held[0], held[1:], standing[:2], standing[2:]
+
+
+def span_lifted(spec):
+    """The lintel raised 0.5 m off its piers: daylight between them, and no hole closed over."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[0], vec=(0, 0, 0.5)), "arch_1")
+
+
+def pier_off_the_ground(spec):
+    """The lower block of one pier raised 0.3 m: the pier does not reach the ground."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[2][1], vec=(0, 0, 0.3)), "arch_1")
+
+
+def span_pressed_down(spec):
+    """The lintel lowered until its underside is 1.2 m above the ground: a player no longer walks under it."""
+
+    def press(bm):
+        span = arch_pieces(bm, spec)[0]
+        bmesh.ops.translate(bm, verts=span, vec=(0, 0, spec["bounds_m"]["min"][2] + 1.2 - min(v.co.z for v in span)))
+
+    edit(press, "arch_1")
+
+
+def rubble_in_the_passage(spec):
+    """The largest rubble block moved to the middle of the opening: the passage is blocked."""
+
+    def move(bm):
+        _, _, piers, rubble = arch_pieces(bm, spec)
+        block = max(rubble, key=lambda verts: max(v.co.z for v in verts))
+        inner = sorted(x for verts in piers for x in (min(v.co.x for v in verts), max(v.co.x for v in verts)))[1:3]
+        middle = sum(v.co.x for v in block) / len(block)
+        bmesh.ops.translate(bm, verts=block, vec=((inner[0] + inner[1]) / 2 - middle, 0, 0))
+
+    edit(move, "arch_1")
+
+
+def span_behind_the_piers(spec):
+    """The lintel moved back by the depth of the bounds: from the front it still closes the opening, and it rests on nothing."""
+    depth = spec["bounds_m"]["max"][1] - spec["bounds_m"]["min"][1]
+    edit(lambda bm: bmesh.ops.translate(bm, verts=arch_pieces(bm, spec)[0], vec=(0, depth, 0)), "arch_1")
+
+
 def tall_pebble(spec):
     """The pebble stretched to 0.36 as tall as it is wide, and its spec with it: the proportion the
     first pebble_2 was specified, built and passed with, while its brief said "low"."""
@@ -978,6 +1032,11 @@ CASES = [
     (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
     (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
+    (span_lifted, "arch_1.arch_through", "arch_1"),
+    (pier_off_the_ground, "arch_1.arch_through", "arch_1"),
+    (span_pressed_down, "arch_1.arch_opening", "arch_1"),
+    (rubble_in_the_passage, "arch_1.arch_opening", "arch_1"),
+    (span_behind_the_piers, "arch_1.arch_rests", "arch_1"),
     (tapered_block, "block_2.block_square", "block_2"),
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),
