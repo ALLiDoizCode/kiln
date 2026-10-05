@@ -12,3 +12,7 @@ Read from `sheet.png` only (the aids of step 3 were not made).
 8. In the engine. bevy: paler and less contrasted than the Blender tiles; the grain still reads as streaks along the log.
 9, 10. Values and squint: not made.
 11. Differences from the brief. The broken top does not read as ragged; the stubs are too thin to read as branches; the grain reads as chevrons, where the tree's reads as furrows.
+
+## Second round (generator reworked)
+
+Read from `sheet.png` of this round only for what changed: the line is an S, bent 0.053 of the length; one stub. The sheet was not read tile by tile this round.

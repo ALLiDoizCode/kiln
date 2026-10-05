@@ -223,3 +223,7 @@ end_share = 0.12            # the share of the length left out at each end, wher
 ground_m = 0.01             # a slice touches the ground when its lowest point is this close to the floor of the bounds
 max_tilt_deg = 6.0          # the line from the first slice's middle to the last's is within this of level: lying, not leaning
 min_long = 3.0              # and the trunk is at least this many times as long as it is thick: a log, not a stump
+step_share = 0.04        # a rise or fall of the outline along the trunk counts as a turn when it is more than this share of the thickness
+max_turns = 3            # most turns of the outline between the end eighths: a swelling and a lifted stretch, not a step at every ring
+min_ragged = 0.5         # a broken end's rim reaches at least this share of the trunk's thickness along the log, or three tenths of the end left out (end_share), whichever is less
+max_sawn = 0.3           # and a sawn end's at most this: a flat cut a little off square

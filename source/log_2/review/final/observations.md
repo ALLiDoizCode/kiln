@@ -11,3 +11,12 @@ Read from `sheet.png` only (the aids of step 3 were not made).
 8. In the engine. bevy_back: the root end reads as a cone with a pale cap.
 9, 10. Not made.
 11. Differences from the brief. The root end does not read as roots; the trunk reads as half sunk; the top end's break does not read; one stub where up to three are allowed.
+
+## Second round (generator reworked)
+
+Read from `sheet.png` of this round.
+
+- front: one fin stands at the butt to the top of the frame (1.0 m), triangular, its crest sweeping down to the trunk over about a fifth of the length; the other roots are pressed into the ground or point away and do not show. right: the fin and, beside it, a pale plate about a trunk-width across. It no longer reads as a trumpet; it reads as one fin and a cap, not yet as several roots.
+- top: two straight stretches meeting at a kink about a third of the way from the butt; a limb about half the trunk's thickness leaves at the kink and is broken off after about two trunk-widths; a second, small stub on the near side. The top end is cut on a slant with one side running on (split).
+- front: the top line of the trunk is level from the fin to the top end, with no step at any ring (L1: 0 turns).
+- Differences from the brief: three or four root stubs asked, one reads; the stubs' broken ends are too small in every tile to judge the break.

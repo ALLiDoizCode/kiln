@@ -103,6 +103,20 @@ def apart(points, outline):
     return least
 
 
+def turns(values, least):
+    """How often a run of numbers turns from falling to rising or back, counting only rises and falls of more than `least`."""
+    count, way, high, low = 0, 0, values[0], values[0]
+    for value in values[1:]:
+        high, low = max(high, value), min(low, value)
+        if way >= 0 and value < high - least:
+            count += way == 1
+            way, high, low = -1, value, value
+        elif way <= 0 and value > low + least:
+            count += way == -1
+            way, high, low = 1, value, value
+    return count
+
+
 def measure(bm, slots, spec, conv):
     """What the mesh shows of a log, as numbers; `slots` are its material names by index."""
     rules, want = conv["log"], spec["log"]
@@ -126,7 +140,7 @@ def measure(bm, slots, spec, conv):
         holes = [loop for loop in loops[1:] if within(loop[1], outline)]
         ys, zs = [p.x for p in outline], [p.y for p in outline]
         on_ground = [p.x for p in outline if p.y <= floor + rules["ground_m"]]
-        cut = {"x": x, "area": area, "middle": Vector((x, middle.x, middle.y)), "width": max(ys) - min(ys), "low": min(zs), "flat": max(on_ground) - min(on_ground) if on_ground else 0.0, "hole": None}
+        cut = {"x": x, "area": area, "middle": Vector((x, middle.x, middle.y)), "width": max(ys) - min(ys), "low": min(zs), "top": max(zs), "flat": max(on_ground) - min(on_ground) if on_ground else 0.0, "hole": None}
         if holes:
             hole_area, _, hole = holes[0]
             cut["hole"] = {"area": hole_area, "clear": min(max(p.x for p in hole) - min(p.x for p in hole), max(p.y for p in hole) - min(p.y for p in hole)), "wall": min(apart(hole, outline), apart(outline, hole))}
@@ -148,6 +162,16 @@ def measure(bm, slots, spec, conv):
     quarter = count // 4
     found["taper"] = sum(radius[-quarter:]) / sum(radius[:quarter])
     found["bend"] = max((cut["middle"] - first).cross(chord).length / chord.length for cut in cuts) / length
+    # The outline, station by station: how thick, how wide in plan, how high its top. A trunk thins toward its top,
+    # with a swelling or a stretch lifted off the ground; one that steps in and out ring by ring turns at every ring.
+    step_m = rules["step_share"] * found["thickness"]
+    found["turns"] = max(turns(values, step_m) for values in ([2 * r for r in radius], [cut["width"] for cut in cuts], [cut["top"] for cut in cuts]))
+    # Each end's rim, where bark meets wood: how far along the log it reaches, over the trunk's thickness at the nearest station.
+    bark = slots.index(want["bark"]) if want["bark"] in slots else -1
+    rim = [v.co.x for f in pieces[0] if f.material_index == bark for e in f.edges if any(o.material_index != bark for o in e.link_faces) for v in e.verts]
+    for key, cut, mine in (("butt_ragged", cuts[0], lambda x: x < (x0 + x1) / 2), ("top_ragged", cuts[-1], lambda x: x >= (x0 + x1) / 2)):
+        along = [x for x in rim if mine(x)]
+        found[key] = (max(along) - min(along)) / (2 * math.sqrt(cut["area"] / math.pi)) if along else 0.0
     # The hollow: the longest run of stations in a row that are open at least as far across and up as the spec asks
     # (any opening at all, when the spec asks none), and the thinnest wall at any station with an opening.
     clear = spec["hollow"]["min_clear_m"] if "hollow" in spec else 0.0
@@ -206,6 +230,22 @@ def check(checks, name, bm, slots, spec, conv):
         f"{name}.log_ends",
         cut and min(found["butt_wood"], found["top_wood"]) >= want["min_end_wood"],
         f"seen along the log, {want['wood']} covers {shown.get('butt_wood')} of the cross-section at the butt and {shown.get('top_wood')} at the top; spec wants at least {want['min_end_wood']} at each: broken or sawn through, not capped in bark" if cut else missing,
+    )
+    checks.check(
+        f"{name}.log_even",
+        cut and found["turns"] <= rules["max_turns"],
+        f"along its stations the trunk's outline (its thickness, its width in plan, the height of its top) turns from thinning to thickening or back {found.get('turns')} times, counting steps of more than {rules['step_share']} of its thickness; "
+        f"conventions allow {rules['max_turns']}: a trunk that thins toward its top with a swelling or a lifted stretch, not one that steps in and out ring by ring" if cut else missing,
+    )
+    # A break lies within the end of the log the stations leave out, so on a thick log it cannot reach as far for its
+    # thickness as on a thin one: it is asked the share of the thickness, or three tenths of that end, whichever is less.
+    least = min(rules["min_ragged"], 0.3 * rules["end_share"] * found["length"] / found["thickness"]) if cut else rules["min_ragged"]
+    broken = found.get("top_ragged", 0.0) >= least and (want["butt"] != "broken" or found.get("butt_ragged", 0.0) >= least)
+    checks.check(
+        f"{name}.log_ragged",
+        cut and broken and (want["butt"] != "sawn" or found["butt_ragged"] <= rules["max_sawn"]),
+        f"where bark meets wood, the rim of the top reaches {shown.get('top_ragged')} of the trunk's thickness along the log and the rim of the butt ({want['butt']}) {shown.get('butt_ragged')}; "
+        f"a broken end reaches at least {round(least, 3)} (splinters of unequal length, not a ring cut square) and a sawn one at most {rules['max_sawn']}" if cut else missing,
     )
     fewest, most = want["stubs"]
     checks.check(f"{name}.log_stubs", fewest <= found["stubs"] <= most, f"{found['stubs']} closed pieces stand apart from the trunk; spec wants {fewest} to {most} stubs")

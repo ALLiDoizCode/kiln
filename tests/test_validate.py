@@ -1560,8 +1560,8 @@ def log_again(spec, tweak, name, **constants):
             if not block.users:
                 held.remove(block)
     # A broken log may fill its bounds only by being stretched further than a sound one is allowed.
-    kept = {key: getattr(generator, key) for key in ("MAX_STRETCH", *constants)}
-    generator.MAX_STRETCH = (0.2, 5.0)
+    kept = {key: getattr(generator, key) for key in ("MAX_STRETCH", "MAX_STRETCH_ACROSS", *constants)}
+    generator.MAX_STRETCH = generator.MAX_STRETCH_ACROSS = (0.2, 5.0)
     for key, value in constants.items():
         setattr(generator, key, value)
     try:
@@ -1608,6 +1608,23 @@ def thin_log(spec):
 def straight_log(spec):
     """The log along a straight line, and on the ground all the way: a cylinder with ends."""
     log_again(spec, lambda n: n.update(bend=(0.0, 0.0), lift=(0.5, 0.1, 0.0)), "log_1")
+
+
+def stepped_log(spec):
+    """Every other ring of the trunk a tenth thicker and the rest a tenth thinner: an outline that steps in and out like links."""
+    log_again(spec, lambda n: n.update(swell=[1.1 if k % 2 else 0.9 for k in range(len(n["swell"]))]), "log_1")
+
+
+def square_top(spec):
+    """The top cut square: every corner of its rim broken off at the same place, a ring and not a break."""
+    log_again(spec, lambda n: n["top"].update(out=[0.0] * n["sides"]), "log_1")
+
+
+def ragged_saw(spec):
+    """The sawn butt cut far off square, at 35 degrees: no saw cut."""
+    import math
+
+    log_again(spec, lambda n: n.update(saw=(n["saw"][0], math.radians(35))), "log_1")
 
 
 def bark_ends(spec):
@@ -1812,6 +1829,9 @@ CASES = [
     (thin_log, "log_1.log_thick", "log_1"),
     (straight_log, "log_1.log_bends", "log_1"),
     (bark_ends, "log_1.log_ends", "log_1"),
+    (stepped_log, "log_1.log_even", "log_1"),
+    (square_top, "log_1.log_ragged", "log_1"),
+    (ragged_saw, "log_1.log_ragged", "log_1"),
     (no_stubs, "log_1.log_stubs", "log_1"),
     (solid_where_hollow, "log_3.log_hollow", "log_3"),
     (narrow_hollow, "log_3.log_hollow", "log_3"),
