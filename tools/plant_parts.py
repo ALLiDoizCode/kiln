@@ -14,11 +14,13 @@ Each material gets one flat colour; tools/paint.py paints the closed material
 and gives every piece its colour from the palette (ADR 10, ADR 11).
 """
 
+import importlib.util
 import math
+import sys
 
 import bpy
 from mathutils import Quaternion, Vector
-from pipeline import linear_rgb
+from pipeline import ROOT, linear_rgb
 
 Z = Vector((0, 0, 1))
 LEAF, CORE, STEM, GROUND = "leaf", "core", "stem", "ground"
@@ -27,6 +29,20 @@ LEAF, CORE, STEM, GROUND = "leaf", "core", "stem", "ground"
 # foot, a shoulder, a notch and a tooth up one side, the tip, and a shoulder on the other side.
 LEAF_OUTLINE = [(0.0, 0.0), (0.28, -0.5), (0.47, -0.24), (0.6, -0.38), (1.0, 0.0), (0.38, 0.5)]
 LEAF_TRIANGLES = [(0, 1, 2), (2, 3, 4), (0, 2, 4), (0, 4, 5)]
+
+
+def family_generator(family):
+    """The module source/<family>/generator.py, loaded once under a name of its own.
+
+    Every family calls its generator `generator.py`; imported by that name, the
+    second family built in one Blender process would get the first one's."""
+    name = f"{family}_generator"
+    if name not in sys.modules:
+        found = importlib.util.spec_from_file_location(name, ROOT / "source" / family / "generator.py")
+        module = importlib.util.module_from_spec(found)
+        sys.modules[name] = module
+        found.loader.exec_module(module)
+    return sys.modules[name]
 
 
 class Parts:
@@ -38,7 +54,7 @@ class Parts:
         self.kinds = []
         self.pieces = []  # per face: which piece it belongs to; -1 for anything else
         self.piece_out = []  # per piece: the direction it is lit from (out of its lobe, or its own front)
-        self.piece_round = []  # per piece: the share of its normal taken from that direction
+        self.piece_round = []  # per piece: the share of its normal taken from that direction; None for a bent piece, lit smooth
         self.round_normals = {}  # core vertex -> its normal
         self.seams = []  # pairs of vertices: edges along which the closed surface is cut open to be painted
 
@@ -168,18 +184,18 @@ def stem(parts, points, radii, sides, spin=0.0):
             parts.face((rings[-1][i], rings[-1][(i + 1) % sides], apex), STEM)
 
 
-def mound(parts, rng, radius, height, sides, rough=0.15):
+def mound(parts, rng, radius, height, sides, rough=0.08):
     """A closed, low, faceted mound on the ground about the origin: the crown a rosette of blades grows from."""
     spin = rng.uniform(0, 2 * math.pi)
     rings = []
-    for share, level in ((1.0, 0.0), (0.72, 0.6)):
+    # Shallow enough all over that tools/paint.py unwraps what is seen of it as one island, from above.
+    for share, level in ((1.0, 0.0), (0.6, 0.6)):
         rings.append([parts.vert((math.cos(spin + 2 * math.pi * j / sides) * radius * share * (1 + rng.uniform(-rough, rough)),
                                   math.sin(spin + 2 * math.pi * j / sides) * radius * share * (1 + rng.uniform(-rough, rough)), height * level)) for j in range(sides)])
     lower, upper = rings
     for i in range(sides):
         j = (i + 1) % sides
         parts.face((lower[i], lower[j], upper[j], upper[i]), STEM)
-    parts.seams += [(lower[i], upper[i]) for i in range(sides)] + [(upper[i], upper[(i + 1) % sides]) for i in range(sides)]
     centre, apex = parts.vert((0, 0, 0)), parts.vert((0, 0, height))
     for i in range(sides):
         j = (i + 1) % sides
@@ -187,14 +203,14 @@ def mound(parts, rng, radius, height, sides, rough=0.15):
         parts.face((upper[i], upper[j], apex), STEM)
 
 
-def blade(parts, spine, widths, front, fold=0.0, rounded=0.3):
+def blade(parts, spine, widths, front, fold=0.0):
     """One blade: a strip along `spine` that tapers to a point, as one open piece.
 
     `spine` is the points along its middle, from its foot to its tip; `widths`
     the blade's whole width at each but the tip. `front` is the side its upper
     face looks to at the foot. With `fold` the blade is a shallow V along its
     middle: its edges are raised by that share of its half width."""
-    piece = parts.piece(front, rounded)
+    piece = parts.piece(front, None)  # lit smooth, not as one flat thing
     rows = []
     for k, (point, width) in enumerate(zip(spine[:-1], widths)):
         tangent = (spine[k + 1] - spine[max(k - 1, 0)]).normalized()
@@ -216,29 +232,52 @@ def blade(parts, spine, widths, front, fold=0.0, rounded=0.3):
     return piece
 
 
-def fit(parts, lo, hi, most=(0.8, 1.25)):
-    """Stretch and slide the plant, level, and stretch it upright, so its bounds are exactly lo..hi.
+def fit(parts, lo, hi, about_origin=False, most=(0.8, 1.25)):
+    """Stretch the plant so its bounds are exactly lo..hi. The ground stays the ground.
 
-    One stretch for the whole plant along each axis, so flat pieces stay flat. The ground stays the ground."""
+    Level, it is stretched and slid: one stretch for the whole plant along each
+    axis, so flat pieces stay flat. With `about_origin` it is not slid: each side
+    of the origin is stretched by what that side needs, so what grows from the
+    origin still does; pieces that cross the origin's axes bend a little there."""
     have_lo = [min(v[i] for v in parts.verts) for i in range(3)]
     have_hi = [max(v[i] for v in parts.verts) for i in range(3)]
-    scale = [(hi[i] - lo[i]) / (have_hi[i] - have_lo[i]) for i in range(3)]
-    if abs(have_lo[2] - lo[2]) > 1e-6 or any(not most[0] <= s <= most[1] for s in scale):
+    if about_origin:
+        low = [lo[i] / have_lo[i] for i in range(2)] + [1.0]
+        high = [hi[i] / have_hi[i] for i in range(3)]
+    else:
+        low = high = [(hi[i] - lo[i]) / (have_hi[i] - have_lo[i]) for i in range(3)]
+    if abs(have_lo[2] - lo[2]) > 1e-6 or any(not most[0] <= s <= most[1] for s in low + high):
         raise RuntimeError(
             f"the plant drawn spans {[round(v, 3) for v in have_lo]}..{[round(v, 3) for v in have_hi]}; reaching the bounds "
-            f"{tuple(lo)}..{tuple(hi)} would stretch it by {[round(s, 2) for s in scale]}, outside {most}, or it does not stand on the ground"
+            f"{tuple(lo)}..{tuple(hi)} would stretch it by {[round(s, 2) for s in low + high]}, outside {most}, or it does not stand on the ground"
         )
     for v in parts.verts:
         for i in range(3):
-            v[i] = lo[i] + (v[i] - have_lo[i]) * scale[i]
+            v[i] = v[i] * (high[i] if v[i] > 0 else low[i]) if about_origin else lo[i] + (v[i] - have_lo[i]) * high[i]
+
+
+def drawn_to_fit(sketch, lo, hi, about_origin=False, most=(0.8, 1.25)):
+    """`sketch(spread)` draws a plant `spread` times as wide as its first idea; this finds the width that fills the bounds, and fits it.
+
+    A plant reaches further one way than another by chance, so the width it
+    must be drawn at is found by drawing: the same seed gives the same plant, wider."""
+    spread = 1.0
+    for _ in range(3):
+        parts = sketch(spread)
+        have = [max(v[i] for v in parts.verts) - min(v[i] for v in parts.verts) for i in range(2)]
+        spread *= math.sqrt((hi[0] - lo[0]) / have[0] * (hi[1] - lo[1]) / have[1])
+    parts = sketch(spread)
+    fit(parts, lo, hi, about_origin, most)
+    return parts
 
 
 def corner_normals(parts, lift=0.3):
     """One normal per face corner, in the order the mesh stores them.
 
-    The closed surface is lit smooth above the ground. Every corner of a piece
-    carries one normal: part the piece's own and part the direction it was
-    given (out of its lobe), tipped toward the sky by `lift`. Cores are lit round."""
+    The closed surface is lit smooth above the ground. Every corner of a flat
+    piece carries one normal: part the piece's own and part the direction it
+    was given (out of its lobe), tipped toward the sky by `lift`. A blade is
+    lit smooth along and across itself. Cores are lit round."""
     face_normals = []
     for face in parts.faces:
         a, b, c = (parts.verts[i] for i in face[:3])
@@ -251,28 +290,26 @@ def corner_normals(parts, lift=0.3):
         if kind == STEM:
             for i in face:
                 smooth[i] += normal
-    # A piece's own normal is the blend of its faces': a bent blade is lit as one leaf.
-    own = [Vector() for _ in parts.piece_out]
-    for piece, normal in zip(parts.pieces, face_normals):
-        if piece >= 0:
-            own[piece] += normal
+    # A bent piece (a blade) is lit smooth, one normal per vertex, so no edge within it is hard.
+    for face, kind, piece, normal in zip(parts.faces, parts.kinds, parts.pieces, face_normals):
+        if kind == LEAF and parts.piece_round[piece] is None:
+            for i in face:
+                smooth[i] += normal
     normals = []
     for face, kind, piece, normal in zip(parts.faces, parts.kinds, parts.pieces, face_normals):
         if kind == GROUND:
             normals += [normal] * len(face)
-        elif kind == LEAF:
+        elif kind == LEAF and parts.piece_round[piece] is not None:
             share = parts.piece_round[piece]
-            lit = (own[piece].normalized() * (1 - share) + parts.piece_out[piece] * share + Z * lift).normalized()
+            lit = (normal * (1 - share) + parts.piece_out[piece] * share + Z * lift).normalized()
             # Never round the back of its own face: the engine would light it from behind.
             if lit.dot(normal) < 0.3:
                 lit = (lit + normal * (0.3 - lit.dot(normal)) * 1.5).normalized()
-            if lit.dot(normal) < 0.05:
-                lit = normal
             normals += [lit] * len(face)
         elif kind == CORE:
             normals += [parts.round_normals[i] if parts.round_normals[i].dot(normal) > 0.05 else normal for i in face]
         else:
-            normals += [smooth[i].normalized() if smooth[i].normalized().dot(normal) > 0.05 else normal for i in face]
+            normals += [smooth[i].normalized() for i in face]
     return normals
 
 

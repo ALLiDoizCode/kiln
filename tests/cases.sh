@@ -29,6 +29,9 @@ expect 0 "L1 mutation tests: tree_1, part 3 of 6" l1 tree_1 --part 3/6
 expect 0 "L1 mutation tests: tree_1, part 4 of 6" l1 tree_1 --part 4/6
 expect 0 "L1 mutation tests: tree_1, part 5 of 6" l1 tree_1 --part 5/6
 expect 0 "L1 mutation tests: tree_1, part 6 of 6" l1 tree_1 --part 6/6
+# A plant of blades (source/blade_plant): its blades broken one way at a time.
+uses blade_plant_1 blade_plant_2 blade_plant_3 validate paint
+expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -107,6 +110,10 @@ expect_id "foliage.core_colour"    "L4 catches a core as light as the leaves"   
 expect_id "painted.grain"          "L4 catches bark with no grain"                  smoke "$(broken_tree no_grain)" "$tree_manifest"
 expect_id "painted.grain_along"    "L4 catches grain running round the limbs"       smoke "$(broken_tree grain_across)" "$tree_manifest"
 expect_id "uv.close_density"       "L4 catches a trunk with no more texels than a twig" smoke "$(broken_tree no_close_texels)" "$tree_manifest"
+# Blades are foliage with no cores: the manifest asks for none, and the palette checks still hold.
+uses blade_plant_1 smoke
+expect 0 "L4 passes a plant of blades, which has no cores" smoke assets/models/blade_plant_1.glb assets/models/blade_plant_1.manifest.json
+expect_id "foliage.palette" "L4 catches blades painted from another colour" smoke assets/models/blade_plant_1.glb "$(tamper 'm["materials"]["m_blade_leaf"][1] += 0.2' assets/models/blade_plant_1.manifest.json)"
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
@@ -189,6 +196,17 @@ expect_id "spec.painted_grain"       "L0 catches an impossible grain"          l
 expect_id "spec.painted_shading"     "L0 catches close texels with no height"  lint_tree 'del s["painted_shading"]["close_height_m"]'
 expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" lint_tree 's["painted_shading"]["close_texels_per_m"] = 50.0'
 expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" lint_tree 's["skeleton"]["min_view_grain"] = 0.5'
+# L0, blades: blade_plant_1's spec with one thing wrong, and a tree's with blades added.
+# `lint_blade <python>` lints a copy of blade_plant_1 after that has changed its spec `s`.
+uses blade_plant_1 lint_spec
+expect 0 "L0 passes a blade plant's spec"    lint_blade 'pass'
+expect_id "spec.blades"              "L0 catches a missing blades key"         lint_blade 'del s["blades"]["min_arch"]'
+expect_id "spec.blades_amounts"      "L0 catches a lean range given backwards" lint_blade 's["blades"]["lean_deg"] = [85.0, 15.0]'
+expect_id "spec.blades_amounts"      "L0 catches a blade wider than it is long" lint_blade 's["blades"]["width_share"] = [0.08, 1.5]'
+expect_id "spec.foliage"             "L0 catches a canopy's keys on a plant of blades" lint_blade 's["foliage"]["lobes"] = [1, 2]'
+expect_id "spec.blades_need_foliage" "L0 catches blades with no foliage to be" lint_blade 'del s["foliage"]; s["open_materials"] = []'
+uses tree_1 lint_spec
+expect_id "spec.foliage"             "L0 catches blades asked of a canopy"     lint_tree 's["blades"] = {"width_share": [0.08, 0.25], "root_m": 0.15, "max_gap_deg": 100.0, "lean_deg": [15.0, 85.0], "min_arch": 0.08}'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.

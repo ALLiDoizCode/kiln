@@ -496,6 +496,93 @@ def check_canopy(checks, name, bm, slots, spec, conv):
     )
 
 
+def check_blades(checks, name, bm, slots, spec, conv):
+    """The foliage is blades from one point (source/blade_plant/brief.md): long, narrow, pointed pieces that go all round, lean out and arch.
+
+    A blade is a connected open set of the foliage material's faces, as a leaf
+    piece is. Its foot is its corner nearest the origin on the ground and its
+    tip the sharpest corner of its outline; everything is measured from those."""
+    want, size = spec["blades"], spec["foliage"]
+    ground = Vector((0.0, 0.0, spec["bounds_m"]["min"][2]))
+    found = []
+    for piece in foliage.pieces_of(bm, slots.index(size["material"])):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        foot = min(verts, key=lambda v: (v.co - ground).length)
+        # The tip is the sharpest corner of the blade's outline. (The corner furthest from the foot
+        # is not it: a blade that droops ends nearer its foot than its shoulders are.)
+        corners = []
+        for v in verts:
+            rim = [e for e in v.link_edges if sum(1 for f in e.link_faces if f in inside) == 1]
+            if len(rim) == 2 and v is not foot:
+                corners.append((math.degrees((rim[0].other_vert(v).co - v.co).angle(rim[1].other_vert(v).co - v.co)), v))
+        point, tip = min(corners, key=lambda corner: corner[0]) if corners else (180.0, max(verts, key=lambda v: (v.co - foot.co).length))
+        chord = tip.co - foot.co
+        length = chord.length
+        along = chord.normalized()
+        across = along.cross(Vector((0, 0, 1)))
+        across = across.normalized() if across.length > 1e-6 else Vector((1, 0, 0))
+        # How far it stands off the straight line from foot to tip, in the upright plane through both.
+        off = max(((v.co - foot.co) - along * (v.co - foot.co).dot(along) - across * (v.co - foot.co).dot(across)).length for v in verts)
+        found.append({
+            "length": length,
+            "width": sum(f.calc_area() for f in piece) / max(length * length, 1e-9),
+            "point": point,
+            "root": max(Vector((foot.co.x, foot.co.y)).length, foot.co.z - ground.z),
+            "compass": math.degrees(math.atan2(chord.y, chord.x)),
+            "lean": math.degrees(chord.angle(Vector((0, 0, 1)))) if length > 1e-9 else 0.0,
+            "arch": off / max(length, 1e-9),
+        })
+
+    def span(key):
+        values = [blade[key] for blade in found]
+        return f"{min(values, default=0):.2f} to {max(values, default=0):.2f}"
+
+    low, high = size["piece_m"]
+    odd = sum(1 for blade in found if not low <= blade["length"] <= high)
+    checks.check(
+        f"{name}.blade_size",
+        len(found) >= size["min_pad_pieces"] and not odd,
+        f"{len(found)} blades, {odd} of them not {low} to {high} m from foot to tip (they run {span('length')} m); spec wants at least {size['min_pad_pieces']} blades, all of that length",
+    )
+    low, high = want["width_share"]
+    pointed = conv["foliage"]["pointed_deg"]
+    wide = sum(1 for blade in found if not low <= blade["width"] <= high)
+    blunt = sum(1 for blade in found if blade["point"] > pointed)
+    checks.check(
+        f"{name}.blade_shape",
+        found and not wide and not blunt,
+        f"of {len(found)} blades, {wide} have a mean width that is not {low} to {high} of their length (they run {span('width')}), and {blunt} end in a corner wider than {pointed} degrees (they run {span('point')})",
+    )
+    loose = sum(1 for blade in found if blade["root"] > want["root_m"])
+    checks.check(
+        f"{name}.blades_rooted",
+        found and not loose,
+        f"{loose} of {len(found)} blades have their foot more than {want['root_m']} m from the origin on the ground (feet are {span('root')} m from it); spec wants every blade to grow from one point",
+    )
+    compass = sorted(blade["compass"] for blade in found)
+    gap = max((b - a for a, b in zip(compass, compass[1:] + [compass[0] + 360.0])), default=360.0) if len(compass) > 1 else 360.0
+    checks.check(
+        f"{name}.blades_spread",
+        gap <= want["max_gap_deg"],
+        f"seen from above, the widest gap between neighbouring blades is {gap:.0f} degrees; spec wants at most {want['max_gap_deg']}: blades all round",
+    )
+    low, high = want["lean_deg"]
+    off = sum(1 for blade in found if not low <= blade["lean"] <= high)
+    checks.check(
+        f"{name}.blades_lean",
+        found and not off,
+        f"{off} of {len(found)} blades do not lean {low} to {high} degrees from upright, foot to tip (they run {span('lean')})",
+    )
+    arch = statistics.median(blade["arch"] for blade in found) if found else 0.0
+    print(f"{name} blades: {len(found)}, {span('length')} m long, mean width {span('width')} of the length, tips {span('point')} degrees, feet {span('root')} m from the origin, widest gap {gap:.0f} degrees, lean {span('lean')} degrees, arch {span('arch')} (median {arch:.3f})")
+    checks.check(
+        f"{name}.blades_arch",
+        arch >= want["min_arch"],
+        f"the median blade stands {arch:.3f} of its length off the straight line from its foot to its tip (blades run {span('arch')}); spec wants at least {want['min_arch']}: blades arch",
+    )
+
+
 def check_variants(checks, name, bm, spec, conv):
     """This asset's outline differs from each of its sibling variants' (source/tree/brief.md)."""
     want = spec["variants"]
@@ -875,8 +962,12 @@ def check_scene(checks, spec, conv):
         bm.normal_update()
         fork_m = check_skeleton(checks, name, bm, slot_names, spec, conv) if "skeleton" in spec and spec["skeleton"]["material"] in slot_names else None
         if "foliage" in spec and spec["foliage"]["material"] in slot_names:
-            check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
-            check_canopy(checks, name, bm, slot_names, spec, conv)
+            # Foliage is leaf pieces in pads over cores, or, where the spec has `blades`, blades from one point.
+            if "blades" in spec:
+                check_blades(checks, name, bm, slot_names, spec, conv)
+            else:
+                check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
+                check_canopy(checks, name, bm, slot_names, spec, conv)
         if "variants" in spec:
             check_variants(checks, name, bm, spec, conv)
         if "pieces" in spec:

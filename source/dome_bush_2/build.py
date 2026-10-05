@@ -3,12 +3,8 @@
 Run through tools/build.py, which supplies an empty scene and saves the result.
 """
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "dome_bush"))
-from generator import build_bush
+from plant_parts import family_generator
 
 
 def build(spec):
-    return build_bush(spec)
+    return family_generator("dome_bush").build_bush(spec)

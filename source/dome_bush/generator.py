@@ -21,7 +21,7 @@ import math
 import random
 
 from mathutils import Quaternion, Vector
-from plant_parts import Z, Lobe, Parts, core, fit, leaf_piece, stem, to_object
+from plant_parts import Z, Lobe, Parts, core, drawn_to_fit, leaf_piece, stem, to_object
 
 LOBE_COUNTS = ((2, 0.4), (3, 0.6))
 MAIN_RADIUS = (0.6, 0.68)  # the main lobe's radius, over half the bush's width
@@ -161,16 +161,8 @@ def sketch(spec, spread):
 
 
 def draw(spec):
-    """The bush, fitted. Lobes lie to one side or another, so the width they are drawn at is found by drawing: the same seed gives the same bush, wider."""
-    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
-    spread = 1.0
-    for _ in range(3):
-        parts = sketch(spec, spread)
-        have = [max(v[i] for v in parts.verts) - min(v[i] for v in parts.verts) for i in range(2)]
-        spread *= math.sqrt((hi[0] - lo[0]) / have[0] * (hi[1] - lo[1]) / have[1])
-    parts = sketch(spec, spread)
-    fit(parts, lo, hi)
-    return parts
+    """The bush, drawn as wide as fills the bounds, and fitted."""
+    return drawn_to_fit(lambda spread: sketch(spec, spread), spec["bounds_m"]["min"], spec["bounds_m"]["max"])
 
 
 def build_bush(spec):
