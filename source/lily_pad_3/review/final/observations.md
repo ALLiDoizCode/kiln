@@ -1,20 +1,18 @@
 # lily_pad_3, final: observations
 
-From `sheet.png`, `benchmarks/out/lily_pad_variants.png` and `benchmarks/out/lily_pad_1_candidates.png`. Numbers not read off a tile are the gate's (the L1 log, the L4 report). The gate stops at L4 on `uv.coverage` (see 11); the tiles after it were made with the gate's own commands. The aids of `tools/review_aids.py` were not made, so items 9 and 10 are from the tiles as rendered.
+Read from `sheet.png` (opened 2026-10-05, after the generator of step 3) and from the gate's own measurements of this build.
 
-1. **Silhouette.** material_top: 7 discs, each a many-sided round shape with one wedge-shaped notch to its middle, none touching; the notches open different ways. front, right, back: a line a few pixels thick with the flower as a bump on it: nothing reads from the side, as the brief expects. The rim does not read in any tile: from above a disc is one flat tone.
-2. **Proportions.** Discs 1.45, 1.00, 0.73, 0.53, 0.40, 0.25 and 0.17 m (brief: widest 1.2 to 1.7, narrowest 0.08 to 0.2); notches 21 to 34 degrees (brief 15 to 60); rims 0.033 to 0.042 of the width above the floor (brief 0.02 to 0.08); floors all at one height, each within 0.012 m of level (brief 0.02). Two flowers 0.26 and 0.19 m across (brief 0.14 to 0.3), filling 0.579 of the convex hull (brief at most 0.6).
-3. **Facing and grounding.** No front. Everything lies on the bottom edge of the frame in the level tiles.
-4. **Topology.** clay_wire_top: each disc is a fan of triangles to its middle and one ring of quads for the rim, 8 to 16 sides by size; the flowers are the densest thing in the picture. 356 (budget 500) triangles.
-5. **Shading.** material tiles: no face darker than its neighbours without reason; the discs are lit as flat plates.
-6. **Materials.** The widest discs are a light yellow-green and the small ones a darker, slightly bluer green; the flower is warm white, darker and rosier at its foot.
-7. **Scale.** scale: the widest disc is 1.45 m across, 0.8 of the figure's height; the group is 3.0 m long.
-8. **In the engine.** bevy: as the Blender tiles, a little paler; each disc throws a thin shadow line on the ground along one side, which is the only sign that it has thickness or a rim.
-9. **Values.** Not made as value maps. As rendered from above: two tones of green and one point of white; no dark anywhere.
-10. **At a glance.** From standing height: "lily pads", or, for the single wide ones, "pac-men": the notch is the feature the eye lands on. The flower reads as a pale five-pointed star, nearer a starfish than a water lily.
-11. **Differences from the brief.**
-   - `uv.coverage` fails at L4: the flowers' islands use 0.196 of the texture and the conventions want 0.4. The texture holds only the flowers (a top and an underside island each) under a palette strip; left failing, as instructed, and not dodged with a larger texture.
-   - "A raised rim" (silhouette 1) is measured (0.033 to 0.042 of the width) and does not read from above in any tile.
-   - "Flowers" read as stars: five petals round a pointed middle, with no cup. A cup's inside faces are lit from behind when the bloom is lit smooth (the load test's normals check), so the bloom is convex.
-   - Scatter is 0.44 and 0.53 (brief at least 0.3 each).
-   - From on top of the widest disc (`asset_view --stand 0.1`, not a tile of the sheet): the disc fills the middle of the picture as one flat light green shape of 16 straight sides with a wedge cut out of it; its rim, 5 cm high, cannot be told from its floor. It reads as a paper cut-out, not as a leaf with an upturned edge.
+## Measured by the gate
+
+- lily_pad_3 discs: 7, [1.461, 0.995, 0.725, 0.538, 0.39, 0.255, 0.17] m across, round 0.814 to 0.892, notches 9 to 17 degrees, rims 0.029 to 0.039 of the width, floors within 0.000 m of one height and 0.012 m of level, 0 overlapping; middles spread 0.44 as far across as along, their distances from the middle differ by 0.53 of the mean
+- lily_pad_3 blooms: 2, [0.219, 0.275] m across, filling [0.386, 0.386] of their convex hulls
+- 612 triangles; painted parts: 5210 open, 2385 edge and 1067 crevice samples; edges 1.097 times the open tone, crevices 0.611; the layout uses 0.529 of the texture under the palette's strip with its baked margin (0.381 of the whole texture under triangles); the sparsest triangle has 153 texels a metre on 256 px.
+
+## Seen
+
+1. Silhouette. material_top: seven discs; the widest (1.46 m) has a notch about one twentieth of the turn, a narrow wedge, not a mouth; the gate reads 9 to 17 degrees over the seven. At 1.46 m a 17 degree notch is 0.2 m wide at the rim: on the large discs it reads as a wedge more than as a slit (variants sheet, `--stand 0.5`).
+2. Rim. material_top: a darker ring round the widest disc on its lower left, about a twelfth of its radius wide; bevy: the rim reads as a raised lip with a shadow under it on the near side.
+3. Roundness. clay_wire_top: the widest disc has 27 sides. material_top: its outline still shows four or five flats: the unevenness of 3% in the radius moves neighbouring corners in and out by more than the sides' own turn. The longest side is under the 0.2 m asked; the flats are not measured.
+4. Flowers. Two, 0.275 and 0.219 m across, beside the widest disc and not on it; in bevy each is a white rosette about a fifth as wide as the widest disc.
+5. Scale. material_scale: the group is 1.7 times the figure's height across; the widest disc is 0.8 of the figure's height across (brief: 1.2 to 1.7 m).
+6. Differences from the brief: flats on the widest disc's outline (3 above); a notch on a disc this wide is a wedge.

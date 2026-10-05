@@ -1,18 +1,20 @@
 # leaf_mat_1, final: observations
 
-From `benchmarks/out/leaf_mat_variants.png` and, for the first variant, `benchmarks/out/leaf_mat_1_candidates.png`; `sheet.png` was rendered and passed the image lint but was not opened. Numbers not read off a tile are the gate's (the L1 log, the L4 report). The gate stops at L4 on `uv.coverage` (see 11); the tiles after it were made with the gate's own commands. The aids of `tools/review_aids.py` were not made.
+Read from `sheet.png` (opened 2026-10-05, after the generator of step 3) and from the gate's own measurements of this build.
 
-1. **Silhouette.** `--stand 0.5` and `--stand 1`: a ragged patch of separate pointed leaves with ground showing between them and bays in its outline; no straight edge and no round one. From 3 m (`--stand 3`) it is a small green smudge with a broken edge.
-2. **Proportions.** 72 leaves 0.091 to 0.130 m long (brief 0.05 to 0.14), the steepest 18.6 degrees from level (brief at most 25); 0.94 of them lap another (brief at least 0.5). They cover 0.497 of their convex hull (brief 0.45 to 0.8) and 0.305 of the bounds' footprint (brief at least 0.3).
-3. **Facing and grounding.** No front. It lies on the ground; no leaf's corner is under 4 mm.
-4. **Topology.** Each leaf is 4 triangles, each runner 16; 320 (budget 340) triangles.
-5. **Shading.** Each leaf is lit as one flat piece; none is black.
-6. **Materials.** Leaves in two or three greens, the upper ones light yellow-green and the lower darker and bluer; a runner shows as a thin brown line between leaves where it is not covered.
-7. **Scale.** standard: 0.7 m across, 0.39 of the figure's height; 4 cm tall.
-8. **In the engine.** Leaves throw small shadows on the ground and on each other, which is what separates them.
-9. **Values.** Not made as value maps. As rendered: light and mid green pieces over small dark shadows; no mass.
-10. **At a glance.** "Fallen leaves", "leaf litter": a scatter of separate leaves more than a mat of ground cover. The benchmark's clover is three large clover leaves on stalks, a different thing.
-11. **Differences from the brief.**
-   - `uv.coverage` fails at L4: the runners' islands use 0.158 of the texture and the conventions want 0.4. The texture holds only two thin runners under a palette strip; left failing, as instructed.
-   - "A mat": with a third of the footprint covered it reads as loose leaves lying on the ground, not as a carpet. The cover asked (0.3 of the footprint, 0.45 of the hull) was made up before anything was built, and the budget was raised once to reach it.
-   - The leaves point every way; ground cover that grows (ivy, clover) would show its leaves in rows along the runners.
+## Measured by the gate
+
+- leaf_mat_1 mat: 60 leaves 0.089 to 0.119 m long, tilted up to 15.7 degrees, 0.75 of them lapping another; they cover 0.540 of their convex hull and 0.352 of the bounds' footprint
+- leaf_mat_1 mat: 15 runners; 57 of 60 leaves (0.95) start within 0.02 m of one and point away from it (the leaves start 0.000 to 0.007 m from the nearest)
+- 420 triangles; painted parts: 786 open, 983 edge and 0 crevice samples; edges 1.180 times the open tone; the layout uses 0.628 of the texture under the palette's strip with its baked margin (0.282 of the whole texture under triangles); the sparsest triangle has 175 texels a metre on 128 px.
+
+## Seen
+
+1. Silhouette. material_top: brown runners show between the leaves in four places, each with leaves in pairs either side pointing away and toward its end; the leaves do not point every way. The outline has five or six arms and bays between them; no edge of it is straight.
+2. Density. material_top: leaves lap each other round the middle, where the runners start, and stand singly at the ends of the arms; ground shows through between the arms.
+3. Proportions. A leaf is about one seventh of the mat's width (0.09 to 0.12 m of 0.7 m).
+4. Flat. material_front: one thin band on the ground, 0.04 m of 0.7 m wide.
+5. Materials. Three or four greens, the lighter leaves on top; the runners a dull brown.
+6. Scale. material_scale: the mat is 0.4 of the figure's height across and under its ankle.
+7. In the engine. bevy: the runners are not found at this distance; what reads is rows of leaves along lines, and a ragged outline.
+8. Differences from the brief: the mat is asked to be "denser at the middle": it is, by leaves lapping there, but no number says so.

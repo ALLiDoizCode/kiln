@@ -1,18 +1,18 @@
 # leaf_mat_2, final: observations
 
-From `benchmarks/out/leaf_mat_variants.png` and, for the first variant, `benchmarks/out/leaf_mat_1_candidates.png`; `sheet.png` was rendered and passed the image lint but was not opened. Numbers not read off a tile are the gate's (the L1 log, the L4 report). The gate stops at L4 on `uv.coverage` (see 11); the tiles after it were made with the gate's own commands. The aids of `tools/review_aids.py` were not made.
+Read from `sheet.png` (opened 2026-10-05, after the generator of step 3) and from the gate's own measurements of this build.
 
-1. **Silhouette.** `--stand 0.5` and `--stand 1`: a ragged patch of separate pointed leaves with ground showing between them and bays in its outline; no straight edge and no round one. From 3 m (`--stand 3`) it is a small green smudge with a broken edge.
-2. **Proportions.** 167 leaves 0.096 to 0.139 m long (brief 0.05 to 0.14), the steepest 17.5 degrees from level (brief at most 25); 0.96 of them lap another (brief at least 0.5). They cover 0.507 of their convex hull (brief 0.45 to 0.8) and 0.316 of the bounds' footprint (brief at least 0.3).
-3. **Facing and grounding.** No front. It lies on the ground; no leaf's corner is under 4 mm.
-4. **Topology.** Each leaf is 4 triangles, each runner 16; 700 (budget 720) triangles.
-5. **Shading.** Each leaf is lit as one flat piece; none is black.
-6. **Materials.** Leaves in two or three greens, the upper ones light yellow-green and the lower darker and bluer; a runner shows as a thin brown line between leaves where it is not covered.
-7. **Scale.** standard: 1.2 m across, two thirds of the figure's height; 5 cm tall.
-8. **In the engine.** Leaves throw small shadows on the ground and on each other, which is what separates them.
-9. **Values.** Not made as value maps. As rendered: light and mid green pieces over small dark shadows; no mass.
-10. **At a glance.** "Fallen leaves", "leaf litter": a scatter of separate leaves more than a mat of ground cover. The benchmark's clover is three large clover leaves on stalks, a different thing.
-11. **Differences from the brief.**
-   - `uv.coverage` fails at L4: the runners' islands use 0.130 of the texture and the conventions want 0.4. The texture holds only two thin runners under a palette strip; left failing, as instructed.
-   - "A mat": with a third of the footprint covered it reads as loose leaves lying on the ground, not as a carpet. The cover asked (0.3 of the footprint, 0.45 of the hull) was made up before anything was built, and the budget was raised once to reach it.
-   - The leaves point every way; ground cover that grows (ivy, clover) would show its leaves in rows along the runners.
+## Measured by the gate
+
+- leaf_mat_2 mat: 142 leaves 0.094 to 0.126 m long, tilted up to 16.8 degrees, 0.75 of them lapping another; they cover 0.453 of their convex hull and 0.343 of the bounds' footprint
+- leaf_mat_2 mat: 26 runners; 139 of 142 leaves (0.98) start within 0.02 m of one and point away from it (the leaves start 0.000 to 0.007 m from the nearest)
+- 880 triangles; painted parts: 459 open, 399 edge and 0 crevice samples; edges 1.143 times the open tone; the layout uses 0.639 of the texture under the palette's strip with its baked margin (0.201 of the whole texture under triangles); the sparsest triangle has 136 texels a metre on 128 px.
+
+## Seen
+
+1. Silhouette. material_top: long arms of paired leaves with wide bays of bare ground between them; the runner shows along most arms. It reads as a creeping plant, and more as separate sprays than as one mat: the bays are as wide as the arms.
+2. Cover. The gate reads 0.453 of the hull, against 0.45 asked: the sparsest of the three, and by eye the one with most ground showing.
+3. Flat. material_front: one band on the ground, 0.05 m of 1.2 m.
+4. Scale. material_scale: 0.67 of the figure's height across.
+5. In the engine. bevy: rows of leaves along lines; the middle is not visibly denser than the arms.
+6. Differences from the brief: "denser at the middle" does not read on this variant (5 above); it passes hull cover by 0.003.

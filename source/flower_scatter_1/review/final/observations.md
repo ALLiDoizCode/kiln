@@ -1,18 +1,19 @@
 # flower_scatter_1, final: observations
 
-From `benchmarks/out/flower_scatter_variants.png` and, for the first variant, `benchmarks/out/flower_scatter_1_candidates.png`; `sheet.png` was rendered and passed the image lint but was not opened. Numbers not read off a tile are the gate's (the L1 log, the L4 report). The gate stops at L4 on `uv.coverage` (see 11); the tiles after it were made with the gate's own commands. The aids of `tools/review_aids.py` were not made.
+Read from `sheet.png` (opened 2026-10-05, after the generator of step 3) and from the gate's own measurements of this build.
 
-1. **Silhouette.** standard, back: 6 thin stems leaning different ways, each with a yellow point on its end and two or three small leaves at its foot. `--stand 0.5`, `--stand 1`: yellow specks a few pixels across over thin green marks and their shadows. `--stand 3`: almost nothing: a faint green-yellow smudge.
-2. **Proportions.** 6 blooms 0.048 to 0.058 m across (brief 0.03 to 0.07), their middles 0.13 to 0.21 m up; stems lean 5 to 22 degrees, together 0.20 (brief at most 0.7); the nearest two blooms are 0.080 m apart (brief at least 0.04); 17 leaves (2.8 to a flower) reaching 0.057 m, under the lowest bloom's 0.122 m. A bloom fills 0.519 of its convex hull (brief at most 0.6).
-3. **Facing and grounding.** No front. Every stem starts on the ground.
-4. **Topology.** A bloom is 20 triangles, a stem 3, a leaf 4; 206 (budget 300) triangles.
-5. **Shading.** Nothing black; a stem seen edge on is a hairline.
-6. **Materials.** Yellow blooms; stems and leaves in light and darker green.
-7. **Scale.** standard: 0.22 m tall, an eighth of the figure's height, and 0.5 m across.
-8. **In the engine.** The shadows of the leaves on the ground are larger and darker than the flowers are bright.
-9. **Values.** Not made as value maps. As rendered: no mass at all, specks.
-10. **At a glance.** "A few weeds", "sprigs": the colour is too small an area to be an accent. The benchmark's group, at 2 m tall, is "tulips": broad leaves and flowers the size of a hand.
-11. **Differences from the brief.**
-   - `uv.coverage` fails at L4: the blooms' islands use 0.059 of the texture and the conventions want 0.4. The texture holds only the blooms under a palette strip; left failing, as instructed.
-   - "An accent of colour": not reached. A 5 cm star seen from 1.7 m up is a few pixels, and from 3 m the scatter cannot be found. The brief's own size for a flower (3 to 7 cm) is what makes it so; more flowers, or flowers in tight groups of three, would carry more colour.
-   - A bloom is a flat five-pointed star with nothing in its middle; it does not turn toward the viewer.
+## Measured by the gate
+
+- flower_scatter_1 blooms: 6, [0.089, 0.098, 0.099, 0.1, 0.101, 0.104] m across, filling [0.264, 0.264, 0.264, 0.264, 0.264, 0.264] of their convex hulls
+- flower_scatter_1 scatter: 6 blooms [0.083, 0.106, 0.127, 0.148, 0.173, 0.195] m up on 6 stems leaning [9, 11, 16, 22, 22, 25] degrees (together 0.22), the nearest two 0.125 m apart; 15 leaves (2.5 to a bloom) reaching 0.041 m, under the lowest bloom's 0.068 m
+- 318 triangles; painted parts: 187 open, 858 edge and 1 crevice samples; edges 1.099 times the open tone; the layout uses 0.503 of the texture under the palette's strip with its baked margin (0.202 of the whole texture under triangles); the sparsest triangle has 215 texels a metre on 128 px.
+
+## Seen
+
+1. Silhouette. material_top: six blooms of five rounded petals each, about a fifth of the scatter's width across (0.09 to 0.1 m of 0.5 m), none touching another, in no row and on no ring: three stand close in the middle and three out from them at unlike distances.
+2. Heights. material_front: six heights, the lowest bloom at about 0.4 of the highest (the gate: 0.083 to 0.195 m); stems lean 9 to 25 degrees, to both sides.
+3. Leaves. material_front: two or three dark leaves at each foot, all under the lowest bloom.
+4. Shading. material_front and material_right: four of the six blooms are seen from below or edge on and are dull brown there, not yellow: their undersides are in shade and take the base tint. From above (material_top) all six are one yellow.
+5. Scale. material_scale: the tallest bloom is at 0.12 of the figure's height.
+6. In the engine. bevy: six yellow spots, each found; `--stand 3` in the variants sheet: a yellow cluster about one fortieth of the picture's width, found, its blooms not told apart.
+7. Differences from the brief: none found in what the brief gives numbers for. From the side the blooms' undersides are brown (4 above); the brief says nothing of it, and a player sees them from above.
