@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import foliage
 import paint
-from pipeline import Asset, conventions, script_args, share_textures
+from pipeline import Asset, conventions, linear_rgb, script_args, share_textures
 
 AFTER_PAINT = ("none", "single_sided", "gradient_within_piece", "no_cores", "core_open", "bark_inside_out", "two_textures", "glossy_leaves")
 
@@ -64,6 +64,10 @@ elif mutation == "light_core":
 elif mutation == "dark_underside":
     # The underside of a pad, and its core, as dark as the bark: limbs seen from below are lost against the leaves.
     want["under_tint"], want["core_tint"] = "#6f96a6", "#527a86"
+elif mutation == "wrong_bark_colour":
+    # Bark painted over a brown a fifth darker than the brief's and the manifest's (#6e513d for #7a5a44): grain and all, on the wrong colour.
+    bark = next(s.material for s in tree.material_slots if s.material.name != want["material"])
+    bark.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (*linear_rgb("#6e513d"), 1.0)
 elif mutation == "no_grain":
     # Bark with its gradient, edge light and blotches, and no grain: flat brown planes at arm's length.
     spec["painted_shading"]["grain"] = 0.0

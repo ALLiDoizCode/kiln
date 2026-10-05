@@ -75,6 +75,9 @@ elif mutation == "growth_carpets_the_top":
     want["growth_up"] = 1.0
 elif mutation == "no_growth_edges":
     want["growth_edges"] = 0.0
+elif mutation == "growth_edges_reach_far":
+    # Growth along edges reaching 1 m in from them, five times what the brief gives: it covers the planes, not their edges.
+    want["growth_edge_m"] = 1.0
 elif mutation == "growth_not_darker":
     # Growth at the rock's own lightness, as it was painted before growth had a value of its own.
     want["growth_darker"] = 0.0

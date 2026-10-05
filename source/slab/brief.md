@@ -62,6 +62,18 @@ No growth and no side shade. Moss is a cover, and covers are variants of the pal
 
 The underside is never seen, so it gets almost none of the texture. Surface buried inside another plate still takes its share of the texture; the limit in Silhouette 3 is what bounds that waste.
 
+## Covers
+
+A cover is what lies on the stone: `bare`, or `mossy` (`docs/style/catalogue.md`; snow is not built). The assets above are bare. A mossy one is a palette variant (ADR 13, `CONTEXT.md`): a separate asset, `<base>_mossy`, whose spec names its base as `palette_of` and its `cover`, and differs from the base's only in the growth keys of `painted_shading`. It is the base's mesh, UVs included, with another texture, and the gate holds it to that (`spec.cover`, `spec.palette_of`, `palette.same_mesh`).
+
+Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground up to a height, and small patches on faces near level and along exposed upper edges. Its colour, how dark it is and how sparse come from the first mossy rock (`source/rock/brief.md`, measured there against the benchmark): olive `#7a8a4d` at the stone's own lightness; patches 50% darker than the stone they sit on; patches over about 25% of near-level faces and along about 40% of exposed upper edges, because the benchmark's moss is sparse. How high the wash reaches and how large a patch is are shares of the stone, not that rock's metres:
+
+- **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
+- **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+- **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
+
+A slab is nearly all top: its level faces are most of what a player sees, and they are where moss settles, so the patches carry the cover and the wash is a thin band at the ground. `slab_1_mossy`: 0.5 m tall, so the wash reaches 0.15 m; 2.2 m on its narrower side, so patches of 0.17 m.
+
 ## Parts
 
 One object and one mesh per variant, with one material. The mesh is two or three closed pieces that overlap (`overlap` in the spec). Nothing moves.
@@ -77,7 +89,7 @@ At most 400 triangles and 1 material slot per variant, the boulder's budget. A p
 
 ## Out of scope
 
-Collision shapes, LODs, a single-plate slab (one closed skin, which needs no pieces rule), mossy and snow-capped covers, other stone colours, hand-painted detail, normal maps, a finished underside.
+Collision shapes, LODs, a single-plate slab (one closed skin, which needs no pieces rule), snow-capped covers, other stone colours, hand-painted detail, normal maps, a finished underside.
 
 ## Numbers
 
@@ -122,6 +134,8 @@ Proposed by the agent:
 - The budget of 400 triangles, the boulder's.
 - The paint: the boulder's colour, tints, edge light, crevice shadow and blotch strength; blotches half the boulder's size; no growth and no side shade, for the reasons under Painted shading. An edge light of 0.05 m and a crevice of 0.2 m were tried first and showed too little for the load test (edges 1.12 times open faces where 1.15 is asked), so the boulder's 0.08 and 0.3 m are used; `slab_3` has narrower bands of its own.
 - The 12 degrees that counts as level (`[top] level_deg` in `conventions.toml`) and the half of the view that must be (`top.min_level_share`): a cap tips at most 5.5 degrees, and the chamfers and leaning sides take the rest of the view. Not measured on a reference.
-- How a join is painted (`tools/paint.py`): pieces are baked apart; the shadow at a join is full where another piece hides a sixteenth of the sky (`FULL_JOIN_OCCLUSION`), against a fifth within one piece; and edge light fades out in that shadow. Before this, joins were lit as exposed edges: inside corners measured 1.06 times open faces.
+- How a join is painted (`tools/paint.py`): pieces are baked apart; the shadow at a join is full where another piece hides a sixteenth of the sky (`join_sky_hidden` in `conventions.toml`), against a fifth within one piece; and edge light fades out in that shadow. Before this, joins were lit as exposed edges: inside corners measured 1.06 times open faces.
 - In the load test, a face of another piece near a point that is not buried counts as a join there, never as an exposed edge.
 - That a plate resting on another, face to face, counts as joined to it (`overlap_touch` measures surface inside another piece, not how deep it goes).
+
+- **Covers (2026-10-05).** Asked for by the owner through the catalogue (bare, mossy, snow-capped for rocks) and ADR 13: a cover is a palette variant of its base, as a season is of a tree. Proposed by the agent, and open to change: the `cover` field and what a cover variant's spec may change; that the reach is three tenths of the height and at most 0.9 m, and a patch a thirteenth of the narrower side and at most 0.2 m (neither share is measured on a reference: they are the first mossy rock's 0.9 m and 0.2 m turned into shares, the reach lowered from that rock's 0.45 of its height so the wash stays under half way up); the colour, darkness and the two shares of cover, which are that rock's. Which variant of the family got the cover was the coordinator's choice. Not approved.

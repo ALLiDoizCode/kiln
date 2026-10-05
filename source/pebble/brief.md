@@ -65,6 +65,18 @@ No growth and no side shade. Moss is a cover, and covers are variants of the pal
 
 The underside is never seen, so it gets almost none of the texture.
 
+## Covers
+
+A cover is what lies on the stone: `bare`, or `mossy` (`docs/style/catalogue.md`; snow is not built). The assets above are bare. A mossy one is a palette variant (ADR 13, `CONTEXT.md`): a separate asset, `<base>_mossy`, whose spec names its base as `palette_of` and its `cover`, and differs from the base's only in the growth keys of `painted_shading`. It is the base's mesh, UVs included, with another texture, and the gate holds it to that (`spec.cover`, `spec.palette_of`, `palette.same_mesh`).
+
+Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground up to a height, and small patches on faces near level and along exposed upper edges. Its colour, how dark it is and how sparse come from the first mossy rock (`source/rock/brief.md`, measured there against the benchmark): olive `#7a8a4d` at the stone's own lightness; patches 50% darker than the stone they sit on; patches over about 25% of near-level faces and along about 40% of exposed upper edges, because the benchmark's moss is sparse. How high the wash reaches and how large a patch is are shares of the stone, not that rock's metres:
+
+- **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
+- **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+- **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
+
+A pebble is a low plate: its cap is all the level surface it has and nearly all a player sees of it, so the patches on the cap carry the cover, with a thin wash at the ground. A pebble asks for no growth along upper edges (`growth_edges` and `growth_edge_m` are left out): every edge in its top fifth is the edge of a face near level, where the growth on level faces already lies, so edge growth there would be that growth asked for twice, and the load test has no surface to tell the two apart on (measured on 2026-10-05 with edge growth asked: 0 samples beside an exposed edge on a face not near level in the top fifth). `pebble_3_mossy`: 0.1 m tall, so the wash reaches 0.03 m; 0.38 m on its narrower side, so patches of 0.03 m (0.029, rounded).
+
 ## Parts
 
 One object and one mesh per variant, with one material. The mesh is one closed skin. Nothing moves.
@@ -80,7 +92,7 @@ At most 150 triangles and 1 material slot per variant. Scatter is placed by the 
 
 ## Out of scope
 
-Collision shapes, LODs, rubble (several fragments placed as one group: its own family), square pebbles, mossy and snow-capped covers, other stone colours, a pebble that is picked up or thrown, a finished underside.
+Collision shapes, LODs, rubble (several fragments placed as one group: its own family), square pebbles, snow-capped covers, other stone colours, a pebble that is picked up or thrown, a finished underside.
 
 ## Numbers
 
@@ -129,3 +141,5 @@ Proposed by the agent:
 - That the generator draws at one metre wide and shrinks: the kit's least sizes (`tools/stone.py`: a plane must keep 4 cm2 inside its soft edges) are for metre rocks, and drawing at one metre leaves the kit untouched.
 - The budget of 150 triangles.
 - **The paint.** The boulder's colour, tints and strengths. Band widths as shares of the stone's width (a thirtieth for the edge light, a tenth for the blotches), for the reason under Painted shading, which holds for any stone this size whatever the build looks like. A 256 px texture, by the sum under Texture size.
+
+- **Covers (2026-10-05).** Asked for by the owner through the catalogue (bare, mossy, snow-capped for rocks) and ADR 13: a cover is a palette variant of its base, as a season is of a tree. Proposed by the agent, and open to change: the `cover` field and what a cover variant's spec may change; that the reach is three tenths of the height and at most 0.9 m, and a patch a thirteenth of the narrower side and at most 0.2 m (neither share is measured on a reference: they are the first mossy rock's 0.9 m and 0.2 m turned into shares, the reach lowered from that rock's 0.45 of its height so the wash stays under half way up); the colour, darkness and the two shares of cover, which are that rock's. Which variant of the family got the cover was the coordinator's choice. Not approved.

@@ -17,6 +17,7 @@
     "growth_height_m": 0.9,
     "growth_up": 0.25,
     "growth_edges": 0.4,
+    "growth_edge_m": 0.2,
     "growth_darker": 0.5,
     "growth_patch_m": 0.2,
     "blotch": 0.12,

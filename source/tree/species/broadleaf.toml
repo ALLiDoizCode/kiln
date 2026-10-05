@@ -17,6 +17,13 @@ bend = [0.07, 0.14]            # how far the trunk bows out of the straight line
 roots = [3, 4]                 # corners pulled out into roots
 root_reach = [2.3, 3.0]        # a root's tip from the trunk's axis, over the radius there
 root_rise = 0.34               # height at which a root has all but joined the trunk
+# A root's crest sweeps from the trunk out into the ground: a ring of the foot at each (share of `root_rise`,
+# share of the root's reach beyond the trunk still left there), from the ground up to `root_rise`.
+root_curve = [[0.0, 1.0], [0.15, 0.62], [0.42, 0.3], [1.0, 0.0]]
+root_ring_gap = 0.03           # a ring of the foot less than this far above the one below it is left out (a sapling's lowest)
+root_valleys = 3               # how many of those rings, from the ground, come back to the trunk between two roots
+root_valley = 1.08             # how near the trunk they come: over the trunk's radius there
+root_width = 0.42              # where between a root and a corner that is not one: this share of the way from the root
 rings = [0.85, 1.6]            # heights of the trunk's two rings between its roots and the stretch below the fork
 leader = 0.72                  # radius of the leader just above the fork, over the trunk's just below
 tip_radius = 0.035

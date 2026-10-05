@@ -58,6 +58,18 @@ Painted by script (ADR 9, ADR 10; `tools/paint.py`) into one texture, 512 px unl
 
 No growth and no side shade: moss is a cover (ADR 13), and a stone's side is 0.1 to 0.3 m tall, all edge and no open face, as on the slab.
 
+## Covers
+
+A cover is what lies on the stone: `bare`, or `mossy` (`docs/style/catalogue.md`; snow is not built). The assets above are bare. A mossy one is a palette variant (ADR 13, `CONTEXT.md`): a separate asset, `<base>_mossy`, whose spec names its base as `palette_of` and its `cover`, and differs from the base's only in the growth keys of `painted_shading`. It is the base's mesh, UVs included, with another texture, and the gate holds it to that (`spec.cover`, `spec.palette_of`, `palette.same_mesh`).
+
+Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground up to a height, and small patches on faces near level and along exposed upper edges. Its colour, how dark it is and how sparse come from the first mossy rock (`source/rock/brief.md`, measured there against the benchmark): olive `#7a8a4d` at the stone's own lightness; patches 50% darker than the stone they sit on; patches over about 25% of near-level faces and along about 40% of exposed upper edges, because the benchmark's moss is sparse. How high the wash reaches and how large a patch is are shares of the stone, not that rock's metres:
+
+- **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
+- **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+- **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
+
+A stack is flat stones standing on each other: besides the top stone, each lower stone shows a rim of level surface round the one above, and those rims are where moss settles; the wash is on the lowest stone. `stack_2_mossy`: 1.1 m tall, so the wash reaches 0.33 m; 1.05 m on its narrower side, so patches of 0.08 m.
+
 ## Parts
 
 One object and one mesh per variant, with one material. The mesh is three to five closed pieces that overlap (`overlap` in the spec). Nothing moves.
@@ -73,7 +85,7 @@ At most 120 triangles a stone and 1 material slot per variant. A stone of n side
 
 ## Out of scope
 
-Collision shapes, LODs, mossy and snow-capped covers, other stone colours, a fallen stack, stacks of round stones, a finished underside.
+Collision shapes, LODs, snow-capped covers, other stone colours, a fallen stack, stacks of round stones, a finished underside.
 
 ## Numbers
 
@@ -117,3 +129,5 @@ Proposed by the agent, and open to change:
 - That "would not topple" is the centre of mass of the stones above being over the cap below, with no margin, and with the volume where stones pass into each other counted twice.
 - The size step of 1.15, the crag's; the summit offset and upright share, the boulder's.
 - The budget of 120 triangles a stone; every painted value, the smallest slab's; a 512 px texture; no growth and no side shade.
+
+- **Covers (2026-10-05).** Asked for by the owner through the catalogue (bare, mossy, snow-capped for rocks) and ADR 13: a cover is a palette variant of its base, as a season is of a tree. Proposed by the agent, and open to change: the `cover` field and what a cover variant's spec may change; that the reach is three tenths of the height and at most 0.9 m, and a patch a thirteenth of the narrower side and at most 0.2 m (neither share is measured on a reference: they are the first mossy rock's 0.9 m and 0.2 m turned into shares, the reach lowered from that rock's 0.45 of its height so the wash stays under half way up); the colour, darkness and the two shares of cover, which are that rock's. Which variant of the family got the cover was the coordinator's choice. Not approved.

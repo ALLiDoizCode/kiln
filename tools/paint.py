@@ -18,7 +18,8 @@ The colour at a point, in linear RGB, is
 
 The growth mask is the largest of three: below `growth_height_m`, with a ragged
 top; patches covering about `growth_up` of the faces that are near level; and
-patches along about `growth_edges` of the exposed edges in the upper part.
+patches along about `growth_edges` of the exposed edges in the upper part,
+reaching `growth_edge_m` in from an edge.
 Growth changes hue, and the blotch pattern averages nothing. Where a spec gives
 `growth_darker`, the patches on level faces and along edges are that much darker
 than the surface round them as well, as moss is on pale lit rock; the growth
@@ -77,16 +78,13 @@ NOISE_SPREAD = 0.2
 # With `growth_patch_m`: a second pattern, GROWTH_BREAK_SCALE times finer, knocks holes in the
 # patches and leaves GROWTH_BREAK_KEEP of each, and the patches are that much commoner to make up for it.
 GROWTH_BREAK_SCALE, GROWTH_BREAK_KEEP = 2.5, 0.7
-GROWTH_EDGE_M = 0.2  # how far in from an upper edge its growth reaches
 GROWTH_EDGES_FROM = (0.5, 0.75)  # share of the height over which edge growth comes in
 BLOTCH_EDGE = 0.1  # how much of the noise's range a blotch's border takes: soft, but a patch and not a haze
-# The crevice shadow is full where a fifth of the sky is hidden, as in the corner of a
-# ledge whose wall leans back; the edge light is full where a sixteenth of the solid behind
-# the face is missing, as beside the bevel strip of a right-angled corner.
-FULL_SHADE_OCCLUSION = 0.2
+# The crevice shadow is full where `crevice_sky_hidden` of the sky is hidden (conventions.toml, which
+# crates/asset_smoke reads too: one definition of a crevice), and where pieces overlap (ADR 13) the shadow
+# at a join is full where another piece hides `join_sky_hidden` of it. The edge light is full where a
+# sixteenth of the solid behind the face is missing, as beside the bevel strip of a right-angled corner.
 FULL_EDGE_OCCLUSION = 0.06
-# Where pieces overlap (ADR 13), the shadow at a join is full where another piece hides a sixteenth of the sky.
-FULL_JOIN_OCCLUSION = 0.06
 # Faces within this of straight down, at the floor of the bounds, are the hidden underside.
 UNDERSIDE_COS = 0.999
 UNDERSIDE_UV_SCALE = 0.05  # texel density of an underside nobody sees, beside the rest
@@ -126,6 +124,20 @@ GPU_STATES_FACTOR = "0.25"
 CHECK_SHRINK = 8
 CHECK_STEP = 0.12
 CHECK_SHARE = 0.02
+
+
+def grain_tones(paint):
+    """What grain makes of a surface's tone, over the tone without it, for the load test to hold open faces to.
+
+    Grain is two tones and not one with a little variation: furrows, and the plates between them, each
+    about half the surface. Their mean is 1 (GRAIN_LIFT), but only over a whole limb; over a few open faces
+    the shares differ and the mean with them. Each tone is the same wherever it is: the middle of a furrow
+    (the fine streaks lighten it as much as they darken it), the top of the range the streaks give a furrow,
+    and the middle of a plate.
+    """
+    grain = paint["grain"]
+    plate, furrow = 1.0 + grain * GRAIN_LIFT, 1.0 - grain * FURROW_DEPTH
+    return {"grain_furrow_tone": round(plate * furrow, 6), "grain_furrow_top": round((plate + grain * GRAIN_FINE_TONE) * furrow, 6), "grain_plate_tone": round(plate, 6)}
 
 
 def luminance(rgb):
@@ -380,8 +392,8 @@ def paint_nodes(tree, colour_rgb, spec, conv):
             # On faces near level, where it would settle.
             settled = math_node("MULTIPLY", ramp(up, *rules["growth_up_normal_z"]), patches(paint["growth_up"], 11.0))
         if paint.get("growth_edges"):
-            # Along exposed edges, in the upper part of the asset.
-            rim = math_node("DIVIDE", hidden(True, GROWTH_EDGE_M), FULL_EDGE_OCCLUSION, clamp=True)
+            # Along exposed edges, in the upper part of the asset, as far in from an edge as the spec says (`growth_edge_m`).
+            rim = math_node("DIVIDE", hidden(True, paint["growth_edge_m"]), FULL_EDGE_OCCLUSION, clamp=True)
             upper = ramp(z, *(z0 + share * (z1 - z0) for share in GROWTH_EDGES_FROM))
             settled = math_node("MAXIMUM", settled, math_node("MULTIPLY", math_node("MULTIPLY", rim, upper), patches(paint["growth_edges"], 23.0)))
         mask = math_node("MAXIMUM", mask, settled)
@@ -455,13 +467,13 @@ def paint_nodes(tree, colour_rgb, spec, conv):
     # A spec for a shape with no inside corner asks none (tools/lint_spec.py asks it of overlapping pieces always).
     shade = None
     if "crevice_shadow" in paint:
-        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
+        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), rules["crevice_sky_hidden"], clamp=True)
     if apart and shade is not None:
         # A join: the sky another piece hides, over and above what the face's own piece hides. Two
         # pieces often meet in a groove too open to hide a fifth of the sky, and the join must
         # still be dark, since that is what hides it.
         by_others = math_node("SUBTRACT", hidden(False, paint["crevice_width_m"]), hidden(False, paint["crevice_width_m"], own_piece=True), clamp=True)
-        shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, FULL_JOIN_OCCLUSION, clamp=True))
+        shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, rules["join_sky_hidden"], clamp=True))
     if shade is not None:
         colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
 

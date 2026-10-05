@@ -49,8 +49,24 @@ pub struct Painted {
     max_uv_overlap: f32,
     /// Lowest and highest 8-bit sRGB value a texel's brightest channel may have.
     texel_range: [u8; 2],
-    /// Two faces at least this far apart in tilt form an edge or a crevice.
+    /// Two faces at least this far apart in tilt form an exposed edge.
     feature_deg: f32,
+    /// What a crevice is, as `tools/paint.py` paints one: its shadow is whole where this share of the sky above a
+    /// face is hidden, and where another overlapping piece hides the second share of it. A fold is a crevice
+    /// when it hides as much at its own line: faces tilted t apart hide (1 - cos t) / 2.
+    /// Grain (ADR 12) makes a surface two tones, each about half of it: furrows, and the plates between them.
+    /// The tone of a furrow's middle, the lightest a furrow's streaks make it, and the tone of a plate's
+    /// middle, each over the tone without grain (`tools/paint.py`, `grain_tones`). Absent: no grain.
+    #[serde(default)]
+    grain_furrow_tone: Option<f32>,
+    #[serde(default)]
+    grain_furrow_top: f32,
+    #[serde(default)]
+    grain_plate_tone: f32,
+    #[serde(default = "crevice_hidden")]
+    crevice_sky_hidden: f32,
+    #[serde(default = "join_hidden")]
+    join_sky_hidden: f32,
     /// How far an open face's colour may be from material colour times tint, as a share.
     colour_tolerance: f32,
     /// The share of `edge_light` and `crevice_shadow` the measured zones must show on average.
@@ -94,6 +110,8 @@ pub struct Painted {
 }
 
 // Used only by manifests written before these rules existed (the tests' tampered ones).
+fn crevice_hidden() -> f32 { 0.2 }
+fn join_hidden() -> f32 { 0.06 }
 fn side_normal() -> [f32; 2] { [0.3, 0.7] }
 fn half_band() -> f32 { 0.35 }
 fn up_normal() -> [f32; 2] { [0.82, 0.94] }
@@ -129,6 +147,10 @@ pub struct Measured {
     open_ratio: f32,
     edge_ratio: f32,
     crevice_ratio: f32,
+    /// With grain: the share of open samples in furrows, and the median tone of those and of the rest, each over the tone the painter gives it.
+    furrow_share: f32,
+    furrow_ratio: f32,
+    plate_ratio: f32,
     /// Luminance of the lowest quarter of the open and foot samples, by height, over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
@@ -179,6 +201,8 @@ struct Sample {
     shade: f32,
     /// Growth shown, 0 to 1, by hue.
     growth: f32,
+    /// Beside an exposed edge, as the edge zone is, whether or not a join is near: where growth along edges is looked for on a shape with no edge clear of its joins.
+    rim: bool,
     green: u8,
     height: f32,
     /// Texel luminance over the luminance the formula gives an open face here.
@@ -321,6 +345,8 @@ pub fn check(
     // Sample the texture over the visible surface.
     let stride = (want.texture_px / SAMPLE_GRID).max(1);
     let feature_cos = want.feature_deg.to_radians().cos();
+    // The tilt at which a fold hides, at its line, the share of the sky the paint's shadow is whole at.
+    let (crevice_cos, join_cos) = (1.0 - 2.0 * want.crevice_sky_hidden, 1.0 - 2.0 * want.join_sky_hidden);
     let same_cos = SAME_SURFACE_DEG.to_radians().cos();
     let faces: Vec<(&Triangle, Vec3, Vec3)> = visible
         .iter()
@@ -390,10 +416,15 @@ pub fn check(
                 // A face of another piece near a point that is not buried is that piece coming out
                 // of this one or standing against it: a join, whichever side its middle lies. Only
                 // a point's own piece can turn away from it and make an exposed edge there.
-                let rises = (*centre - p).dot(*n) > 0.0 || piece_of[other_index] != piece_of[index];
+                let other_piece = piece_of[other_index] != piece_of[index];
+                let rises = (*centre - p).dot(*n) > 0.0 || other_piece;
                 let (near, any) = if rises { (&mut concave, &mut any_concave) } else { (&mut convex, &mut any_convex) };
                 *any = any.min(distance);
-                if cos <= feature_cos {
+                // An exposed edge is two faces `feature_deg` apart. A crevice is a fold the paint gives its whole
+                // shadow: one definition, the painter's (conventions.toml). A shallower valley is shaded in
+                // part, and is neither a crevice nor, being near a face that rises, an open face.
+                let sharp = if !rises { feature_cos } else if other_piece { join_cos } else { crevice_cos };
+                if cos <= sharp {
                     *near = near.min(distance);
                 }
             }
@@ -417,6 +448,7 @@ pub fn check(
                 up: n.y,
                 shade,
                 growth,
+                rim: convex <= want.edge_width_m * 0.5,
                 green: (srgb.green * 255.0).round() as u8,
                 height,
                 ratio: luminance / expected,
@@ -451,11 +483,38 @@ pub fn check(
         return measured;
     }
 
-    if (open - 1.0).abs() > want.colour_tolerance {
-        fail(format!(
-            "painted.colour: open faces are {open:.3} times the material colour times the tint at their height; conventions allow 1 +/- {}",
-            want.colour_tolerance
-        ));
+    // Paint over the right colour: open faces are the material colour times the tint. Without grain
+    // that is their mean, blotches averaging out. Grain does not average out over a tree's few open
+    // faces: it is furrows and plates, two tones about half the surface each, and the mean follows
+    // their shares (six trees with the paint right read 0.915 to 0.971, their open faces 0.55 to
+    // 0.61 furrow). So a grained surface is held to its two tones, each where it is: the samples no
+    // lighter than a furrow's streaks make it, and the rest, by their medians.
+    match want.grain_furrow_tone {
+        None => {
+            if (open - 1.0).abs() > want.colour_tolerance {
+                fail(format!(
+                    "painted.colour: open faces are {open:.3} times the material colour times the tint at their height; conventions allow 1 +/- {}",
+                    want.colour_tolerance
+                ));
+            }
+        }
+        Some(furrow_tone) => {
+            let median = |mut ratios: Vec<f32>| {
+                ratios.sort_by(f32::total_cmp);
+                (ratios.len(), ratios.get(ratios.len() / 2).copied().unwrap_or(0.0))
+            };
+            let on_open = || samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.ratio);
+            let (furrow_count, furrow) = median(on_open().filter(|&r| r <= want.grain_furrow_top).collect());
+            let (plate_count, plate) = median(on_open().filter(|&r| r > want.grain_furrow_top).collect());
+            measured.furrow_share = furrow_count as f32 / open_count as f32;
+            (measured.furrow_ratio, measured.plate_ratio) = (furrow / furrow_tone, plate / want.grain_plate_tone);
+            if furrow_count < MIN_SAMPLES || plate_count < MIN_SAMPLES || (measured.furrow_ratio - 1.0).abs() > want.colour_tolerance || (measured.plate_ratio - 1.0).abs() > want.colour_tolerance {
+                fail(format!(
+                    "painted.colour: on open faces the furrows of the grain are {:.3} times the tone the paint gives a furrow over the material colour and the tint ({furrow_count} samples) and the plates between them {:.3} times a plate's ({plate_count} samples); conventions allow 1 +/- {} for each",
+                    measured.furrow_ratio, measured.plate_ratio, want.colour_tolerance
+                ));
+            }
+        }
     }
 
     // Lowest and highest quarter, by height, of the surface whose tone the formula gives: the open
@@ -559,33 +618,66 @@ pub fn check(
     if want.growth.is_some() {
         // Clear of the ragged top of the growth, which wanders by half its height either way.
         let (low, high) = (want.growth_height_m * 0.4, above_base);
+        // Each amount is measured where the rock has it: on open faces, clear of edges and joins. A shape may have no
+        // such face of the kind asked (a slab or a pebble has no upright one above its wash, a standing stone no level
+        // one, a stack none at all up there). It is then measured on the surface the shape does have, named in the
+        // message, and fails only if it has none of that either: nothing passes unmeasured.
+        let settles = |s: &Sample| s.up >= want.growth_up_normal_z[0];
+        let seen = |s: &Sample| s.zone != Zone::Crevice && s.above > high;
         let (base_count, base) = average(&|s| s.zone != Zone::Crevice && s.above < low, &|s| s.growth);
-        let (bare_count, bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
+        let (mut bare_count, mut bare) = average(&|s| s.zone == Zone::Open && upright(s) && s.above > high, &|s| s.growth);
+        let (mut bare_on, mut bare_most) = ("upright open faces", 0.15);
+        if bare_count < MIN_SAMPLES {
+            // No upright open face: the open faces growth does not settle on, upright or leaning.
+            (bare_count, bare) = average(&|s| s.zone == Zone::Open && !settles(s) && s.above > high, &|s| s.growth);
+            bare_on = "open faces that are not near level";
+        }
+        if bare_count < MIN_SAMPLES {
+            // No open face it does not settle on: every such face is within reach of an edge or a join, where growth
+            // along edges is asked. It may show what that puts there, by the measure growth on level faces is held to, and no more.
+            (bare_count, bare) = average(&|s| seen(s) && !settles(s), &|s| s.growth);
+            bare_on = "faces that are not near level, none of them clear of an edge or a join";
+            bare_most = (want.growth_cover[1] * want.growth_edges).max(bare_most);
+        }
         (measured.growth_base, measured.growth_bare_sides) = (base, bare);
-        if base_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || base < 0.7 || bare > 0.15 {
+        if base_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || base < 0.7 || bare > bare_most {
             fail(format!(
-                "painted.growth_height: growth shows on {base:.2} of the surface below {low:.2} m ({base_count} samples; wanted at least 0.7) and on {bare:.2} of upright open faces above {high:.2} m ({bare_count} samples; wanted at most 0.15); growth_height_m is {}",
+                "painted.growth_height: growth shows on {base:.2} of the surface below {low:.2} m ({base_count} samples; wanted at least 0.7) and on {bare:.2} of {bare_on} above {high:.2} m ({bare_count} samples; wanted at most {bare_most:.2}); growth_height_m is {}",
                 want.growth_height_m
             ));
         }
         if want.growth_up > 0.0 {
-            let (count, cover) = average(&|s| s.zone == Zone::Open && level(s) && s.above > high, &|s| s.growth);
+            let (mut count, mut cover) = average(&|s| s.zone == Zone::Open && level(s) && s.above > high, &|s| s.growth);
+            let [least, mut most] = want.growth_cover.map(|share| share * want.growth_up);
+            let mut on = "level open faces";
+            if count < MIN_SAMPLES {
+                // No level face clear of an edge or a join: the level faces there are. Growth along edges lies on them
+                // too, so they may show the two together; bare of both, or carpeted, they fail as the open ones do.
+                (count, cover) = average(&|s| seen(s) && level(s), &|s| s.growth);
+                on = "level faces, none of them clear of an edge or a join";
+                most = want.growth_cover[1] * (want.growth_up + want.growth_edges - want.growth_up * want.growth_edges);
+            }
             measured.growth_up = cover;
-            let [least, most] = want.growth_cover.map(|share| share * want.growth_up);
             if count < MIN_SAMPLES || cover < least || cover > most {
                 fail(format!(
-                    "painted.growth_up: growth covers {cover:.2} of level open faces above {high:.2} m ({count} samples); growth_up {} wants {least:.2} to {most:.2}: patches, neither bare nor a carpet",
+                    "painted.growth_up: growth covers {cover:.2} of {on} above {high:.2} m ({count} samples); growth_up {} wants {least:.2} to {most:.2}: patches, neither bare nor a carpet. A shape with no face near level above its wash leaves growth_up out of its spec",
                     want.growth_up
                 ));
             }
         }
         if want.growth_edges > 0.0 {
-            let (count, cover) = average(&|s| s.zone == Zone::Edge && upright(s) && s.height > 0.8, &|s| s.growth);
+            let (mut count, mut cover) = average(&|s| s.zone == Zone::Edge && upright(s) && s.height > 0.8, &|s| s.growth);
+            let mut on = "the exposed edges of upright faces";
+            if count < MIN_SAMPLES {
+                // No upright edge clear of a join in the top fifth: the exposed edges there are, of any face growth does not settle on of itself.
+                (count, cover) = average(&|s| s.rim && s.zone != Zone::Crevice && !settles(s) && s.height > 0.8, &|s| s.growth);
+                on = "the exposed edges of faces that are not near level";
+            }
             measured.growth_edges = cover;
             let least = want.min_effect_share * want.growth_edges;
             if count < MIN_SAMPLES || cover < least {
                 fail(format!(
-                    "painted.growth_edges: growth covers {cover:.2} of the exposed edges of upright faces in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}",
+                    "painted.growth_edges: growth covers {cover:.2} of {on} in the top fifth ({count} samples); growth_edges {} wants at least {least:.2}. A shape whose top fifth is all near level, where the growth on level faces lies, leaves growth_edges out of its spec",
                     want.growth_edges
                 ));
             }
@@ -593,12 +685,36 @@ pub fn check(
         if want.growth_darker > 0.0 {
             // Open faces above the base's growth: where they show growth against where they show none.
             // The tint and the side shade are already divided out, and blotches average out.
-            let (grown_count, grown) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth >= 0.8, &|s| s.bare_ratio);
-            let (bare_count, bare) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth <= 0.2, &|s| s.bare_ratio);
+            let (mut grown_count, grown) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth >= 0.8, &|s| s.bare_ratio);
+            let (mut bare_count, bare) = average(&|s| s.zone == Zone::Open && s.above > high && s.growth <= 0.2, &|s| s.bare_ratio);
+            let mut on = "open faces";
             measured.growth_darker = 1.0 - grown / bare.max(1e-6);
+            if grown_count < MIN_SAMPLES || bare_count < MIN_SAMPLES {
+                // Too little open face with growth on it, or without. Off open faces the edge light and the shadow at a
+                // join change the tone as well, so a sample that shows growth is held against its own neighbour in the
+                // texture that shows none: the two are a few centimetres apart and get the same of both. A patch's edge is
+                // soft, so the pair shows growth g and h, not 1 and 0, and is darker by growth_darker times each: the tones
+                // t and u are as (1 - d g) to (1 - d h), which gives d = (u - t) / (g u - h t), summed over the pairs.
+                let near: std::collections::HashMap<(u32, u32), (f32, f32)> = samples.iter().filter(|s| seen(s)).map(|s| (s.at, (s.growth, s.bare_ratio))).collect();
+                let (mut pairs, mut step, mut scale) = (0usize, 0.0f32, 0.0f32);
+                for (&(x, y), &(growth, tone)) in &near {
+                    for next in [(x + stride, y), (x, y + stride)] {
+                        let Some(&(other, other_tone)) = near.get(&next) else { continue };
+                        if growth.max(other) >= 0.8 && growth.min(other) <= 0.2 {
+                            let ((g, t), (h, u)) = if growth > other { ((growth, tone), (other, other_tone)) } else { ((other, other_tone), (growth, tone)) };
+                            pairs += 1;
+                            step += u - t;
+                            scale += g * u - h * t;
+                        }
+                    }
+                }
+                (grown_count, bare_count) = (pairs, pairs);
+                on = "neighbouring samples, on any face";
+                measured.growth_darker = step / scale.max(1e-6);
+            }
             if grown_count < MIN_SAMPLES || bare_count < MIN_SAMPLES || (measured.growth_darker - want.growth_darker).abs() > want.colour_tolerance {
                 fail(format!(
-                    "painted.growth_darker: open faces above {high:.2} m are {:.3} darker where they show growth ({grown_count} samples) than where they show none ({bare_count} samples); growth_darker {} wants that within {}",
+                    "painted.growth_darker: {on} above {high:.2} m are {:.3} darker where they show growth ({grown_count} samples) than where they show none ({bare_count} samples); growth_darker {} wants that within {}",
                     measured.growth_darker, want.growth_darker, want.colour_tolerance
                 ));
             }
@@ -606,26 +722,41 @@ pub fn check(
         if want.growth_patch_m > 0.0 {
             // How often growth starts or stops between neighbouring samples of level open faces, per patch length:
             // small, broken patches have a lot of outline for their area, and broad ones little.
-            let grown: std::collections::HashMap<(u32, u32), (bool, f32)> =
-                samples.iter().filter(|s| s.zone == Zone::Open && level(s) && s.above > high).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
-            let (mut edges, mut metres) = (0usize, 0.0f32);
-            for (&(x, y), &(here, step)) in &grown {
-                if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
-                    edges += usize::from(here != next);
-                    metres += step;
+            let outline = |pick: &dyn Fn(&Sample) -> bool| {
+                let grown: std::collections::HashMap<(u32, u32), (bool, f32)> = samples.iter().filter(|s| pick(s)).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
+                let (mut edges, mut metres) = (0usize, 0.0f32);
+                for (&(x, y), &(here, step)) in &grown {
+                    if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
+                        edges += usize::from(here != next);
+                        metres += step;
+                    }
                 }
+                (edges, metres)
+            };
+            let (mut edges, mut metres) = outline(&|s| s.zone == Zone::Open && level(s) && s.above > high);
+            let mut on = "level open faces";
+            if metres < 1.0 {
+                // Under a metre of level open face: every surface the patches are asked on in full, the level faces
+                // there are and the exposed edges of the top fifth.
+                (edges, metres) = outline(&|s| seen(s) && (level(s) || (s.rim && s.height > 0.8)));
+                on = "level faces and the exposed edges of the top fifth";
             }
             measured.growth_patch_edges = edges as f32 / metres.max(1e-6) * want.growth_patch_m;
             if metres < 1.0 || measured.growth_patch_edges < want.growth_patch_edges {
                 fail(format!(
-                    "painted.growth_patches: on level open faces above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
+                    "painted.growth_patches: on {on} above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
                     measured.growth_patch_edges, want.growth_patch_m, want.growth_patch_edges, want.growth_patch_m
                 ));
             }
         }
     }
     if want.blotch > 0.0 {
-        let mut tones: Vec<f32> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.ratio).collect();
+        // Open faces whose tone the formula gives. Between the foot of the growth at the base and the height it is
+        // clear of, a patch of growth is darker by an amount that depends on how far the base's growth reaches at
+        // that spot, which only the paint knows: a sample showing growth there is not held to be a blotch.
+        let band = (want.growth_height_m * 0.4, above_base);
+        let plain = |s: &Sample| s.zone == Zone::Open && !(want.growth_darker > 0.0 && s.growth > 0.2 && s.above > band.0 && s.above <= band.1);
+        let mut tones: Vec<f32> = samples.iter().filter(|s| plain(s)).map(|s| s.ratio).collect();
         tones.sort_by(f32::total_cmp);
         measured.blotch_spread = tones[tones.len() * 9 / 10] - tones[tones.len() / 10];
         let [least, most] = want.blotch_spread.map(|share| share * want.blotch);
@@ -637,7 +768,7 @@ pub fn check(
         }
         // Neighbouring samples, a stride apart along a row of the texture.
         let open: std::collections::HashMap<(u32, u32), f32> =
-            samples.iter().filter(|s| s.zone == Zone::Open).map(|s| (s.at, s.ratio)).collect();
+            samples.iter().filter(|s| plain(s)).map(|s| (s.at, s.ratio)).collect();
         let steps: Vec<f32> = open.iter().filter_map(|(&(x, y), ratio)| open.get(&(x + stride, y)).map(|next| (next - ratio).abs())).collect();
         measured.blotch_grain = steps.iter().sum::<f32>() / steps.len().max(1) as f32 / measured.blotch_spread.max(1e-6);
         if measured.blotch_grain > want.max_blotch_grain {
