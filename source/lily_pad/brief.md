@@ -85,9 +85,9 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.base_tint` | `"#c9a8b4"` | Style and colour: rosy toward the water |
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: plain at the tips |
 | `painted_shading.edge_light` | `0.1` | Style and colour: a little light on the petals' edges, under the texel range |
-| `painted_shading.edge_width_m` | `0.003` | A petal is 2 to 5 cm wide: a band wider than 3 mm leaves it no open face |
+| `painted_shading.edge_width_m` | `0.004` | A petal is 2 to 5 cm wide: a band of 4 mm along each edge is a fifth of a petal or less |
 | `painted_shading.crevice_shadow` | `0.4` | Style and colour: shadow in the cup |
-| `painted_shading.crevice_width_m` | `0.006` | A band 6 mm wide, for the same reason |
+| `painted_shading.crevice_width_m` | `0.01` | The cup between two petals is a centimetre deep |
 | `painted_shading.hidden_underside` | `true` | A flower stands on the water |
 | `foliage.material` | `"m_lily_pad"` | Parts |
 | `foliage.pad_gap_m` | `0.15` | Silhouette 5: the discs of one group lie close; 15 cm of clear water parts two groups |

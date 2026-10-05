@@ -31,9 +31,9 @@
     "base_tint": "#b07090",
     "top_tint": "#ffffff",
     "edge_light": 0.1,
-    "edge_width_m": 0.003,
+    "edge_width_m": 0.004,
     "crevice_shadow": 0.4,
-    "crevice_width_m": 0.006,
+    "crevice_width_m": 0.01,
     "hidden_underside": true
   },
   "foliage": {

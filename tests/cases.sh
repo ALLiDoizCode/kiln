@@ -495,10 +495,10 @@ expect_id "spec.mat_amounts"         "L0 catches a mat asked of a group of discs
 # L0, a scatter of flowers: flower_scatter_1's spec with one thing wrong. `lint_flower <python>` lints a copy of flower_scatter_1 after that has changed its spec `s`.
 uses flower_scatter_1 lint_spec
 expect 0 "L0 passes a flower scatter's spec" lint_flower 'pass'
-expect_id "spec.scatter"             "L0 catches a missing scatter key"        lint_flower 'del s["scatter"]["foot_m"]'
-expect_id "spec.scatter_amounts"     "L0 catches leaves to a bloom given backwards" lint_flower 's["scatter"]["leaves_per_bloom"] = [4.0, 2.0]'
-expect_id "spec.scatter_amounts"     "L0 catches a scatter with no blooms asked" lint_flower 'del s["blooms"]'
-expect_id "spec.scatter_amounts"     "L0 catches a scatter whose flowers may all be one height" lint_flower 's["scatter"]["max_height_share"] = 1.0'
+expect_id "spec.flowers"             "L0 catches a missing scatter key"        lint_flower 'del s["flowers"]["foot_m"]'
+expect_id "spec.flowers_amounts"     "L0 catches leaves to a bloom given backwards" lint_flower 's["flowers"]["leaves_per_bloom"] = [4.0, 2.0]'
+expect_id "spec.flowers_amounts"     "L0 catches a scatter with no blooms asked" lint_flower 'del s["blooms"]'
+expect_id "spec.flowers_amounts"     "L0 catches a scatter whose flowers may all be one height" lint_flower 's["flowers"]["max_height_share"] = 1.0'
 # A colour (docs/style/catalogue.md): another flower or foliage colour as a palette on its base's mesh. `lint_colour <python>` lints a copy of lily_pad_1_pink.
 uses lily_pad_1_pink lily_pad_1 lint_spec
 expect 0 "L0 passes a colour variant's spec" lint_colour 'pass'

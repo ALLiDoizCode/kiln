@@ -84,9 +84,9 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.base_tint` | `"#c8b8a0"` | Style and colour: duller toward the ground |
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour |
 | `painted_shading.edge_light` | `0.1` | Style and colour: light on the petals' edges, under the texel range |
-| `painted_shading.edge_width_m` | `0.001` | A petal is 1 cm wide: a band of 2 mm, with the shadow's 3 mm, left it no open face |
+| `painted_shading.edge_width_m` | `0.002` | A petal is 1 cm wide: a band of 2 mm along each edge |
 | `painted_shading.crevice_shadow` | `0.4` | Style and colour: shadow between the petals |
-| `painted_shading.crevice_width_m` | `0.0015` | A band 1.5 mm wide, for the same reason |
+| `painted_shading.crevice_width_m` | `0.003` | The fold between two petals, 3 mm either side |
 | `painted_shading.hidden_underside` | `true` | As every plant |
 | `foliage.material` | `"m_flower_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.12` | Silhouette 6: flowers of one scatter stand a hand apart at most |
@@ -100,12 +100,12 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `blooms.width_m` | `[0.03, 0.07]` | Silhouette 1 |
 | `blooms.max_hull_share` | `0.6` | Silhouette 1 |
 | `blooms.min_colour_apart` | `0.3` | Silhouette 8 |
-| `scatter.max_height_share` | `0.75` | Silhouette 4 |
-| `scatter.min_lean_deg` | `4.0` | Silhouette 5 |
-| `scatter.max_lean_together` | `0.7` | Silhouette 5 |
-| `scatter.min_apart_m` | `0.04` | Silhouette 6 |
-| `scatter.leaves_per_bloom` | `[2.0, 4.0]` | Silhouette 7 |
-| `scatter.foot_m` | `0.03` | Silhouette 7 |
+| `flowers.max_height_share` | `0.75` | Silhouette 4 |
+| `flowers.min_lean_deg` | `4.0` | Silhouette 5 |
+| `flowers.max_lean_together` | `0.7` | Silhouette 5 |
+| `flowers.min_apart_m` | `0.04` | Silhouette 6 |
+| `flowers.leaves_per_bloom` | `[2.0, 4.0]` | Silhouette 7 |
+| `flowers.foot_m` | `0.03` | Silhouette 7 |
 | `soft_edges` | `true` | Blooms and stems are lit smooth |
 | `watertight` | `true` | Parts: a bloom is closed |
 | `open_materials` | `["m_flower_leaf"]` | Parts: stems and leaves are open pieces |
@@ -115,7 +115,7 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 
 All proposed by the agent, from the task the owner set, and open to change at review:
 
-- **A flower is a bloom on a stem**, as a seed head is a head on a stalk: the bloom a closed piece of the closed material, the stem an open strip of the foliage. The lily pads' `blooms` block checks the blooms; a `scatter` block checks what is this family's own. The tall grass's `heads` was not reused: its lint asks for blades from one point or stalks in a bed, and these are neither.
-- **Thresholds made up here, with nothing measured behind them**: every number in the `scatter` and `blooms` blocks, `piece_m`, `min_pad_pieces` and `max_triangles`.
+- **A flower is a bloom on a stem**, as a seed head is a head on a stalk: the bloom a closed piece of the closed material, the stem an open strip of the foliage. The lily pads' `blooms` block checks the blooms; a `flowers` block checks what is this family's own. The tall grass's `heads` was not reused: its lint asks for blades from one point or stalks in a bed, and these are neither.
+- **Thresholds made up here, with nothing measured behind them**: every number in the `flowers` and `blooms` blocks, `piece_m`, `min_pad_pieces` and `max_triangles`.
 
 Not measured, and judged on the contact sheet and the candidates sheet: whether the flowers read as flowers from standing height, and whether twelve seeds are twelve scatters.

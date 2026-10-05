@@ -31,9 +31,9 @@
     "base_tint": "#c8b8a0",
     "top_tint": "#ffffff",
     "edge_light": 0.1,
-    "edge_width_m": 0.001,
+    "edge_width_m": 0.002,
     "crevice_shadow": 0.4,
-    "crevice_width_m": 0.0015,
+    "crevice_width_m": 0.003,
     "hidden_underside": true
   },
   "foliage": {
@@ -62,7 +62,7 @@
     "max_hull_share": 0.6,
     "min_colour_apart": 0.3
   },
-  "scatter": {
+  "flowers": {
     "max_height_share": 0.75,
     "min_lean_deg": 4.0,
     "max_lean_together": 0.7,
