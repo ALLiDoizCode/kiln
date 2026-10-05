@@ -25,13 +25,11 @@
     "m_bush_leaf": "#9ab552"
   },
   "painted_shading": {
-    "texture_px": 512,
+    "texture_px": 256,
     "base_tint": "#a89c94",
     "top_tint": "#ffffff",
     "edge_light": 0.2,
     "edge_width_m": 0.004,
-    "crevice_shadow": 0.5,
-    "crevice_width_m": 0.01,
     "hidden_underside": true
   },
   "foliage": {

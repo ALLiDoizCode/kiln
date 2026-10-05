@@ -16,7 +16,7 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy
-from mathutils import Matrix, Vector, geometry
+from mathutils import Matrix, Vector, geometry, kdtree
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -24,6 +24,10 @@ import foliage
 import log_checks
 import skeleton
 from pipeline import VIEW_DIRECTIONS, Asset, Checks, conventions, linear_rgb, script_args
+
+
+# Two normals at one vertex are one normal when they agree this closely (cosine): the load test's own limit (crates/asset_smoke/src/main.rs).
+SAME_NORMAL_COS = 0.99985
 
 
 def evaluated_bmesh(obj):
@@ -1974,6 +1978,110 @@ def check_mass(checks, name, bm, spec, conv):
     )
 
 
+# Scattered stones (source/rubble): a group of separate closed stones lying on the ground, under a
+# spec's `scatter`. They are read back from the mesh as the overlapping pieces of ADR 13 are, as its
+# connected closed parts, and asked the opposite: that none passes into another.
+
+
+def check_scatter(checks, name, bm, spec, conv):
+    """The shape is a handful of separate stones lying together: how many, each closed and facing
+    outward, none inside another, each on the ground and standing clear of it, a clear size order,
+    one group with some of it touching, and neither a line nor a ring."""
+    want, rules = spec["scatter"], conv["scatter"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    floor, tol = lo.z, spec["bounds_tolerance_m"]
+    pieces, areas, inside, buried = overlaps(bm.faces[:], spec, conv)
+    count = len(pieces)
+    checks.check(f"{name}.scatter_count", want["min_count"] <= count <= want["max_count"], f"the mesh is {count} separate stones; spec wants {want['min_count']} to {want['max_count']}")
+    # Asked of each stone: one small stone open or inside out leaves the volume of the whole positive.
+    volumes = [signed_volume(piece) for piece in pieces]
+    opened = [index for index, piece in enumerate(pieces) if any(not edge.is_manifold for face in piece for edge in face.edges)]
+    inside_out = [round(volume, 6) for volume in volumes if volume <= 0]
+    checks.check(
+        f"{name}.scatter_closed",
+        count > 0 and not opened and not inside_out,
+        f"{len(opened)} of {count} stones are not closed surfaces, and {len(inside_out)} are inside out: signed volumes {inside_out}",
+    )
+    checks.check(
+        f"{name}.scatter_apart",
+        not any(buried),
+        f"{sum(1 for area in buried if area)} of {count} stones have surface inside another stone ({sum(buried):.4f} m2 in all, each as a share of its own "
+        f"{[round(hidden / area, 3) for hidden, area in zip(buried, areas)]}); separate stones lie apart or touch, and never pass into each other",
+    )
+    stones = [list({v for face in piece for v in face.verts}) for piece in pieces]
+    lows = [min(v.co.z for v in verts) - floor for verts in stones]
+    off = [round(low, 4) for low in lows if abs(low) > tol]
+    checks.check(f"{name}.scatter_on_ground", not off, f"{len(off)} of {count} stones do not reach the ground: their lowest points are {off} m above it")
+    lengths = [max((a.co - b.co).length for a in verts for b in verts) for verts in stones]
+    stands = [(max(v.co.z for v in verts) - floor) / length for verts, length in zip(stones, lengths)]
+    checks.check(
+        f"{name}.scatter_stands",
+        min(stands, default=0.0) >= want["min_stand_share"],
+        f"the stones stand {[round(share, 3) for share in stands]} of their own lengths above the ground; spec wants each at least {want['min_stand_share']}: lower is sunk to a cap",
+    )
+    ranked = sorted(lengths, reverse=True)
+    steps = [a / b for a, b in zip(ranked, ranked[1:])]
+    spread = ranked[0] / ranked[-1] if ranked else 0.0
+    checks.check(
+        f"{name}.scatter_size_order",
+        bool(steps) and min(steps) >= want["min_step_ratio"] and spread >= want["min_size_range"],
+        f"the stones are {[round(length, 3) for length in ranked]} m long, each over the next {[round(step, 2) for step in steps]}, the longest {spread:.2f} times the shortest; "
+        f"spec wants every step at least {want['min_step_ratio']} and the longest at least {want['min_size_range']} times the shortest",
+    )
+    # How far apart two stones lie: the least distance from the surface of either to the other.
+    spacing = max(hi - lo) / conv["overlap"]["grid"]
+    solids = [Solid(piece) for piece in pieces]
+    points = [[v.co for v in verts] + [point for face in piece for point, _ in surface_samples(face, spacing)] for verts, piece in zip(stones, pieces)]
+    gaps = {}
+    for a in range(count):
+        for b in range(a + 1, count):
+            gaps[a, b] = gaps[b, a] = min(solids[j].tree.find_nearest(point)[3] for i, j in ((a, b), (b, a)) for point in points[i])
+    start = max(range(count), key=lambda index: lengths[index], default=None)
+    reached, front = {start}, [start]
+    while front and count:
+        a = front.pop()
+        for b in range(count):
+            if b not in reached and gaps[a, b] <= want["max_gap_m"]:
+                reached.add(b)
+                front.append(b)
+    nearest = [min((gaps[a, b] for b in range(count) if b != a), default=math.inf) for a in range(count)]
+    checks.check(
+        f"{name}.scatter_grouped",
+        count > 1 and len(reached) == count,
+        f"{count - len(reached)} of {count} stones are not in one group with the longest: each lies {[round(gap, 3) for gap in nearest]} m from its nearest neighbour; "
+        f"spec wants every stone within {want['max_gap_m']} m of another, through to the longest",
+    )
+    touching = sum(1 for (a, b), gap in gaps.items() if a < b and gap <= rules["touch_m"])
+    checks.check(
+        f"{name}.scatter_touching",
+        touching >= want["min_touching"],
+        f"{touching} pairs of stones lie within {rules['touch_m']} m of each other (conventions: touching); spec wants at least {want['min_touching']}",
+    )
+    # Seen from above, the stones' middles: how far they spread across the group over how far along it, and how unlike their distances from its middle are.
+    middles = [Vector((sum(v.co.x for v in verts), sum(v.co.y for v in verts))) / len(verts) for verts in stones]
+    middle = sum(middles, Vector((0.0, 0.0))) / count if count else Vector((0.0, 0.0))
+    xx, yy, xy = (sum((m - middle)[i] * (m - middle)[j] for m in middles) for i, j in ((0, 0), (1, 1), (0, 1)))
+    root = math.sqrt(((xx - yy) / 2) ** 2 + xy**2)
+    breadth = math.sqrt(max(0.0, (xx + yy) / 2 - root) / ((xx + yy) / 2 + root)) if xx + yy > 0 else 0.0
+    out = [(m - middle).length for m in middles]
+    radial = statistics.pstdev(out) / statistics.mean(out) if count > 1 and statistics.mean(out) > 0 else 0.0
+    checks.check(
+        f"{name}.scatter_not_line",
+        breadth >= want["min_breadth"],
+        f"seen from above the stones' middles spread {breadth:.3f} times as far across the group as along it; spec wants at least {want['min_breadth']}: less is a row",
+    )
+    checks.check(
+        f"{name}.scatter_not_ring",
+        radial >= want["min_radial_spread"],
+        f"the stones' middles lie {[round(d, 3) for d in out]} m from the middle of the group, a spread of {radial:.3f} of their mean; spec wants at least {want['min_radial_spread']}: less is a ring",
+    )
+    print(
+        f"{name} scatter: {count} stones {[round(length, 3) for length in ranked]} m long (steps {[round(step, 2) for step in steps]}, range {spread:.2f}), "
+        f"standing {[round(share, 2) for share in stands]} of their lengths, nearest neighbours at {[round(gap, 3) for gap in nearest]} m, {touching} pairs touching, "
+        f"breadth {breadth:.3f}, radial spread {radial:.3f}"
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -2038,6 +2146,39 @@ def check_scene(checks, spec, conv):
         welded = list({v for f in closed for v in f.verts}) if opened else bm.verts
         doubles = bmesh.ops.find_doubles(bm, verts=welded, dist=conv["mesh"]["merge_distance_m"])["targetmap"]
         checks.check(f"{name}.no_duplicate_vertices", not doubles, f"{len(doubles)} duplicate vertices")
+
+        if spec.get("soft_edges"):
+            # Soft edges, as the Bevy load test holds them (crates/asset_smoke, `soft_edges`), seen here
+            # before the export: at one place above the ground every face is lit by one normal.
+            # Vertices closer than the bounds' tolerance are one place: a soft edge narrower than that is a hard one.
+            lit = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+            reach = spec["bounds_tolerance_m"]
+            ground = spec["bounds_m"]["min"][2] + reach
+            round_vertex = {}
+            for loop, corner in zip(lit.loops, lit.corner_normals):
+                round_vertex.setdefault(loop.vertex_index, []).append(Vector(corner.vector))
+            places = {index: obj.matrix_world @ lit.vertices[index].co for index in round_vertex}
+            above = [index for index in round_vertex if places[index].z > ground]
+            near = kdtree.KDTree(len(above))
+            for index in above:
+                near.insert(places[index], index)
+            near.balance()
+            hard = [
+                index
+                for index in above
+                if any(
+                    a.dot(b) < SAME_NORMAL_COS
+                    for _, other, _ in near.find_range(places[index], reach * 1.7321)
+                    if all(abs(c) <= reach for c in places[other] - places[index])
+                    for a in round_vertex[index]
+                    for b in round_vertex[other]
+                )
+            ]
+            checks.check(
+                f"{name}.soft_edges",
+                above and not hard,
+                f"{len(hard)} of {len(above)} vertices above the ground share a place (within {reach} m) with a corner lit by another normal: a hard edge, or a soft one too narrow to be one",
+            )
 
         slots = [s.material for s in obj.material_slots]
         checks.check(f"{name}.materials_assigned", slots and all(slots), "empty or missing material slot")
@@ -2132,6 +2273,8 @@ def check_scene(checks, spec, conv):
                 check(checks, name, bm, spec, conv)
         if "spire" in spec:
             check_spire(checks, name, bm, spec, conv)
+        if "scatter" in spec:
+            check_scatter(checks, name, bm, spec, conv)
         if "log" in spec:
             # A fallen log (source/log): a trunk lying on the ground, measured at upright slices across its length.
             log_checks.check(checks, name, bm, slot_names, spec, conv)

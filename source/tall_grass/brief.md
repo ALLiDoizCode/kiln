@@ -35,7 +35,7 @@ The height is that of the seed heads; the leaves stop lower. The benchmark's tal
 
 ADR 9: leaf-shaped geometry in flat colour, no leaf cards and no transparency. The benchmark's grass is cards with a painted, transparent texture; ours is one strip of geometry per blade.
 
-- **Straw** `m_tall_grass_straw`, `#b09a5e`: the rootstock and the seed heads, one closed material with painted shading (ADR 10): dark toward the ground (`#8a8278`), so the rootstock is a dull brown, and the plain pale straw at the top, where the seed heads are.
+- **Straw** `m_tall_grass_straw`, `#b09a5e`: the rootstock and the seed heads, one closed material with painted shading (ADR 10): dark toward the ground (`#8a8278`), so the rootstock is a dull brown, and the plain pale straw at the top, where the seed heads are. No crevice shadow is asked: the rootstock is one convex mound and the seed heads lie apart and make no inside corner, the load test finds none (`painted.crevices_darker`), and the painter's shadow painted nothing on them (no texel differed by 2 levels with it and without).
 - **Leaf** `m_tall_grass_leaf`, `#9cb64e`: the colour of the tallest blade. The underside tint `#6f96a6` is the tree's. 4 shades in 3 tones up to 14% lighter or darker, as the grass tuft.
 - Blades take their colour from a palette in the texture (ADR 11), so dry grass or another colour is a second texture on the same mesh (ADR 13).
 
@@ -54,7 +54,7 @@ One object and one mesh per variant, with two materials. The straw material is t
 
 ## Budget
 
-At most 700 triangles and two materials, on one 512 px texture (at 256 px the gaps round the seed heads' small islands leave 0.39 of the texture used, under the 0.4 the conventions ask). A blade is 7 triangles (three quads and a tip): it bends twice. 72 to 84 blades are 504 to 588; a seed stalk is 5 and its head 8; the rootstock is 24. The benchmark's tall grass is 326 and 622 triangles, as cards. Several times a grass tuft's budget, for a plant that is larger, nearer the eye and rarer.
+At most 700 triangles and two materials, on one 256 px texture. It was 512 px while the painter packed islands as boxes: at 256 px the gaps round the seed heads' small islands then left 0.39 of the texture used, under the 0.4 the conventions ask; packed by their outlines (`pack` in `tools/paint.py`) they use 0.53 to 0.55 of it, at 398 to 814 texels per metre on the sparsest triangle. A blade is 7 triangles (three quads and a tip): it bends twice. 72 to 84 blades are 504 to 588; a seed stalk is 5 and its head 8; the rootstock is 24. The benchmark's tall grass is 326 and 622 triangles, as cards. Several times a grass tuft's budget, for a plant that is larger, nearer the eye and rarer.
 
 ## References
 
@@ -78,13 +78,11 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `max_triangles` | `700` | Budget |
 | `materials.m_tall_grass_straw` | `"#b09a5e"` | Style and colour: straw |
 | `materials.m_tall_grass_leaf` | `"#9cb64e"` | Style and colour: leaf, the colour of the tallest blade |
-| `painted_shading.texture_px` | `512` | Budget |
+| `painted_shading.texture_px` | `256` | Budget |
 | `painted_shading.base_tint` | `"#8a8278"` | Style and colour: the rootstock dark toward the ground |
 | `painted_shading.top_tint` | `"#ffffff"` | Style and colour: no tint at the top |
 | `painted_shading.edge_light` | `0.2` | As the grass tuft |
 | `painted_shading.edge_width_m` | `0.002` | The seed heads' faces are about 1 cm wide |
-| `painted_shading.crevice_shadow` | `0.5` | As the grass tuft |
-| `painted_shading.crevice_width_m` | `0.005` | A band half a centimetre wide |
 | `painted_shading.hidden_underside` | `true` | The rootstock stands on the ground |
 | `foliage.material` | `"m_tall_grass_leaf"` | Parts |
 | `foliage.pad_gap_m` | `0.06` | Silhouette 1: blades from one clump have no clear air between their feet, on the tree's 6 cm grid |

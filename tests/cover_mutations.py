@@ -14,6 +14,9 @@ Usage: tools/bl tests/cover_mutations.py <asset> <mutation> <out.glb>
   growth_not_darker       patches at the stone's own lightness
   growth_broad_patches    patches three times the size asked for
   growth_on_wood          a log's wood painted as its bark is: growth on the broken and sawn ends
+  packed_as_boxes         nothing painted wrong: the same paint on the same surface, laid out in the texture another
+                          way (Blender's box packer, as tools/paint.py packed before `pack`). A check of the surface
+                          reads this file as it reads the gated one.
 """
 
 import runpy
@@ -43,6 +46,18 @@ elif mutation == "growth_not_darker":
     want["growth_darker"] = 0.0
 elif mutation == "growth_broad_patches":
     want["growth_patch_m"] *= 3
+elif mutation == "packed_as_boxes":
+    def boxes(objects, skip, gap, height):
+        """Another layout of the same islands: packed by their boxes, the margin on every side of each, shrunk under the palette strip."""
+        for operator, options in ((bpy.ops.object.mode_set, {"mode": "EDIT"}), (bpy.ops.uv.pack_islands, {"rotate": True, "scale": True, "margin_method": "FRACTION", "margin": gap, "shape_method": "AABB"}), (bpy.ops.object.mode_set, {"mode": "OBJECT"})):
+            if operator(**options) != {"FINISHED"}:
+                raise RuntimeError(f"{operator.idname()} failed")
+        if height < 1.0:
+            for obj in objects:
+                for corner in obj.data.uv_layers[paint.UV_LAYER].data:
+                    corner.uv = corner.uv * height
+
+    paint.pack = boxes
 elif mutation != "growth_on_wood":
     raise RuntimeError(f"no mutation called {mutation}")
 bpy.ops.wm.read_factory_settings(use_empty=True)

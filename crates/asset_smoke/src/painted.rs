@@ -131,7 +131,7 @@ fn side_normal() -> [f32; 2] { [0.3, 0.7] }
 fn half_band() -> f32 { 0.35 }
 fn up_normal() -> [f32; 2] { [0.82, 0.94] }
 fn cover() -> [f32; 2] { [0.5, 1.5] }
-fn patch_edges() -> f32 { 0.9 }
+fn patch_edges() -> f32 { 0.61 }
 fn spread() -> [f32; 2] { [1.0, 2.5] }
 fn grain() -> f32 { 0.2 }
 fn level_gap() -> u8 { 3 }
@@ -182,7 +182,7 @@ pub struct Measured {
     growth_edges: f32,
     /// How much darker open faces are where they show growth than where they show none, above the reach of the growth at the base.
     growth_darker: f32,
-    /// Level open faces above that reach: how often growth starts or stops along the surface, per `growth_patch_m` metres.
+    /// Level open faces above that reach: how unlike in growth two points a quarter to half of `growth_patch_m` apart are, over two far apart.
     growth_patch_edges: f32,
     /// Open faces: the 10th to 90th percentile spread of tone, and the mean step between neighbouring samples over it.
     blotch_spread: f32,
@@ -204,6 +204,12 @@ const SAME_SURFACE_DEG: f32 = 4.0;
 const FOOT_EDGE_WIDTHS: f32 = 0.25;
 /// Two samples next to each other in the texture are neighbours on the surface when no further apart than this many sample steps.
 const NEIGHBOUR_STEPS: f32 = 3.0;
+/// Patches of growth are read on pairs of points of the surface this far apart, in `growth_patch_m`: from a quarter of a
+/// patch, which is more than the step between samples on every asset gated (1.4 steps on the coarsest, an arch), so
+/// that what is compared is the paint and not how the texture's grid cut it, to half a patch, within which a patch of the size asked is mostly crossed.
+const PATCH_PAIR: [f32; 2] = [0.25, 0.5];
+/// And on level open faces only where those have the area of this many patches (`growth_patch_m` squared).
+const PATCH_AREAS: f32 = 4.0;
 /// A point of a surface is buried when the space this far in front of it is inside another piece (as `[overlap] in_front_m` in conventions.toml).
 const BURIED_IN_FRONT_M: f32 = 0.0001;
 /// A face runs along a lying limb when its normal is within this of square to the limb (the cosine between them),
@@ -256,7 +262,6 @@ pub fn check(
     want: &Painted,
     triangles: &[Triangle],
     overlap: bool,
-    foliage: bool,
     image: &Image,
     floor: f32,
     top: f32,
@@ -450,7 +455,12 @@ pub fn check(
                 // shadow: one definition, the painter's (conventions.toml). A shallower valley is shaded in
                 // part, and is neither a crevice nor, being near a face that rises, an open face.
                 let sharp = if !rises { feature_cos } else if other_piece { join_cos } else { crevice_cos };
-                if cos <= sharp {
+                // A fold is two faces that face each other: the other rises in front of this point, and this point
+                // lies in front of the other. Round a tube that bends, a face of the next length may reach a hair in
+                // front of this one's plane while turning away from it: the same exposed edge, carried round the bend,
+                // and no inside corner (a bush's stems had 51 samples "in" such corners, all lit as the edges they are).
+                let faces_back = !rises || other_piece || (p - *centre).dot(*m) > 0.0;
+                if cos <= sharp && faces_back {
                     *near = near.min(distance);
                 }
             }
@@ -587,8 +597,7 @@ pub fn check(
                 ));
             }
         }
-        // Not yet asked of foliage: the stems of a bush or a tuft meet in corners too small for a sample, and their shadow is not measured.
-        Some(shadow) if !foliage => fail(format!(
+        Some(shadow) => fail(format!(
             "painted.crevices_darker: only {crevice_count} samples lie in inside corners; nothing to measure crevice_shadow {shadow} on. A shape with no inside corner leaves crevice_shadow and crevice_width_m out of its spec"
         )),
         None if crevice_count >= MIN_SAMPLES => fail(format!(
@@ -771,32 +780,50 @@ pub fn check(
             }
         }
         if want.growth_patch_m > 0.0 {
-            // How often growth starts or stops between neighbouring samples of level open faces, per patch length:
-            // small, broken patches have a lot of outline for their area, and broad ones little.
+            // How unlike in growth two points of the surface a quarter to half a patch apart are, over how unlike two
+            // points far apart are (twice the share grown times the share bare): near 1 where patches are small and
+            // broken, since such a pair is then as good as unrelated, and toward 0 where they are broad. The pairs are
+            // every two samples that far apart in space, whatever island each lies on and however it is turned, so the
+            // layout of the texture does not come into it: counted along the texture's rows, one arch read 0.98 and
+            // 0.86 under two layouts, and along rows and columns 0.91 and 0.89, either side of the 0.9 then asked.
             let outline = |pick: &dyn Fn(&Sample) -> bool| {
-                let grown: std::collections::HashMap<(u32, u32), (bool, f32)> = grows.iter().filter(|s| pick(s)).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
-                let (mut edges, mut metres) = (0usize, 0.0f32);
-                for (&(x, y), &(here, step)) in &grown {
-                    if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
-                        edges += usize::from(here != next);
-                        metres += step;
+                let picked: Vec<(Vec3, bool, f32)> = grows.iter().filter(|s| pick(s)).map(|s| (s.point, s.growth >= 0.5, s.step_m)).collect();
+                let (near, far) = (PATCH_PAIR[0] * want.growth_patch_m, PATCH_PAIR[1] * want.growth_patch_m);
+                let cell = |p: Vec3| ((p.x / far).floor() as i32, (p.y / far).floor() as i32, (p.z / far).floor() as i32);
+                let mut cells: std::collections::HashMap<(i32, i32, i32), Vec<usize>> = std::collections::HashMap::new();
+                for (index, (point, _, _)) in picked.iter().enumerate() {
+                    cells.entry(cell(*point)).or_default().push(index);
+                }
+                let (mut unlike, mut pairs) = (0usize, 0usize);
+                for (index, &(point, here, _)) in picked.iter().enumerate() {
+                    let (x, y, z) = cell(point);
+                    for beside in (-1..=1).flat_map(|i| (-1..=1).flat_map(move |j| (-1..=1).map(move |k| (x + i, y + j, z + k)))) {
+                        for &other in cells.get(&beside).map(Vec::as_slice).unwrap_or(&[]) {
+                            let apart = point.distance(picked[other].0);
+                            if other > index && apart >= near && apart <= far {
+                                unlike += usize::from(here != picked[other].1);
+                                pairs += 1;
+                            }
+                        }
                     }
                 }
-                (edges, metres)
+                let grown = picked.iter().filter(|&&(_, grown, _)| grown).count() as f32 / picked.len().max(1) as f32;
+                let area: f32 = picked.iter().map(|&(_, _, step)| step * step).sum();
+                (unlike, pairs, grown, area)
             };
-            let (mut edges, mut metres) = outline(&|s| s.zone == Zone::Open && level(s) && s.above > high);
+            let (mut unlike, mut pairs, mut grown, mut area) = outline(&|s| s.zone == Zone::Open && level(s) && s.above > high);
             let mut on = "level open faces";
-            if metres < 1.0 {
-                // Under a metre of level open face: every surface the patches are asked on in full, the level faces
+            if area < PATCH_AREAS * want.growth_patch_m.powi(2) {
+                // Too little level open face to hold a few patches: every surface the patches are asked on in full, the level faces
                 // there are and the exposed edges of the top fifth.
-                (edges, metres) = outline(&|s| seen(s) && (level(s) || (s.rim && s.height > 0.8)));
+                (unlike, pairs, grown, area) = outline(&|s| seen(s) && (level(s) || (s.rim && s.height > 0.8)));
                 on = "level faces and the exposed edges of the top fifth";
             }
-            measured.growth_patch_edges = edges as f32 / metres.max(1e-6) * want.growth_patch_m;
-            if metres < 1.0 || measured.growth_patch_edges < want.growth_patch_edges {
+            measured.growth_patch_edges = unlike as f32 / (pairs.max(1) as f32 * 2.0 * grown * (1.0 - grown)).max(1e-6);
+            if area < PATCH_AREAS * want.growth_patch_m.powi(2) || measured.growth_patch_edges < want.growth_patch_edges {
                 fail(format!(
-                    "painted.growth_patches: on {on} above {high:.2} m growth starts or stops {:.2} times per {} m ({edges} times in {metres:.1} m sampled); conventions want at least {} for patches of growth_patch_m {}: small and broken, not broad",
-                    measured.growth_patch_edges, want.growth_patch_m, want.growth_patch_edges, want.growth_patch_m
+                    "painted.growth_patches: on {on} above {high:.2} m two points {} to {} of growth_patch_m {} apart are {:.2} times as unlike in growth as two far apart ({unlike} of {pairs} pairs unlike, {grown:.2} of the surface grown, {:.1} patches of area); conventions want at least {}: small and broken, not broad",
+                    PATCH_PAIR[0], PATCH_PAIR[1], want.growth_patch_m, measured.growth_patch_edges, area / want.growth_patch_m.powi(2), want.growth_patch_edges
                 ));
             }
         }

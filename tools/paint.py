@@ -107,6 +107,12 @@ KNOT_SHARE = 0.22  # share of those places that have one
 KNOT_RADIUS_M = 0.035
 KNOT_DEPTH = 1.3  # how dark a knot's middle is, over `grain`
 CLOSE_PASSES = 5  # how many times the layout is repacked to give close faces their texels
+# The layout (`pack`): islands are set down along a skyline by their own outlines, read in PACK_COLUMNS columns
+# across the texture, each tried at PACK_TURNS quarter turns from the way its snuggest box lies, and all grown by
+# one factor until the texture is full, to within PACK_FINE of the largest that fits.
+PACK_COLUMNS = 512
+PACK_TURNS = 4
+PACK_FINE = 1.004
 # Overlapping pieces are baked apart, so that a piece's edge light comes from its own shape (`paint_nodes`, hidden).
 # tests/slab_mutations.py turns this off to paint a slab as one solid, joins lit as edges.
 SPLIT_PIECES = True
@@ -207,21 +213,160 @@ def unwrap(objects, spec, conv, skip=None, keep_clear=0.0):
                     for loop in face.loops:
                         loop[uv].uv *= UNDERSIDE_UV_SCALE
             bmesh.update_edit_mesh(obj.data)
-    # The exact (concave) packer takes 15 s on the rock for 3% more of the texture; boxes take none.
-    run(bpy.ops.uv.pack_islands, rotate=True, scale=True, margin_method="FRACTION", margin=margin, shape_method="AABB")
     run(bpy.ops.object.mode_set, mode="OBJECT")
-    if "close_texels_per_m" in paint:
-        def repack():
-            run(bpy.ops.object.mode_set, mode="EDIT")
-            run(bpy.ops.uv.pack_islands, rotate=True, scale=True, margin_method="FRACTION", margin=margin, shape_method="AABB")
-            run(bpy.ops.object.mode_set, mode="OBJECT")
 
-        densify_close(objects, spec, conv, skip, keep_clear, repack)
-    if keep_clear:
-        # Shrink the layout toward the bottom-left corner; texels stay square.
-        for obj in objects:
-            for corner in obj.data.uv_layers[UV_LAYER].data:
-                corner.uv = corner.uv * (1.0 - keep_clear)
+    def repack():
+        pack(objects, skip, conv["painted_shading"]["island_gap_px"] / paint["texture_px"], 1.0 - keep_clear)
+
+    repack()
+    if "close_texels_per_m" in paint:
+        densify_close(objects, spec, conv, skip, repack)
+
+
+def uv_islands(objects, skip):
+    """The islands of a layout, in a fixed order: (mesh, the UV corners of its faces, each face's corners in turn).
+
+    Islands with a face of the material named `skip` are left out."""
+    from bpy_extras import mesh_utils
+
+    found = []
+    for obj in objects:
+        mesh = obj.data
+        for island in mesh_utils.mesh_linked_uv_islands(mesh):
+            polygons = [mesh.polygons[i] for i in island]
+            if skip is not None and any(obj.material_slots[p.material_index].material.name == skip for p in polygons):
+                continue
+            found.append((mesh, polygons))
+    return found
+
+
+def pack(objects, skip, gap, height):
+    """Lay the islands out again to fill the texture's width and `height` of its height, `gap` (of the texture) apart.
+
+    What Blender's own packer does with boxes left 0.19 to 0.42 of a texture to no island, and it took the
+    margin asked on every side of every island, so islands lay two gaps apart; its packer by outline does
+    better and takes a quarter of a minute on thirty islands. Here each island keeps its size beside the
+    others (texel density is theirs to share evenly, or as `densify_close` and the hidden underside have
+    set it) and is turned, moved and, all by one factor, grown. An island is read as the lowest and highest
+    it reaches in each column it touches, half a gap added all round, and set down on the skyline of
+    those before it where its top ends lowest: outlines nest, where boxes cannot. Nothing is random and
+    nothing is Blender's to change: the same islands give the same layout."""
+    from mathutils import geometry
+
+    half, column = gap / 2, 1.0 / PACK_COLUMNS
+    layers, islands = {}, []
+    for mesh, polygons in uv_islands(objects, skip):
+        if mesh.name not in layers:
+            uvs = numpy.empty(len(mesh.loops) * 2, dtype=numpy.float32)
+            mesh.uv_layers[UV_LAYER].data.foreach_get("uv", uvs)
+            layers[mesh.name] = (mesh, uvs.reshape(-1, 2).astype(numpy.float64))
+        corners = numpy.array([i for p in polygons for i in p.loop_indices])
+        place = {corner: at for at, corner in enumerate(corners)}
+        ends = numpy.array([(place[a], place[b]) for p in polygons for a, b in zip(p.loop_indices, list(p.loop_indices)[1:] + [p.loop_indices[0]])])
+        points = layers[mesh.name][1][corners]
+        snug = geometry.box_fit_2d([tuple(point) for point in points])
+        turned = []
+        for turn in range(PACK_TURNS):
+            angle = snug + turn * 2 * math.pi / PACK_TURNS
+            spin = numpy.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]])
+            there = points @ spin.T
+            there -= there.min(axis=0)
+            # Each edge from its left end to its right, for the outline's reach in a column.
+            a, b = there[ends[:, 0]], there[ends[:, 1]]
+            left = numpy.where((a[:, 0] <= b[:, 0])[:, None], a, b)
+            turned.append((there, left, a + b - left))
+        extent = turned[0][0].max(axis=0)
+        islands.append({"mesh": mesh.name, "corners": corners, "turned": turned, "long": float(extent.max()), "box": float(extent[0] * extent[1])})
+    if not islands:
+        return
+
+    def outline(island, turn, scale):
+        """The padded island's lowest and highest reach in each column it touches, from its own lower left corner."""
+        there, left, right = island["turned"][turn]
+        x0, y0, x1, y1 = left[:, 0] * scale + half, left[:, 1] * scale + half, right[:, 0] * scale + half, right[:, 1] * scale + half
+        columns = max(1, math.ceil((there[:, 0].max() * scale + 2 * half) / column - 1e-9))
+        from_x = numpy.arange(columns) * column
+        touched = (x0[:, None] - half < from_x[None, :] + column) & (x1[:, None] + half > from_x[None, :])
+        run = numpy.where(x1 > x0, x1 - x0, 1.0)[:, None]
+        low, high = numpy.full(columns, numpy.inf), numpy.full(columns, -numpy.inf)
+        # A column's reach is that of the outline within half a gap of it either side, so that islands are a gap apart aslant too.
+        for at in (from_x[None, :] - half, from_x[None, :] + column + half):
+            along = numpy.clip((numpy.clip(at, x0[:, None], x1[:, None]) - x0[:, None]) / run, 0.0, 1.0)
+            for share in (along, numpy.where((x1 > x0)[:, None], along, 1.0 - along)):  # an upright edge: both its ends
+                y = y0[:, None] + (y1 - y0)[:, None] * share
+                low = numpy.minimum(low, numpy.where(touched, y, numpy.inf).min(axis=0))
+                high = numpy.maximum(high, numpy.where(touched, y, -numpy.inf).max(axis=0))
+        return low - half, high + half
+
+    def laid(order, scale):
+        """Where each island goes at this scale, as (turn, column, height of its lower left corner), or None if they do not fit."""
+        skyline, placed = numpy.zeros(PACK_COLUMNS), {}
+        for index in order:
+            best = None
+            for turn in range(PACK_TURNS):
+                key = (index, turn, scale)
+                if key not in outlines:
+                    outlines[key] = outline(islands[index], turn, scale)
+                low, high = outlines[key]
+                if len(low) > PACK_COLUMNS:
+                    continue
+                rests = (numpy.lib.stride_tricks.sliding_window_view(skyline, len(low)) - low).max(axis=1)
+                at = int(rests.argmin())
+                top = float(rests[at] + high.max())
+                if top <= height and (best is None or top < best[0] - 1e-12):
+                    best = (top, turn, at, float(rests[at]), high)
+            if best is None:
+                return None
+            _, turn, at, rest, high = best
+            skyline[at : at + len(high)] = rest + high
+            placed[index] = (turn, at, rest)
+        return placed
+
+    area = sum(island["box"] for island in islands)
+    orders = [sorted(range(len(islands)), key=lambda i: (-islands[i][by], i)) for by in ("long", "box")]
+
+    def filled(order):
+        """The largest scale found at which the islands fit in this order, and where they then lie; None if none does."""
+        # Start well above any scale that fits (at a quarter of this the islands' boxes have the texture's area) and come down.
+        too_big = start = 4.0 * math.sqrt(height / area) if area > 0 else 1.0
+        fits, found = too_big, None
+        while found is None:
+            fits /= 1.25
+            if fits < start * 1e-3:
+                return None
+            found = laid(order, fits)
+            if found is None:
+                too_big = fits
+        while too_big / fits > PACK_FINE:
+            middle = math.sqrt(too_big * fits)
+            tried = laid(order, middle)
+            if tried is None:
+                too_big = middle
+            else:
+                fits, found = middle, tried
+        return fits, found
+
+    best = None
+    while best is None:
+        for order in orders:
+            outlines = {}
+            found = filled(order)
+            if found is not None and (best is None or found[0] > best[0]):
+                best = found
+        if best is None:
+            # More islands than the texture has room for gaps between: the tests' 64 px texture under a tree's hundred.
+            # A layout that came to this in a gated build uses next to none of its texture, and the load test says so.
+            if half < 1e-6:
+                raise RuntimeError("the islands cannot be laid out at any scale")
+            print(f"pack: {len(islands)} islands do not fit {gap:.4f} of the texture apart; trying half that")
+            gap, half = gap / 2, half / 2
+    scale, placed = best
+    for index, (turn, at, rest) in placed.items():
+        island = islands[index]
+        layers[island["mesh"]][1][island["corners"]] = island["turned"][turn][0] * scale + (at * column + half, rest + half)
+    for mesh, uvs in layers.values():
+        mesh.uv_layers[UV_LAYER].data.foreach_set("uv", uvs.astype(numpy.float32).ravel())
+        mesh.update()
 
 
 def texel_densities(obj, size):
@@ -245,7 +390,7 @@ def texel_densities(obj, size):
     return found
 
 
-def densify_close(objects, spec, conv, skip, keep_clear, repack):
+def densify_close(objects, spec, conv, skip, repack):
     """Give the surface a player stands against its texels (`close_height_m`, `close_texels_per_m`).
 
     Islands that reach below `close_height_m` are enlarged, and the layout
@@ -272,7 +417,6 @@ def densify_close(objects, spec, conv, skip, keep_clear, repack):
                     close.append((mesh, polygons))
                     # The hidden underside keeps its few texels.
                     least = min([least] + [densities[p.index] for p in polygons if densities[p.index] > 0 and not (p.normal.z < -UNDERSIDE_COS and paint["hidden_underside"])])
-        least *= 1.0 - keep_clear
         if not close or least >= paint["close_texels_per_m"]:
             return
         grow = paint["close_texels_per_m"] / least * 1.08
