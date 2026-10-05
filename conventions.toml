@@ -124,13 +124,13 @@ baseline_rmse = 0.01
 # How tools/paint.py unwraps and bakes, and what the Bevy load test holds the
 # result to (ADR 10). What an asset wants painted is in its spec.
 unwrap_angle_deg = 66.0     # faces within this of each other unwrap as one island
-island_gap_px = 8           # between islands; half of it is filled with bled colour
+island_gap_px = 8           # between islands, and half of it to the texture's border; half of it is filled with bled colour
 bake_samples = 16           # Cycles samples per texel
 # Seen from 0.5 m (ADR 7) a texel at this density is 1 cm, about 1 degree across. Painted
 # shading has no detail finer than an edge-light band a few centimetres wide, and the
 # sampler blends neighbouring texels, so 1 cm texels do not show as blocks.
 min_texels_per_m = 100
-min_uv_coverage = 0.4       # share of the texture the triangles use; the box packer reaches 0.43 on the rock
+min_uv_coverage = 0.4       # share of the texture the triangles use; the painter's packer reaches 0.58 on the rock (0.43 when it packed boxes)
 max_uv_overlap = 0.001      # share of used texels claimed by more than one triangle
 # Brightest channel of any texel, 8-bit sRGB. Outside this a surface clips to black or white once lit.
 texel_range_srgb = [30, 240]
