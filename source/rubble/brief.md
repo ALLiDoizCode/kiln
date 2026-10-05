@@ -100,6 +100,16 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `watertight` | `true` | Parts: every fragment is closed |
 | `attributes` | `["POSITION", "NORMAL", "TEXCOORD_0"]` | Painted shading: one texture, so the mesh carries UVs |
 
+## Open
+
+Found at the first gates on 2026-10-05 and left as they are: no check was loosened and no spec value changed to pass them.
+
+- **The Bevy load test cannot measure the crevice shadow.** `painted.crevices_darker` finds 0 samples in inside corners on `rubble_1` and `rubble_3` (96 on `rubble_2`): it looks for corners within one connected surface, or between pieces under `overlap`, and a gap of 7 mm between two separate stones is neither. The brief still asks the shadow.
+- **Texture use.** `uv.coverage` reads 0.400, 0.371 and 0.336 where the conventions ask 0.4: several fragments, each unwrapped by angle into several islands, on 512 px.
+- **Hard edges on `rubble_3`.** `soft_edges`: 34 of 177 vertices share a position with a differently lit vertex. The kit's soft edges leave a hard point where two planes meet at one vertex and not along an edge; the generator does not refuse such a shard, and gate L1 does not see it.
+- **A seed with slivers.** `rubble_2` seed 27 builds with degenerate faces and doubled vertices (gate L1 fails it).
+- **Sizes.** A layout need reach only 0.82 of the bounds before it is stretched to them, so the fragments come out up to a quarter longer than the table above: `rubble_1`'s largest is 0.315 m, not 0.25 m.
+
 ## Decisions
 
 There was no grilling session. The owner gave the decisions below in writing on 2026-10-05, and the agent proposed the rest. Every proposed item is open to change at the first review.
