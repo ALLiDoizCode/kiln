@@ -1063,6 +1063,79 @@ def check_cluster(checks, name, bm, spec, conv):
     )
 
 
+def check_pile(checks, name, bm, spec, conv):
+    """The shape is flat stones piled one on another (a stack): each rests on the cap of the one
+    below, is flat, is smaller than the one below, and the stones above each one would not tip off it."""
+    want, rules = spec["pile"], conv["pile"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    tol = spec["bounds_tolerance_m"]
+    seat = math.cos(math.radians(rules["seat_deg"]))
+    down = Vector((0, 0, -1))
+    stones = []
+    for piece in pieces_in(bm.faces):
+        volume = signed_volume(piece)
+        if volume <= 0:
+            continue  # inside out, or not a solid: `normals_outward` says so
+        # The centre of mass: of the pyramids from the origin to each triangle of the surface.
+        centre = sum(((f.verts[0].co + a.co + b.co) * f.verts[0].co.dot(a.co.cross(b.co)) for f in piece for a, b in zip(f.verts[1:], f.verts[2:])), Vector()) / (24 * volume)
+        corners = list({v for f in piece for v in f.verts})
+        outline = [corners[i].co.to_2d() for i in geometry.convex_hull_2d([v.co.to_2d() for v in corners])]
+        covers = abs(sum(a.cross(b) for a, b in zip(outline, outline[1:] + outline[:1]))) / 2
+        stones.append(dict(volume=volume, centre=centre, covers=covers, solid=Solid(piece), low=min(v.co.z for v in corners)))
+    stones.sort(key=lambda stone: stone["centre"].z)
+
+    def over_cap(point, stone):
+        """Where a point comes down on a stone's cap, straight down from above the whole pile, or None when it misses the cap."""
+        hit, normal, _, _ = stone["solid"].tree.ray_cast(Vector((point.x, point.y, hi.z + 1.0)), down)
+        return hit if hit is not None and normal.z >= seat else None
+
+    # Each stone but the lowest: how far its underside is sunk into the cap below, under its middle, as a share of its thickness there.
+    sinks = []
+    for under, stone in zip(stones, stones[1:]):
+        tree, cap = stone["solid"].tree, over_cap(stone["centre"], under)
+        top, bottom = tree.ray_cast(stone["centre"], -down)[0], tree.ray_cast(stone["centre"], down)[0]
+        sinks.append((cap.z - bottom.z) / (top.z - bottom.z) if cap and top and bottom and top.z > bottom.z else None)
+    grounded = bool(stones) and stones[0]["low"] <= lo.z + tol
+    checks.check(
+        f"{name}.pile_rests",
+        grounded and bool(sinks) and all(sink is not None and 0 <= sink <= want["max_sink"] for sink in sinks),
+        f"the lowest stone {'stands' if grounded else 'does not stand'} on the ground; going up, each other stone's underside is sunk "
+        f"{[sink if sink is None else round(sink, 3) for sink in sinks]} of its thickness into the cap below, under its centre of mass "
+        f"(None: that is not over the cap below, the surface within {rules['seat_deg']} degrees of level); spec wants 0 to {want['max_sink']}",
+    )
+    flat = [stone["volume"] / stone["covers"] / (2 * math.sqrt(stone["covers"] / math.pi)) for stone in stones]
+    checks.check(
+        f"{name}.pile_flat",
+        bool(flat) and max(flat) <= want["max_thickness"],
+        f"going up, each stone's thickness (its volume over the area it covers from above) is {[round(share, 3) for share in flat]} of its width "
+        f"(the diameter of a circle of that area); spec wants at most {want['max_thickness']}",
+    )
+    steps = [stone["covers"] / under["covers"] for under, stone in zip(stones, stones[1:])]
+    checks.check(
+        f"{name}.pile_smaller",
+        bool(steps) and max(steps) <= want["max_size_step"],
+        f"seen from above the stones cover {[round(stone['covers'], 3) for stone in stones]} m2 going up, each over the one below {[round(step, 2) for step in steps]}; "
+        f"spec wants every step at most {want['max_size_step']}",
+    )
+    # At each stone, the centre of mass of every stone above it must be over its cap.
+    tipping = []
+    for index, under in enumerate(stones[:-1]):
+        above = stones[index + 1 :]
+        centre = sum((stone["centre"] * stone["volume"] for stone in above), Vector()) / sum(stone["volume"] for stone in above)
+        if over_cap(centre, under) is None:
+            tipping.append(index + 1)
+    checks.check(
+        f"{name}.pile_balanced",
+        len(stones) > 1 and not tipping,
+        f"counting up from the ground, the centre of mass of the stones above stone {tipping} is not over that stone's cap "
+        f"(its surface within {rules['seat_deg']} degrees of level): they would tip off",
+    )
+    print(
+        f"{name} pile: {len(stones)} stones; going up, sunk {[sink if sink is None else round(sink, 3) for sink in sinks]} of their thickness, "
+        f"thickness over width {[round(share, 3) for share in flat]}, size steps {[round(step, 2) for step in steps]}, tipping off {tipping}"
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -1196,7 +1269,7 @@ def check_scene(checks, spec, conv):
             check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
         if "overlap" in spec:
             check_overlap(checks, name, [f for f in bm.faces if f.material_index not in opened], spec, conv)
-        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster)):
+        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster), ("pile", check_pile)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
 

@@ -30,7 +30,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Rib | Single ribs and a paired arch | Not started |
 | Table rock | 2 or more | Not started |
 | Slab | Single and overlapped, several sizes | Three overlapped variants built from pieces (ADR 13): 2.6, 4.0 and 1.4 m across, 208 to 312 triangles, bare stone. No single slab, no covers. Not approved. |
-| Stack | 3 or more | Not started |
+| Stack | 3 or more | Three variants built from pieces (ADR 13), the first whose pieces stand on each other: 0.7, 1.1 and 0.32 m tall, of 4, 5 and 3 flat stones, 334 to 430 triangles on the two measured, bare stone. `stack_2` and `stack_3` pass every gate; `stack_1` fails the load test on `painted.banding`. No covers. Not reviewed, not approved. |
 | Block | A run of sizes, some cracked | Not started |
 | Terrace | 2 or more | Not started |
 | Pebble | A run of sizes | Three sizes, each one closed skin cut by planes (not pieces): 0.12, 0.25 and 0.5 m across, 92 to 104 triangles, a 256 px texture, bare stone. No square pebbles, no covers. Not approved. |

@@ -60,6 +60,10 @@ level_deg = 12.0            # a surface within this of level is one to stand on;
 # A crag: leaning prisms of different heights on one base, with low blocks at its foot.
 block_height = 0.3          # a piece lower than this share of the bounds' height is a block and not a prism: the height the foot's band stops at
 
+[pile]
+# A stack: flat stones piled one on another.
+seat_deg = 20.0             # a stone rests on surface within this of level: a cap, not the chamfer round it
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 
