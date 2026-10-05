@@ -85,8 +85,6 @@
     ],
     "edge_light": 0.2,
     "edge_width_m": 0.004,
-    "crevice_shadow": 0.5,
-    "crevice_width_m": 0.01,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -113,7 +111,7 @@
       0.5,
       1.5
     ],
-    "growth_patch_edges": 0.9,
+    "growth_patch_edges": 0.61,
     "blotch_spread": [
       1.0,
       2.5
