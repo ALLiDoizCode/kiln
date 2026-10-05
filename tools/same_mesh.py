@@ -1,11 +1,12 @@
 """Gate L2c: a palette variant's GLB carries its base asset's mesh, and only its texture differs.
 
-A season is another palette on the same mesh (ADR 11, ADR 13): a spec with
-`palette_of` names the asset it is a palette of. A variant then costs a
+A season is another palette on the same mesh (ADR 11, ADR 13), and a cover
+(moss) is other growth painted on it (ADR 10): a spec with `palette_of`
+names the asset it is a palette of. A variant then costs a
 texture and not a model only if every vertex, normal, UV and index of the two
 files is the same, byte for byte, so that the game can keep one mesh and swap
 the image. This reads both exported files and says so, and that the images do
-differ: a season with its base's own texture is not a season.
+differ: a season or a cover with its base's own texture is not one.
 
 Usage: python tools/same_mesh.py <variant.glb> <base.glb>
 """

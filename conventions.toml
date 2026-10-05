@@ -174,9 +174,13 @@ max_pale_share = 0.0002     # share of the leaf samples that may be pale: glare,
 [palette]
 # Variants that are a change of palette on their base asset's mesh (ADR 11, ADR 13).
 seasons = ["summer", "autumn", "winter"]
-# What a palette variant's spec may change from its base's, besides its materials' colours
+# What a season's spec may change from its base's, besides its materials' colours
 # (tools/lint_spec.py); everything else shapes the mesh or its UVs and must be the base's.
 keys = ["foliage.under_tint", "foliage.top_tint", "foliage.core_tint", "foliage.variation", "painted_shading.base_tint", "painted_shading.top_tint"]
+# What lies on a stone (docs/style/catalogue.md). A cover other than bare is growth (ADR 10), and a
+# cover variant's spec may change only these from its base's: where the growth sits and how it looks.
+covers = ["bare", "mossy"]
+cover_keys = ["painted_shading.growth", "painted_shading.growth_height_m", "painted_shading.growth_up", "painted_shading.growth_edges", "painted_shading.growth_darker", "painted_shading.growth_patch_m"]
 
 [skeleton]
 # How a tree's bark is measured: level slices through it. The amounts wanted are in each spec.

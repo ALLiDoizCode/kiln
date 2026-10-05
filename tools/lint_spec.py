@@ -464,12 +464,26 @@ if not checks.failed():
     seasons = conv["palette"]["seasons"]
     if "season" in spec or leaves:
         checks.check("spec.season", spec.get("season") in seasons, f"an asset with foliage names its season, one of {seasons}")
+    # What lies on the asset (docs/style/catalogue.md): a cover other than bare is growth painted on it (ADR 10).
+    covers = conv["palette"]["covers"]
+    if "cover" in spec:
+        grown = isinstance(spec.get("painted_shading"), dict) and "growth" in spec["painted_shading"]
+        checks.check(
+            "spec.cover",
+            spec["cover"] in covers and grown == (spec["cover"] != "bare"),
+            f"optional; one of {covers}; every cover but bare has `growth` in its painted_shading, and bare has none",
+        )
     # A palette variant is its base asset drawn again with other colours (ADR 11, ADR 13): the two
-    # specs agree on everything that shapes the mesh, and differ in what the palette is made from.
+    # specs agree on everything that shapes the mesh, and differ in what the variant is a variant in.
+    # A season differs in its palette and its materials' colours, a cover in the growth painted on it.
     if "palette_of" in spec:
         base_path = ROOT / "source" / str(spec["palette_of"]) / "spec.json"
         ok = isinstance(spec["palette_of"], str) and spec["palette_of"] != asset.name and base_path.is_file()
-        shape, colours = [], []
+        shape, colours, kinds = [], [], []
+        allowed = {
+            "season": set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]},
+            "cover": set(conv["palette"]["cover_keys"]),
+        }
         if ok:
             base = json.loads(base_path.read_text())
 
@@ -487,16 +501,21 @@ if not checks.failed():
                 return found
 
             mine, theirs = values(spec), values(base)
-            free = set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]}
-            # The asset's own name and season, and the comparison with sibling seeds, which a season does not repeat.
-            apart = {"asset", "objects", "palette_of", "season"} | {key for key in set(mine) | set(theirs) if key.startswith("variants.")}
+            # A base that names no cover is bare, unless it has growth of its own, and then what it is under is not known.
+            theirs.setdefault("cover", None if "painted_shading.growth" in theirs else "bare")
+            # What this is a variant in: what it names (its season, its cover) that is not its base's.
+            kinds = [kind for kind in allowed if kind in mine and mine[kind] != theirs.get(kind)]
+            free = set().union(*(allowed[kind] for kind in kinds))
+            # The asset's own name, and the comparison with sibling seeds, which a palette variant does not repeat.
+            apart = {"asset", "objects", "palette_of", *allowed} | {key for key in set(mine) | set(theirs) if key.startswith("variants.")}
             shape = sorted(key for key in (set(mine) | set(theirs)) - free - apart if mine.get(key) != theirs.get(key))
             colours = sorted(key for key in free if mine.get(key) != theirs.get(key))
         checks.check(
             "spec.palette_of",
-            ok and not shape and colours,
-            f"names another asset with a spec.json, whose spec this one matches in everything but the palette ({sorted(conv['palette']['keys'])} and the material colours), and differs from there; "
-            f"differs outside the palette in {shape}, and in the palette in {colours}",
+            ok and kinds and not shape and colours,
+            f"names another asset with a spec.json, and a season or a cover that is not that asset's (it differs in {kinds}); its spec then matches the base's in everything but what that may change "
+            f"(a season: {sorted(conv['palette']['keys'])} and the material colours; a cover: {sorted(conv['palette']['cover_keys'])}), and differs from it there; "
+            f"differs outside that in {shape}, and inside it in {colours}",
         )
     stage = spec.get("growth_stage")
     if stage is not None or recipe is not None:

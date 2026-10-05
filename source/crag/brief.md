@@ -58,7 +58,18 @@ Painted by script (ADR 9, ADR 10; `tools/paint.py`) into one texture, 1024 px un
 4. **Crevice shadow.** Where one piece passes into another the colour loses 45% of its light, fading to nothing 0.2 m out. This is what hides the joins (ADR 13), and a crag has more of them than any rock before it.
 5. **Edge light.** Exposed edges gain up to 30%, fading to nothing 0.06 m into each plane.
 
-No growth: moss is a cover, and covers are palette variants on the same mesh (ADR 13).
+No growth on the bare stone: moss is a cover, and covers are palette variants on the same mesh (ADR 13; Covers, below).
+
+## Covers
+
+A cover is what lies on the stone: `bare`, or `mossy` (`docs/style/catalogue.md`; snow is not built). The assets above are bare. A mossy one is a palette variant (ADR 13, `CONTEXT.md`): a separate asset, `<base>_mossy`, whose spec names its base as `palette_of` and its `cover`, and differs from the base's only in the growth keys of `painted_shading`. It is the base's mesh, UVs included, with another texture, and the gate holds it to that (`spec.cover`, `spec.palette_of`, `palette.same_mesh`).
+
+Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground up to a height, and small patches on faces near level and along exposed upper edges. Its colour, how dark it is and how sparse come from the first mossy rock (`source/rock/brief.md`, measured there against the benchmark): olive `#7a8a4d` at the stone's own lightness; patches 50% darker than the stone they sit on; patches over about 25% of near-level faces and along about 40% of exposed upper edges, because the benchmark's moss is sparse. How high the wash reaches and how large a patch is are shares of the stone, not that rock's metres:
+
+- **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
+- **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+
+A crag's prisms lean and their caps are tipped, at separate heights: moss lies in the wash round the foot and over the foot blocks, along the upper edges of the taller prisms, and on whatever of a cap is near level. `crag_1_mossy`: 3.0 m tall, so the wash reaches 0.9 m; 2.6 m on its narrower side, so patches of 0.2 m.
 
 ## Parts
 
@@ -75,7 +86,7 @@ At most 90 triangles a piece and 1 material slot per variant. A prism of n sides
 
 ## Out of scope
 
-Collision shapes, LODs, mossy and snow-capped covers, other stone colours, crags as part of a cliff face (placement is the game's), a finished underside.
+Collision shapes, LODs, snow-capped covers, other stone colours, crags as part of a cliff face (placement is the game's), a finished underside.
 
 ## Numbers
 
@@ -121,3 +132,5 @@ Proposed by the agent, and open to change:
 - That blocks may stand anywhere round the base, behind the tallest prism too: the stepping down is asked of the prisms.
 - Leaving the upright share unlimited, for the reason under Silhouette.
 - The budget of 90 triangles a piece; every painted value, the standing stone's; no growth.
+
+- **Covers (2026-10-05).** Asked for by the owner through the catalogue (bare, mossy, snow-capped for rocks) and ADR 13: a cover is a palette variant of its base, as a season is of a tree. Proposed by the agent, and open to change: the `cover` field and what a cover variant's spec may change; that the reach is three tenths of the height and at most 0.9 m, and a patch a thirteenth of the narrower side and at most 0.2 m (neither share is measured on a reference: they are the first mossy rock's 0.9 m and 0.2 m turned into shares, the reach lowered from that rock's 0.45 of its height so the wash stays under half way up); the colour, darkness and the two shares of cover, which are that rock's. Which variant of the family got the cover was the coordinator's choice. Not approved.

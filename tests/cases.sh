@@ -305,6 +305,9 @@ expect_id "spec.palette_of"          "L0 catches a season drawn from another see
 expect_id "spec.palette_of"          "L0 catches a season with a leaf shape of its own" lint_season 's["foliage"]["piece_m"] = [0.2, 0.9]'
 expect_id "spec.palette_of"          "L0 catches a palette of an asset that does not exist" lint_season 's["palette_of"] = "zz_nope"'
 expect_id "spec.palette_of"          "L0 catches a season in its base's own colours" lint_season 'b = json.load(open("source/tree_1/spec.json")); s["materials"] = b["materials"]; s["foliage"] = b["foliage"]'
+# A palette variant says what it is a palette of its base in: another season or another cover.
+expect_id "spec.palette_of"          "L0 catches a palette variant in its base's own season" lint_season 's["season"] = "summer"'
+expect_id "spec.palette_of"          "L0 catches a season with moss its base has not" lint_season 's["painted_shading"].update(growth="#7a8a4d", growth_height_m=0.9)'
 
 # L2c: a season's GLB carries its base's mesh, UVs included: only the texture differs.
 uses tree_1 tree_1_autumn same_mesh
@@ -315,6 +318,27 @@ uses tree_1 tree_1_autumn same_mesh paint tree_mutations
 expect_id "palette.same_mesh"        "L2c catches a season whose leaves sit on other swatches" python tools/same_mesh.py "$(broken_tree gradient_within_piece)" assets/models/tree_1.glb
 uses tree_1 same_mesh
 expect_id "palette.other_texture"    "L2c catches a season with its base's own texture" python tools/same_mesh.py assets/models/tree_1.glb assets/models/tree_1.glb
+# Covers (ADR 10, ADR 13): a cover is another palette variant, its base's spec but for the growth painted on it.
+# `lint_cover <python>` lints a copy of crag_1_mossy after that has changed its spec `s` and painted block `p`.
+uses crag_1 crag_1_mossy lint_spec
+expect 0 "L0 passes a cover's spec"          lint_cover 'pass'
+expect_id "spec.cover"               "L0 catches a cover that is not one of the catalogue's" lint_cover 's["cover"] = "rusty"'
+expect_id "spec.cover"               "L0 catches a mossy cover with no growth" lint_cover '[p.pop(k) for k in list(p) if k.startswith("growth")]'
+expect_id "spec.cover"               "L0 catches growth on a cover called bare" lint_cover 's["cover"] = "bare"'
+expect_id "spec.palette_of"          "L0 catches a cover drawn from another seed than its base" lint_cover 's["seed"] = 2'
+expect_id "spec.palette_of"          "L0 catches a cover with pieces of its own" lint_cover 's["overlap"]["max_buried_share"] = 0.5'
+expect_id "spec.palette_of"          "L0 catches a cover on stone of another colour" lint_cover 's["materials"]["m_crag"] = "#b0a080"'
+expect_id "spec.palette_of"          "L0 catches a cover with a tint of its own" lint_cover 'p["top_tint"] = "#ffffff"'
+expect_id "spec.palette_of"          "L0 catches a cover with blotches of its own" lint_cover 'p["blotch"] = 0.3'
+expect_id "spec.palette_of"          "L0 catches a cover of an asset that does not exist" lint_cover 's["palette_of"] = "zz_nope"'
+expect_id "spec.palette_of"          "L0 catches moss on a mesh that says no cover" lint_cover 'del s["cover"]'
+# L2c: a cover's GLB carries its base's mesh, UVs included: only the texture differs.
+uses crag_1 crag_1_mossy same_mesh
+expect 0 "L2c passes a cover on its base's mesh" python tools/same_mesh.py assets/models/crag_1_mossy.glb assets/models/crag_1.glb
+uses crag_1 crag_1_mossy slab_1 same_mesh
+expect_id "palette.same_mesh"        "L2c catches a cover on another rock's mesh" python tools/same_mesh.py assets/models/crag_1_mossy.glb assets/models/slab_1.glb
+uses crag_1 same_mesh
+expect_id "palette.other_texture"    "L2c catches a cover with its base's own texture" python tools/same_mesh.py assets/models/crag_1.glb assets/models/crag_1.glb
 # L0, blades: blade_plant_1's spec with one thing wrong, and a tree's with blades added.
 # `lint_blade <python>` lints a copy of blade_plant_1 after that has changed its spec `s`.
 uses blade_plant_1 lint_spec

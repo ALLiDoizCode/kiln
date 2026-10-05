@@ -114,7 +114,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/stone.py) echo table_rock_1 ;;&  # and the kit; the line for the other families it builds follows
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
-    source/crag/*) echo crag_1 ;;
+    source/crag/*) echo crag_1 crag_1_mossy ;;
     source/stack/*) echo stack_1 ;;
     source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
     source/boulder/*) echo boulder_2 ;;  # the generator and the brief boulder_2 is built with
@@ -437,6 +437,7 @@ lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spe
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
+lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
 lint_stack() { lint_copy stack_1 '' "$1"; }    # <python statements changing spec s>
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
