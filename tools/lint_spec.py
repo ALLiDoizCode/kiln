@@ -137,6 +137,8 @@ FOLIAGE = {
 FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
 # Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
 BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
+# Optional; a conifer's crown (source/tree/species/conifer.md): tiers of foliage found as pads are, and one leader. All keys are required once it is present.
+TIERS = {"widest_among_lowest": int, "min_narrowing": float, "max_top_share": float, "min_droop": float, "max_tip_width_m": float, "max_leader_bow_m": float, "tip_off_m": list}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
 HEX = "#[0-9a-f]{6}"
@@ -477,6 +479,15 @@ if not checks.failed():
         siblings = variants["siblings"]
         ok = siblings and asset.name not in siblings and all(isinstance(s, str) and (ROOT / "source" / s / "spec.json").is_file() for s in siblings) and 0 < variants["min_difference"] < 1
         checks.check("spec.variants_amounts", ok, "siblings are other assets with a spec.json; min_difference in 0..1")
+    tiers = block("tiers", TIERS)
+    if tiers:
+        checks.check(
+            "spec.tiers_amounts",
+            leaves is not None and skeleton is not None and not bladed and tiers["widest_among_lowest"] >= 1
+            and all(0 < tiers[key] <= 1 for key in ("min_narrowing", "max_top_share"))
+            and all(tiers[key] > 0 for key in ("min_droop", "max_tip_width_m", "max_leader_bow_m")) and span(tiers["tip_off_m"]),
+            "tiers are foliage in pads round a leader: the spec needs its foliage and skeleton blocks; widest_among_lowest at least 1; min_narrowing and max_top_share in 0..1; min_droop, max_tip_width_m and max_leader_bow_m above 0; tip_off_m as [least, most]",
+        )
     # A tree is drawn from a species recipe at a growth stage (ADR 13): source/<family>/species/<species>.toml.
     family, species = spec.get("family"), spec.get("species")
     recipe = None
@@ -571,7 +582,9 @@ def numbers(path):
 
 rows = numbers(asset.source / "brief.md")
 if isinstance(spec.get("family"), str):
-    rows = {**numbers(ROOT / "source" / spec["family"] / "brief.md"), **rows}
+    # The family's rows, then its species' where the species has a brief of its own beside its recipe, then the asset's.
+    species_rows = numbers(ROOT / "source" / spec["family"] / "species" / f"{spec.get('species')}.md")
+    rows = {**numbers(ROOT / "source" / spec["family"] / "brief.md"), **species_rows, **rows}
 
 
 def leaves(value, path=""):

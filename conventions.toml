@@ -176,6 +176,7 @@ seen_into_m = 0.6           # a piece met this far above a pad's underside is th
 hole_m = 0.15               # gaps in a pad's outline up to this wide are holes in it, not its edge
 rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
+tier_ring_m = 0.3           # a tier droops, so its underside is taken in rings this wide round its middle (the check under_closed, for a spec with `tiers`)
 
 [under_view]
 # A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the

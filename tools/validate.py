@@ -462,11 +462,15 @@ def check_canopy(checks, name, bm, slots, spec, conv):
     widths = [round(width(found), 2) for found in of_pad.values()]
     flatness = [round(width(found) / box(found)[2], 2) for found in of_pad.values()]
     spread = max(widths) / min(widths) if widths else 0.0
+    # A conifer's tiers (a spec with `tiers`): the highest is its top, which is asked to be pointed (`top_pointed`) and not wide.
+    tiered = "tiers" in spec
+    highest = max(of_pad, key=lambda pad: max(v.co.z for piece in of_pad[pad] for face in piece for v in face.verts), default=None) if tiered else None
+    asked = [flat for pad, flat in zip(of_pad, flatness) if pad != highest]
     print(f"{name} canopy: pads {widths} m wide, {flatness} times as wide as tall; cores per pad {counts}, widest core over narrowest {ratios}")
     checks.check(
         f"{name}.pads_wide",
-        flatness and min(flatness) >= want["min_pad_flatness"],
-        f"the pads are {flatness} times as wide as they are tall (widths {widths} m); spec wants at least {want['min_pad_flatness']} of every pad",
+        asked and min(asked) >= want["min_pad_flatness"],
+        f"the pads are {flatness} times as wide as they are tall (widths {widths} m); spec wants at least {want['min_pad_flatness']} of every pad{' below the top (tiers)' if tiered else ''}",
     )
     checks.check(
         f"{name}.pads_differ",
@@ -505,13 +509,36 @@ def check_canopy(checks, name, bm, slots, spec, conv):
     pad_above = numpy.vectorize(lambda index: pad_of_face.get(index, -1))(above)
     piece_first = numpy.isin(first, list(is_piece))
     into = {}
+    alone, numbered = {}, {}
     for pad in whole:
+        if tiered:
+            # A tier stands over the wider tiers below it, which hide it from straight below; a player sees its
+            # underside at a slant between them. So each tier is looked up at alone, the others set aside.
+            mine_faces = [face for part, at in zip(pieces + cores, piece_pads + core_pads) if at == pad for face in part]
+            numbers = [face.index for face in mine_faces]
+            alone[pad] = BVHTree.FromPolygons([v.co.copy() for v in bm.verts], [[v.index for v in face.verts] for face in mine_faces])
+            numbered[pad] = numbers
+            first_alone, height, above_alone = foliage.from_below(alone[pad], lo, hi, cell)
+            first = numpy.where(first_alone >= 0, numpy.array(numbers + [-1])[first_alone], -1)
+            pad_first = numpy.where(first >= 0, pad, -1)
+            pad_above = numpy.where(above_alone >= 0, pad, -1)
+            piece_first = numpy.isin(first, list(is_piece))
         mine = pad_first == pad
         outline = numpy.logical_or(mine, pad_above == pad)
         if not mine.any():
             into[pad] = 1.0
             continue
         underside = numpy.percentile(height[mine], 20)
+        if tiered:
+            # A tier droops: its underside is lower the further from the leader. So the underside is taken ring by
+            # ring round the tier's own middle, each ring a few cells wide, and not once for the whole tier.
+            rows, columns = numpy.nonzero(mine)
+            far = numpy.hypot(rows - rows.mean(), columns - columns.mean()) * cell
+            ring = (far / rules["tier_ring_m"]).astype(int)
+            underside = numpy.zeros(height.shape)
+            for number in set(ring.tolist()):
+                at = ring == number
+                underside[rows[at], columns[at]] = numpy.percentile(height[rows[at], columns[at]], 20)
         deep = numpy.logical_and(numpy.logical_and(mine, piece_first), height > underside + rules["seen_into_m"])
         holes = numpy.logical_and(foliage.closing(outline, max(1, round(rules["hole_m"] / cell))), first < 0)
         into[pad] = round(float((deep.sum() + holes.sum()) / (outline.sum() + holes.sum())), 3)
@@ -524,8 +551,8 @@ def check_canopy(checks, name, bm, slots, spec, conv):
     )
 
     # And its rim reads as leaves: points of pieces stand clear against the sky.
-    def clear(x, y):
-        return tree.ray_cast(Vector((x, y, lo[2] - 1.0)), Vector((0, 0, 1)))[2] is None
+    def clear(x, y, pad=None):
+        return alone.get(pad, tree).ray_cast(Vector((x, y, lo[2] - 1.0)), Vector((0, 0, 1)))[2] is None
 
     points = {pad: 0 for pad in whole}
     for piece, pad in zip(pieces, piece_pads):
@@ -538,8 +565,11 @@ def check_canopy(checks, name, bm, slots, spec, conv):
         mine = {face.index for face in piece}
         # The tip itself is seen from below, and there is sky just past it and either side of it.
         seen = tree.ray_cast(Vector((*(tip - out * rules["rim_step_m"]), lo[2] - 1.0)), Vector((0, 0, 1)))[2] in mine
+        if pad in alone:
+            met = alone[pad].ray_cast(Vector((*(tip - out * rules["rim_step_m"]), lo[2] - 1.0)), Vector((0, 0, 1)))[2]
+            seen = met is not None and numbered[pad][met] in mine
         around = [tip + Matrix.Rotation(math.radians(turn), 2) @ out * rules["rim_step_m"] for turn in (-70, 0, 70)]
-        if seen and all(clear(*at) for at in around):
+        if seen and all(clear(*at, pad) for at in around):
             points[pad] += 1
     rim = {}
     for pad in whole:

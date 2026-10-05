@@ -442,6 +442,7 @@ lint_copy() { # <asset> <sed expression for the brief> <python statements for th
 lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the copied brief>
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
+lint_conifer() { lint_copy conifer_1 '' "$1"; }  # <python statements changing spec s>
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>

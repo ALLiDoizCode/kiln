@@ -487,3 +487,12 @@ expect_id "spec.arch"                "L0 catches piers and a span asked of one c
 expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
 expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
 expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
+
+# L0, a second species: a conifer's numbers come from its species' brief (source/tree/species/conifer.md) between the
+# family's and its own, and its spec has a `tiers` block. `lint_conifer <python>` lints a copy of conifer_1.
+uses conifer_1 lint_spec
+expect 0 "L0 passes a conifer's spec"        lint_conifer 'pass'
+expect_id "brief.numbers_match_spec" "L0 catches a conifer that disagrees with its species' brief" lint_conifer 's["foliage"]["lobes"] = [2, 4]'
+expect_id "spec.tiers"               "L0 catches a missing tiers key"          lint_conifer 'del s["tiers"]["min_droop"]'
+expect_id "spec.tiers_amounts"       "L0 catches a tip range given backwards"  lint_conifer 's["tiers"]["tip_off_m"] = [0.6, 0.1]'
+expect_id "spec.tiers_amounts"       "L0 catches tiers asked of a tree with no foliage block" lint_conifer 'del s["foliage"]'

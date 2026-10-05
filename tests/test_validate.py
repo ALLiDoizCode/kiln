@@ -750,6 +750,36 @@ def regrow(spec, **changes):
     generator.build_tree(spec, strict=False, recipe=recipe)
 
 
+def even_tiers(spec):
+    """A conifer whose tiers are all one width, the top's whorl with them: a column, not a cone."""
+    regrow(spec, tiers__taper=[0.0, 0.0], tiers__jitter=[1.0, 1.0], tiers__first=[1.0, 1.0], top__width=[0.97, 1.0])
+
+
+def level_tiers(spec):
+    """Boughs that do not hang: every tier a level plate."""
+    regrow(spec, tiers__droop=[0.0, 0.0], top__droop=[0.0, 0.0])
+
+
+def blunt_top(spec):
+    """A dome where the point should be: a wide low mass on the leader's tip and no pieces standing on it."""
+    regrow(spec, top__spire_radius=[0.75, 0.75], top__spire_up=[0.3, 0.3], top__tip_pieces=0)
+
+
+def bowed_leader(spec):
+    """A trunk that bows half a metre out of the line from foot to tip."""
+    regrow(spec, trunk__bend=[0.55, 0.55])
+
+
+def true_top(spec):
+    """A leader drawn with a ruler: the tip stands straight over the foot."""
+    regrow(spec, top__off=[0.0, 0.0], trunk__lean=[0.0, 0.0], trunk__bend=[0.0, 0.0])
+
+
+def fat_tiers(spec):
+    """Tiers as tall as they are wide: balls on a pole."""
+    regrow(spec, boughs__up=1.6, boughs__down=1.0, tiers__droop=[0.0, 0.0], tiers__counts=[[3, 1.0]])
+
+
 def leaf_slot(spec):
     names = [slot.material.name for slot in bpy.data.objects["tree_1"].material_slots]
     return names.index(spec["foliage"]["material"])
@@ -1434,6 +1464,10 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
+    # The conifer's (source/tree/species/conifer.md), written before its checks and not yet run: no conifer is kept by the
+    # generator, and a case builds its asset first. To be listed when conifer_1 builds, each then seen NOT CAUGHT before its check:
+    # (even_tiers, "conifer_1.tiers_narrow"), (level_tiers, "conifer_1.tiers_droop"), (blunt_top, "conifer_1.top_pointed"),
+    # (bowed_leader, "conifer_1.leader_straight"), (true_top, "conifer_1.leader_straight"), (fat_tiers, "conifer_1.pads_wide").
 ]
 
 
