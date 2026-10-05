@@ -64,6 +64,9 @@ expect 0 "L1 mutation tests: block_2" l1 block_2
 uses table_rock_1 validate paint
 expect 0 "L1 mutation tests: table_rock_1" l1 table_rock_1
 
+# A stepped spire (source/spire): its tiers taken away, pushed off, widened and pinched, and its base cut into bands.
+uses spire_1 validate paint
+expect 0 "L1 mutation tests: spire_1" l1 spire_1
 # An arch (source/arch): its span, a pier and its rubble moved one way at a time.
 uses arch_1 validate paint
 expect 0 "L1 mutation tests: arch_1" l1 arch_1
@@ -396,6 +399,19 @@ expect_id "spec.table"               "L0 catches a table block with a key missin
 expect_id "spec.table"               "L0 catches a table rock with more necks than pieces under its cap" lint_table 's["table"]["necks"] = 3'
 expect_id "spec.table"               "L0 catches a cap and necks asked of one closed skin" lint_table 'del s["overlap"]'
 
+# L0, stepped spires: spire_1's spec with one thing wrong in what it asks of its tiers (`spire`).
+uses spire_1 lint_spec
+expect 0 "L0 passes a spire variant's spec"  lint_spire 'pass'
+expect_id "spec.spire"               "L0 catches a width step that lets tiers of one width through" lint_spire 's["spire"]["max_width_step"] = 1.0'
+expect_id "spec.spire"               "L0 catches a spire asked for a base and one tier" lint_spire 's["spire"]["tiers"] = [2, 3]'
+expect_id "spec.spire"               "L0 catches a spire asked for more tiers at least than at most" lint_spire 's["spire"]["tiers"] = [4, 3]'
+expect_id "spec.spire"               "L0 catches a spire whose tiers may stand on the middle of each other" lint_spire 's["spire"]["min_tier_offset"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire that need not lean" lint_spire 's["spire"]["min_lean_deg"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire whose steps may all be alike" lint_spire 's["spire"]["min_step_spread"] = 1.0'
+expect_id "spec.spire"               "L0 catches a spire asked for no ledge at all" lint_spire 's["spire"]["min_ledge_share"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire block with a key missing" lint_spire 'del s["spire"]["min_flutes"]'
+expect_id "spec.spire"               "L0 catches tiers asked of one closed skin" lint_spire 'del s["overlap"]'
+expect_id "spec.spire"               "L0 catches a spire with as many tiers as pieces, and no foot" lint_spire 's["overlap"]["min_count"] = 3; s["overlap"]["max_count"] = 3'
 # L0, arches: arch_1's spec with one thing wrong in what it asks of its opening and its span (`arch`).
 uses arch_1 lint_spec
 expect 0 "L0 passes an arch variant's spec" lint_arch 'pass'

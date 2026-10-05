@@ -442,6 +442,7 @@ lint_stack() { lint_copy stack_1 '' "$1"; }    # <python statements changing spe
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
 lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
 lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>
+lint_spire() { lint_copy spire_1 '' "$1"; }   # <python statements changing spec s>
 lint_arch() { lint_copy arch_1 '' "$1"; }     # <python statements changing spec s>
 lint_boulder() { lint_copy boulder_2 '' "$1"; } # <python statements changing spec s>
 

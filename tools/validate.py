@@ -1477,6 +1477,168 @@ def check_cracks(checks, name, bm, spec, conv):
     )
 
 
+# A stepped spire (source/spire): a fluted base and narrower tiers stacked on it like a telescope.
+
+
+def check_spire(checks, name, bm, spec, conv):
+    """The shape is tiers stacked like a telescope: so many of them, each standing on the one below
+    and narrower than it by a clear step, each with a flat cap that shows as a ledge; and the pieces
+    on the ground have tall narrow sides, with edges that run up them and not round them."""
+    want, rules = spec["spire"], conv["spire"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    tol = spec["bounds_tolerance_m"]
+    pieces = pieces_in(bm.faces)
+    solids = [Solid(piece) for piece in pieces]
+    ground = [index for index, solid in enumerate(solids) if solid.lo.z <= lo.z + tol]
+
+    def cut(index, z):
+        """Where a level grid at height z is inside a piece: the points, and the area each stands for."""
+        solid = solids[index]
+        step = max(solid.hi.x - solid.lo.x, solid.hi.y - solid.lo.y) / rules["cut_cells"]
+        columns, rows = math.ceil((solid.hi.x - solid.lo.x) / step), math.ceil((solid.hi.y - solid.lo.y) / step)
+        points = [Vector((solid.lo.x + (i + 0.5) * step, solid.lo.y + (j + 0.5) * step, z)) for i in range(columns) for j in range(rows)]
+        return [point for point in points if solid.holds(point)], step * step
+
+    # The tiers, found from the top down: the piece that reaches highest, then the piece its foot is sunk into, and so on to the ground.
+    chain = [max(range(len(pieces)), key=lambda index: solids[index].hi.z)] if pieces else []
+    while chain and chain[-1] not in ground:
+        upper = solids[chain[-1]]
+        foot, _ = cut(chain[-1], upper.lo.z + rules["foot_height"] * (upper.hi.z - upper.lo.z))
+        holding = {index: sum(solids[index].holds(point) for point in foot) for index in range(len(pieces)) if index not in chain}
+        below = max(holding, key=holding.get, default=None)
+        if below is None or not holding[below]:
+            break
+        chain.append(below)
+    stands = bool(chain) and chain[-1] in ground
+    tiers = chain[::-1]
+    checks.check(
+        f"{name}.spire_tiers",
+        stands and want["tiers"][0] <= len(tiers) <= want["tiers"][1],
+        f"from the highest piece down, each sunk into the next, there are {len(tiers)} tiers, and the lowest {'stands on the ground' if stands else 'does not stand on the ground'}; "
+        f"spec wants {want['tiers'][0]} to {want['tiers'][1]} tiers, from a base on the ground up",
+    )
+    # A tier stands on the one below when, just above that one's top, the one below is under all of it.
+    standing = []
+    for lower, upper in zip(tiers, tiers[1:]):
+        foot, _ = cut(upper, solids[lower].hi.z + tol)
+        under = sum(solids[lower].tree.ray_cast(point, Vector((0, 0, -1)))[0] is not None for point in foot)
+        standing.append(under / len(foot) if foot else 0.0)
+    checks.check(
+        f"{name}.spire_stands_on",
+        bool(standing) and min(standing) >= rules["min_standing_share"],
+        f"cut level just above the top of the tier below, the share of each tier that has the tier below under it is {[round(share, 3) for share in standing]}, from the base up; "
+        f"each must be at least {rules['min_standing_share']} (conventions)",
+    )
+    # A tier's width is the square root of the area of a level cut through it, half way up the part of it that shows.
+    areas = []
+    for index, tier in enumerate(tiers):
+        low = lo.z if index == 0 else solids[tiers[index - 1]].hi.z
+        inside, each = cut(tier, (low + solids[tier].hi.z) / 2)
+        areas.append(len(inside) * each)
+    widths = [math.sqrt(area) for area in areas]
+    steps = [b / a if a else float("inf") for a, b in zip(widths, widths[1:])]
+    checks.check(
+        f"{name}.spire_steps_in",
+        bool(steps) and max(steps) <= want["max_width_step"],
+        f"half way up what shows of each, the tiers are {[round(width, 2) for width in widths]} m wide from the base up, each over the one below {[round(step, 2) for step in steps]}; "
+        f"spec wants every step at most {want['max_width_step']}",
+    )
+    # A cap shows as a ledge: near-level surface of the tier, seen from straight above, so with nothing standing over it.
+    hits, each = seen_from_above(bm, spec, conv)
+    level = math.cos(math.radians(conv["top"]["level_deg"]))
+    ledges = [0.0] * len(tiers)
+    for x, y, z, normal in hits:
+        if normal.z >= level:
+            under = Vector((x, y, z - 2 * tol))
+            for index, tier in enumerate(tiers):
+                if solids[tier].holds(under):
+                    ledges[index] += each
+                    break
+    shares = [ledge / area if area else 0.0 for ledge, area in zip(ledges, areas)]
+    checks.check(
+        f"{name}.spire_ledges",
+        bool(shares) and min(shares) >= want["min_ledge_share"],
+        f"seen from straight above, the tiers show {[round(ledge, 2) for ledge in ledges]} m2 within {conv['top']['level_deg']} degrees of level, from the base up, "
+        f"{[round(share, 3) for share in shares]} of the area of the level cut through each; spec wants at least {want['min_ledge_share']} on every tier",
+    )
+    # Flutes: sides of the pieces on the ground that are tall and narrow, so the edges between them run up and not round.
+    base_height = solids[tiers[0]].hi.z - lo.z if stands else 0.0
+    plane_of = planes_of(bm, lo.z, tol, conv)[3]
+    spacing = max(base_height, tol) / rules["flute_samples"]
+    flutes = []
+    for index in ground:
+        sides = {}
+        for face in pieces[index]:
+            root = plane_of(face)
+            if root is not None:
+                sides.setdefault(root, []).append(face)
+        for faces in sides.values():
+            normal = sum((f.normal * f.calc_area() for f in faces), Vector()).normalized()
+            if abs(normal.z) >= conv["lean"]["side_normal_z"]:
+                continue
+            across = Vector((0, 0, 1)).cross(normal).normalized()
+            corners = [v.co for f in faces for v in f.verts]
+            tall = max(co.z for co in corners) - min(co.z for co in corners)
+            wide = max(co.dot(across) for co in corners) - min(co.dot(across) for co in corners)
+            if tall < rules["flute_height"] * base_height or tall < rules["flute_tall"] * wide:
+                continue
+            shown = total = 0.0
+            for face in faces:
+                for point, area in surface_samples(face, spacing):
+                    front = point + face.normal * conv["overlap"]["in_front_m"]
+                    total += area
+                    shown += area * (not any(solid.holds(front) for other, solid in enumerate(solids) if other != index))
+            if total and shown / total >= rules["flute_shown"]:
+                flutes.append((round(tall, 2), round(wide, 2)))
+    checks.check(
+        f"{name}.spire_flutes",
+        stands and len(flutes) >= want["min_flutes"],
+        f"{len(flutes)} sides of the pieces on the ground are at least {rules['flute_height']} of the base's height ({base_height:.2f} m) from bottom to top, at least {rules['flute_tall']} times as tall as wide, "
+        f"and at least {rules['flute_shown']} shown (conventions); spec wants {want['min_flutes']}; those found (tall m, wide m) {sorted(flutes, reverse=True)}",
+    )
+    print(
+        f"{name} spire: {len(tiers)} tiers{'' if stands else ', not standing on the ground'}, {[round(width, 2) for width in widths]} m wide, steps {[round(step, 2) for step in steps]}; "
+        f"standing {[round(share, 3) for share in standing]}; ledges {[round(share, 3) for share in shares]} of each level cut; {len(flutes)} flutes"
+    )
+    # Weathered and not built: a telescope has every tier upright on the middle of the one below, in even steps.
+    # Where a tier is, near its top and at its foot: the middle of a level cut through it.
+    def centre(index, z):
+        inside, _ = cut(index, z)
+        return sum(inside, Vector()) / len(inside) if inside else None
+
+    heads, offsets = [], []
+    for index, tier in enumerate(tiers):
+        low = lo.z if index == 0 else solids[tiers[index - 1]].hi.z
+        heads.append(centre(tier, low + rules["head_height"] * (solids[tier].hi.z - low)))
+        if index:
+            foot = centre(tier, low + tol)
+            below = heads[index - 1]
+            offsets.append((foot - below).to_2d().length / widths[index] if foot and below and widths[index] else 0.0)
+    checks.check(
+        f"{name}.spire_off_centre",
+        bool(offsets) and min(offsets) >= want["min_tier_offset"],
+        f"where it leaves the tier below, the middle of each tier is {[round(offset, 3) for offset in offsets]} of its own width from the middle of that tier's head "
+        f"({rules['head_height']} of the way up what shows of it; conventions), from the base up; spec wants at least {want['min_tier_offset']} for every tier: not one on the middle of another",
+    )
+    ground_middle = centre(tiers[0], lo.z + tol) if stands else None
+    lean = 0.0
+    if ground_middle and heads and heads[-1]:
+        reach = heads[-1] - ground_middle
+        lean = math.degrees(math.atan2(reach.to_2d().length, reach.z))
+    checks.check(
+        f"{name}.spire_leans",
+        lean >= want["min_lean_deg"],
+        f"from the middle of the base on the ground to the middle of the top tier's head the spire leans {lean:.1f} degrees from upright; spec wants at least {want['min_lean_deg']}",
+    )
+    spread = max(steps) / min(steps) if len(steps) >= 2 and min(steps) > 0 else 1.0
+    checks.check(
+        f"{name}.spire_steps_differ",
+        spread >= want["min_step_spread"],
+        f"the steps in width from tier to tier are {[round(step, 2) for step in steps]}, the largest {spread:.2f} times the smallest; spec wants at least {want['min_step_spread']}: steps that differ",
+    )
+    print(f"{name} spire, weathered: tiers off the middle of the one below by {[round(offset, 3) for offset in offsets]} of their width; leaning {lean:.1f} degrees; steps differ by {spread:.2f}")
+
+
 # One mass (source/boulder): a boulder is one heavy lump, not a trunk on a spread foot and not a pile of prisms.
 
 
@@ -1704,6 +1866,8 @@ def check_scene(checks, spec, conv):
         for block, check in (("block", check_block), ("cracks", check_cracks)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
+        if "spire" in spec:
+            check_spire(checks, name, bm, spec, conv)
 
         triangles += sum(len(f.verts) - 2 for f in bm.faces)
         for v in bm.verts:

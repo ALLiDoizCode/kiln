@@ -69,6 +69,8 @@ CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "
 PILE = {"max_sink": float, "max_thickness": float, "max_size_step": float}
 # Optional, with `overlap`: a cap held off the ground on narrow necks (a table rock).
 TABLE = {"necks": int, "min_clear_m": float, "min_shelter_share": float, "max_neck_share": float, "min_overhang_m": float}
+# Optional, with `overlap`: tiers stacked like a telescope on a fluted base (a stepped spire).
+SPIRE = {"tiers": list, "max_width_step": float, "min_ledge_share": float, "min_flutes": int, "min_tier_offset": float, "min_lean_deg": float, "min_step_spread": float}
 # Optional, with `overlap`: two piers that reach the ground and a span resting on both, with open air right through under it (an arch).
 ARCH = {"span": str, "min_opening_m": float, "min_clear_m": float, "min_bearing_m2": float, "max_box_share": float, "min_side_step": float, "max_level_share": float}
 ARCH_SPANS = ("lintel", "wedged")
@@ -257,6 +259,27 @@ if not checks.failed():
             and table["necks"] < overlap.get("min_count", 0)
         )
         checks.check("spec.table", ok, f"optional; needs exactly {sorted(TABLE)}: at least 1 neck and fewer than `overlap.min_count` (the cap is a piece too), min_clear_m above 0 and below the bounds' height, max_neck_share above 0 and min_shelter_share at most 1 with the two together at most 1, min_overhang_m above 0 and below half the bounds' lesser side, on an asset of overlapping pieces (`overlap`)")
+    spire = spec.get("spire")
+    if spire is not None:
+        ok = (
+            isinstance(spire, dict)
+            and set(spire) == set(SPIRE)
+            and all(type(spire[key]) is kind for key, kind in SPIRE.items())
+            and len(spire["tiers"]) == 2
+            and all(type(n) is int for n in spire["tiers"])
+            and 3 <= spire["tiers"][0]
+            and spire["tiers"][0] <= spire["tiers"][1] <= 4
+            and 0 < spire["min_tier_offset"] < 1
+            and 0 < spire["min_lean_deg"] < 45
+            and spire["min_step_spread"] > 1
+            and 0 < spire["max_width_step"] < 1
+            and 0 < spire["min_ledge_share"] < 1
+            and spire["min_flutes"] >= 1
+            and isinstance(overlap, dict)
+            and spire["tiers"][1] < overlap.get("max_count", 0)
+            and spire["tiers"][0] < overlap.get("min_count", 0)
+        )
+        checks.check("spec.spire", ok, f"optional; needs exactly {sorted(SPIRE)}: tiers as [least, most], 3 or 4 (a base and two or three on it) and fewer than the pieces `overlap` asks (the foot is pieces too), max_width_step, min_ledge_share and min_tier_offset in 0..1 (above 0, below 1), min_lean_deg in 0..45, min_step_spread above 1, at least 1 flute, on an asset of overlapping pieces (`overlap`)")
     arch = spec.get("arch")
     if arch is not None:
         size = [hi - lo for lo, hi in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]

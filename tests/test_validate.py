@@ -450,6 +450,160 @@ def fanned_prisms(spec):
     edit(fan, "crag_1")
 
 
+# The stepped spire (source/spire): a fluted base and narrower tiers stacked on it like a telescope.
+
+
+def spire_pieces(bm, spec):
+    """The spire's pieces as lists of vertices: (those that stand on the ground, those that stand on another piece from the lowest up)."""
+    from validate import pieces_in
+
+    floor = spec["bounds_m"]["min"][2]
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    ground = [verts for verts in pieces if min(v.co.z for v in verts) <= floor + 0.001]
+    raised = sorted((verts for verts in pieces if min(v.co.z for v in verts) > floor + 0.001), key=lambda verts: max(v.co.z for v in verts))
+    return ground, raised
+
+
+def middle_of(verts):
+    return sum((v.co for v in verts), Vector()) / len(verts)
+
+
+def top_tier_removed(spec):
+    """Every piece that stands on another taken away but the lowest tier above the base: a base and one tier, fewer than any spire's spec asks."""
+
+    def remove(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base_top = max(v.co.z for verts in ground for v in verts)
+        keep = min((verts for verts in raised if max(v.co.z for v in verts) > base_top), key=lambda verts: max(v.co.z for v in verts))
+        bmesh.ops.delete(bm, geom=[v for verts in raised if verts is not keep for v in verts], context="VERTS")
+
+    edit(remove, "spire_1")
+
+
+def tier_hangs_off(spec):
+    """The spire's top tier pushed outward by six tenths of its own width: still sunk into the one below, but with much of its foot over open air."""
+
+    def push(bm):
+        ground, raised = spire_pieces(bm, spec)
+        top = raised[-1]
+        # Away from the middle of everything else, whichever side of the tier below it sits toward.
+        away = (middle_of(top) - middle_of([v for verts in ground + raised[:-1] for v in verts])).to_2d()
+        away = away.normalized() if away.length > 1e-6 else Vector((1, 0))
+        width = max(v.co.x for v in top) - min(v.co.x for v in top)
+        for v in top:
+            v.co.x += 0.6 * width * away.x
+            v.co.y += 0.6 * width * away.y
+
+    edit(push, "spire_1")
+
+
+def plain_column(spec):
+    """Every tier above the base widened to nearly the width of the one below: a column with lines round it, not steps."""
+
+    def widen(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base = max(ground, key=lambda verts: max(v.co.z for v in verts))
+        below = max(v.co.x for v in base) - min(v.co.x for v in base)
+        for verts in raised:
+            centre = middle_of(verts)
+            scale = 0.6 * below / (max(v.co.x for v in verts) - min(v.co.x for v in verts))
+            for v in verts:
+                v.co.x = centre.x + (v.co.x - centre.x) * scale
+                v.co.y = centre.y + (v.co.y - centre.y) * scale
+            below *= 0.95
+
+    edit(widen, "spire_1")
+
+
+def pointed_caps(spec):
+    """Every tier's cap drawn in to a point and raised: cones on cones, with no flat cap and no ledge."""
+
+    def pinch(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base = max(ground, key=lambda verts: max(v.co.z for v in verts))
+        for verts in [base] + raised:
+            cap = {v for v in verts for f in v.link_faces if f.normal.z > 0.97}
+            centre = middle_of(cap)
+            rise = 0.5 * max((v.co - centre).to_2d().length for v in cap)
+            for v in cap:
+                v.co.x = centre.x + (v.co.x - centre.x) * 0.05
+                v.co.y = centre.y + (v.co.y - centre.y) * 0.05
+                v.co.z += rise
+
+    edit(pinch, "spire_1")
+
+
+def telescoped(spec):
+    """Every tier above the base stood upright on the middle of the one below, each the same share of its width: a telescope."""
+
+    def stack(bm):
+        ground, raised = spire_pieces(bm, spec)
+        base = max(ground, key=lambda verts: max(v.co.z for v in verts))
+        # The tiers: each stands on the one before. Of two pieces standing on one tier (a tier and a block on its ledge) the taller is the tier.
+        chain = [base]
+        for verts in raised:
+            if len(chain) > 1 and min(v.co.z for v in verts) < max(v.co.z for v in chain[-2]):
+                chain[-1] = verts
+            elif min(v.co.z for v in verts) < max(v.co.z for v in chain[-1]):
+                chain.append(verts)
+
+        def ends(verts):
+            """The middle of a piece's lowest ring of corners, and of its highest."""
+            low, high = min(v.co.z for v in verts), max(v.co.z for v in verts)
+            return middle_of([v for v in verts if v.co.z < low + 0.1 * (high - low)]), middle_of([v for v in verts if v.co.z > high - 0.1 * (high - low)])
+
+        # The base stood upright first: its head back over its foot.
+        foot, head = ends(base)
+        for v in base:
+            share = (v.co.z - foot.z) / (head.z - foot.z)
+            v.co.x -= (head.x - foot.x) * share
+            v.co.y -= (head.y - foot.y) * share
+        for below, verts in zip(chain, chain[1:]):
+            low, high = min(v.co.z for v in verts), max(v.co.z for v in verts)
+            foot = middle_of([v for v in verts if v.co.z < low + 0.1 * (high - low)])
+            head = middle_of([v for v in verts if v.co.z > high - 0.1 * (high - low)])
+            top = max(v.co.z for v in below)
+            under = middle_of([v for v in below if v.co.z > top - 0.1 * (top - min(v.co.z for v in below))])
+            def wide(group):
+                """About how wide a piece is half way up: the mean of its lowest and highest rings."""
+                bottom, height = min(v.co.z for v in group), max(v.co.z for v in group) - min(v.co.z for v in group)
+                rings = [[v for v in group if v.co.z < bottom + 0.1 * height], [v for v in group if v.co.z > bottom + 0.9 * height]]
+                return sum(math.sqrt((max(v.co.x for v in ring) - min(v.co.x for v in ring)) * (max(v.co.y for v in ring) - min(v.co.y for v in ring))) for ring in rings) / 2
+
+            scale = 0.55 * wide(below) / wide(verts)
+            for v in verts:
+                share = (v.co.z - low) / (high - low)
+                x = v.co.x - foot.x - (head.x - foot.x) * share
+                y = v.co.y - foot.y - (head.y - foot.y) * share
+                v.co.x, v.co.y = under.x + x * scale, under.y + y * scale
+
+    edit(stack, "spire_1")
+
+
+def banded_base(spec):
+    """Every piece on the ground cut level into bands, each second ring of the cut pushed out: sides in horizontal bands, with no edge running up them."""
+
+    def band(bm):
+        ground, _ = spire_pieces(bm, spec)
+        top = max(v.co.z for verts in ground for v in verts)
+        cuts = [top * (i + 1) / 9 for i in range(8)]
+        for verts in ground:
+            centre = middle_of(verts)
+            for index, height in enumerate(cuts):
+                faces = list({f for v in verts if v.is_valid for f in v.link_faces})
+                geom = list({e for f in faces for e in f.edges}) + faces + list({v for f in faces for v in f.verts})
+                cut = bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-5, plane_co=(0, 0, height), plane_no=(0, 0, 1))
+                ring = [g for g in cut["geom_cut"] if isinstance(g, bmesh.types.BMVert)]
+                verts.extend(ring)
+                for v in ring:
+                    push = 1.12 if index % 2 == 0 else 0.97
+                    v.co.x = centre.x + (v.co.x - centre.x) * push
+                    v.co.y = centre.y + (v.co.y - centre.y) * push
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+        bm.normal_update()
+
+    edit(band, "spire_1")
+
 # The stack (source/stack): flat stones piled one on another.
 
 
@@ -1164,6 +1318,14 @@ CASES = [
     (fat_neck, "table_rock_1.table_necks", "table_rock_1"),
     (neck_cut_short, "table_rock_1.table_necks", "table_rock_1"),
     (neck_at_rim, "table_rock_1.table_overhang", "table_rock_1"),
+    (top_tier_removed, "spire_1.spire_tiers", "spire_1"),
+    (tier_hangs_off, "spire_1.spire_stands_on", "spire_1"),
+    (plain_column, "spire_1.spire_steps_in", "spire_1"),
+    (pointed_caps, "spire_1.spire_ledges", "spire_1"),
+    (banded_base, "spire_1.spire_flutes", "spire_1"),
+    (telescoped, "spire_1.spire_off_centre", "spire_1"),
+    (telescoped, "spire_1.spire_leans", "spire_1"),
+    (telescoped, "spire_1.spire_steps_differ", "spire_1"),
     (span_lifted, "arch_1.arch_through", "arch_1"),
     (pier_off_the_ground, "arch_1.arch_rests", "arch_1"),
     (span_pressed_down, "arch_1.arch_opening", "arch_1"),
