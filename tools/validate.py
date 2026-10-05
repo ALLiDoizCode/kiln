@@ -1012,6 +1012,57 @@ def check_overlap(checks, name, faces, spec, conv):
     return pieces
 
 
+def check_cluster(checks, name, bm, spec, conv):
+    """The shape is a cluster of leaning prisms on one base (a crag): enough of its pieces are prisms,
+    their heights step down going out from the tallest, and they lean, the same way."""
+    want, rules = spec["cluster"], conv["cluster"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    height, tol = hi.z - lo.z, spec["bounds_tolerance_m"]
+
+    def middle(faces):
+        area = sum(f.calc_area() for f in faces)
+        return sum((f.calc_center_median() * f.calc_area() for f in faces), Vector()) / area if area else None
+
+    prisms = []  # (how tall, where it stands, where its cap is)
+    for piece in pieces_in(bm.faces):
+        tall = max(v.co.z for f in piece for v in f.verts) - lo.z
+        # Where a piece stands is the middle of its face on the ground, and its cap is its surface nearer level than upright.
+        foot = middle([f for f in piece if f.normal.z < -0.999 and all(abs(v.co.z - lo.z) <= tol for v in f.verts)])
+        cap = middle([f for f in piece if f.normal.z >= conv["lean"]["side_normal_z"]])
+        if tall >= rules["block_height"] * height and foot is not None and cap is not None:
+            prisms.append((tall, foot, cap))
+    prisms.sort(key=lambda prism: -prism[0])
+    # Going out from the tallest, by where each stands on the ground.
+    outward = sorted(prisms, key=lambda prism: (prism[1] - prisms[0][1]).to_2d().length) if prisms else []
+    steps = [b[0] / a[0] for a, b in zip(outward, outward[1:])]
+    checks.check(
+        f"{name}.cluster_steps_down",
+        len(prisms) >= want["min_prisms"] and all(step <= want["max_height_step"] for step in steps),
+        f"{len(prisms)} pieces are prisms, standing on the ground and at least {rules['block_height']} of the height; spec wants {want['min_prisms']}. "
+        f"Going out from the tallest they are {[round(prism[0], 2) for prism in outward]} m tall, each over the one before {[round(step, 2) for step in steps]}; "
+        f"spec wants every step at most {want['max_height_step']}",
+    )
+    leans = [(cap - foot) for _, foot, cap in prisms]
+    angles = [math.degrees(math.atan2(lean.to_2d().length, lean.z)) for lean in leans]
+    checks.check(
+        f"{name}.cluster_leans",
+        bool(angles) and min(angles) >= want["min_lean_deg"],
+        f"from the middle of its foot to the middle of its cap, each prism leans {[round(angle, 1) for angle in angles]} degrees from upright; spec wants at least {want['min_lean_deg']}",
+    )
+    ways = [lean.to_2d().normalized() for lean in leans]
+    common = sum(ways, Vector((0, 0)))
+    apart = [math.degrees(way.angle(common)) if way.length and common.length > 1e-6 else 180.0 for way in ways]
+    checks.check(
+        f"{name}.cluster_leans_together",
+        bool(apart) and max(apart) <= want["max_lean_spread_deg"],
+        f"round the compass, each prism leans {[round(angle, 1) for angle in apart]} degrees from the way they lean on average; spec wants at most {want['max_lean_spread_deg']}",
+    )
+    print(
+        f"{name} cluster: {len(prisms)} prisms; going out from the tallest {[round(prism[0], 2) for prism in outward]} m tall, steps {[round(step, 2) for step in steps]}; "
+        f"leaning {[round(angle, 1) for angle in angles]} degrees, {[round(angle, 1) for angle in apart]} degrees from their common way"
+    )
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -1145,7 +1196,7 @@ def check_scene(checks, spec, conv):
             check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
         if "overlap" in spec:
             check_overlap(checks, name, [f for f in bm.faces if f.material_index not in opened], spec, conv)
-        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top)):
+        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
 

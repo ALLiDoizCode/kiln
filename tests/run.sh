@@ -106,7 +106,9 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/tree/*) echo tree_1 tree_2 tree_3 tree_1_autumn ;;  # the generator, recipes and brief every tree shares
     source/blade_plant/*) echo blade_plant_1 blade_plant_2 blade_plant_3 ;;
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
-    source/slab/*|tools/stone.py) echo slab_1 ;;  # the generator, the brief and the kit slab_1 is built with
+    source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
+    source/crag/*) echo crag_1 ;;
+    tools/stone.py) echo slab_1 crag_1 ;;  # the kit both are built with
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
@@ -405,6 +407,7 @@ lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spe
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
+lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

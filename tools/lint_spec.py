@@ -58,6 +58,8 @@ CHAMFERS = {"min_count": int, "min_m2": float, "min_width_m": float}
 LEAN = {"max_upright_share": float, "min_summit_offset": float}
 # Optional; a shape of several closed pieces that pass into each other (ADR 13). Every key is required once it is present.
 OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
+# Optional, with `overlap`: a cluster of leaning prisms on one base (a crag).
+CLUSTER = {"min_prisms": int, "max_height_step": float, "min_lean_deg": float, "max_lean_spread_deg": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -188,6 +190,20 @@ if not checks.failed():
         # and a piece record is held against a surface with nothing inside it.
         one_skin = sorted(block for block in ("fullness", "pieces") if block in spec)
         checks.check("spec.one_skin_checks", not one_skin, f"{one_skin} measure one closed skin and cannot be asked of overlapping pieces (`overlap`)")
+    cluster = spec.get("cluster")
+    if cluster is not None:
+        ok = (
+            isinstance(cluster, dict)
+            and set(cluster) == set(CLUSTER)
+            and all(type(cluster[key]) is kind for key, kind in CLUSTER.items())
+            and cluster["min_prisms"] >= 2
+            and 0 < cluster["max_height_step"] < 1
+            and 0 < cluster["min_lean_deg"] < 90
+            and 0 < cluster["max_lean_spread_deg"] <= 90
+            and isinstance(overlap, dict)
+            and cluster["min_prisms"] <= overlap.get("min_count", 0)
+        )
+        checks.check("spec.cluster", ok, f"optional; needs exactly {sorted(CLUSTER)}: at least 2 prisms and no more than `overlap.min_count`, max_height_step in 0..1 (below 1), min_lean_deg in 0..90, max_lean_spread_deg in 0..90, on an asset of overlapping pieces (`overlap`)")
     top = spec.get("top")
     if top is not None:
         ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1

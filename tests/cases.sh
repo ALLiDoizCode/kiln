@@ -35,6 +35,9 @@ expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
+# A crag (source/crag): its prisms' heights and leans broken one way at a time.
+uses crag_1 validate paint
+expect 0 "L1 mutation tests: crag_1" l1 crag_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -265,6 +268,14 @@ expect 0 "L0 passes a slab variant's spec"   lint_slab 'pass'
 expect_id "spec.top"                 "L0 catches a level share above the whole view" lint_slab 's["top"]["min_level_share"] = 1.5'
 expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
 expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
+# L0, crags: crag_1's spec with one thing wrong in what it asks of its prisms (`cluster`).
+uses crag_1 lint_spec
+expect 0 "L0 passes a crag variant's spec"   lint_crag 'pass'
+expect_id "spec.cluster"             "L0 catches a height step that lets prisms of one height through" lint_crag 's["cluster"]["max_height_step"] = 1.0'
+expect_id "spec.cluster"             "L0 catches a crag asked for one prism" lint_crag 's["cluster"]["min_prisms"] = 1'
+expect_id "spec.cluster"             "L0 catches a lean spread of the whole compass" lint_crag 's["cluster"]["max_lean_spread_deg"] = 180.0'
+expect_id "spec.cluster"             "L0 catches a cluster block with a key missing" lint_crag 'del s["cluster"]["min_lean_deg"]'
+expect_id "spec.cluster"             "L0 catches prisms asked of one closed skin" lint_crag 'del s["overlap"]'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.
