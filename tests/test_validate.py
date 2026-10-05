@@ -1805,6 +1805,75 @@ def disc_mat(spec):
     each_mat_leaf(spec, lay)
 
 
+# A flower scatter (source/flower_scatter): blooms on stems, with leaves at their feet.
+
+
+def blooms_adrift(spec):
+    """Every bloom moved 0.3 m sideways, off its stem."""
+
+    def move(verts, middle, bm):
+        for v in verts:
+            v.co.x += 0.3
+
+    each_bloom(spec, move)
+
+
+def blooms_sunk(spec):
+    """Every bloom let down to 1 cm above the ground, among the leaves."""
+
+    def sink(verts, middle, bm):
+        down = min(v.co.z for v in verts) - 0.01
+        for v in verts:
+            v.co.z -= down
+
+    each_bloom(spec, sink)
+
+
+def blooms_one_height(spec):
+    """The whole scatter above 6 cm pressed to within a centimetre of 12 cm: every flower at one height, still on its stem."""
+
+    def press(bm):
+        for v in bm.verts:
+            if v.co.z > 0.06:
+                v.co.z = 0.12 + (v.co.z - 0.12) * 0.05
+
+    edit(press, spec["objects"][0])
+
+
+def combed_scatter(spec):
+    """The whole scatter sheared one way, 0.8 m along x for each metre of height: every stem leans together."""
+
+    def shear(bm):
+        for v in bm.verts:
+            v.co.x += 0.8 * v.co.z
+
+    edit(shear, spec["objects"][0])
+
+
+def bunched_scatter(spec):
+    """Every flower, with its stem and leaves, drawn in to a twentieth of its distance from the middle: a bunch."""
+
+    def gather(bm):
+        for v in bm.verts:
+            v.co.xy *= 0.05
+
+    edit(gather, spec["objects"][0])
+
+
+def no_foot_leaves(spec):
+    """Every leaf piece of four triangles taken away: the stems, which are two faces each, stay."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def strip(bm):
+        gone = [v for piece in foliage.pieces_of(bm, slot) if len(piece) == 4 for face in piece for v in face.verts]
+        bmesh.ops.delete(bm, geom=list(set(gone)), context="VERTS")
+
+    edit(strip, name)
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1937,6 +2006,14 @@ CASES = [
     (sparse_mat, "leaf_mat_1.mat_cover", "leaf_mat_1"),
     (leaves_apart, "leaf_mat_1.mat_overlap", "leaf_mat_1"),
     (disc_mat, "leaf_mat_1.mat_ragged", "leaf_mat_1"),
+    (blooms_adrift, "flower_scatter_1.scatter_carried", "flower_scatter_1"),
+    (blooms_sunk, "flower_scatter_1.scatter_above_leaves", "flower_scatter_1"),
+    (blooms_one_height, "flower_scatter_1.scatter_heights", "flower_scatter_1"),
+    (combed_scatter, "flower_scatter_1.scatter_leans", "flower_scatter_1"),
+    (bunched_scatter, "flower_scatter_1.scatter_apart", "flower_scatter_1"),
+    (no_foot_leaves, "flower_scatter_1.scatter_leaves", "flower_scatter_1"),
+    (no_blooms, "flower_scatter_1.blooms", "flower_scatter_1"),
+    (ball_blooms, "flower_scatter_1.blooms_petals", "flower_scatter_1"),
     (few_discs, "lily_pad_1.discs", "lily_pad_1"),
     (even_discs, "lily_pad_1.discs_sizes", "lily_pad_1"),
     (tipped_disc, "lily_pad_1.discs_level", "lily_pad_1"),

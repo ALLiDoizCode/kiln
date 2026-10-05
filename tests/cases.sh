@@ -47,6 +47,10 @@ expect 0 "L1 mutation tests: tall_grass_1" l1 tall_grass_1
 # set adrift and drawn flat, and its heads taken off, thinned and put on every stalk.
 uses reeds_1 reeds_2 reeds_3 validate paint
 expect 0 "L1 mutation tests: reeds_1" l1 reeds_1
+# A flower scatter (source/flower_scatter): its blooms set adrift, sunk among the leaves, brought to one height, combed one way, gathered
+# to one point and blown into balls, and its leaves taken away.
+uses flower_scatter_1 flower_scatter_2 flower_scatter_3 validate paint
+expect 0 "L1 mutation tests: flower_scatter_1" l1 flower_scatter_1
 # A leaf mat (source/leaf_mat): its leaves grown, stood up, thinned out, shrunk apart, and laid as a round plate.
 uses leaf_mat_1 leaf_mat_2 leaf_mat_3 validate paint
 expect 0 "L1 mutation tests: leaf_mat_1" l1 leaf_mat_1
@@ -431,6 +435,13 @@ expect_id "spec.mat"                 "L0 catches a missing mat key"            l
 expect_id "spec.mat_amounts"         "L0 catches a mat's cover given backwards" lint_mat 's["mat"]["hull_cover"] = [0.8, 0.45]'
 expect_id "spec.mat_amounts"         "L0 catches a mat allowed to fill its hull" lint_mat 's["mat"]["hull_cover"] = [0.45, 1.0]'
 expect_id "spec.mat_amounts"         "L0 catches a mat asked of a group of discs" lint_mat 's["discs"] = json.load(open("source/lily_pad_1/spec.json"))["discs"]'
+# L0, a scatter of flowers: flower_scatter_1's spec with one thing wrong. `lint_flower <python>` lints a copy of flower_scatter_1 after that has changed its spec `s`.
+uses flower_scatter_1 lint_spec
+expect 0 "L0 passes a flower scatter's spec" lint_flower 'pass'
+expect_id "spec.scatter"             "L0 catches a missing scatter key"        lint_flower 'del s["scatter"]["foot_m"]'
+expect_id "spec.scatter_amounts"     "L0 catches leaves to a bloom given backwards" lint_flower 's["scatter"]["leaves_per_bloom"] = [4.0, 2.0]'
+expect_id "spec.scatter_amounts"     "L0 catches a scatter with no blooms asked" lint_flower 'del s["blooms"]'
+expect_id "spec.scatter_amounts"     "L0 catches a scatter whose flowers may all be one height" lint_flower 's["scatter"]["max_height_share"] = 1.0'
 # A colour (docs/style/catalogue.md): another flower or foliage colour as a palette on its base's mesh. `lint_colour <python>` lints a copy of lily_pad_1_pink.
 uses lily_pad_1_pink lily_pad_1 lint_spec
 expect 0 "L0 passes a colour variant's spec" lint_colour 'pass'

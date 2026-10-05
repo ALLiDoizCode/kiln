@@ -133,7 +133,7 @@ FOLIAGE = {
     "min_rim_points_per_m": float,
 }
 # What foliage of blades shares with foliage of leaf pieces: the material, how pieces are found, and the palette.
-# A spec with a `blades`, a `stalks`, a `discs` or a `mat` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
+# A spec with a `blades`, a `stalks`, a `discs`, a `mat` or a `scatter` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
 FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
 # Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
 BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
@@ -153,6 +153,8 @@ DISCS = {
 }
 # Optional; a mat of leaf pieces lying on the ground (source/leaf_mat/brief.md), in place of pads over cores, blades, stalks and discs. All keys are required once it is present.
 MAT = {"max_tilt_deg": float, "min_overlap_share": float, "hull_cover": list, "min_footprint_cover": float}
+# Optional, with `blooms`; a scatter of flowers on stems with leaves at their feet (source/flower_scatter/brief.md), in place of pads over cores, blades, stalks, discs and a mat. All keys are required once it is present.
+SCATTER = {"max_height_share": float, "min_lean_deg": float, "max_lean_together": float, "min_apart_m": float, "leaves_per_bloom": list, "foot_m": float}
 # Optional, on a plant with foliage: blooms (flowers), closed pieces of the closed material with petals. Every key is required once it is present.
 BLOOMS = {"count": list, "width_m": list, "max_hull_share": float, "min_colour_apart": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
@@ -432,7 +434,7 @@ if not checks.failed():
         )
     # Foliage that is not pads over cores: blades from one point, stalks in a bed, or discs on the water.
     bladed = "blades" in spec or "stalks" in spec
-    shaped = bladed or "discs" in spec or "mat" in spec  # any of them: the foliage block then says only what they share
+    shaped = bladed or "discs" in spec or "mat" in spec or "scatter" in spec  # any of them: the foliage block then says only what they share
     whole = lambda pair: len(pair) == 2 and all(type(n) is int for n in pair) and 1 <= pair[0] <= pair[1]
     blades = block("blades", BLADES)
     if blades:
@@ -491,6 +493,15 @@ if not checks.failed():
             and span(mat["hull_cover"]) and mat["hull_cover"][0] > 0 and mat["hull_cover"][1] < 1 and 0 < mat["min_footprint_cover"] < 1,
             "not on a plant of blades, of stalks or of discs (a plant is one of them); max_tilt_deg in 0..90; min_overlap_share in (0, 1]; "
             "hull_cover as [least, most], above 0 and below 1 (at 1 it asks nothing: a disc of leaves covers its hull); min_footprint_cover above 0 and below 1",
+        )
+    scatter = block("scatter", SCATTER)
+    if scatter:
+        checks.check(
+            "spec.scatter_amounts",
+            not bladed and "discs" not in spec and "mat" not in spec and "blooms" in spec and 0 < scatter["max_height_share"] < 1 and 0 < scatter["min_lean_deg"] < 90
+            and 0 < scatter["max_lean_together"] < 1 and scatter["min_apart_m"] > 0 and span(scatter["leaves_per_bloom"]) and scatter["leaves_per_bloom"][0] > 0 and scatter["foot_m"] > 0,
+            "not on a plant of blades, of stalks, of discs or a mat (a plant is one of them), and with a `blooms` block, which says what its flowers are; max_height_share and max_lean_together above 0 and below 1 (at 1 they ask nothing); "
+            "min_lean_deg in 0..90; min_apart_m and foot_m above 0; leaves_per_bloom as [least, most], above 0",
         )
     blooms = block("blooms", BLOOMS)
     if blooms:

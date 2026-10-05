@@ -1109,6 +1109,7 @@ def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
             "middle": sum((v.co for v in verts), Vector()) / len(verts),
             "low": min(v.co.z for v in verts), "high": max(v.co.z for v in verts),
         })
+        blooms[-1]["reach"] = max((v.co - blooms[-1]["middle"]).length for v in verts)
     low, high = want["width_m"]
     widths = sorted(round(bloom["width"], 3) for bloom in blooms)
     odd = sum(1 for bloom in blooms if not low <= bloom["width"] <= high)
@@ -1133,6 +1134,74 @@ def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
             f"seen from above, the middles of {on} of {len(blooms)} blooms lie over a disc; spec wants none: flowers stand on the water between the discs",
         )
     return blooms
+
+
+def check_scatter(checks, name, bm, slots, spec, conv, blooms):
+    """The plant is a scatter of flowers (source/flower_scatter/brief.md): each bloom on a stem, above the leaves, at a height and a lean of its own, apart from the others, with leaves at its foot.
+
+    `blooms` are check_blooms' measurements. A stem is the open piece of the foliage nearest a bloom's middle, when it comes within the bloom's own reach of it; every other piece is a leaf."""
+    want = spec["scatter"]
+    ground = spec["bounds_m"]["min"][2]
+    pieces = [list({v for face in piece for v in face.verts}) for piece in foliage.pieces_of(bm, slots.index(spec["foliage"]["material"]))]
+    stems, adrift = {}, []
+    for bloom in blooms:
+        gaps = [min((v.co - bloom["middle"]).length for v in verts) for verts in pieces]
+        nearest = min(range(len(pieces)), key=gaps.__getitem__, default=None)
+        if nearest is None or gaps[nearest] > bloom["reach"]:
+            adrift.append(None if nearest is None else round(gaps[nearest], 3))
+        else:
+            stems[nearest] = bloom
+    checks.check(
+        f"{name}.scatter_carried",
+        blooms and not adrift,
+        f"{len(adrift)} of {len(blooms)} blooms have no piece of the foliage within their own reach of their middle (the nearest are {adrift} m away): a flower is on a stem",
+    )
+    leaves = [verts for index, verts in enumerate(pieces) if index not in stems]
+    leaf_top = max((v.co.z for verts in leaves for v in verts), default=ground)
+    bloom_low = min((bloom["low"] for bloom in blooms), default=ground)
+    checks.check(
+        f"{name}.scatter_above_leaves",
+        blooms and bloom_low > leaf_top,
+        f"the lowest point of the lowest bloom is {bloom_low - ground:.3f} m up and the highest corner of a leaf {leaf_top - ground:.3f} m; spec wants every flower above the leaves",
+    )
+    heights = sorted(bloom["middle"].z - ground for bloom in blooms)
+    share = heights[0] / max(heights[-1], 1e-9) if heights else 1.0
+    checks.check(
+        f"{name}.scatter_heights",
+        len(heights) >= 2 and share <= want["max_height_share"],
+        f"the blooms' middles are {[round(height, 3) for height in heights]} m up: the lowest is {share:.2f} as high as the highest; spec wants at most {want['max_height_share']}: flowers at different heights",
+    )
+    leans, ways = [], Vector((0.0, 0.0))
+    for index in stems:
+        foot, tip = min(pieces[index], key=lambda v: v.co.z).co, max(pieces[index], key=lambda v: v.co.z).co
+        leans.append(math.degrees((tip - foot).angle(Vector((0, 0, 1)))) if (tip - foot).length > 1e-9 else 0.0)
+        level = (tip - foot).xy
+        ways += level.normalized() if level.length > 1e-9 else Vector((0.0, 0.0))
+    typical = statistics.median(leans) if leans else 0.0
+    together = ways.length / max(len(stems), 1)
+    checks.check(
+        f"{name}.scatter_leans",
+        stems and typical >= want["min_lean_deg"] and together <= want["max_lean_together"],
+        f"the stems lean {[round(lean) for lean in sorted(leans)]} degrees from upright (median {typical:.1f}), and the mean of their level directions of lean is {together:.2f} long (1 is all one way); "
+        f"spec wants a median of at least {want['min_lean_deg']} and at most {want['max_lean_together']}: flowers leaning different ways",
+    )
+    middles = [bloom["middle"] for bloom in blooms]
+    nearest = min(((a - b).length for i, a in enumerate(middles) for b in middles[i + 1 :]), default=0.0)
+    checks.check(
+        f"{name}.scatter_apart",
+        len(middles) >= 2 and nearest >= want["min_apart_m"],
+        f"the two nearest blooms' middles are {nearest:.3f} m apart; spec wants at least {want['min_apart_m']}: a scatter, not a bunch",
+    )
+    low, high = want["leaves_per_bloom"]
+    each = len(leaves) / max(len(blooms), 1)
+    lifted = sum(1 for verts in leaves if min(v.co.z for v in verts) - ground > want["foot_m"])
+    print(f"{name} scatter: {len(blooms)} blooms {[round(height, 3) for height in heights]} m up on {len(stems)} stems leaning {[round(lean) for lean in sorted(leans)]} degrees (together {together:.2f}), the nearest two {nearest:.3f} m apart; "
+          f"{len(leaves)} leaves ({each:.1f} to a bloom) reaching {leaf_top - ground:.3f} m, under the lowest bloom's {bloom_low - ground:.3f} m")
+    checks.check(
+        f"{name}.scatter_leaves",
+        leaves and low <= each <= high and not lifted,
+        f"{len(leaves)} leaves to {len(blooms)} blooms ({each:.1f} each), {lifted} of them starting more than {want['foot_m']} m above the ground; spec wants {low} to {high} to a bloom, all at the foot",
+    )
 
 
 def check_variants(checks, name, bm, spec, conv):
@@ -2374,6 +2443,9 @@ def check_scene(checks, spec, conv):
                 discs = check_discs(checks, name, bm, slot_names, spec, conv)
                 if "blooms" in spec:
                     check_blooms(checks, name, bm, slot_names, spec, conv, discs)
+            elif "scatter" in spec:
+                # Or, where it has `scatter`, blooms on stems with leaves at their feet.
+                check_scatter(checks, name, bm, slot_names, spec, conv, check_blooms(checks, name, bm, slot_names, spec, conv))
             elif "mat" in spec:
                 # Or, where it has `mat`, a mat of leaf pieces lying on the ground.
                 check_mat(checks, name, bm, slot_names, spec, conv)
