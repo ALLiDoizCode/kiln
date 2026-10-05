@@ -20,6 +20,9 @@ expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that left the tex
 expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake wrong in a fifth of the texture" tools/bl tests/bake_check.py part_wrong
 expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that missed one island"         tools/bl tests/bake_check.py island_missing
 
+# Every report (tools/pipeline.py): a check that passes records what it measured, as one that fails does, so a pass can be confirmed from the record.
+uses validate lint_spec
+expect 0 "L1 a passing check records what it measured" python -c 'import sys; sys.path.insert(0, "tools"); from pipeline import Checks; c = Checks("L1-mesh", "x"); c.check("a.size", True, "is 3 m; spec wants 3"); c.check("a.name", False, "is b"); sys.exit(0 if [r["detail"] for r in c.results] == ["is 3 m; spec wants 3", "is b"] and len(c.failed()) == 1 else 1)'
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
 uses tracer validate
 expect 0 "L1 mutation tests: tracer" l1 tracer
