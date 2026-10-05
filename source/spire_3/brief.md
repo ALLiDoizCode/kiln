@@ -8,11 +8,11 @@ Variant 3 of the stepped spire. Everything about it is in the family's brief, `s
 
 ## Pieces
 
-Seven: three tiers (the base and two above it), two buttresses and two blocks.
+Seven or eight, by seed: three tiers, two shoulders, two blocks, and on some seeds a block on the base's ledge.
 
 ## Budget
 
-At most 720 triangles: 132 for the base, 2 x 126 for the tiers, 4 x 81 for the buttresses and blocks: 708.
+At most 840 triangles: 132 for the base's main mass, 2 x 126 for the tiers above it, 98 and 81 for the shoulders, 2 x 81 for the blocks and 105 for a ledge block: 830.
 
 ## Texture
 
@@ -24,7 +24,7 @@ The footprint is 3.4 m2; a hundredth of it, 0.03 m2, is the low near-level surfa
 
 ## Seed
 
-Seed 3. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_3 1 40`), with 584 to 678 triangles. Only seed 3 was painted and taken through the later gates; it was not picked from several. It took the second spire it drew and measures: 622 triangles; tiers 1.16, 0.52 and 0.27 m wide, steps 0.45 and 0.52; ledges 0.158, 0.122 and 0.182 of each tier's level cut; 13 flutes; 0.332 of the side surface within 8 degrees of upright; summit 0.124 off the middle; 0.197 of the surface buried; smallest size step 1.40. The sparsest triangle has 151 texels per metre at 1024 px.
+Seed 3. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_3 1 40`), with 584 to 774 triangles. Only seed 3 was painted and taken through the later gates; it was not picked from several. It took the twelfth spire it drew and measures: 620 triangles; 3 tiers, 1.33, 0.60 and 0.37 m wide, steps 0.45 and 0.62, differing by 1.39; tiers 0.625 and 0.278 of their width off the middle of the one below; leaning 12.3 degrees; standing 1.0 and 0.993; ledges 0.422, 0.195 and 0.409; 13 flutes; 0.332 buried; smallest size step 1.30; 120 texels per metre at 1024 px.
 
 ## Numbers
 
@@ -36,9 +36,9 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `seed` | `3` | Seed |
 | `bounds_m.min` | `[-1.0, -0.85, 0.0]` | Real-world size |
 | `bounds_m.max` | `[1.0, 0.85, 3.6]` | Real-world size |
-| `max_triangles` | `720` | Budget |
+| `max_triangles` | `840` | Budget |
 | `painted_shading.texture_px` | `1024` | Texture |
 | `overlap.min_count` | `7` | Pieces |
-| `overlap.max_count` | `7` | Pieces |
-| `spire.tiers` | `3` | Pieces |
+| `overlap.max_count` | `8` | Pieces |
+| `spire.tiers` | `[3, 3]` | Pieces |
 | `foot.min_side_m2` | `0.03` | Foot |

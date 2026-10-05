@@ -8,11 +8,11 @@ Variant 2 of the stepped spire. Everything about it is in the family's brief, `s
 
 ## Pieces
 
-Nine: four tiers (the base and three above it), three buttresses and two blocks.
+Eight or nine, by seed: four tiers, two shoulders, two blocks, and on some seeds a block on the base's ledge.
 
 ## Budget
 
-At most 920 triangles: 132 for the base, 3 x 126 for the tiers, 5 x 81 for the buttresses and blocks: 915.
+At most 960 triangles: 132 for the base's main mass, 3 x 126 for the tiers above it, 98 and 81 for the shoulders, 2 x 81 for the blocks and 105 for a ledge block: 956.
 
 ## Foot
 
@@ -20,7 +20,7 @@ The footprint is 15.5 m2; a hundredth of it, 0.16 m2, is the low near-level surf
 
 ## Seed
 
-Seed 2. Of seeds 1 to 40 at this size all 40 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_2 1 40`), with 766 to 862 triangles. Only seed 2 was painted and taken through the later gates; it was not picked from several. It took the second spire it drew and measures: 860 triangles; tiers 2.64, 1.50, 0.76 and 0.43 m wide, steps 0.57, 0.51 and 0.57; ledges 0.105, 0.222, 0.118 and 0.257 of each tier's level cut (the base's is just over the 0.1 asked); 15 flutes; 0.382 of the side surface within 8 degrees of upright; summit 0.229 off the middle; 0.201 of the surface buried; smallest size step 1.23. The sparsest triangle has 142 texels per metre at 2048 px.
+Seed 2. Of seeds 1 to 40 at this size 38 build and pass gate L1 (`tools/bl tools/try_seeds.py spire_2 1 40`), with 642 to 850 triangles; seeds 30 and 38 fail the build (none of their 40 spires meets the spec). Only seed 2 was painted and taken through the later gates; it was not picked from several. It took the twenty-eighth spire it drew and measures: 716 triangles; 4 tiers, 2.88, 1.42, 0.83 and 0.54 m wide, steps 0.49, 0.59 and 0.65, differing by 1.31; tiers 0.375, 0.251 and 0.267 of their width off the middle of the one below; leaning 10.4 degrees; standing 0.984, 0.983 and 0.955; ledges 0.414, 0.234, 0.107 and 0.480 (the third is just over the 0.1 asked); 12 flutes; 0.333 buried; smallest size step 1.16 (1.15 asked); 127 texels per metre at 2048 px.
 
 ## Numbers
 
@@ -32,8 +32,8 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `seed` | `2` | Seed |
 | `bounds_m.min` | `[-2.1, -1.85, 0.0]` | Real-world size |
 | `bounds_m.max` | `[2.1, 1.85, 8.0]` | Real-world size |
-| `max_triangles` | `920` | Budget |
-| `overlap.min_count` | `9` | Pieces |
+| `max_triangles` | `960` | Budget |
+| `overlap.min_count` | `8` | Pieces |
 | `overlap.max_count` | `9` | Pieces |
-| `spire.tiers` | `4` | Pieces |
+| `spire.tiers` | `[4, 4]` | Pieces |
 | `foot.min_side_m2` | `0.16` | Foot |

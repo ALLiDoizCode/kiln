@@ -73,6 +73,7 @@ flute_height = 0.6          # a side of a piece on the ground is a flute's when 
 flute_tall = 1.2            # this many times as tall as it is wide,
 flute_shown = 0.5           # and at least this share of it is outside every other piece
 flute_samples = 24          # points along the base's height where a side is tested for being shown
+head_height = 0.85          # a tier's head is the level cut this share of the way up what shows of it: under its chamfers
 
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this

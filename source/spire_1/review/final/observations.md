@@ -1,21 +1,22 @@
 # spire_1, final: what the sheet shows
 
-Read from `sheet.png` and `benchmarks/out/spire_variants.png`. 3.2 x 2.8 x 6.0 m. Numbers in brackets are the gate's own, from `out/reports/` and the L1 log; the shares of surface by tilt were measured on the built mesh by a scratch script and are not a check.
+The reworked spire (2026-10-05, second round). 3.2 x 2.8 x 6.0 m. Numbers in brackets are the gate's own, from `out/reports/` and the L1 log; the shares of surface by tilt were measured on the built mesh by a scratch script and are not a check.
 
-1. **Silhouette.** Tiers: three read in every level view and in `bevy`; each step in is a visible notch on both flanks in `front`, `right` and `back` [3 tiers; steps 0.47, 0.52; brief: at most 0.7]. Flat caps: the top tier ends in a flat about a third of its width in `clay_wire_front`, not a point; the two ledges are seen as surfaces only in `top` and `three_quarter` [ledges 0.123, 0.131, 0.220 of each level cut; brief: 0.1]. Flutes: in `clay_wire_front` three edges run unbroken from the ground to the base's shoulder, and no level edge crosses a side [14 tall sides; brief: 6]; in the material tiles the base's sides differ little in tone and the flutes read weakly: it reads as a truncated pyramid of flat faces more than a fluted column. Off-centre: the upper tiers stand right of the base's middle in `front` by about a tenth of its width [summit 0.149; brief: 0.1]. Foot: buttresses read in `front` (two, at the left and the middle) and `back` (one, right); the two blocks are specks under a twentieth of the height.
-2. **Proportions.** The base is 0.45 of the height and about 2.6 m wide at the ground, 1.5 m at its shoulder; second tier 0.3 of the height, top tier 0.27. Tiers 1.82, 0.86, 0.45 m wide at mid height. The tallest buttress reaches about 0.6 of the base's height. 8 pieces, 0.226 buried [brief: at most 0.4]; shown 20.08 to 0.38 m2, smallest step 1.43 [brief: 1.15].
-3. **Facing and grounding.** The base sits on the bottom edge of the frame in `front`, `right` and `back`; no gap under any piece. A spire has no front.
-4. **Topology** (clay_wire). 688 triangles [budget 800]. One bevel strip per plane edge; no edges along the joins; caps are fans.
+1. **Silhouette.** Tiers: three read in every level view; the steps are unequal, a small one at the base's cap and a large one under the top tier [steps 0.64, 0.45, differing by 1.42; brief: at most 0.7, differing by 1.2]. Off the middle: in `front` the second tier stands at the left of the base's cap and the top tier at the right of the second's [0.191, 0.511 of their width; brief: 0.15]. Leaning: in `right` the whole spire leans right, its top over the base's right edge [8.7 degrees; brief: 4]; in `front` it reads nearly upright, looking along the lean. Caps: tipped planes, each a different way, in the clay_wire level views; the ledges are seen as surfaces in `top` and `three_quarter` [0.168, 0.381, 0.516; brief: 0.1]. Base: a main mass with a shoulder about three quarters of its height at the right of `front` and a groove between them from the ground up [14 tall sides; brief: 6]. A block stands on the base's ledge in `front`, about a quarter of the second tier's height: it reads as a headstone set against a wall, not as a broken piece.
+2. **Proportions.** Base 0.42 of the height; second tier 0.37, 1.36 m wide: a slab as wide as two thirds of the base; top tier 0.2 of the height and 0.62 m wide, about 0.3 of the base's width [brief: no post, a quarter]. 8 pieces, 0.356 buried [brief: at most 0.4]; shown 20.33 to 0.78 m2, smallest step 1.23.
+3. **Facing and grounding.** The base sits on the bottom edge of the frame in the level views; no gap under any piece.
+4. **Topology.** 698 triangles [budget 960]. One bevel strip per plane edge; no edges along the joins.
 5. **Shading.** No face darker or lighter than its neighbours without a lighting reason.
-6. **Materials.** One grey, mottled; edges lighter [1.26 times open faces], joins darker [0.58 times]; lighter toward the top [gradient 0.704, expected 0.698].
-7. **Scale.** The figure reaches 0.3 of the spire's height [brief: 1.8 of 6.0 m], and about two thirds of the way up the base.
-8. **In the engine** (`bevy`, `bevy_back`, and `benchmarks/out/spire_variants.png`). In `bevy` the lit flank is light grey and the far flank dark; the chamfer ring of the base is the lightest band. In `bevy_back` every side is dark; the base's chamfer ring, the caps' chamfers and one buttress with its sloping cap are the only light. From 0.5 m (`--stand 0.5`) the tile is one dark field with one soft edge across it.
-9. **Values** (value maps of `bevy` and `bevy_back`). `bevy_back`: two masses, the whole spire in the second-darkest grey, and small light patches at the base's shoulder, the second tier's shoulder, the top and one buttress: about a tenth of the asset's area. The benchmark rock from the back shows a light top about a third of its area.
-10. **At a glance** (squint). `bevy_back`: "dark stepped tower"; the eye lands on the lit buttress at the foot. The steps survive the blur as two notches.
+6. **Materials.** One grey, mottled; edges 1.27 times open faces, joins 0.68 times; gradient 0.645 of 0.641 expected.
+7. **Scale.** The figure reaches 0.3 of the height [brief: 1.8 of 6.0 m], about 0.7 of the way up the base.
+8. **In the engine** (`bevy`, `bevy_back`, `benchmarks/out/spire_variants.png`). Under the viewer's light as it now is, `bevy_back` shows the shaded sides as a mid-dark grey in which the three tiers, the base's shoulder and the edge light can all be told apart [shaded sides' median 0.0795 linear; gate L4d asks 0.0543]. From 0.5 m the tile is two planes of slightly different grey meeting at one edge.
 11. **Differences from the brief.**
-    - Light: 0.939 of the side surface is within 17 degrees of upright (the crag: 0.91) and 0.392 within 8; only 0.085 of the visible surface is nearer level than upright. The brief's ledges and chamfer rings are light bands a few percent of the outline; from behind the spire is still one dark field. Not solved.
-    - Flutes read weakly in the material tiles (item 1).
-    - The blocks at the foot are too small to read from 3 m.
-    - Silhouette 8 (chamfers ring every cap) has no check; it reads in every clay_wire tile.
+    - Foot (Silhouette 8): the blocks are still low specks in `back` and `bevy_back`; in `front` they are hidden. The larger was meant to be a seventh of the base's height; against the shoulders it does not read. Not met by eye.
+    - The ledge block reads as placed (item 1).
+    - The pieces are still plain prisms with flat sides: it reads as stacked cut blocks of rock more than as one weathered mass.
+    - 0.799 of the side surface is within 8 degrees of upright and 0.945 within 17 (no longer asked: the brief, under Light); 0.141 of what shows is nearer level than upright.
+    - Silhouette 10 (no post) and the chamfers have no check.
+
+Not done: value-map and squint aids were not remade for the reworked spire, so items 9 and 10 are not written. The blind pair `benchmarks/out/spire_blind.png` was made and not opened.
 
 The owner has not looked at this sheet.

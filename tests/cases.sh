@@ -363,7 +363,11 @@ expect_id "spec.table"               "L0 catches a cap and necks asked of one cl
 uses spire_1 lint_spec
 expect 0 "L0 passes a spire variant's spec"  lint_spire 'pass'
 expect_id "spec.spire"               "L0 catches a width step that lets tiers of one width through" lint_spire 's["spire"]["max_width_step"] = 1.0'
-expect_id "spec.spire"               "L0 catches a spire asked for a base and one tier" lint_spire 's["spire"]["tiers"] = 2'
+expect_id "spec.spire"               "L0 catches a spire asked for a base and one tier" lint_spire 's["spire"]["tiers"] = [2, 3]'
+expect_id "spec.spire"               "L0 catches a spire asked for more tiers at least than at most" lint_spire 's["spire"]["tiers"] = [4, 3]'
+expect_id "spec.spire"               "L0 catches a spire whose tiers may stand on the middle of each other" lint_spire 's["spire"]["min_tier_offset"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire that need not lean" lint_spire 's["spire"]["min_lean_deg"] = 0.0'
+expect_id "spec.spire"               "L0 catches a spire whose steps may all be alike" lint_spire 's["spire"]["min_step_spread"] = 1.0'
 expect_id "spec.spire"               "L0 catches a spire asked for no ledge at all" lint_spire 's["spire"]["min_ledge_share"] = 0.0'
 expect_id "spec.spire"               "L0 catches a spire block with a key missing" lint_spire 'del s["spire"]["min_flutes"]'
 expect_id "spec.spire"               "L0 catches tiers asked of one closed skin" lint_spire 'del s["overlap"]'

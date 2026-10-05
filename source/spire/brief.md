@@ -1,8 +1,10 @@
 # spire
 
-A stepped spire: a wide fluted base, then two or three narrower tiers stacked on it like a telescope, each with a flat cap, and buttresses and small blocks leaning on its foot. Made by a generator that takes a seed. This is the brief for the family: the generator (`generator.py`, beside this file) and everything its spires share. The deliverable is three variants, each an asset of its own with its own seed, size and number of tiers: `source/spire_1`, `_2` and `_3`. Their specs name this folder as their `family`, and `tools/lint_spec.py` holds each of them to the Numbers table below, except for the rows a variant's own brief gives.
+A stepped spire of weathered rock: a base that is a broken column, a main mass with lower shoulders against it and grooves between, then two or three narrower tiers, each sitting off the middle of the one below and leaning, with tilted caps that show as ledges; big blocks at its foot. Made by a generator that takes a seed. This is the brief for the family: the generator (`generator.py`, beside this file) and everything its spires share. The deliverable is three variants, each an asset of its own with its own seed and size: `source/spire_1`, `_2` and `_3`. Their specs name this folder as their `family`, and `tools/lint_spec.py` holds each of them to the Numbers table below, except for the rows a variant's own brief gives.
 
 Built under the pieces rule of ADR 13, as the crag is (`source/crag/brief.md`): several closed pieces that pass into each other, each softened on its own.
+
+**Reworked on 2026-10-05.** The first spires passed every gate and read as built: coaxial tiers on a flat-faced pyramid, a monument and not rock, and twelve seeds alike. The owner asked for it to look less constructed. That was an escaped defect, so three numbers that tell a telescope from weathered rock are now checks (Silhouette 5, 6 and 7), each of which the first `spire_1` fails.
 
 ## Purpose
 
@@ -22,37 +24,34 @@ A player is 1.8 m tall. These are tall: two to four and a half players.
 
 | Variant | Width (x) | Depth (y) | Height | Players tall | Tiers | Pieces | Character |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `spire_1` | 3.2 m | 2.8 m | 6.0 m | 3.3 | 3 | 8 | the plain one: two storeys of the building grid |
-| `spire_2` | 4.2 m | 3.7 m | 8.0 m | 4.4 | 4 | 9 | the great pillar: a base wider than a 3 m foundation, and a fourth tier |
-| `spire_3` | 2.0 m | 1.7 m | 3.6 m | 2.0 | 3 | 7 | a stub: the cap of its base is at a player's eye |
+| `spire_1` | 3.2 m | 2.8 m | 6.0 m | 3.3 | 3 or 4, by seed | 7 to 9 | the plain one: two storeys of the building grid |
+| `spire_2` | 4.2 m | 3.7 m | 8.0 m | 4.4 | 4 | 8 or 9 | the great pillar: a base wider than a 3 m foundation |
+| `spire_3` | 2.0 m | 1.7 m | 3.6 m | 2.0 | 3 | 7 or 8 | a stub: the cap of its base is near a player's eye |
 
-Width and depth are those of the whole asset, buttresses and blocks included. The lowest point is at z = 0 and the origin is on the ground under the centre of the bounding box.
+Width and depth are those of the whole asset, shoulders and blocks included. The lowest point is at z = 0 and the origin is on the ground under the centre of the bounding box.
 
 ## Silhouette
 
-What must read, taken from `docs/style/rock-shapes.md` (Stepped spire, and "How they are built"):
+What must read, taken from `docs/style/rock-shapes.md` (Stepped spire, and "How they are built": nothing is upright, the tallest part is off-centre, a clear size order, a foot):
 
-1. **Tiers, stacked.** Three or four closed pieces one on another: the base stands on the ground, and each tier above stands on the cap of the one below, its bottom sunk into it. At least nine tenths of a tier's foot has the tier below under it: nothing hangs off.
-2. **Each narrower by a clear step.** Taken half way up the part of it that shows, a tier is at most 0.7 as wide as the one below (its width is the square root of the area of a level cut through it). A column with a line round it is not a step.
-3. **Flat caps seen as ledges.** Seen from straight above, every tier shows near-level surface (within 12 degrees, as a slab's top is) that nothing stands over: at least a tenth of the area of a level cut through that tier. On the top tier that is its cap, never a point; on the others it is the ledge round the foot of the next.
-4. **Flutes on the base.** The base has seven or eight sides, and the corners between them run unbroken from the ground to its shoulder; the buttresses add their own. Measured as sides: at least six planes of the pieces that stand on the ground are tall sides, at least 0.6 of the base's height from bottom to top and at least 1.2 times as tall as wide, with at least half of each showing. Sides in level bands have none.
-5. **The tallest part is off-centre.** Every tier stands off the middle of the one below, all to roughly one side, and the buttresses and blocks stand round the other; so one flank is nearly sheer and the other climbs in steps. The surface above nine tenths of the height is centred at least a tenth of the bounds' half extents from the middle.
-6. **A foot.** Two or three buttresses, each a narrow prism lower than the base's shoulder that leans in against the base with a cap sloping outward, in a run of heights; and two small blocks. Seen from above, at least two sides of the spire show low near-level surface that nothing stands over, a hundredth of the footprint on each.
-7. **A clear size order.** A piece's size is the surface it shows; each shows at least 1.15 times what the next shows, as on the crag: no twins.
-8. **Chamfers ring every cap**, each wide enough to be a face of its own. Judged on the contact sheet.
+1. **Tiers, stacked.** Three or four closed pieces one on another: the base stands on the ground, and each tier above stands on the cap of the one below, its bottom sunk into it. At least nine tenths of a tier's foot has the tier below under it: it sits toward one edge of the cap, and does not hang off.
+2. **Each narrower by a clear step.** Taken half way up the part of it that shows, a tier is at most 0.7 as wide as the one below (its width is the square root of the area of a level cut through it).
+3. **Caps seen as ledges.** Every cap is a plane tipped 4 to 9 degrees, each its own way, ringed by chamfers. Seen from straight above, every tier shows near-level surface (within 12 degrees) that nothing stands over: at least a tenth of the area of a level cut through that tier. On some spires a small block sits on the base's ledge, against the tier above.
+4. **Flutes and grooves on the base.** The base is a broken column: a main mass of six to eight sides, and two shoulders against it, one about three quarters of its height and one about half, each of five or six sides; the lines where they pass into each other are grooves cut from the ground up. Measured as sides: at least six planes of the pieces that stand on the ground are tall sides, at least 0.6 of the base's height from bottom to top and at least 1.2 times as tall as wide, with at least half of each showing.
+5. **Off the middle.** Where it leaves the tier below, the middle of each tier is at least 0.15 of its own width from the middle of that tier's head. The first spires read 0.07 to 0.15.
+6. **It leans.** Each piece leans, each a different amount (2 to 11 degrees), all within about 45 degrees of one direction; from the middle of the base on the ground to the middle of the top tier's head the spire is at least 4 degrees from upright. The first spires read 1.1 to 1.3.
+7. **Unequal steps.** The largest step in width from tier to tier is at least 1.2 times the smallest: one tier much narrower than the one below, another only a little. The first spires read 1.07 to 1.12. The tiers' heights differ as much, and no two tiers have the same outline: each has its own number of sides and is squeezed its own way.
+8. **A foot that reads.** Two blocks, the larger at least a seventh of the base's height tall and a third of its radius across; with the shoulders they stand round the side the spire leans away from and beside it. Seen from above, at least two sides of the spire show low near-level surface that nothing stands over, a hundredth of the footprint on each.
+9. **A clear size order.** A piece's size is the surface it shows; each shows at least 1.15 times what the next shows, as on the crag: no twins.
+10. **No post on top.** The top tier is at least a quarter as wide as the base's main mass. Judged on the contact sheet.
 
-### Light: how this differs from the crag
+### Light, and why `lean` is not asked
 
-On the crag 91% of the side surface is within about 17 degrees of upright, so from behind, with the sun on the far side, nearly every side is in shade and it reads as one dark field. A spire is taller and would do the same. A slender stack of steps cannot lean all its sides far: every degree of lean and every ledge is taken from the same radius, and the tiers above the base keep sides 3 to 5 degrees from upright. What this family does about it:
+The first brief was written under a viewer whose shaded sides were near black, and flared the base 10 to 12 degrees on every side to keep the upright share of the side surface under 0.45 (`lean.max_upright_share`). That flare is what made the base a pyramid. Under the viewer's light as it now is (ambient 900) the old spire's back view is a readable mid grey (gate L4d holds the shaded sides to the benchmark's value), so the flare is gone and the pieces lean as rock does: together, one way. A piece that leans 8 degrees has two sides the lean runs along, which stay near upright whatever the lean, and one that overhangs; the upright share then says nothing about it, as the crag's brief found. So this family's specs have no `lean` block: the lean is asked through Silhouette 6, and the off-centre summit through 5 and 6, which ask more than `lean.min_summit_offset` did. The share of side surface near upright is still reported in each variant's review.
 
-- **The base flares.** Its sides lean in 9.5 to 12 degrees, more along its longer axis, and it holds about half of the side surface. With the buttresses' outer faces (10 to 15 degrees) that is why `lean.max_upright_share` is a real limit here, 0.45 of the side surface within 8 degrees of upright, and not the crag's 1.0.
-- **Ledges and chamfer rings.** Each cap is ringed by chamfers 42 to 51 degrees from level, which face the sky from every side of the spire; with the ledge they put a light band across the outline at each step, whichever way the sun is.
-- **Buttress caps slope outward** 14 to 24 degrees, at different heights round the foot: light faces low down, at and below the eye.
-- **Flutes turn.** Seven or eight sides, and the buttresses' own, face different ways round the compass, so neighbours take different light; the grooves between buttress and base take crevice shadow.
+### As built
 
-It is still mostly near upright by the crag's measure (17 degrees): the upper tiers and the base alike. The share is reported in each variant's review, and the back view under Bevy is where to judge whether this is enough.
-
-**As built, it is not enough.** The three variants have 0.33 to 0.39 of their side surface within 8 degrees of upright, and 0.94 to 0.95 within 17, more than the crag; 0.09 to 0.12 of what shows is nearer level than upright. In the back view the spire is one dark mass with light only on the chamfer rings and a buttress cap (`source/spire_1/review/final/observations.md`, items 8, 9 and 11). A real answer needs radius this shape does not have (a wider base, or fewer tiers), or light in the viewer and the game that reaches shaded sides.
+The three new checks pass on all three variants and all twelve seeds of the candidates sheet differ. Not met by eye: the foot blocks still do not read (Silhouette 8); `spire_2`'s top tier is about a fifth of its base's width (Silhouette 10); a block on the ledge reads as placed; and every piece is a plain prism, so the whole reads as stacked blocks of rock. A seed often needs many draws (`spire_1` seed 1 took the thirty-sixth of forty), mostly refused for two pieces of one size.
 
 ## Style and colour
 
@@ -71,20 +70,20 @@ Painted by script (ADR 9, ADR 10; `tools/paint.py`) into one texture, with the c
 1. **Gradient.** A light grey `#c8c8c8` at the top of the bounds and a cool grey `#8c8c9a` at the ground.
 2. **Side shade.** Upright faces are darker at mid height, by up to 22%.
 3. **Blotches.** The tone drifts lighter and darker by up to 12%, in soft-edged patches about 0.4 m across.
-4. **Crevice shadow.** Where one piece passes into another the colour loses 45% of its light, fading to nothing 0.2 m out: round the foot of each tier, and down each groove between a buttress and the base.
+4. **Crevice shadow.** Where one piece passes into another the colour loses 45% of its light, fading to nothing 0.2 m out: round the foot of each tier, and down each groove of the base.
 5. **Edge light.** Exposed edges gain up to 30%, fading to nothing 0.06 m into each plane.
 
-**Texture size, said before building.** `conventions.toml` asks 100 texels per metre of every face, and a 1024 px texture at the 0.4 coverage the packer reaches holds about 42 m2 at that density. Estimated from the sizes above: `spire_1` has about 47 m2 of surface and `spire_2` about 85 m2, so the family's texture is 2048 px (about 168 m2); `spire_3` has about 17 m2 and its own brief gives 1024 px.
+**Texture size.** `conventions.toml` asks 100 texels per metre of every face. The family's texture is 2048 px; `spire_3` gives 1024 px in its own brief. The first `spire_1` measured 202 texels per metre at 2048 px, so 1024 px was asked of the reworked one; gate L4 found 74 there, so it stays at 2048 (its own brief).
 
 No growth: moss is a cover, and covers are palette variants on the same mesh (ADR 13).
 
 ## Parts
 
-One object and one mesh per variant, with one material. The mesh is seven to nine closed pieces that overlap (`overlap` in the spec). Nothing moves.
+One object and one mesh per variant, with one material. The mesh is seven to nine closed pieces that overlap (`overlap` in the spec): three or four tiers, two shoulders, two blocks, and on some seeds a block on the base's ledge. Nothing moves.
 
 ## Budget
 
-One material slot. Triangles, estimated before building from the crag's count of 17n - 4 for a softened prism of n sides standing on the ground, and 21n for one whose bottom is off the ground and softened too: the base of up to 8 sides, 132; a tier of up to 6, 126; a buttress or a block of up to 5, 81. Each variant's own brief adds them up. Until the stress scene of ADR 7 exists this is an estimate.
+One material slot. Triangles, estimated before building from the crag's count of 17n - 4 for a softened prism of n sides standing on the ground, and 21n for one whose bottom is off the ground and softened too: the base's main mass of up to 8 sides, 132; a tier of up to 6, 126; shoulders of up to 6 and 5 sides, 98 and 81; two blocks of up to 5, 81 each; a ledge block of up to 5, 105. Each variant's own brief adds them up. Until the stress scene of ADR 7 exists this is an estimate.
 
 ## References
 
@@ -97,7 +96,7 @@ Collision shapes, a climbable flag, LODs, mossy and snow-capped covers, other st
 
 ## Numbers
 
-Every value the variants' `spec.json` files share. Each variant's own brief gives its `objects`, `seed`, `bounds_m`, how many pieces and tiers it has, its budget and the area of its foot; `spire_3`'s gives its own texture size.
+Every value the variants' `spec.json` files share. Each variant's own brief gives its `objects`, `seed`, `bounds_m`, how many pieces and tiers it may have, its budget and the area of its foot; `spire_3`'s gives its own texture size.
 
 | Spec key | Value | From |
 | --- | --- | --- |
@@ -115,26 +114,28 @@ Every value the variants' `spec.json` files share. Each variant's own brief give
 | `painted_shading.blotch_size_m` | `0.4` | Painted shading 3 |
 | `painted_shading.side_shade` | `0.22` | Painted shading 2 |
 | `painted_shading.hidden_underside` | `true` | The underside is never seen |
-| `overlap.max_buried_share` | `0.4` | Silhouette 7: the crag's limit |
-| `overlap.min_step_ratio` | `1.15` | Silhouette 7 |
+| `overlap.max_buried_share` | `0.4` | Silhouette 9: the crag's limit |
+| `overlap.min_step_ratio` | `1.15` | Silhouette 9 |
 | `spire.max_width_step` | `0.7` | Silhouette 2 |
 | `spire.min_ledge_share` | `0.1` | Silhouette 3 |
 | `spire.min_flutes` | `6` | Silhouette 4 |
-| `lean.max_upright_share` | `0.45` | Light: the base and the buttresses' outer faces lean |
-| `lean.min_summit_offset` | `0.1` | Silhouette 5 |
-| `foot.min_sides` | `2` | Silhouette 6 |
+| `spire.min_tier_offset` | `0.15` | Silhouette 5 |
+| `spire.min_lean_deg` | `4.0` | Silhouette 6 |
+| `spire.min_step_spread` | `1.2` | Silhouette 7 |
+| `foot.min_sides` | `2` | Silhouette 8 |
 | `soft_edges` | `true` | Style and colour |
 | `watertight` | `true` | Parts: every piece is closed |
 | `attributes` | `["POSITION", "NORMAL", "TEXCOORD_0"]` | Painted shading: one texture |
 
 ## Decisions
 
-There was no grilling session. Given by the owner on 2026-10-05: the family, with three variants differing by seed and size, built from pieces under ADR 13; the shape, from `docs/style/rock-shapes.md`; that the spires are tall; that expected values come from this brief and painted shading is asked for in the spec; that `lean.max_upright_share` is not to be set to 1.0.
+There was no grilling session. Given by the owner on 2026-10-05: the family, with three variants differing by seed and size, built from pieces under ADR 13; the shape, from `docs/style/rock-shapes.md`; that the spires are tall; that expected values come from this brief and painted shading is asked for in the spec. Given after the first review: that it look less constructed (off-centre leaning tiers, unequal steps, tilted caps, a base that is a cluster with grooves, a foot that reads, no post on top, seeds that differ), and that `spire_1` take a 1024 px texture if it clears 100 texels per metre.
 
 Proposed by the agent, and open to change:
 
 - The three sizes, tier and piece counts, and seeds; every range in `generator.py`.
-- That the flutes are the corners of a seven- or eight-sided base and of buttresses leaning on it, and not grooves cut into one piece: a piece is convex (ADR 13), so a groove is where two pieces meet.
-- That the tiers step off-centre to one side and the buttresses stand round the other.
-- **Thresholds invented for the spire.** In the spec: a width step of 0.7, a ledge of a tenth of a tier's level cut, six flutes; an upright share of 0.45 and a summit offset of 0.1; the crag's buried limit of 0.4 and size step of 1.15; a foot of a hundredth of the footprint on two sides. In `conventions.toml` (`[spire]`): nine tenths of a tier's foot over the tier below; a flute at least 0.6 of the base's height, 1.2 times as tall as wide and half shown. None is measured on a reference.
+- That a groove is where two pieces meet: a piece is convex (ADR 13).
+- Leaving `lean` out of the specs, for the reason under Light. This removes a limit the first specs had (0.45 of the side surface within 8 degrees of upright).
+- That a tier's cap tips no more than 9 degrees, so that the ledge check's 12 degrees still finds it.
+- **Thresholds invented for the spire.** In the spec: a width step of 0.7, a ledge of a tenth of a tier's level cut, six flutes; a tier 0.15 of its width off the middle of the one below, a lean of 4 degrees, steps that differ by 1.2; the crag's buried limit of 0.4 and size step of 1.15; a foot of a hundredth of the footprint on two sides. In `conventions.toml` (`[spire]`): nine tenths of a tier's foot over the tier below; a flute at least 0.6 of the base's height, 1.2 times as tall as wide and half shown; a tier's head 0.85 of the way up it. None is measured on a reference; the three new ones were set between what the first spires read and what this brief asks.
 - The budget; every painted value, the crag's; no growth.

@@ -1310,9 +1310,9 @@ def check_spire(checks, name, bm, spec, conv):
     tiers = chain[::-1]
     checks.check(
         f"{name}.spire_tiers",
-        stands and len(tiers) == want["tiers"],
+        stands and want["tiers"][0] <= len(tiers) <= want["tiers"][1],
         f"from the highest piece down, each sunk into the next, there are {len(tiers)} tiers, and the lowest {'stands on the ground' if stands else 'does not stand on the ground'}; "
-        f"spec wants {want['tiers']} tiers, from a base on the ground up",
+        f"spec wants {want['tiers'][0]} to {want['tiers'][1]} tiers, from a base on the ground up",
     )
     # A tier stands on the one below when, just above that one's top, the one below is under all of it.
     standing = []
@@ -1397,6 +1397,43 @@ def check_spire(checks, name, bm, spec, conv):
         f"{name} spire: {len(tiers)} tiers{'' if stands else ', not standing on the ground'}, {[round(width, 2) for width in widths]} m wide, steps {[round(step, 2) for step in steps]}; "
         f"standing {[round(share, 3) for share in standing]}; ledges {[round(share, 3) for share in shares]} of each level cut; {len(flutes)} flutes"
     )
+    # Weathered and not built: a telescope has every tier upright on the middle of the one below, in even steps.
+    # Where a tier is, near its top and at its foot: the middle of a level cut through it.
+    def centre(index, z):
+        inside, _ = cut(index, z)
+        return sum(inside, Vector()) / len(inside) if inside else None
+
+    heads, offsets = [], []
+    for index, tier in enumerate(tiers):
+        low = lo.z if index == 0 else solids[tiers[index - 1]].hi.z
+        heads.append(centre(tier, low + rules["head_height"] * (solids[tier].hi.z - low)))
+        if index:
+            foot = centre(tier, low + tol)
+            below = heads[index - 1]
+            offsets.append((foot - below).to_2d().length / widths[index] if foot and below and widths[index] else 0.0)
+    checks.check(
+        f"{name}.spire_off_centre",
+        bool(offsets) and min(offsets) >= want["min_tier_offset"],
+        f"where it leaves the tier below, the middle of each tier is {[round(offset, 3) for offset in offsets]} of its own width from the middle of that tier's head "
+        f"({rules['head_height']} of the way up what shows of it; conventions), from the base up; spec wants at least {want['min_tier_offset']} for every tier: not one on the middle of another",
+    )
+    ground_middle = centre(tiers[0], lo.z + tol) if stands else None
+    lean = 0.0
+    if ground_middle and heads and heads[-1]:
+        reach = heads[-1] - ground_middle
+        lean = math.degrees(math.atan2(reach.to_2d().length, reach.z))
+    checks.check(
+        f"{name}.spire_leans",
+        lean >= want["min_lean_deg"],
+        f"from the middle of the base on the ground to the middle of the top tier's head the spire leans {lean:.1f} degrees from upright; spec wants at least {want['min_lean_deg']}",
+    )
+    spread = max(steps) / min(steps) if len(steps) >= 2 and min(steps) > 0 else 1.0
+    checks.check(
+        f"{name}.spire_steps_differ",
+        spread >= want["min_step_spread"],
+        f"the steps in width from tier to tier are {[round(step, 2) for step in steps]}, the largest {spread:.2f} times the smallest; spec wants at least {want['min_step_spread']}: steps that differ",
+    )
+    print(f"{name} spire, weathered: tiers off the middle of the one below by {[round(offset, 3) for offset in offsets]} of their width; leaning {lean:.1f} degrees; steps differ by {spread:.2f}")
 
 
 def check_scene(checks, spec, conv):
