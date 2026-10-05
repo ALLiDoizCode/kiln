@@ -119,6 +119,11 @@ if "painted_shading" in spec:
         # Grain and close-range texels the spec asks for (ADR 12), and how the load test measures the grain.
         manifest["painted"].update({key: want[key] for key in ("grain", "grain_width_m", "close_height_m", "close_texels_per_m") if key in want})
         manifest["painted"].update({key: rules[key] for key in ("min_grain_step", "min_grain_along", "min_grain_patches", "grain_patch_m")})
+        if want.get("grain"):
+            # The two tones of grained bark, as the painter makes them: painted.colour is asked of each (tools/paint.py).
+            import paint
+
+            manifest["painted"].update(paint.grain_tones(want))
 if "skeleton" in spec:
     # Where a player stands against the trunk: its middle at eye height, in glTF space (x, z). A trunk
     # leans, so this is not the origin; crates/asset_view's --stand measures its distance from here.

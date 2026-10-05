@@ -127,7 +127,10 @@
     "min_grain_step": 0.25,
     "min_grain_along": 1.16,
     "min_grain_patches": 0.8,
-    "grain_patch_m": 0.15
+    "grain_patch_m": 0.15,
+    "grain_furrow_tone": 0.59248,
+    "grain_furrow_top": 0.70288,
+    "grain_plate_tone": 1.288
   },
   "stand_at": [
     -0.1216,

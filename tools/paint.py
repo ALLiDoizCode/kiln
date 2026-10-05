@@ -126,6 +126,20 @@ CHECK_STEP = 0.12
 CHECK_SHARE = 0.02
 
 
+def grain_tones(paint):
+    """What grain makes of a surface's tone, over the tone without it, for the load test to hold open faces to.
+
+    Grain is two tones and not one with a little variation: furrows, and the plates between them, each
+    about half the surface. Their mean is 1 (GRAIN_LIFT), but only over a whole limb; over a few open faces
+    the shares differ and the mean with them. Each tone is the same wherever it is: the middle of a furrow
+    (the fine streaks lighten it as much as they darken it), the top of the range the streaks give a furrow,
+    and the middle of a plate.
+    """
+    grain = paint["grain"]
+    plate, furrow = 1.0 + grain * GRAIN_LIFT, 1.0 - grain * FURROW_DEPTH
+    return {"grain_furrow_tone": round(plate * furrow, 6), "grain_furrow_top": round((plate + grain * GRAIN_FINE_TONE) * furrow, 6), "grain_plate_tone": round(plate, 6)}
+
+
 def luminance(rgb):
     return sum(c * w for c, w in zip(rgb, LUMA))
 

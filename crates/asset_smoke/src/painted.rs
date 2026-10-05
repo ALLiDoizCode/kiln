@@ -54,6 +54,15 @@ pub struct Painted {
     /// What a crevice is, as `tools/paint.py` paints one: its shadow is whole where this share of the sky above a
     /// face is hidden, and where another overlapping piece hides the second share of it. A fold is a crevice
     /// when it hides as much at its own line: faces tilted t apart hide (1 - cos t) / 2.
+    /// Grain (ADR 12) makes a surface two tones, each about half of it: furrows, and the plates between them.
+    /// The tone of a furrow's middle, the lightest a furrow's streaks make it, and the tone of a plate's
+    /// middle, each over the tone without grain (`tools/paint.py`, `grain_tones`). Absent: no grain.
+    #[serde(default)]
+    grain_furrow_tone: Option<f32>,
+    #[serde(default)]
+    grain_furrow_top: f32,
+    #[serde(default)]
+    grain_plate_tone: f32,
     #[serde(default = "crevice_hidden")]
     crevice_sky_hidden: f32,
     #[serde(default = "join_hidden")]
@@ -138,6 +147,10 @@ pub struct Measured {
     open_ratio: f32,
     edge_ratio: f32,
     crevice_ratio: f32,
+    /// With grain: the share of open samples in furrows, and the median tone of those and of the rest, each over the tone the painter gives it.
+    furrow_share: f32,
+    furrow_ratio: f32,
+    plate_ratio: f32,
     /// Luminance of the lowest quarter of the open and foot samples, by height, over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
@@ -467,11 +480,38 @@ pub fn check(
         return measured;
     }
 
-    if (open - 1.0).abs() > want.colour_tolerance {
-        fail(format!(
-            "painted.colour: open faces are {open:.3} times the material colour times the tint at their height; conventions allow 1 +/- {}",
-            want.colour_tolerance
-        ));
+    // Paint over the right colour: open faces are the material colour times the tint. Without grain
+    // that is their mean, blotches averaging out. Grain does not average out over a tree's few open
+    // faces: it is furrows and plates, two tones about half the surface each, and the mean follows
+    // their shares (six trees with the paint right read 0.915 to 0.971, their open faces 0.55 to
+    // 0.61 furrow). So a grained surface is held to its two tones, each where it is: the samples no
+    // lighter than a furrow's streaks make it, and the rest, by their medians.
+    match want.grain_furrow_tone {
+        None => {
+            if (open - 1.0).abs() > want.colour_tolerance {
+                fail(format!(
+                    "painted.colour: open faces are {open:.3} times the material colour times the tint at their height; conventions allow 1 +/- {}",
+                    want.colour_tolerance
+                ));
+            }
+        }
+        Some(furrow_tone) => {
+            let median = |mut ratios: Vec<f32>| {
+                ratios.sort_by(f32::total_cmp);
+                (ratios.len(), ratios.get(ratios.len() / 2).copied().unwrap_or(0.0))
+            };
+            let on_open = || samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.ratio);
+            let (furrow_count, furrow) = median(on_open().filter(|&r| r <= want.grain_furrow_top).collect());
+            let (plate_count, plate) = median(on_open().filter(|&r| r > want.grain_furrow_top).collect());
+            measured.furrow_share = furrow_count as f32 / open_count as f32;
+            (measured.furrow_ratio, measured.plate_ratio) = (furrow / furrow_tone, plate / want.grain_plate_tone);
+            if furrow_count < MIN_SAMPLES || plate_count < MIN_SAMPLES || (measured.furrow_ratio - 1.0).abs() > want.colour_tolerance || (measured.plate_ratio - 1.0).abs() > want.colour_tolerance {
+                fail(format!(
+                    "painted.colour: on open faces the furrows of the grain are {:.3} times the tone the paint gives a furrow over the material colour and the tint ({furrow_count} samples) and the plates between them {:.3} times a plate's ({plate_count} samples); conventions allow 1 +/- {} for each",
+                    measured.furrow_ratio, measured.plate_ratio, want.colour_tolerance
+                ));
+            }
+        }
     }
 
     // Lowest and highest quarter, by height, of the surface whose tone the formula gives: the open
