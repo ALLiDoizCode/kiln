@@ -8,7 +8,9 @@
 //! the geometry alone gives. That leaves a number that is 1 on an open face
 //! (give or take its blotches, which average out), above 1 on an exposed edge
 //! and below 1 in a crevice. Which of those a texel is comes from the
-//! geometry alone, never from the texture.
+//! geometry alone, never from the texture. The foot, the strip where a side
+//! meets the ground, is near 1 too: the paint gives the edge an asset stands
+//! on no light. It is measured only for the gradient from base to top.
 //!
 //! Growth is measured by hue: a texel divided by the tint, at the material's
 //! lightness, lies somewhere on the line from the material colour to the
@@ -35,8 +37,11 @@ pub struct Painted {
     top_tint: [f32; 3],
     edge_light: f32,
     edge_width_m: f32,
-    crevice_shadow: f32,
-    crevice_width_m: f32,
+    /// Absent when the spec asks no crevice shadow: the shape has no inside corner, and the load test holds it to that.
+    #[serde(default)]
+    crevice_shadow: Option<f32>,
+    #[serde(default)]
+    crevice_width_m: Option<f32>,
     /// Faces lying on the floor of the bounds and facing down are never seen, and are not measured.
     hidden_underside: bool,
     min_texels_per_m: f32,
@@ -118,14 +123,17 @@ pub struct Measured {
     open_samples: usize,
     edge_samples: usize,
     crevice_samples: usize,
+    /// Samples on the strip where a side meets the ground: measured with the open faces for the gradient alone.
+    foot_samples: usize,
     /// Mean of texel luminance over (material colour times tint) luminance, per zone.
     open_ratio: f32,
     edge_ratio: f32,
     crevice_ratio: f32,
-    /// Luminance of the lowest quarter of open samples over the highest quarter.
+    /// Luminance of the lowest quarter of the open and foot samples, by height, over the highest quarter.
     gradient: f32,
     gradient_expected: f32,
-    /// Largest run of unused 8-bit levels within the range the open faces' green channel spans.
+    /// Largest run of 8-bit levels of the green channel that no open face uses and that two
+    /// neighbouring samples of one open face lie either side of: a step in the texture.
     level_gap: u8,
     /// Share of growth, 0 to 1, by hue: low on the asset, on upright open faces high up, on level
     /// open faces high up, and along upper edges.
@@ -152,12 +160,18 @@ const MIN_SAMPLES: usize = 50;
 const SAMPLE_GRID: u32 = 384;
 /// Faces closer in tilt than this are one surface.
 const SAME_SURFACE_DEG: f32 = 4.0;
+/// The foot is the surface within this many edge widths of the ground. The paint fades the edge light in over two
+/// edge widths from the ground (tools/paint.py), so the foot has at most an eighth of it.
+const FOOT_EDGE_WIDTHS: f32 = 0.25;
+/// Two samples next to each other in the texture are neighbours on the surface when no further apart than this many sample steps.
+const NEIGHBOUR_STEPS: f32 = 3.0;
 /// A point of a surface is buried when the space this far in front of it is inside another piece (as `[overlap] in_front_m` in conventions.toml).
 const BURIED_IN_FRONT_M: f32 = 0.0001;
 
 struct Sample {
-    /// Texel position, to find neighbours.
+    /// Texel position, to find neighbours, and the point of the surface it paints.
     at: (u32, u32),
+    point: Vec3,
     /// Metres above the floor, and the upward part of the face's normal.
     above: f32,
     up: f32,
@@ -183,6 +197,8 @@ enum Zone {
     Open,
     Edge,
     Crevice,
+    /// The strip where a side meets the ground it stands on: no edge light to speak of, and no shadow.
+    Foot,
     Other,
 }
 
@@ -190,6 +206,7 @@ pub fn check(
     want: &Painted,
     triangles: &[Triangle],
     overlap: bool,
+    foliage: bool,
     image: &Image,
     floor: f32,
     top: f32,
@@ -310,6 +327,8 @@ pub fn check(
         .map(|t| (*t, normal(t).normalize_or_zero(), (t.positions[0] + t.positions[1] + t.positions[2]) / 3.0))
         .collect();
     let (base_tint, top_tint) = (Vec3::from(want.base_tint), Vec3::from(want.top_tint));
+    // With no crevice shadow asked, an inside corner is looked for as near as an exposed edge is.
+    let crevice_width_m = want.crevice_width_m.unwrap_or(want.edge_width_m);
     // Overlapping pieces (ADR 13): which piece each face is of. Surface inside another piece is
     // never seen, and what the paint did there is not measured.
     let corners: Vec<[Vec3; 3]> = faces.iter().map(|(t, _, _)| t.positions).collect();
@@ -381,18 +400,19 @@ pub fn check(
             // The edge an asset stands on is not exposed, and is not painted as one.
             let on_ground = want.hidden_underside && p.y - floor < want.edge_width_m * 2.0;
             let zone = if on_ground {
-                Zone::Other
-            } else if concave <= want.crevice_width_m * 0.25 {
+                if p.y - floor < want.edge_width_m * FOOT_EDGE_WIDTHS && any_concave > crevice_width_m * 1.25 { Zone::Foot } else { Zone::Other }
+            } else if concave <= crevice_width_m * 0.25 {
                 Zone::Crevice
-            } else if convex <= want.edge_width_m * 0.5 && any_concave > want.crevice_width_m {
+            } else if convex <= want.edge_width_m * 0.5 && any_concave > crevice_width_m {
                 Zone::Edge
-            } else if any_convex > want.edge_width_m * 2.0 && any_concave > want.crevice_width_m * 1.25 {
+            } else if any_convex > want.edge_width_m * 2.0 && any_concave > crevice_width_m * 1.25 {
                 Zone::Open
             } else {
                 Zone::Other
             };
             samples.push(Sample {
                 at: (x, y),
+                point: p,
                 above: p.y - floor,
                 up: n.y,
                 shade,
@@ -424,6 +444,7 @@ pub fn check(
     let (edge_count, edge) = mean(Zone::Edge);
     let (crevice_count, crevice) = mean(Zone::Crevice);
     (measured.open_samples, measured.edge_samples, measured.crevice_samples) = (open_count, edge_count, crevice_count);
+    measured.foot_samples = samples.iter().filter(|s| s.zone == Zone::Foot).count();
     (measured.open_ratio, measured.edge_ratio, measured.crevice_ratio) = (open, edge, crevice);
     if open_count < MIN_SAMPLES {
         fail(format!("painted.open_faces: only {open_count} samples lie on open faces; nothing to measure the colour on"));
@@ -437,8 +458,13 @@ pub fn check(
         ));
     }
 
-    // Lowest and highest quarter of the open samples, by height.
-    let mut by_height: Vec<&Sample> = samples.iter().filter(|s| s.zone == Zone::Open).collect();
+    // Lowest and highest quarter, by height, of the surface whose tone the formula gives: the open
+    // faces and the foot. On a low stone the open faces are its cap, a few blotches across and
+    // almost one height: its low and high quarters differ by their blotches, by more than the
+    // tolerance either way, and by nothing the tints do (twelve seeds of pebble_1 read 0.21 over
+    // to 0.11 under what the tints give, and the same stone painted with no gradient 0.20 over).
+    // The gradient of such a stone is between its foot and its cap, so the foot is measured too.
+    let mut by_height: Vec<&Sample> = samples.iter().filter(|s| s.zone == Zone::Open || s.zone == Zone::Foot).collect();
     by_height.sort_by(|a, b| a.height.total_cmp(&b.height));
     let quarter = by_height.len() / 4;
     let total = |part: &[&Sample], value: fn(&Sample) -> f32| part.iter().map(|s| value(s)).sum::<f32>();
@@ -447,7 +473,7 @@ pub fn check(
     measured.gradient_expected = total(low, |s| s.expected) / total(high, |s| s.expected);
     if (measured.gradient - measured.gradient_expected).abs() > want.colour_tolerance {
         fail(format!(
-            "painted.gradient: the lowest quarter of the open faces is {:.3} times as light as the highest; the tints give {:.3} +/- {}",
+            "painted.gradient: the lowest quarter of the open faces and the foot is {:.3} times as light as the highest; the tints give {:.3} +/- {}",
             measured.gradient, measured.gradient_expected, want.colour_tolerance
         ));
     }
@@ -460,24 +486,62 @@ pub fn check(
             want.edge_light
         ));
     }
-    let crevice_ceiling = 1.0 - want.min_effect_share * want.crevice_shadow;
-    if crevice_count >= MIN_SAMPLES && crevice / open > crevice_ceiling {
-        fail(format!(
-            "painted.crevices_darker: inside corners are {:.3} times as light as open faces ({crevice_count} samples); crevice_shadow {} wants at most {crevice_ceiling:.3}",
-            crevice / open,
-            want.crevice_shadow
-        ));
+    // The crevice shadow is asked of a shape that has inside corners, and of no other: asked of a
+    // convex stone it would pass unmeasured, and left out of a spec it must not leave a corner unshaded.
+    match want.crevice_shadow {
+        Some(shadow) if crevice_count >= MIN_SAMPLES => {
+            let crevice_ceiling = 1.0 - want.min_effect_share * shadow;
+            if crevice / open > crevice_ceiling {
+                fail(format!(
+                    "painted.crevices_darker: inside corners are {:.3} times as light as open faces ({crevice_count} samples); crevice_shadow {shadow} wants at most {crevice_ceiling:.3}",
+                    crevice / open
+                ));
+            }
+        }
+        // Not yet asked of foliage: the stems of a bush or a tuft meet in corners too small for a sample, and their shadow is not measured.
+        Some(shadow) if !foliage => fail(format!(
+            "painted.crevices_darker: only {crevice_count} samples lie in inside corners; nothing to measure crevice_shadow {shadow} on. A shape with no inside corner leaves crevice_shadow and crevice_width_m out of its spec"
+        )),
+        None if crevice_count >= MIN_SAMPLES => fail(format!(
+            "painted.crevices_darker: {crevice_count} samples lie in inside corners, and the spec asks no crevice shadow of them (crevice_shadow, crevice_width_m)"
+        )),
+        _ => {}
     }
 
-    // Banding: a smooth gradient uses every 8-bit level it passes through. Levels left unused
-    // inside the range the open faces span are steps the eye sees as bands.
-    let mut greens: Vec<u8> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| s.green).collect();
+    // Banding: a smooth gradient uses every 8-bit level it passes through, so where two
+    // neighbouring samples of one face lie either side of levels that no open face uses, the
+    // texture steps over them, and the eye sees the step as a band. Levels unused only because
+    // no open face lies at the height that would have them (a cap and a neck with air between,
+    // stones piled on each other) are not passed through by any pair, and are no step.
+    let open_at: std::collections::HashMap<(u32, u32), &Sample> = samples.iter().filter(|s| s.zone == Zone::Open).map(|s| (s.at, s)).collect();
+    let mut greens: Vec<u8> = open_at.values().map(|s| s.green).collect();
     greens.sort_unstable();
     let inner = &greens[greens.len() / 50..greens.len() - greens.len() / 50];
-    measured.level_gap = inner.windows(2).map(|pair| (pair[1] - pair[0]).saturating_sub(1)).max().unwrap_or(0);
+    let mut used = [false; 256];
+    for &level in inner {
+        used[level as usize] = true;
+    }
+    let mut stepped_over = [false; 256];
+    for (&(x, y), sample) in &open_at {
+        for next in [(x + stride, y), (x, y + stride)] {
+            let Some(other) = open_at.get(&next) else { continue };
+            // Neighbours in the texture that are not neighbours on the surface lie on two islands of the layout.
+            if sample.point.distance(other.point) > NEIGHBOUR_STEPS * sample.step_m.max(other.step_m) {
+                continue;
+            }
+            for level in sample.green.min(other.green) as usize + 1..sample.green.max(other.green) as usize {
+                stepped_over[level] = true;
+            }
+        }
+    }
+    let mut run = 0;
+    for level in inner[0]..=inner[inner.len() - 1] {
+        run = if stepped_over[level as usize] && !used[level as usize] { run + 1 } else { 0 };
+        measured.level_gap = measured.level_gap.max(run);
+    }
     if measured.level_gap > want.max_level_gap {
         fail(format!(
-            "painted.banding: open faces span 8-bit levels {}..{} of the green channel but leave a run of {} unused; conventions allow {}",
+            "painted.banding: open faces span 8-bit levels {}..{} of the green channel, and neighbouring texels step over a run of {} that none of them uses; conventions allow {}",
             inner[0],
             inner[inner.len() - 1],
             measured.level_gap,

@@ -13,7 +13,7 @@ The colour at a point, in linear RGB, is
       * mix(base_tint, top_tint, height within the spec's bounds)
       * (1 - side_shade * how upright the face is * how near mid height the point is)
       * (1 + blotch * a broad patch pattern between -1 and 1)
-      * (1 - crevice_shadow * how enclosed the point is)
+      * (1 - crevice_shadow * how enclosed the point is), where the spec asks a crevice shadow
       * (1 + edge_light * how close the point is to an exposed edge)
 
 The growth mask is the largest of three: below `growth_height_m`, with a ragged
@@ -428,18 +428,22 @@ def paint_nodes(tree, colour_rgb, spec, conv):
     # Both masks come from Cycles' ambient occlusion node, aimed along the face's own normal
     # (the shading normal of a soft edge would darken every bevel strip).
     # Crevice: how much of the sky above the face other faces hide.
-    shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
-    if apart:
+    # A spec for a shape with no inside corner asks none (tools/lint_spec.py asks it of overlapping pieces always).
+    shade = None
+    if "crevice_shadow" in paint:
+        shade = math_node("DIVIDE", hidden(False, paint["crevice_width_m"]), FULL_SHADE_OCCLUSION, clamp=True)
+    if apart and shade is not None:
         # A join: the sky another piece hides, over and above what the face's own piece hides. Two
         # pieces often meet in a groove too open to hide a fifth of the sky, and the join must
         # still be dark, since that is what hides it.
         by_others = math_node("SUBTRACT", hidden(False, paint["crevice_width_m"]), hidden(False, paint["crevice_width_m"], own_piece=True), clamp=True)
         shade = math_node("MAXIMUM", shade, math_node("DIVIDE", by_others, FULL_JOIN_OCCLUSION, clamp=True))
-    colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
+    if shade is not None:
+        colour = mix("MULTIPLY", math_node("MULTIPLY", shade, paint["crevice_shadow"]), colour, (0.0, 0.0, 0.0))
 
     # Exposed edge: how much of the solid behind the face is missing, because another face cuts it off.
     edge = math_node("DIVIDE", hidden(True, paint["edge_width_m"]), FULL_EDGE_OCCLUSION, clamp=True)
-    if apart:
+    if apart and shade is not None:
         # An edge that runs into a join is not exposed there.
         edge = math_node("MULTIPLY", edge, math_node("SUBTRACT", 1.0, shade))
     if paint["hidden_underside"]:
