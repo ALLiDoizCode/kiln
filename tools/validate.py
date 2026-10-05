@@ -874,6 +874,183 @@ def check_heads(checks, name, bm, slots, spec, conv):
     )
 
 
+def discs_of(bm, leaf):
+    """The discs of a group (source/lily_pad/brief.md), read from the mesh: every open piece of the foliage material.
+
+    A disc's middle is its vertex with the most faces; its floor is the
+    vertices joined to its middle, and its rim every other one. Its notch is
+    the angle, seen from above, between the two open edges that meet at its
+    middle; a disc whose middle is not on its open edge has none."""
+    found = []
+    for piece in foliage.pieces_of(bm, leaf):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        middle = max(verts, key=lambda v: sum(1 for f in v.link_faces if f in inside))
+        at = middle.co.xy
+        spokes = [e for e in middle.link_edges if any(f in inside for f in e.link_faces)]
+        floor = [e.other_vert(middle) for e in spokes]
+        rim = [v for v in verts if v is not middle and v not in floor] or floor
+        walls = [e.other_vert(middle).co.xy - at for e in spokes if sum(1 for f in e.link_faces if f in inside) == 1]
+        notch = math.degrees(abs(walls[0].angle_signed(walls[1]))) if len(walls) == 2 and min(wall.length for wall in walls) > 1e-9 else 0.0
+        # Its outline, seen from above: the rim in order round the middle, from the widest gap between two neighbours, and the middle where a notch reaches it.
+        ring = sorted(rim, key=lambda v: math.atan2(v.co.y - at.y, v.co.x - at.x))
+        angles = [math.atan2(v.co.y - at.y, v.co.x - at.x) for v in ring]
+        gaps = [(b - a) % (2 * math.pi) for a, b in zip(angles, angles[1:] + angles[:1])]
+        start = (gaps.index(max(gaps)) + 1) % len(ring) if ring else 0
+        outline = [v.co.xy.copy() for v in ring[start:] + ring[:start]] + ([at.copy()] if notch else [])
+        reach = [(v.co.xy - at).length for v in rim]
+        levels = [v.co.z for v in floor]
+        level = sum(levels) / len(levels)
+        found.append({
+            "middle": at.copy(), "outline": outline, "width": 2 * max(reach), "round": min(reach) / max(max(reach), 1e-9), "notch": notch,
+            "level": level, "off_level": max(abs(v.co.z - level) for v in floor + [middle]),
+            "rim": (sum(v.co.z for v in rim) / len(rim) - level) / max(2 * max(reach), 1e-9),
+        })
+    return sorted(found, key=lambda disc: -disc["width"])
+
+
+def inside_outline(point, outline):
+    """Whether a point lies inside a closed outline, both seen from above."""
+    hit = False
+    for a, b in zip(outline, outline[1:] + outline[:1]):
+        if (a.y > point.y) != (b.y > point.y) and point.x < a.x + (b.x - a.x) * (point.y - a.y) / (b.y - a.y):
+            hit = not hit
+    return hit
+
+
+def check_discs(checks, name, bm, slots, spec, conv):
+    """The foliage is a group of discs floating at one level (source/lily_pad/brief.md): round, notched, rimmed, in a run of sizes, apart and scattered.
+
+    Returns the discs' measurements, for check_blooms."""
+    want, size = spec["discs"], spec["foliage"]
+    discs = discs_of(bm, slots.index(size["material"]))
+
+    def span(key, digits=3):
+        values = [disc[key] for disc in discs]
+        return f"{min(values, default=0):.{digits}f} to {max(values, default=0):.{digits}f}"
+
+    widths = [disc["width"] for disc in discs]
+    low, high = size["piece_m"]
+    odd = sum(1 for width in widths if not low <= width <= high)
+    checks.check(
+        f"{name}.discs",
+        want["count"][0] <= len(discs) <= want["count"][1] and len(discs) >= size["min_pad_pieces"] and not odd,
+        f"{len(discs)} discs (open pieces of the foliage), {odd} of them not {low} to {high} m across (they run {span('width')} m); spec wants {want['count'][0]} to {want['count'][1]}, at least {size['min_pad_pieces']}, all of that width",
+    )
+    steps = [a / max(b, 1e-9) for a, b in zip(widths, widths[1:])]
+    twin = conv["discs"]["twin"]
+    twins = sum(1 for step in steps if step < twin)
+    narrow, wide = want["narrowest_m"], want["widest_m"]
+    checks.check(
+        f"{name}.discs_sizes",
+        len(discs) >= 2 and narrow[0] <= widths[-1] <= narrow[1] and wide[0] <= widths[0] <= wide[1] and max(steps) <= want["max_size_step"] and twins <= want["max_twins"],
+        f"the discs are {[round(width, 3) for width in widths]} m across: the narrowest is to be {narrow[0]} to {narrow[1]} m and the widest {wide[0]} to {wide[1]} m, "
+        f"with no step between one size and the next above {want['max_size_step']} times (the largest is {max(steps, default=0):.2f}) and at most {want['max_twins']} pairs within {twin} times of each other (there are {twins}): a run of sizes",
+    )
+    levels = [disc["level"] for disc in discs]
+    middle_level = statistics.median(levels) if levels else 0.0
+    apart = max((abs(level - middle_level) for level in levels), default=0.0)
+    tipped = max((disc["off_level"] for disc in discs), default=0.0)
+    checks.check(
+        f"{name}.discs_level",
+        discs and apart <= want["level_m"] and tipped <= want["level_m"],
+        f"the discs' floors lie up to {apart:.3f} m from the height of the middle one of them, and the furthest point of a floor is {tipped:.3f} m from its own floor's height; spec wants both within {want['level_m']} m: level, and all at one height",
+    )
+    low, high = want["rim_share"]
+    off = sum(1 for disc in discs if not low <= disc["rim"] <= high)
+    checks.check(
+        f"{name}.discs_rim",
+        discs and not off,
+        f"{off} of {len(discs)} discs have a rim that does not stand {low} to {high} of the disc's width above its floor (they run {span('rim')}): a raised rim",
+    )
+    low, high = want["notch_deg"]
+    off = sum(1 for disc in discs if not low <= disc["notch"] <= high)
+    checks.check(
+        f"{name}.discs_notch",
+        discs and not off,
+        f"{off} of {len(discs)} discs have no notch {low} to {high} degrees wide cut in to their middle (their notches run {span('notch', 0)} degrees; 0 is none)",
+    )
+    oval = sum(1 for disc in discs if disc["round"] < want["min_round"])
+    checks.check(
+        f"{name}.discs_round",
+        discs and not oval,
+        f"{oval} of {len(discs)} discs have a rim whose nearest point is less than {want['min_round']} as far from the middle as its furthest (they run {span('round')}): a disc is round",
+    )
+    over = [
+        (i, j) for i, a in enumerate(discs) for j, b in enumerate(discs)
+        if i < j and (any(inside_outline(point, b["outline"]) for point in a["outline"] + [a["middle"]]) or any(inside_outline(point, a["outline"]) for point in b["outline"] + [b["middle"]]))
+    ]
+    checks.check(
+        f"{name}.discs_apart",
+        discs and not over,
+        f"seen from above, {len(over)} pairs of discs overlap (widest is 0: {over[:6]}); spec wants none: discs float side by side at one level",
+    )
+    # Scattered: neither a row (the middles spread across as well as along) nor a ring (they are not all one distance from the middle of the group).
+    across, ring = 0.0, 0.0
+    if len(discs) >= 3:
+        points = numpy.array([tuple(disc["middle"]) for disc in discs])
+        spread = numpy.sqrt(numpy.maximum(numpy.linalg.eigvalsh(numpy.cov((points - points.mean(axis=0)).T)), 0.0))
+        across = float(spread[0] / max(spread[1], 1e-9))
+        out = numpy.linalg.norm(points - points.mean(axis=0), axis=1)
+        ring = float(out.std() / max(out.mean(), 1e-9))
+    print(f"{name} discs: {len(discs)}, {[round(width, 3) for width in widths]} m across, round {span('round')}, notches {span('notch', 0)} degrees, rims {span('rim')} of the width, "
+          f"floors within {apart:.3f} m of one height and {tipped:.3f} m of level, {len(over)} overlapping; middles spread {across:.2f} as far across as along, their distances from the middle differ by {ring:.2f} of the mean")
+    checks.check(
+        f"{name}.discs_scattered",
+        across >= want["min_scatter"] and ring >= want["min_scatter"],
+        f"the discs' middles spread {across:.2f} as far across the group as along it, and their distances from the group's middle differ by {ring:.2f} of the mean distance; spec wants both at least {want['min_scatter']}: not a row and not a ring",
+    )
+    return discs
+
+
+def check_blooms(checks, name, bm, slots, spec, conv, discs=None):
+    """The plant has blooms (flowers): closed pieces of the closed material, each a star of petals and not a ball, and, among discs, standing between them.
+
+    A bloom is found from the mesh: a connected piece of the closed surface. How much of its own convex hull it fills says whether it has petals."""
+    want = spec["blooms"]
+    leaf = slots.index(spec["foliage"]["material"])
+    blooms = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        hull = bmesh.new()
+        for v in verts:
+            hull.verts.new(v.co)
+        bmesh.ops.convex_hull(hull, input=hull.verts)
+        hull_volume = hull.calc_volume(signed=False)
+        hull.free()
+        blooms.append({
+            "closed": foliage.closed(piece),
+            "width": max((a.co - b.co).length for a in verts for b in verts),
+            "full": abs(signed_volume(piece)) / hull_volume if hull_volume > 0 else 1.0,
+            "middle": sum((v.co for v in verts), Vector()) / len(verts),
+            "low": min(v.co.z for v in verts), "high": max(v.co.z for v in verts),
+        })
+    low, high = want["width_m"]
+    widths = sorted(round(bloom["width"], 3) for bloom in blooms)
+    odd = sum(1 for bloom in blooms if not low <= bloom["width"] <= high)
+    holed = sum(1 for bloom in blooms if not bloom["closed"])
+    checks.check(
+        f"{name}.blooms",
+        want["count"][0] <= len(blooms) <= want["count"][1] and not odd and not holed,
+        f"{len(blooms)} blooms (closed pieces of the closed surface), {holed} of them not closed and {odd} not {low} to {high} m across (they are {widths}); spec wants {want['count'][0]} to {want['count'][1]}, all of that width",
+    )
+    full = sorted(round(bloom["full"], 3) for bloom in blooms)
+    print(f"{name} blooms: {len(blooms)}, {widths} m across, filling {full} of their convex hulls")
+    checks.check(
+        f"{name}.blooms_petals",
+        blooms and full[-1] <= want["max_hull_share"],
+        f"the blooms fill {full} of their own convex hulls; spec wants at most {want['max_hull_share']}: a bloom is a star of petals with air between them, not a ball",
+    )
+    if discs is not None:
+        on = sum(1 for bloom in blooms if any(inside_outline(bloom["middle"].xy, disc["outline"]) for disc in discs))
+        checks.check(
+            f"{name}.blooms_between",
+            blooms and not on,
+            f"seen from above, the middles of {on} of {len(blooms)} blooms lie over a disc; spec wants none: flowers stand on the water between the discs",
+        )
+    return blooms
+
+
 def check_variants(checks, name, bm, spec, conv):
     """This asset's outline differs from each of its sibling variants' (source/tree/brief.md)."""
     want = spec["variants"]
@@ -2108,6 +2285,11 @@ def check_scene(checks, spec, conv):
                     check_clump(checks, name, bm, slot_names, spec, conv, stalks, "stalks")
                 if "heads" in spec:
                     check_heads(checks, name, bm, slot_names, spec, conv)
+            elif "discs" in spec:
+                # Or, where it has `discs`, a group of discs floating at one level, with blooms between them.
+                discs = check_discs(checks, name, bm, slot_names, spec, conv)
+                if "blooms" in spec:
+                    check_blooms(checks, name, bm, slot_names, spec, conv, discs)
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)

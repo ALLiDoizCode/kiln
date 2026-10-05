@@ -1,7 +1,8 @@
-"""The parts small plants are built from: leaf pieces, cores, stems, blades and heads, as plain lists.
+"""The parts small plants are built from: leaf pieces, cores, stems, blades, heads, discs and blooms, as plain lists.
 
 Shared by the generators of the small-plant families (source/dome_bush,
-source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds). A generator draws its plant into a
+source/blade_plant, source/grass_tuft, source/tall_grass, source/reeds,
+source/lily_pad, source/leaf_mat, source/flower_scatter). A generator draws its plant into a
 `Parts`, fits it to the spec's bounds and turns it into one Blender object of
 two materials: a closed one (stems, a crown) and the open foliage material
 (leaf pieces and blades, with the cores under them).
@@ -236,6 +237,73 @@ def head(parts, base, top, radius, sides, rings=((0.35, 1.0),), spin=0.0):
     # Cut once from point to point, it unrolls as one island.
     line = [low] + [loop[0] for loop in loops] + [high]
     parts.seams += list(zip(line, line[1:]))
+
+
+def disc(parts, rng, centre, radius, sides, notch_at, notch, floor, rim, rise, dip, oval=0.05, rough=0.03):
+    """One disc (a lily pad): a level floor with a raised rim and a notch cut in to its middle, as one open piece of the foliage.
+
+    `centre` is its middle, level; `floor` the height its floor lies at, and
+    `dip` how far under that its middle sinks, where its stalk would join it.
+    `rim` is the width of the rim over the radius and `rise` how far the rim's
+    edge stands above the floor. The notch is `notch` radians wide and opens
+    toward `notch_at`. The outline is a little oval (`oval`) and uneven
+    (`rough`), and drawn in at the two corners of the notch, so no disc is a
+    compass circle. It is lit smooth, as a blade is: the rim turns the light."""
+    piece = parts.piece(Z, None)
+    middle = parts.vert((centre[0], centre[1], floor - dip))
+    long = rng.uniform(0, math.pi)
+    inner, outer = [], []
+    for k in range(sides + 1):
+        angle = notch_at + notch / 2 + (2 * math.pi - notch) * k / sides
+        reach = radius * (1 + oval * math.cos(2 * (angle - long)) + rng.uniform(-rough, rough)) * (0.94 if k in (0, sides) else 1.0)
+        way = Vector((math.cos(angle), math.sin(angle), 0))
+        inner.append(parts.vert(Vector((centre[0], centre[1], floor)) + way * reach * (1 - rim)))
+        outer.append(parts.vert(Vector((centre[0], centre[1], floor + rise * rng.uniform(0.85, 1.0))) + way * reach))
+    for k in range(sides):
+        parts.face((middle, inner[k], inner[k + 1]), LEAF, piece)
+        parts.face((inner[k], outer[k], outer[k + 1], inner[k + 1]), LEAF, piece)
+    return piece
+
+
+def bloom(parts, base, top, rings, petals, spin=0.0, cuts=(0,)):
+    """One bloom (a flower): a closed star from `base` to `top`, its petals the points of its rings.
+
+    It is of the closed material and lit smooth, as a head is, and what it is
+    not is a spindle: each ring is `petals` points with a notch between each
+    pair, given as (its points' radius, its notches' radius, how far along the
+    line from `base` to `top` its points stand, and its notches, and how far
+    round it is turned, in petals). One ring is a flat star; a second and a
+    third, drawn in and raised, are a cup of petals inside it. `cuts` are the
+    rings round which it is cut open to be painted; with none it is cut once
+    from `base` to `top`."""
+    axis = top - base
+    unit = axis.normalized()
+    across = unit.orthogonal().normalized()
+    along = unit.cross(across)
+    count = 2 * petals
+    first = len(parts.verts)
+    loops = []
+    for tips, notches, tips_up, notches_up, turned in rings:
+        loop = []
+        for j in range(count):
+            angle = spin + math.pi * (j + 2 * turned) / petals
+            reach, up = (tips, tips_up) if j % 2 == 0 else (notches, notches_up)
+            loop.append(parts.vert(base + axis * up + (across * math.cos(angle) + along * math.sin(angle)) * reach))
+        loops.append(loop)
+    low, high = parts.vert(base), parts.vert(top)
+    parts.whole.append((first, count * len(loops) + 2))
+    for i in range(count):
+        j = (i + 1) % count
+        parts.face((low, loops[0][j], loops[0][i]), STEM)
+        for lower, upper in zip(loops, loops[1:]):
+            parts.face((lower[i], lower[j], upper[j], upper[i]), STEM)
+        parts.face((loops[-1][i], loops[-1][j], high), STEM)
+    for ring in cuts:
+        parts.seams += [(loops[ring][i], loops[ring][(i + 1) % count]) for i in range(count)]
+    if not cuts:
+        # Cut once from point to point, as a head is, it is painted as one island.
+        line = [low] + [loop[0] for loop in loops] + [high]
+        parts.seams += list(zip(line, line[1:]))
 
 
 def stalk(parts, spine, radii, sides=3, spin=0.0):

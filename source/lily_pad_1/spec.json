@@ -1,0 +1,114 @@
+{
+  "asset": "lily_pad_1",
+  "family": "lily_pad",
+  "season": "summer",
+  "colour": "white",
+  "objects": [
+    "lily_pad_1"
+  ],
+  "seed": 1,
+  "bounds_m": {
+    "min": [
+      -0.55,
+      -0.45,
+      0.0
+    ],
+    "max": [
+      0.55,
+      0.45,
+      0.09
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 320,
+  "materials": {
+    "m_lily_flower": "#d8d0c6",
+    "m_lily_pad": "#6fa04c"
+  },
+  "painted_shading": {
+    "texture_px": 128,
+    "base_tint": "#c9a8b4",
+    "top_tint": "#ffffff",
+    "edge_light": 0.1,
+    "edge_width_m": 0.003,
+    "crevice_shadow": 0.4,
+    "crevice_width_m": 0.006,
+    "hidden_underside": true
+  },
+  "foliage": {
+    "material": "m_lily_pad",
+    "pad_gap_m": 0.15,
+    "min_pad_pieces": 4,
+    "piece_m": [
+      0.08,
+      0.6
+    ],
+    "under_tint": "#b4d0c8",
+    "top_tint": "#ffffff",
+    "shades": 4,
+    "tones": 3,
+    "variation": 0.08
+  },
+  "discs": {
+    "count": [
+      5,
+      7
+    ],
+    "narrowest_m": [
+      0.08,
+      0.2
+    ],
+    "widest_m": [
+      0.35,
+      0.6
+    ],
+    "max_size_step": 2.0,
+    "max_twins": 1,
+    "level_m": 0.02,
+    "rim_share": [
+      0.02,
+      0.08
+    ],
+    "notch_deg": [
+      15.0,
+      60.0
+    ],
+    "min_round": 0.7,
+    "min_scatter": 0.3
+  },
+  "blooms": {
+    "count": [
+      1,
+      1
+    ],
+    "width_m": [
+      0.1,
+      0.18
+    ],
+    "max_hull_share": 0.6,
+    "min_colour_apart": 0.3
+  },
+  "low": {
+    "max_height_share": 0.1
+  },
+  "top": {
+    "min_level_share": 0.6
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "open_materials": [
+    "m_lily_pad"
+  ],
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "variants": {
+    "siblings": [
+      "lily_pad_2",
+      "lily_pad_3"
+    ],
+    "min_difference": 0.3
+  }
+}

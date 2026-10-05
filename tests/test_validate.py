@@ -1544,6 +1544,200 @@ def tall_boulder(spec):
     hi[2] = lo[2] + 3 * (hi[2] - lo[2])
 
 
+# Lily pads (source/lily_pad): a group of discs floating at one level, with blooms between them.
+
+
+def each_disc(spec, change):
+    """Apply change(its place in the order of size, its radius, its middle vertex, its vertices, its faces, bm) to every disc, widest first."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def run(bm):
+        discs = []
+        for piece in foliage.pieces_of(bm, slot):
+            inside = set(piece)
+            verts = list({v for face in piece for v in face.verts})
+            middle = max(verts, key=lambda v: sum(1 for f in v.link_faces if f in inside))
+            discs.append((max((v.co.xy - middle.co.xy).length for v in verts), middle, verts, piece))
+        discs.sort(key=lambda found: -found[0])
+        for place, (radius, middle, verts, piece) in enumerate(discs):
+            change(place, radius, middle, verts, piece, bm)
+
+    edit(run, name)
+
+
+def few_discs(spec):
+    """Every disc but the two widest taken away."""
+    each_disc(spec, lambda place, radius, middle, verts, piece, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS") if place > 1 else None)
+
+
+def even_discs(spec):
+    """Every disc drawn to the width of the second widest, about its own middle: no run of sizes, and none hand-sized."""
+    widths = []
+
+    def even(place, radius, middle, verts, piece, bm):
+        widths.append(radius)
+        at = middle.co.copy()
+        for v in verts:
+            v.co.xy = at.xy + (v.co.xy - at.xy) * (widths[min(1, len(widths) - 1)] / radius)
+
+    each_disc(spec, even)
+
+
+def tipped_disc(spec):
+    """The second widest disc tipped 15 degrees about its own middle."""
+
+    def tip(place, radius, middle, verts, piece, bm):
+        if place == 1:
+            bmesh.ops.rotate(bm, verts=verts, cent=middle.co.copy(), matrix=Matrix.Rotation(math.radians(15), 3, "X"))
+
+    each_disc(spec, tip)
+
+
+def lifted_disc(spec):
+    """The third widest disc lifted 6 cm: lying on another, were one under it."""
+
+    def lift(place, radius, middle, verts, piece, bm):
+        if place == 2:
+            for v in verts:
+                v.co.z += 0.06
+
+    each_disc(spec, lift)
+
+
+def flat_rims(spec):
+    """Every disc's rim pressed down to its floor."""
+
+    def press(place, radius, middle, verts, piece, bm):
+        floor = max(e.other_vert(middle).co.z for e in middle.link_edges)
+        for v in verts:
+            v.co.z = min(v.co.z, floor)
+
+    each_disc(spec, press)
+
+
+def closed_notches(spec):
+    """Every disc's notch filled in: its floor and its rim carried across it."""
+
+    def fill(place, radius, middle, verts, piece, bm):
+        inside = set(piece)
+        open_edge = lambda e: sum(1 for f in e.link_faces if f in inside) == 1
+        a, b = (e.other_vert(middle) for e in middle.link_edges if open_edge(e))
+        far = [next(e.other_vert(v) for e in v.link_edges if open_edge(e) and e.other_vert(v) is not middle) for v in (a, b)]
+        bm.faces.new((middle, b, a), piece[0])
+        bm.faces.new((a, b, far[1], far[0]), piece[0])
+
+    each_disc(spec, fill)
+
+
+def squashed_discs(spec):
+    """Every disc pressed to half its width along x, about its own middle."""
+
+    def squash(place, radius, middle, verts, piece, bm):
+        at = middle.co.x
+        for v in verts:
+            v.co.x = at + (v.co.x - at) * 0.5
+
+    each_disc(spec, squash)
+
+
+def overlapping_discs(spec):
+    """The second widest disc slid half over the widest."""
+    first = []
+
+    def slide(place, radius, middle, verts, piece, bm):
+        if place == 0:
+            first.append((middle.co.copy(), radius))
+        elif place == 1:
+            move = first[0][0] + Vector((first[0][1], 0, 0)) - middle.co
+            for v in verts:
+                v.co.xy += move.xy
+
+    each_disc(spec, slide)
+
+
+def discs_in_a_row(spec):
+    """The discs laid side by side along x, widest first, a tenth of a radius apart, and the mesh brought back to its bounds."""
+    along = [spec["bounds_m"]["min"][0]]
+
+    def lay(place, radius, middle, verts, piece, bm):
+        move = Vector((along[0] + radius * 1.1, 0.0)) - middle.co.xy
+        for v in verts:
+            v.co.xy += move
+        along[0] += radius * 2.2
+
+    each_disc(spec, lay)
+
+
+def discs_in_a_ring(spec):
+    """The discs set evenly round a circle, their middles all one distance from the middle of the bounds."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    count = spec["discs"]["count"][1]
+
+    def ring(place, radius, middle, verts, piece, bm):
+        angle = 2 * math.pi * place / count
+        move = Vector((math.cos(angle), math.sin(angle))) * (hi[0] - lo[0]) - middle.co.xy
+        for v in verts:
+            v.co.xy += move
+
+    each_disc(spec, ring)
+
+
+def each_bloom(spec, change):
+    """Apply change(its vertices, its middle, bm) to every closed piece of the closed material."""
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def run(bm):
+        seen = set()
+        for start in [v for v in bm.verts if any(f.material_index != slot for f in v.link_faces)]:
+            if start in seen:
+                continue
+            verts, queue = [], [start]
+            seen.add(start)
+            while queue:
+                v = queue.pop()
+                verts.append(v)
+                for e in v.link_edges:
+                    other = e.other_vert(v)
+                    if other not in seen:
+                        seen.add(other)
+                        queue.append(other)
+            change(verts, sum((v.co for v in verts), Vector()) / len(verts), bm)
+
+    edit(run, name)
+
+
+def no_blooms(spec):
+    """Every bloom taken away."""
+    each_bloom(spec, lambda verts, middle, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS"))
+
+
+def ball_blooms(spec):
+    """Every bloom blown up into a ball: each of its corners pushed out to the distance of its furthest."""
+
+    def blow(verts, middle, bm):
+        reach = max((v.co - middle).length for v in verts)
+        for v in verts:
+            v.co = middle + (v.co - middle).normalized() * reach
+
+    each_bloom(spec, blow)
+
+
+def bloom_on_a_disc(spec):
+    """Every bloom moved to stand on the middle of the widest disc."""
+    at = []
+    each_disc(spec, lambda place, radius, middle, verts, piece, bm: at.append(middle.co.copy()) if place == 0 else None)
+
+    def move(verts, middle, bm):
+        for v in verts:
+            v.co.xy += at[0].xy - middle.xy
+
+    each_bloom(spec, move)
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1671,6 +1865,19 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
+    (few_discs, "lily_pad_1.discs", "lily_pad_1"),
+    (even_discs, "lily_pad_1.discs_sizes", "lily_pad_1"),
+    (tipped_disc, "lily_pad_1.discs_level", "lily_pad_1"),
+    (lifted_disc, "lily_pad_1.discs_level", "lily_pad_1"),
+    (flat_rims, "lily_pad_1.discs_rim", "lily_pad_1"),
+    (closed_notches, "lily_pad_1.discs_notch", "lily_pad_1"),
+    (squashed_discs, "lily_pad_1.discs_round", "lily_pad_1"),
+    (overlapping_discs, "lily_pad_1.discs_apart", "lily_pad_1"),
+    (discs_in_a_row, "lily_pad_1.discs_scattered", "lily_pad_1"),
+    (discs_in_a_ring, "lily_pad_1.discs_scattered", "lily_pad_1"),
+    (no_blooms, "lily_pad_1.blooms", "lily_pad_1"),
+    (ball_blooms, "lily_pad_1.blooms_petals", "lily_pad_1"),
+    (bloom_on_a_disc, "lily_pad_1.blooms_between", "lily_pad_1"),
     (sparse_clump, "tall_grass_1.clump_dense", "tall_grass_1"),
     (splayed_clump, "tall_grass_1.clump_upright", "tall_grass_1"),
     (no_heads, "tall_grass_1.heads", "tall_grass_1"),

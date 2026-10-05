@@ -133,7 +133,7 @@ FOLIAGE = {
     "min_rim_points_per_m": float,
 }
 # What foliage of blades shares with foliage of leaf pieces: the material, how pieces are found, and the palette.
-# A spec with a `blades` or a `stalks` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
+# A spec with a `blades`, a `stalks` or a `discs` block has exactly these in its `foliage` block; one without has all of FOLIAGE.
 FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
 # Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
 BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
@@ -146,6 +146,13 @@ STALKS = {
 CLUMP = {"upright_deg": float, "min_upright_share": float, "max_sky_share": float}
 # Optional, with `blades` or `stalks`: heads (seed heads, cattails), closed pieces of the closed material carried on blades or stalks. Every key is required once it is present.
 HEADS = {"count": list, "size_m": list, "min_height": float}
+# Optional; a group of discs floating at one level (source/lily_pad/brief.md), in place of pads over cores, blades and stalks. All keys are required once it is present.
+DISCS = {
+    "count": list, "narrowest_m": list, "widest_m": list, "max_size_step": float, "max_twins": int,
+    "level_m": float, "rim_share": list, "notch_deg": list, "min_round": float, "min_scatter": float,
+}
+# Optional, on a plant with foliage: blooms (flowers), closed pieces of the closed material with petals. Every key is required once it is present.
+BLOOMS = {"count": list, "width_m": list, "max_hull_share": float, "min_colour_apart": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
 HEX = "#[0-9a-f]{6}"
@@ -421,8 +428,10 @@ if not checks.failed():
             0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1 and skeleton["min_canopy_over_limbs"] > 1,
             "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it; min_canopy_over_limbs above 1: seen from below the foliage is the lighter of the two",
         )
-    # Foliage that is not pads over cores: blades from one point, or stalks in a bed.
+    # Foliage that is not pads over cores: blades from one point, stalks in a bed, or discs on the water.
     bladed = "blades" in spec or "stalks" in spec
+    shaped = bladed or "discs" in spec  # any of them: the foliage block then says only what they share
+    whole = lambda pair: len(pair) == 2 and all(type(n) is int for n in pair) and 1 <= pair[0] <= pair[1]
     blades = block("blades", BLADES)
     if blades:
         checks.check(
@@ -460,10 +469,31 @@ if not checks.failed():
             and span(heads["size_m"]) and heads["size_m"][0] > 0 and 0 < heads["min_height"] < 1,
             "on a watertight plant of blades or of stalks (`blades`, `stalks`): a head is closed, and a blade or a stalk carries it; count as [least, most] whole numbers, at least 1; size_m as [least, most], above 0; min_height above 0 and below 1, a share of the bounds' height",
         )
-    if bladed:
-        checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades and stalks are foliage: the spec needs a foliage block for their material, size and palette")
-    leaves = block("foliage", {key: FOLIAGE[key] for key in FOLIAGE_SHARED} if bladed else FOLIAGE)
-    if leaves and not bladed:
+    discs = block("discs", DISCS)
+    if discs:
+        checks.check(
+            "spec.discs_amounts",
+            "blades" not in spec and "stalks" not in spec and whole(discs["count"])
+            and all(span(discs[key]) and discs[key][0] > 0 for key in ("narrowest_m", "widest_m", "rim_share", "notch_deg"))
+            and discs["narrowest_m"][1] <= discs["widest_m"][0] and discs["max_size_step"] > 1 and discs["max_twins"] >= 0 and discs["level_m"] > 0
+            and discs["rim_share"][1] < 1 and discs["notch_deg"][1] < 180 and 0 < discs["min_round"] <= 1 and 0 < discs["min_scatter"] < 1,
+            "not on a plant of blades or of stalks (`blades`, `stalks`: a plant is one of the three); count as [least, most] whole numbers, at least 1; "
+            "narrowest_m, widest_m, rim_share and notch_deg as [least, most], above 0, the narrowest no wider than the widest, a rim share below 1 and a notch below 180 degrees; "
+            "max_size_step above 1; max_twins not negative; level_m above 0; min_round in (0, 1]; min_scatter above 0 and below 1",
+        )
+    blooms = block("blooms", BLOOMS)
+    if blooms:
+        checks.check(
+            "spec.blooms_amounts",
+            spec["watertight"] and isinstance(spec.get("foliage"), dict) and whole(blooms["count"]) and span(blooms["width_m"]) and blooms["width_m"][0] > 0
+            and 0 < blooms["max_hull_share"] < 1 and blooms["min_colour_apart"] > 0,
+            "on a watertight plant with foliage: a bloom is closed, and its colour is held apart from the leaves'; count as [least, most] whole numbers, at least 1; "
+            "width_m as [least, most], above 0; max_hull_share above 0 and below 1 (at 1 it asks nothing: a ball fills its hull); min_colour_apart above 0",
+        )
+    if shaped:
+        checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades, stalks and discs are foliage: the spec needs a foliage block for their material, size and palette")
+    leaves = block("foliage", {key: FOLIAGE[key] for key in FOLIAGE_SHARED} if shaped else FOLIAGE)
+    if leaves and not shaped:
         lobes = leaves["lobes"]
         checks.check(
             "spec.foliage_core",
@@ -486,7 +516,7 @@ if not checks.failed():
             and leaves["min_pad_pieces"] >= 1
             and span(leaves["piece_m"])
             and (
-                bladed
+                shaped
                 or (
                     1 <= leaves["min_pads"] <= leaves["max_pads"]
                     and span(leaves["sky_share"])
@@ -511,6 +541,23 @@ if not checks.failed():
             if skeleton and skeleton["material"] != leaves["material"]:
                 bark, leaf = spec["materials"][skeleton["material"]], spec["materials"][leaves["material"]]
                 checks.check("spec.bark_darker", luma(bark) < luma(leaf), f"bark {bark} is not darker than leaf {leaf} (brief: the trunk is darker than the foliage)")
+    if blooms and leaves and all(re.fullmatch(HEX, str(leaves[key])) for key in ("under_tint", "top_tint")) and leaves["material"] in spec["materials"] and leaves["shades"] >= 2 and leaves["tones"] >= 2:
+        # The palette the leaves take their colours from (ADR 11), as tools/foliage.py and the load test compute it, and
+        # how near the nearest of its colours comes to the colour of each closed material: what the blooms are made of.
+        leaf_rgb, under, over = (linear_rgb(colour) for colour in (spec["materials"][leaves["material"]], leaves["under_tint"], leaves["top_tint"]))
+        palette = [
+            tuple(min(1.0, c * (u + (o - u) * shade / (leaves["shades"] - 1)) * (1 + leaves["variation"] * (2 * tone / (leaves["tones"] - 1) - 1))) for c, u, o in zip(leaf_rgb, under, over))
+            for shade in range(leaves["shades"]) for tone in range(leaves["tones"])
+        ]
+        apart = {
+            name: round(min(sum((a - b) ** 2 for a, b in zip(linear_rgb(colour), swatch)) ** 0.5 for swatch in palette), 3)
+            for name, colour in spec["materials"].items() if name not in open_materials
+        }
+        checks.check(
+            "spec.blooms_colour",
+            apart and min(apart.values()) >= blooms["min_colour_apart"],
+            f"the closed materials (the blooms') are {apart} from the nearest colour of the leaves' palette, in linear RGB; spec wants at least {blooms['min_colour_apart']}: a flower is not the green of its leaves",
+        )
     variants = block("variants", VARIANTS)
     if variants:
         siblings = variants["siblings"]
@@ -529,6 +576,9 @@ if not checks.failed():
     seasons = conv["palette"]["seasons"]
     if "season" in spec or leaves:
         checks.check("spec.season", spec.get("season") in seasons, f"an asset with foliage names its season, one of {seasons}")
+    # A colour (docs/style/catalogue.md): what a flower or foliage colour other than the first is called.
+    if "colour" in spec:
+        checks.check("spec.colour", isinstance(spec["colour"], str) and pattern.match(spec["colour"]) is not None, f"optional; a plain name matching {pattern.pattern}, such as white or pink")
     # What lies on the asset (docs/style/catalogue.md): a cover other than bare is growth painted on it (ADR 10).
     covers = conv["palette"]["covers"]
     if "cover" in spec:
@@ -540,7 +590,8 @@ if not checks.failed():
         )
     # A palette variant is its base asset drawn again with other colours (ADR 11, ADR 13): the two
     # specs agree on everything that shapes the mesh, and differ in what the variant is a variant in.
-    # A season differs in its palette and its materials' colours, a cover in the growth painted on it.
+    # A season differs in its palette and its materials' colours, a cover in the growth painted on it,
+    # and a colour in what a season may differ in.
     if "palette_of" in spec:
         base_path = ROOT / "source" / str(spec["palette_of"]) / "spec.json"
         ok = isinstance(spec["palette_of"], str) and spec["palette_of"] != asset.name and base_path.is_file()
@@ -549,6 +600,7 @@ if not checks.failed():
             "season": set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]},
             "cover": set(conv["palette"]["cover_keys"]),
         }
+        allowed["colour"] = allowed["season"]
         if ok:
             base = json.loads(base_path.read_text())
 
@@ -578,8 +630,8 @@ if not checks.failed():
         checks.check(
             "spec.palette_of",
             ok and kinds and not shape and colours,
-            f"names another asset with a spec.json, and a season or a cover that is not that asset's (it differs in {kinds}); its spec then matches the base's in everything but what that may change "
-            f"(a season: {sorted(conv['palette']['keys'])} and the material colours; a cover: {sorted(conv['palette']['cover_keys'])}), and differs from it there; "
+            f"names another asset with a spec.json, and a season, a cover or a colour that is not that asset's (it differs in {kinds}); its spec then matches the base's in everything but what that may change "
+            f"(a season or a colour: {sorted(conv['palette']['keys'])} and the material colours; a cover: {sorted(conv['palette']['cover_keys'])}), and differs from it there; "
             f"differs outside that in {shape}, and inside it in {colours}",
         )
     stage = spec.get("growth_stage")

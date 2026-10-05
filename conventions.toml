@@ -177,6 +177,10 @@ hole_m = 0.15               # gaps in a pad's outline up to this wide are holes 
 rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
 
+[discs]
+# A group of discs floating at one level (source/lily_pad). What a group wants of its discs is in each spec.
+twin = 1.1                  # two discs are twins when the wider is less than this many times the narrower
+
 [under_view]
 # A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the
 # gate's `bevy_under` tile; tools/gate.sh takes it from the same place.
