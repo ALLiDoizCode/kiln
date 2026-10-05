@@ -175,6 +175,10 @@ breast_height_m = 1.3       # where a trunk's girth and its sides are taken
 slice_step_m = 0.1          # between the slices that look for the fork and count branches
 side_min_share = 0.06       # an edge of the slice is a flat side when it is this share of the way round
 foot_height_m = 0.4         # where a trunk's foot is taken for its lean: just above where the roots have joined it
+root_ring_share = 0.5       # roots are told from a plinth on a circle this share of the way from the trunk's girth out to its furthest root tip
+max_root_fill = 0.25        # at most this share of that circle is root: three quarters of the way round is ground
+root_curve_height = 0.5     # a root's sweep is taken this many times the trunk's radius (at breast height) above the ground slice
+max_root_curve = 0.65       # where the foot reaches at most this share as far beyond the trunk as at the ground
 
 [variants]
 # Variants are compared by outline, from the four level views, both standing on their origins.

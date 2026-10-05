@@ -312,6 +312,19 @@ def check_skeleton(checks, name, bm, slots, spec, conv):
         found["flare"] is not None and found["flare"] >= want["min_flare"] and found["roots"] >= want["min_roots"],
         f"at the ground the trunk reaches {shown['flare']} times its radius {breast} m up, in {found['roots']} roots; spec wants at least {want['min_flare']} times and {want['min_roots']} roots",
     )
+    rules = conv["skeleton"]
+    checks.check(
+        f"{name}.roots_apart",
+        found["root_fill"] is not None and found["root_fill"] <= rules["max_root_fill"] and found["root_ridges"] >= want["min_roots"],
+        f"{rules['root_ring_share']} of the way from the trunk's girth out to its furthest root tip, {shown['root_fill']} of the way round is root, in {found['root_ridges']} ridges; "
+        f"roots with ground between them are at most {rules['max_root_fill']} of it in at least {want['min_roots']} ridges (a skirt with flat sides is most of it)",
+    )
+    checks.check(
+        f"{name}.roots_curve",
+        found["root_curve"] is not None and found["root_curve"] <= rules["max_root_curve"],
+        f"{rules['root_curve_height']} of the trunk's radius above the ground the foot still reaches {shown['root_curve']} as far beyond the trunk as at the ground; "
+        f"a root that sweeps out into the ground reaches at most {rules['max_root_curve']} (a straight slope from tip to trunk keeps about 0.8)",
+    )
     low, high = want["lean_m"]
     checks.check(
         f"{name}.lean",

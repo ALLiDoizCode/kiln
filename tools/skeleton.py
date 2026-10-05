@@ -83,7 +83,16 @@ def stand_at(bm, material_index, floor, eye_height):
     return tuple(loops[0][1]) if loops else None
 
 
-NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None}
+NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None, "root_fill": None, "root_ridges": 0, "root_curve": None}
+
+
+def inside(points, at):
+    """Whether a point lies inside a closed loop, both in the plane."""
+    within = False
+    for a, b in zip(points, points[1:] + points[:1]):
+        if (a.y > at.y) != (b.y > at.y) and at.x < a.x + (b.x - a.x) * (at.y - a.y) / (b.y - a.y):
+            within = not within
+    return within
 
 
 def measure(bark, conv):
@@ -139,4 +148,17 @@ def measure(bark, conv):
             if not any((points[i] - points[j]).length < 0.5 * reach[i] for j in roots):
                 roots.append(i)
         found["roots"] = len(roots)
+        # Roots or a plinth: walk a circle part of the way out from the trunk to the furthest tip. Roots are
+        # ridges with ground between them, so little of the circle is inside the slice, in as many runs as there
+        # are roots that reach it; a skirt with flat sides from tip to tip holds most of the circle, in one run.
+        steps = 720
+        radius = breast[0][0] + (max(reach) - breast[0][0]) * rules["root_ring_share"]
+        within = [inside(points, middle + Vector((math.cos(2 * math.pi * i / steps), math.sin(2 * math.pi * i / steps))) * radius) for i in range(steps)]
+        found["root_fill"] = sum(within) / steps
+        found["root_ridges"] = sum(1 for i in range(steps) if within[i] and not within[i - 1])
+        # A curve into the ground, or a straight slope: how much of its reach beyond the trunk the foot
+        # still has a little way up. A root that sweeps out into the ground has lost most of it by there.
+        above = slice_at(bark, floor + 0.02 + rules["root_curve_height"] * breast[0][0])
+        if above and max(reach) > breast[0][0]:
+            found["root_curve"] = (max((p - above[0][1]).length for p in above[0][2]) - breast[0][0]) / (max(reach) - breast[0][0])
     return found
