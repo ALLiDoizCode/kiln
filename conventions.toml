@@ -130,7 +130,7 @@ min_grain_patches = 0.8             # share of patches that must show both
 [shade]
 # Gate L4d: a painted solid's sides turned away from the viewer's sun, in the viewer's own picture
 # (asset_view --back --close --shade). Only the ambient light reaches them.
-min_luminance = 0.0189      # their median, linear: Rock_Medium_1 of the benchmark reads 0.01895 from the same camera, and its pebble 0.0227
+min_luminance = 0.0543      # their median, linear: Rock_Medium_1 of the benchmark reads 0.05430 from the same camera under the viewer's light (ambient 900), and its pebble 0.0650. Measure it again when that light changes
 min_pixels = 200            # of the 65,536 sampled; the benchmark rock shows 6,680
 
 [foliage]

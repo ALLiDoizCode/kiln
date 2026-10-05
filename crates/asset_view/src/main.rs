@@ -67,7 +67,11 @@ const MAX_UNSTABLE_SHARE: f32 = 0.002;
 const SUN_TO: Vec3 = Vec3::new(0.4, -1.0, -0.6);
 const SUN_LUX: f32 = 8000.0;
 /// The light that reaches every face alike, the only light on a face the sun does not reach.
-const AMBIENT: f32 = 300.0;
+/// At 300 a rock's shaded side was a near-black field (0.030 linear on crag_1, against 0.176 lit)
+/// in which joins and paint could not be read; shown both, the owner chose 900.
+/// The sun and this are a stand-in: the game (`pit`, ADR 8) settles its own light, and what an
+/// asset is held to here (`[shade]` in `conventions.toml`) is measured under this one.
+const AMBIENT: f32 = 900.0;
 /// `--shade`: one ray every this many pixels each way.
 const SHADE_STEP: u32 = 4;
 /// `--shade`: a face is a side when its normal is no nearer upright than this (45 degrees), and is

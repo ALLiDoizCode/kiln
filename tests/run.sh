@@ -401,7 +401,7 @@ bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 
 # what the viewer measured in its own picture.
 shade_shot() { fixture "shade_$1.json" shade_view "$1"; }
 shade_report() { # <python statements changing a passing report r> -> path of the report
-  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.026, 'tenth': 0.02}, 'toward': {'pixels': 1800, 'median': 0.22}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
+  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.075, 'tenth': 0.058}, 'toward': {'pixels': 1800, 'median': 0.26}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
   echo "$tmp/shade.json"
 }
 shade_view() { view "$(broken_slab "$1")" "$slab_manifest" --back --close --screenshot "$2.png" --shade "$2"; [[ -e "$2" ]]; }
