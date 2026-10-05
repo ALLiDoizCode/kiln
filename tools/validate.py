@@ -16,13 +16,17 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy
-from mathutils import Matrix, Vector, geometry
+from mathutils import Matrix, Vector, geometry, kdtree
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import foliage
 import skeleton
 from pipeline import VIEW_DIRECTIONS, Asset, Checks, conventions, linear_rgb, script_args
+
+
+# Two normals at one vertex are one normal when they agree this closely (cosine): the load test's own limit (crates/asset_smoke/src/main.rs).
+SAME_NORMAL_COS = 0.99985
 
 
 def evaluated_bmesh(obj):
@@ -1908,6 +1912,39 @@ def check_scene(checks, spec, conv):
         welded = list({v for f in closed for v in f.verts}) if opened else bm.verts
         doubles = bmesh.ops.find_doubles(bm, verts=welded, dist=conv["mesh"]["merge_distance_m"])["targetmap"]
         checks.check(f"{name}.no_duplicate_vertices", not doubles, f"{len(doubles)} duplicate vertices")
+
+        if spec.get("soft_edges"):
+            # Soft edges, as the Bevy load test holds them (crates/asset_smoke, `soft_edges`), seen here
+            # before the export: at one place above the ground every face is lit by one normal.
+            # Vertices closer than the bounds' tolerance are one place: a soft edge narrower than that is a hard one.
+            lit = obj.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+            reach = spec["bounds_tolerance_m"]
+            ground = spec["bounds_m"]["min"][2] + reach
+            round_vertex = {}
+            for loop, corner in zip(lit.loops, lit.corner_normals):
+                round_vertex.setdefault(loop.vertex_index, []).append(Vector(corner.vector))
+            places = {index: obj.matrix_world @ lit.vertices[index].co for index in round_vertex}
+            above = [index for index in round_vertex if places[index].z > ground]
+            near = kdtree.KDTree(len(above))
+            for index in above:
+                near.insert(places[index], index)
+            near.balance()
+            hard = [
+                index
+                for index in above
+                if any(
+                    a.dot(b) < SAME_NORMAL_COS
+                    for _, other, _ in near.find_range(places[index], reach * 1.7321)
+                    if all(abs(c) <= reach for c in places[other] - places[index])
+                    for a in round_vertex[index]
+                    for b in round_vertex[other]
+                )
+            ]
+            checks.check(
+                f"{name}.soft_edges",
+                above and not hard,
+                f"{len(hard)} of {len(above)} vertices above the ground share a place (within {reach} m) with a corner lit by another normal: a hard edge, or a soft one too narrow to be one",
+            )
 
         slots = [s.material for s in obj.material_slots]
         checks.check(f"{name}.materials_assigned", slots and all(slots), "empty or missing material slot")

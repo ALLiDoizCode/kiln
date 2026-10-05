@@ -455,6 +455,10 @@ lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spe
 lint_spire() { lint_copy spire_1 '' "$1"; }   # <python statements changing spec s>
 lint_arch() { lint_copy arch_1 '' "$1"; }     # <python statements changing spec s>
 lint_boulder() { lint_copy boulder_2 '' "$1"; } # <python statements changing spec s>
+seed_passes() { # <asset> <seed>: the asset drawn from that seed builds and passes gate L1
+  tools/bl tools/try_seeds.py "$1" "$2" "$2" > "$tmp/seed" 2>&1; cat "$tmp/seed"
+  grep -q "1 of 1 seeds build and pass L1" "$tmp/seed"
+}
 lint_rubble() { lint_copy rubble_1 '' "$1"; }  # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.

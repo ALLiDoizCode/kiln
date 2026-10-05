@@ -792,6 +792,21 @@ def in_a_ring(spec):
     each_fragment(ring)
 
 
+def one_hard_point(spec):
+    """One corner of the largest fragment lit plane by plane: at that one point above the ground the faces
+    round it each keep their own normal, which is a hard edge. What two planes of a softened stone that
+    meet at a point and not along an edge leave (rubble_3 from seed 3 had 34 such vertices, and only the
+    Bevy load test saw them)."""
+    mesh = bpy.data.objects["rubble_1"].data
+    normals = [Vector(corner.vector) for corner in mesh.corner_normals]
+    top = max(range(len(mesh.vertices)), key=lambda index: mesh.vertices[index].co.z)
+    for polygon in mesh.polygons:
+        for loop in polygon.loop_indices:
+            if mesh.loops[loop].vertex_index == top:
+                normals[loop] = Vector(polygon.normal)
+    mesh.normals_split_custom_set(normals)
+
+
 # The block (source/block): a near-cuboid with big chamfers, parted along a crack.
 
 
@@ -1532,6 +1547,7 @@ CASES = [
     (none_touching, "rubble_1.scatter_touching", "rubble_1"),
     (in_a_line, "rubble_1.scatter_not_line", "rubble_1"),
     (in_a_ring, "rubble_1.scatter_not_ring", "rubble_1"),
+    (one_hard_point, "rubble_1.soft_edges", "rubble_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),

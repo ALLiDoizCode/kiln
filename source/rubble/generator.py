@@ -22,6 +22,7 @@ another, until one meets the spec, and fails the build with the reasons when non
 import math
 import random
 
+import bmesh
 import stone
 import validate
 from mathutils import Matrix, Vector
@@ -64,6 +65,11 @@ TOUCH = (0.2, 0.6)  # the gap between two fragments that touch, as a share of th
 APART = (0.25, 0.85)  # the gap between two that do not, as a share of the largest the spec allows
 MORE_TOUCH = 0.4  # how often one more pair touches than the spec asks
 HIGH_END = 0.6  # a fragment against another has its high end within this of straight toward it, radians
+SLIVER = 4.0  # a shard's shortest edge and smallest face, shrunk, must be this many times what the conventions call none
+HARD_CLEAR = 1.3  # and its soft edges this many times wider than the place the gates take two vertices to share
+NETS = 60  # nets tried for one fragment
+NET_WEIGHT = (0.3, 1.0)  # a net grows across its longest edges, each length taken at a share drawn from these
+NET_TURNS = 18  # ways a net's box is turned to find its smallest
 FILL = 0.82  # a layout must reach this share of the bounds' width and depth before it is stretched to them
 
 
@@ -203,9 +209,10 @@ def layout(rng, shards, sizes, touching, lo, hi, touch_m, gap_m):
     return placed if min(reached) >= FILL else None
 
 
-def softened(bm, size):
+def softened(bm, size, shrink, spec, conv):
     """How many triangles the shard has once it is softened at this size, or None when it cannot be:
-    an edge too short, a plane the soft edges would eat, or a soft edge lit from behind."""
+    an edge too short, a plane the soft edges would eat, a soft edge lit from behind, or, once the
+    group is shrunk to its bounds, a soft edge too narrow to be one or an edge or face that vanishes."""
     trial = bm.copy()
     for vert in trial.verts:
         vert.co *= size
@@ -214,10 +221,32 @@ def softened(bm, size):
     triangles = None
     if width >= SOFT[0] and stone.unsoftenable(trial, width, 0.0) is None:
         tag = stone.soften(trial, width, 0.0)
-        if tag is not None and not stone.plane_normals(trial, tag, 0.0)[1]:
-            triangles = sum(len(face.verts) - 2 for face in trial.faces)
+        if tag is not None:
+            normals, behind = stone.plane_normals(trial, tag, 0.0)
+            sound = (
+                not behind
+                and min(e.calc_length() for e in trial.edges) * shrink > SLIVER * conv["mesh"]["merge_distance_m"]
+                and min(f.calc_area() for f in trial.faces) * shrink**2 > SLIVER * conv["mesh"]["min_face_area_m2"]
+                and not stone.hard_places(trial, normals, HARD_CLEAR * spec["bounds_tolerance_m"] / shrink, 0.0)
+            )
+            if sound:
+                triangles = sum(len(face.verts) - 2 for face in trial.faces)
     trial.free()
     return triangles
+
+
+def unsound(pieces, normals, spec, conv):
+    """What is wrong with the softened pieces at their real size that the kit does not ask: soft edges
+    too narrow to be soft, and vertices and faces that vanish. The gates' own limits (`soft_edges`,
+    `no_duplicate_vertices`, `no_degenerate_faces`)."""
+    floor = spec["bounds_m"]["min"][2]
+    hard = sum(stone.hard_places(bm, found, spec["bounds_tolerance_m"], floor) for bm, found in zip(pieces, normals))
+    doubled = sum(len(bmesh.ops.find_doubles(bm, verts=bm.verts, dist=conv["mesh"]["merge_distance_m"])["targetmap"]) for bm in pieces)
+    tiny = sum(1 for bm in pieces for f in bm.faces if f.calc_area() < conv["mesh"]["min_face_area_m2"])
+    return (
+        ([f"{hard} corners above the ground that share a place with a corner lit by another normal: a soft edge narrower than {spec['bounds_tolerance_m']} m"] if hard else [])
+        + ([f"{doubled} vertices doubled and {tiny} faces with no area at this size"] if doubled or tiny else [])
+    )
 
 
 def upright_share(bm, conv):
@@ -228,7 +257,7 @@ def upright_share(bm, conv):
     return upright / sum(f.calc_area() for f in sides) if sides else 0.0
 
 
-def draw(rng, spec, conv, lo, hi, touch_m, gap_m):
+def draw(rng, spec, conv, shrink, lo, hi, touch_m, gap_m):
     """The raw fragments of one group in the bounds lo..hi, largest first, or a string saying why there is none."""
     want = spec["scatter"]
     count = rng.randint(want["min_count"], want["max_count"])
@@ -251,7 +280,7 @@ def draw(rng, spec, conv, lo, hi, touch_m, gap_m):
                 ok = stands >= STANDS_MARGIN * want["min_stand_share"]
                 most = budget * (TRIANGLES[1] if index == 1 else (count - sum(TRIANGLES)) / (count - 2))
             if ok and upright_share(found[0], conv) <= spec["lean"]["max_upright_share"] * UPRIGHT_MARGIN:
-                triangles = softened(found[0], largest * sizes[index])
+                triangles = softened(found[0], largest * sizes[index], shrink, spec, conv)
                 if triangles is not None and triangles <= most:
                     break
             found[0].free()
@@ -292,7 +321,7 @@ def shape(spec, strict=True):
     touch_m = conv["scatter"]["touch_m"] / shrink
     refused = []
     for take in range(1, GROUPS + 1):
-        pieces = draw(rng, spec, conv, lo / shrink, hi / shrink, touch_m, spec["scatter"]["max_gap_m"] / shrink)
+        pieces = draw(rng, spec, conv, shrink, lo / shrink, hi / shrink, touch_m, spec["scatter"]["max_gap_m"] / shrink)
         if isinstance(pieces, str):
             refused.append(f"group {take}: {pieces}")
             continue
@@ -303,7 +332,7 @@ def shape(spec, strict=True):
                 for vert in bm.verts:
                     vert.co *= shrink
                 bm.normal_update()
-            problems = stone.unmet(name, pieces, spec, conv, extra) if strict else []
+            problems = unsound(pieces, done[1], spec, conv) or (stone.unmet(name, pieces, spec, conv, extra) if strict else [])
         if not problems:
             print(f"{name} seed {spec['seed']}: group {take} of up to {GROUPS} meets the spec")
             return pieces, done[1]
@@ -313,9 +342,77 @@ def shape(spec, strict=True):
     raise RuntimeError(f"{name} seed {spec['seed']}: none of its groups meets the spec:\n  " + "\n  ".join(refused))
 
 
+def spot(co):
+    return tuple(round(c, 6) for c in co)
+
+
+def laid_flat(root, parent):
+    """Where each face's corners lie when the net is laid flat: every face folded out about the edge it hangs by."""
+
+    def own(face):
+        along = (face.verts[1].co - face.verts[0].co).normalized()
+        across = face.normal.cross(along)
+        return {v: Vector(((v.co - face.verts[0].co).dot(along), (v.co - face.verts[0].co).dot(across))) for v in face.verts}
+
+    flat = {root: own(root)}
+    for face, (edge, onto) in parent.items():  # in the order the faces joined the net
+        mine, (a, b) = own(face), edge.verts
+        have, want = mine[b] - mine[a], flat[onto][b] - flat[onto][a]
+        turn = Matrix.Rotation(math.atan2(want.y, want.x) - math.atan2(have.y, have.x), 2)
+        flat[face] = {v: flat[onto][a] + turn @ (co - mine[a]) for v, co in mine.items()}
+    return flat
+
+
+def box_fill(flat):
+    """How much of the smallest box round a net the net fills, the box turned any way."""
+    points = [co for corners in flat.values() for co in corners.values()]
+    area = sum(face.calc_area() for face in flat)
+    least = math.inf
+    for step in range(NET_TURNS):
+        turn = Matrix.Rotation(step * math.pi / 2 / NET_TURNS, 2)
+        turned = [turn @ point for point in points]
+        least = min(least, (max(p.x for p in turned) - min(p.x for p in turned)) * (max(p.y for p in turned) - min(p.y for p in turned)))
+    return area / least
+
+
+def net_seams(bm, floor):
+    """The edges along which a softened fragment is cut to lie flat (tools/paint.py), as pairs of places.
+
+    What is seen of a fragment is laid out as one net: a face, and every other face folded out
+    from one already in the net across an edge the two share. A lump with steep and undercut
+    sides cannot be laid flat as one dome, as a pebble's plate is: its sides fold over each
+    other. Taken apart by angle it is six islands, each in a box of its own with a gap round
+    it. Of NETS nets, drawn the same way every time, the one that best fills its box is kept:
+    the layout is packed as boxes."""
+    under = {f for f in bm.faces if f.normal.z < -0.999 and stone.on_floor(f, floor)}
+    seen = sorted((f for f in bm.faces if f not in under), key=lambda f: f.index)
+    rng = random.Random(len(seen))
+    best = None
+    for _ in range(NETS):
+        weight = {e: e.calc_length() * rng.uniform(*NET_WEIGHT) for f in seen for e in f.edges}
+        root = rng.choice(seen)
+        parent, reach = {}, [(weight[e], -e.index, e, f, root) for e in root.edges for f in e.link_faces if f is not root and f not in under]
+        while len(parent) < len(seen) - 1:
+            found = max(reach, key=lambda item: item[:2])
+            reach.remove(found)
+            _, _, edge, face, onto = found
+            if face in parent or face is root:
+                continue
+            parent[face] = (edge, onto)
+            reach += [(weight[e], -e.index, e, f, face) for e in face.edges for f in e.link_faces if f is not root and f not in parent and f not in under]
+        fill = box_fill(laid_flat(root, parent))
+        if best is None or fill > best[0]:
+            best = (fill, {edge for edge, _ in parent.values()})
+    return [tuple(sorted(spot(v.co) for v in e.verts)) for e in bm.edges if e not in best[1] and not all(f in under for f in e.link_faces)]
+
+
 def build_rubble(spec, strict=True):
     pieces, normals = shape(spec, strict)
     material, colour = next(iter(spec["materials"].items()))
-    # No seams are marked: a fragment is a lump with undercut sides, and laid flat as one dome, as a
-    # pebble's plate is, its sides fold over each other. tools/paint.py unwraps it by angle.
-    return stone.join(spec["objects"][0], pieces, normals, material, colour)
+    floor = spec["bounds_m"]["min"][2]
+    seams = {seam for bm in pieces for seam in net_seams(bm, floor)}
+    obj = stone.join(spec["objects"][0], pieces, normals, material, colour)
+    places = [spot(v.co) for v in obj.data.vertices]
+    for edge in obj.data.edges:
+        edge.use_seam = tuple(sorted(places[v] for v in edge.vertices)) in seams
+    return obj

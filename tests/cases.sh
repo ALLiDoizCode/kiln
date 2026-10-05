@@ -61,6 +61,10 @@ uses rubble_1 validate paint
 expect 0 "L1 mutation tests: rubble_1, unbroken" l1 rubble_1 --unbroken
 expect 0 "L1 mutation tests: rubble_1, part 1 of 2" l1 rubble_1 --part 1/2
 expect 0 "L1 mutation tests: rubble_1, part 2 of 2" l1 rubble_1 --part 2/2
+# The group of seven from seed 27: its first draw that met the spec had faces and vertices that vanished when the
+# group, drawn eight metres wide, was shrunk to size. The generator must refuse such a draw and go on to the next.
+uses rubble_2 validate
+expect 0 "L1 rubble_2 from seed 27 builds without slivers" seed_passes rubble_2 27
 
 # A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
 uses block_2 validate paint
