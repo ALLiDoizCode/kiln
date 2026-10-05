@@ -53,6 +53,9 @@ upright_deg = 8.0           # a side within this of vertical is upright; the ben
 side_normal_z = 0.7071      # faces steeper than 45 degrees are sides
 summit_height = 0.9         # the summit is what stands above this share of the height
 
+[top]
+level_deg = 12.0            # a surface within this of level is one to stand on; a slab's cap tips up to 6 degrees
+
 [transform]
 tolerance = 0.00001         # rotation must be 0 and scale 1 within this
 

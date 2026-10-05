@@ -9,7 +9,7 @@
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `exported`, `flipped_normals`, `bark_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
@@ -29,6 +29,9 @@ expect 0 "L1 mutation tests: tree_1, part 3 of 6" l1 tree_1 --part 3/6
 expect 0 "L1 mutation tests: tree_1, part 4 of 6" l1 tree_1 --part 4/6
 expect 0 "L1 mutation tests: tree_1, part 5 of 6" l1 tree_1 --part 5/6
 expect 0 "L1 mutation tests: tree_1, part 6 of 6" l1 tree_1 --part 6/6
+
+uses slab_1 validate paint
+expect 0 "L1 mutation tests: slab_1" l1 slab_1
 
 uses tracer smoke
 expect 0 "L4 passes the real manifest"      smoke "$glb" "$manifest"
@@ -110,6 +113,18 @@ expect_id "foliage.core_colour"    "L4 catches a core as light as the leaves"   
 expect_id "painted.grain"          "L4 catches bark with no grain"                  smoke "$(broken_tree no_grain)" "$tree_manifest"
 expect_id "painted.grain_along"    "L4 catches grain running round the limbs"       smoke "$(broken_tree grain_across)" "$tree_manifest"
 expect_id "uv.close_density"       "L4 catches a trunk with no more texels than a twig" smoke "$(broken_tree no_close_texels)" "$tree_manifest"
+
+# Overlapping pieces, painted (ADR 13): slab_1, two plates one pushed into the other.
+uses slab_1 smoke
+expect 0 "L4 passes the real slab"          smoke "$slab" "$slab_manifest"
+# Not told the plates overlap, the load test measures the surface buried inside them as painted surface.
+expect_id "painted.banding"        "L4 fails buried surface as paint unless told the pieces overlap" smoke "$slab" "$(tamper 'm["overlap"] = False' "$slab_manifest")"
+# Three plates: the small one's sides stand close to the dominant one's, and counted as its exposed edges before a face of another piece counted as a join.
+uses slab_2 smoke
+expect 0 "L4 passes a slab of three plates" smoke assets/models/slab_2.glb assets/models/slab_2.manifest.json
+uses slab_1 smoke paint slab_mutations
+expect 0 "L4 passes an unbroken slab from the mutation script" smoke "$(broken_slab none)" "$slab_manifest"
+expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as exposed edges" smoke "$(broken_slab lit_joins)" "$slab_manifest"
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
@@ -199,6 +214,13 @@ expect_id "spec.painted_grain"       "L0 catches an impossible grain"          l
 expect_id "spec.painted_shading"     "L0 catches close texels with no height"  lint_tree 'del s["painted_shading"]["close_height_m"]'
 expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" lint_tree 's["painted_shading"]["close_texels_per_m"] = 50.0'
 expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" lint_tree 's["skeleton"]["min_view_grain"] = 0.5'
+
+# L0, slabs: slab_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
+uses slab_1 lint_spec
+expect 0 "L0 passes a slab variant's spec"   lint_slab 'pass'
+expect_id "spec.top"                 "L0 catches a level share above the whole view" lint_slab 's["top"]["min_level_share"] = 1.5'
+expect_id "spec.overlap"             "L0 catches a slab asked for more pieces at least than at most" lint_slab 's["overlap"]["min_count"] = 4'
+expect_id "spec.one_skin_checks"     "L0 catches a slab's fullness asked as if it were one skin" lint_slab 's["fullness"] = {"min_volume_share": 0.3, "min_crown_share": 0.2}'
 
 # L5b: a sheet never approved, an approved sheet, then the approved sheet with something drawn on it.
 # `baseline_check <state>` puts a copy of the tracer's sheet in that state and checks it.

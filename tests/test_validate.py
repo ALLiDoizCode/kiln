@@ -341,6 +341,42 @@ def twin_overlapping_pieces(spec):
     edit(add)
 
 
+# The slab (source/slab): overlapping plates with nearly flat tops.
+
+
+def slab_pieces(bm):
+    """The slab's pieces as lists of vertices, largest first."""
+    from validate import pieces_in
+
+    pieces = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(pieces, key=len, reverse=True)
+
+
+def tipped_tops(spec):
+    """The whole slab sheared so that every cap tips 27 degrees: nothing left level to stand on."""
+
+    def shear(bm):
+        for vert in bm.verts:
+            vert.co.z += 0.5 * (vert.co.x - spec["bounds_m"]["min"][0])
+
+    edit(shear, "slab_1")
+
+
+def plate_lifted(spec):
+    """The smaller plate lifted clear of the other: it floats."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=slab_pieces(bm)[-1], vec=(0, 0, 2.0)), "slab_1")
+
+
+def plate_inside_out(spec):
+    """The smaller plate turned inside out; the two together still enclose a positive volume."""
+
+    def flip(bm):
+        verts = set(slab_pieces(bm)[-1])
+        bmesh.ops.reverse_faces(bm, faces=[f for f in bm.faces if f.verts[0] in verts])
+
+    edit(flip, "slab_1")
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -625,6 +661,9 @@ CASES = [
     (painted_at_another_size, "m_rock.painted", "rock"),
     (painted_over_another_colour, "m_rock.base_colour", "rock"),
     (textured, "m_tracer.base_colour"),
+    (tipped_tops, "slab_1.top_level", "slab_1"),
+    (plate_lifted, "slab_1.overlap_touch", "slab_1"),
+    (plate_inside_out, "slab_1.normals_outward", "slab_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),

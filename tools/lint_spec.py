@@ -182,6 +182,10 @@ if not checks.failed():
         # and a piece record is held against a surface with nothing inside it.
         one_skin = sorted(block for block in ("fullness", "pieces") if block in spec)
         checks.check("spec.one_skin_checks", not one_skin, f"{one_skin} measure one closed skin and cannot be asked of overlapping pieces (`overlap`)")
+    top = spec.get("top")
+    if top is not None:
+        ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
+        checks.check("spec.top", ok, "optional; needs exactly min_level_share, a share in (0, 1]: how much of what is seen from above is near level")
     checks.check("spec.soft_edges", isinstance(spec.get("soft_edges", False), bool) and (not spec.get("soft_edges") or "NORMAL" in spec["attributes"]), "optional; true or false, and true needs NORMAL in attributes")
     painted = spec.get("painted_shading")
     if painted is not None:

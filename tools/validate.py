@@ -761,6 +761,20 @@ def check_lean(checks, name, bm, spec, conv):
     )
 
 
+def check_top(checks, name, bm, spec, conv):
+    """The shape has a nearly flat top to stand on: seen from straight above, enough of what shows is near level."""
+    want, rules = spec["top"], conv["top"]
+    hits, _ = seen_from_above(bm, spec, conv)
+    level = sum(1 for _, _, _, normal in hits if normal.z >= math.cos(math.radians(rules["level_deg"])))
+    share = level / len(hits) if hits else 0.0
+    print(f"{name} top: {share:.3f} of what is seen from above is within {rules['level_deg']} degrees of level")
+    checks.check(
+        f"{name}.top_level",
+        share >= want["min_level_share"],
+        f"seen from straight above, {share:.3f} of the shape is within {rules['level_deg']} degrees of level; spec wants at least {want['min_level_share']}",
+    )
+
+
 # Overlapping pieces (ADR 13): a shape may be several closed pieces that pass into each other, each
 # softened on its own. They stay separate in the mesh, so they are read back from it: no record.
 
@@ -1040,7 +1054,7 @@ def check_scene(checks, spec, conv):
             check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
         if "overlap" in spec:
             check_overlap(checks, name, [f for f in bm.faces if f.material_index not in opened], spec, conv)
-        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean)):
+        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
 

@@ -362,13 +362,16 @@ pub fn check(
             // Nearest face that turns away (an exposed edge) or rises in front (a crevice).
             let (mut convex, mut concave) = (f32::MAX, f32::MAX);
             let (mut any_convex, mut any_concave) = (f32::MAX, f32::MAX);
-            for (other, m, centre) in &faces {
+            for (other_index, (other, m, centre)) in faces.iter().enumerate() {
                 let cos = n.dot(*m);
                 if cos > same_cos {
                     continue;
                 }
                 let distance = distance_to_triangle(p, &other.positions);
-                let rises = (*centre - p).dot(*n) > 0.0;
+                // A face of another piece near a point that is not buried is that piece coming out
+                // of this one or standing against it: a join, whichever side its middle lies. Only
+                // a point's own piece can turn away from it and make an exposed edge there.
+                let rises = (*centre - p).dot(*n) > 0.0 || piece_of[other_index] != piece_of[index];
                 let (near, any) = if rises { (&mut concave, &mut any_concave) } else { (&mut convex, &mut any_convex) };
                 *any = any.min(distance);
                 if cos <= feature_cos {

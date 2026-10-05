@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail. The cases are in tests/cases.sh.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds, exports and review tiles).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock, tree_1 and slab_1 first (uses their builds, exports and review tiles).
 #
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
@@ -93,6 +93,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/paint.py|tools/foliage.py) echo paint ;;
     tests/paint_mutations.py) echo rock_mutations ;;
     tests/tree_mutations.py) echo tree_mutations ;;
+    tests/slab_mutations.py) echo slab_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -102,6 +103,8 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/image_lint.py) echo image_lint ;;
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 ;;  # the generator and brief the variants share
+    source/slab/*|tools/stone.py) echo slab_1 ;;  # the generator, the brief and the kit slab_1 is built with
+    tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
     # The suite itself, what every script imports, the pinned tools and the standards they all read.
@@ -193,6 +196,7 @@ trap 'kill $(jobs -p) 2> /dev/null; exit 130' INT TERM
 glb=assets/models/tracer.glb; manifest=assets/models/tracer.manifest.json
 rock=assets/models/rock.glb; rock_manifest=assets/models/rock.manifest.json
 tree=assets/models/tree_1.glb; tree_manifest=assets/models/tree_1.manifest.json
+slab=assets/models/slab_1.glb; slab_manifest=assets/models/slab_1.manifest.json
 
 # The Bevy binaries are built once, here, and run directly: `cargo run` checks the whole workspace
 # for changes every time it is called.
@@ -295,6 +299,7 @@ key_of() { # <files...> -> a hash of those files, every tool the builds import, 
 }
 kept="$bin/../gate-test-fixtures"; mkdir -p "$kept" || die "cannot make $kept"
 rock_key="$(key_of tests/paint_mutations.py source/rock/build.py source/rock/spec.json)" || die "cannot hash the rock's sources"
+slab_key="$(key_of tests/slab_mutations.py source/slab_1/build.py source/slab_1/spec.json source/slab/*.py)" || die "cannot hash slab_1's sources"
 tree_key="$(key_of tests/tree_mutations.py source/tree_1/build.py source/tree_1/spec.json source/tree/*.py)" || die "cannot hash tree_1's sources"
 
 # The rock, or tree_1, built and painted with one thing wrong and exported. A mutation that only
@@ -314,6 +319,7 @@ broken_tree() {
   if [[ $tree_after_paint == *" $1 "* ]]; then fixture --key "$tree_key" "tree_1_$1.glb" mutated_painted tests/tree_mutations.py "$1" painted_tree
   else fixture --key "$tree_key" "tree_1_$1.glb" mutated tests/tree_mutations.py "$1"; fi
 }
+broken_slab() { fixture --key "$slab_key" "slab_1_$1.glb" mutated tests/slab_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 
@@ -393,6 +399,7 @@ lint_copy() { # <asset> <sed expression for the brief> <python statements for th
 lint_crate() { lint_copy crate "$1" 'pass'; }  # <sed expression applied to the copied brief>
 lint_rock() { lint_copy rock '' "$1"; }        # <python statements changing spec s and its painted block p>
 lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spec s>
+lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 
 # L5b: a copy of the tracer's sheet as a review phase of its own.
 baseline_check() { # <never_approved|approved|drawn_on>

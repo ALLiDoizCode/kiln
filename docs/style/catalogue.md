@@ -29,7 +29,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Arch | Lintel arch and wedged-block arch | Not started |
 | Rib | Single ribs and a paired arch | Not started |
 | Table rock | 2 or more | Not started |
-| Slab | Single and overlapped, several sizes | Not started |
+| Slab | Single and overlapped, several sizes | Three overlapped variants built from pieces (ADR 13): 2.6, 4.0 and 1.4 m across, 208 to 312 triangles, bare stone. No single slab, no covers. Not approved. |
 | Stack | 3 or more | Not started |
 | Block | A run of sizes, some cracked | Not started |
 | Terrace | 2 or more | Not started |
