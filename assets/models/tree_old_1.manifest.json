@@ -72,7 +72,7 @@
     ]
   },
   "painted": {
-    "texture_px": 2048,
+    "texture_px": 1024,
     "base_tint": [
       0.48515,
       0.391572,
@@ -113,7 +113,7 @@
       0.5,
       1.5
     ],
-    "growth_patch_edges": 0.9,
+    "growth_patch_edges": 0.61,
     "blotch_spread": [
       1.0,
       2.5

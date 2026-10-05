@@ -666,6 +666,147 @@ def pushed_over(spec):
     edit(slide, "stack_1")
 
 
+# Rubble (source/rubble): separate stones lying together on the ground, under a spec's `scatter`.
+
+
+def fragments(bm):
+    """The group's fragments as lists of vertices, the longest first."""
+    from validate import pieces_in
+
+    found = [list({v for f in piece for v in f.verts}) for piece in pieces_in(bm.faces)]
+    return sorted(found, key=lambda verts: max((a.co - b.co).length for a in verts for b in verts), reverse=True)
+
+
+def middle_on_ground(verts):
+    return Vector((sum(v.co.x for v in verts) / len(verts), sum(v.co.y for v in verts) / len(verts), 0.0))
+
+
+def each_fragment(change):
+    """Apply change(bm, the fragments) to rubble_1."""
+    edit(lambda bm: change(bm, fragments(bm)), "rubble_1")
+
+
+def fragment_inside_out(spec):
+    """The smallest fragment turned inside out. The group as a whole still encloses a positive volume."""
+    each_fragment(lambda bm, stones: bmesh.ops.reverse_faces(bm, faces=list({f for v in stones[-1] for f in v.link_faces})))
+
+
+def fragment_removed(spec):
+    """The smallest fragment taken away: one stone fewer than the brief's group."""
+    each_fragment(lambda bm, stones: bmesh.ops.delete(bm, geom=stones[-1], context="VERTS"))
+
+
+def fragment_pushed_in(spec):
+    """The smallest fragment moved into the middle of the largest: one stone passing through another."""
+
+    def push(bm, stones):
+        by = middle_on_ground(stones[0]) - middle_on_ground(stones[-1])
+        for v in stones[-1]:
+            v.co += by
+
+    each_fragment(push)
+
+
+def fragment_lifted(spec):
+    """The second largest fragment raised 3 cm off the ground: it floats."""
+
+    def lift(bm, stones):
+        for v in stones[1]:
+            v.co.z += 0.03
+
+    each_fragment(lift)
+
+
+def fragment_sunk(spec):
+    """The second largest fragment pressed down to a third of its height: sunk until only a cap shows."""
+
+    def press(bm, stones):
+        for v in stones[1]:
+            v.co.z *= 0.33
+
+    each_fragment(press)
+
+
+def equal_fragments(spec):
+    """Every fragment shrunk about its own middle on the ground to the length of the smallest: stones of one size."""
+
+    def shrink(bm, stones):
+        length = lambda verts: max((a.co - b.co).length for a in verts for b in verts)
+        want = length(stones[-1])
+        for verts in stones[:-1]:
+            about, by = middle_on_ground(verts), want / length(verts)
+            for v in verts:
+                v.co = about + (v.co - about) * by
+
+    each_fragment(shrink)
+
+
+def fragment_strayed(spec):
+    """The smallest fragment moved a metre and a half off along x, clear of the group wherever in it it lay: a stone near a group, not one of it."""
+
+    def stray(bm, stones):
+        for v in stones[-1]:
+            v.co.x += 1.5
+
+    each_fragment(stray)
+
+
+def none_touching(spec):
+    """Every fragment moved straight out from the middle of the group by a sixth of its distance from it: no two touch."""
+
+    def part(bm, stones):
+        middle = sum((middle_on_ground(verts) for verts in stones), Vector()) / len(stones)
+        for verts in stones:
+            by = (middle_on_ground(verts) - middle) * 0.16
+            for v in verts:
+                v.co += by
+
+    each_fragment(part)
+
+
+def in_a_line(spec):
+    """The fragments set in a row along x, largest first, 2 cm apart."""
+
+    def row(bm, stones):
+        x = 0.0
+        for verts in stones:
+            low, high, y = min(v.co.x for v in verts), max(v.co.x for v in verts), middle_on_ground(verts).y
+            for v in verts:
+                v.co.x += x - low
+                v.co.y -= y
+            x += high - low + 0.02
+
+    each_fragment(row)
+
+
+def in_a_ring(spec):
+    """The fragments set evenly round a circle 0.4 m across, with nothing in the middle."""
+
+    def ring(bm, stones):
+        for index, verts in enumerate(stones):
+            angle = index * math.tau / len(stones)
+            by = Vector((0.2 * math.cos(angle), 0.2 * math.sin(angle), 0.0)) - middle_on_ground(verts)
+            for v in verts:
+                v.co += by
+
+    each_fragment(ring)
+
+
+def one_hard_point(spec):
+    """One corner of the largest fragment lit plane by plane: at that one point above the ground the faces
+    round it each keep their own normal, which is a hard edge. What two planes of a softened stone that
+    meet at a point and not along an edge leave (rubble_3 from seed 3 had 34 such vertices, and only the
+    Bevy load test saw them)."""
+    mesh = bpy.data.objects["rubble_1"].data
+    normals = [Vector(corner.vector) for corner in mesh.corner_normals]
+    top = max(range(len(mesh.vertices)), key=lambda index: mesh.vertices[index].co.z)
+    for polygon in mesh.polygons:
+        for loop in polygon.loop_indices:
+            if mesh.loops[loop].vertex_index == top:
+                normals[loop] = Vector(polygon.normal)
+    mesh.normals_split_custom_set(normals)
+
+
 # The block (source/block): a near-cuboid with big chamfers, parted along a crack.
 
 
@@ -1156,6 +1297,243 @@ def straight_blades(spec):
         generator.ARCH = saved
 
 
+# Tall grass and reeds (source/tall_grass, source/reeds): a clump of blades, some of them stalks that carry a head.
+
+
+def sparse_clump(spec):
+    """Two blades of every three taken out: a few spikes, with sky between them."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def thin(bm):
+        pieces = foliage.pieces_of(bm, slot)
+        gone = {face for k, piece in enumerate(pieces) if k % 3 for face in piece}
+        bmesh.ops.delete(bm, geom=list(gone), context="FACES")
+
+    edit(thin, name)
+
+
+def splayed_clump(spec):
+    """Every blade tipped 25 degrees further out about its foot: a fan, with nothing standing."""
+    def tip_out(verts, foot, tip, piece, bm):
+        way = Vector((tip.co.x - foot.x, tip.co.y - foot.y, 0))
+        way = way.normalized() if way.length > 1e-6 else Vector((1, 0, 0))
+        turn = Matrix.Rotation(math.radians(25), 3, Vector((0, 0, 1)).cross(way))
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_blade(spec, tip_out)
+
+
+def each_head(spec, change):
+    """Apply change(head's vertices, its faces, bm) to every head: every closed piece of the closed material that does not stand on the ground."""
+    from validate import pieces_in
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+    ground = spec["bounds_m"]["min"][2]
+
+    def run(bm):
+        for piece in pieces_in([f for f in bm.faces if f.material_index != slot]):
+            verts = list({v for face in piece for v in face.verts})
+            if min(v.co.z for v in verts) > ground + 0.01:
+                change(verts, piece, bm)
+
+    edit(run, name)
+
+
+def no_heads(spec):
+    """Every head taken off its stalk."""
+    each_head(spec, lambda verts, piece, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS"))
+
+
+def heads_low(spec):
+    """Every head slid down to under half the plant's height."""
+    drop = (spec["bounds_m"]["max"][2] - spec["bounds_m"]["min"][2]) * 0.5
+
+    def lower(verts, piece, bm):
+        for v in verts:
+            v.co.z -= drop
+
+    each_head(spec, lower)
+
+
+def heads_adrift(spec):
+    """Every head moved 0.4 m to one side, and up out of the plant: carried by nothing."""
+    def move(verts, piece, bm):
+        for v in verts:
+            v.co += Vector((0.4, 0.0, 0.3))
+
+    each_head(spec, move)
+
+
+def fat_heads(spec):
+    """Every head made three times its size about its own middle."""
+    def swell(verts, piece, bm):
+        middle = sum((v.co for v in verts), Vector()) / len(verts)
+        for v in verts:
+            v.co = middle + (v.co - middle) * 3
+
+    each_head(spec, swell)
+
+
+# A bed of reeds (source/reeds): stalks that stand apart and carry leaves and heads.
+
+
+def reed_pieces(bm, slot):
+    """(stalks, leaves): the foliage's open pieces, told apart as tools/validate.py tells them: a stalk's open edge is a small ring, a leaf's its whole outline."""
+    import foliage
+
+    stalks, leaves = [], []
+    for piece in foliage.pieces_of(bm, slot):
+        inside = set(piece)
+        verts = list({v for face in piece for v in face.verts})
+        rim = sum(e.calc_length() for e in {e for face in piece for e in face.edges} if sum(1 for f in e.link_faces if f in inside) == 1)
+        (stalks if rim < max((a.co - b.co).length for a in verts for b in verts) else leaves).append(verts)
+    return stalks, leaves
+
+
+def each_reed(spec, change_stalk=None, change_leaf=None):
+    """Apply change_stalk(vertices, foot, bm) to every stalk and change_leaf(vertices, bm) to every leaf of a bed of reeds."""
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def run(bm):
+        stalks, leaves = reed_pieces(bm, slot)
+        for verts in stalks if change_stalk else []:
+            low = min(v.co.z for v in verts)
+            ring = [v.co for v in verts if v.co.z < low + 0.02]
+            change_stalk(verts, sum(ring, Vector()) / len(ring), bm)
+        for verts in leaves if change_leaf else []:
+            change_leaf(verts, bm)
+
+    edit(run, name)
+
+
+def redrawn_reeds(spec, **constants):
+    """The bed drawn again with some of its generator's constants changed."""
+    from plant_parts import family_generator
+
+    generator = family_generator("reeds")
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    saved = {key: getattr(generator, key) for key in constants}
+    try:
+        for key, value in constants.items():
+            setattr(generator, key, value)
+        generator.build_bed(spec)
+    finally:
+        for key, value in saved.items():
+            setattr(generator, key, value)
+
+
+def flat_stalks(spec):
+    """Every stalk pressed flat about its foot: a strip, seen edge on from one side."""
+    def press(verts, foot, bm):
+        for v in verts:
+            v.co.x = foot.x + (v.co.x - foot.x) * 0.1
+
+    each_reed(spec, press)
+
+
+def gathered_stalks(spec):
+    """Every stalk moved to stand at the origin: a rosette from one point, not a bed."""
+    def gather(verts, foot, bm):
+        for v in verts:
+            v.co -= Vector((foot.x, foot.y, 0)) * 0.97
+
+    each_reed(spec, gather)
+
+
+def floating_stalks(spec):
+    """Every stalk lifted 0.2 m off the ground."""
+    def lift(verts, foot, bm):
+        for v in verts:
+            v.co.z += 0.2
+
+    each_reed(spec, lift)
+
+
+def leaning_stalks(spec):
+    """Every stalk tipped 15 degrees over about its foot, all one way: a bed blown flat."""
+    turn = Matrix.Rotation(math.radians(15), 3, "X")
+
+    def tip_over(verts, foot, bm):
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_reed(spec, tip_over)
+
+
+def swaying_stalks(spec):
+    """Every stalk tipped 7.5 degrees about its foot, each its own way: none far over, and few upright."""
+    turns = iter(range(1000))
+
+    def sway(verts, foot, bm):
+        turn = Matrix.Rotation(math.radians(7.5), 3, Matrix.Rotation(next(turns) * 2.4, 3, "Z") @ Vector((1, 0, 0)))
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_reed(spec, sway)
+
+
+def few_stalks(spec):
+    """All but three stalks taken out."""
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def thin(bm):
+        stalks, _ = reed_pieces(bm, slot)
+        bmesh.ops.delete(bm, geom=[v for verts in stalks[3:] for v in verts], context="VERTS")
+
+    edit(thin, name)
+
+
+def bare_stalks(spec):
+    """Every leaf taken off."""
+    each_reed(spec, change_leaf=lambda verts, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS"))
+
+
+def leaves_adrift(spec):
+    """Every leaf moved 0.25 m up and to one side of its stalk: on nothing."""
+    def move(verts, bm):
+        for v in verts:
+            v.co += Vector((0.12, 0.12, 0.25))
+
+    each_reed(spec, change_leaf=move)
+
+
+def broad_leaves(spec):
+    """The bed drawn again with leaves five times as wide: paddles."""
+    redrawn_reeds(spec, LEAF_WIDTH=(0.2, 0.25))
+
+
+def planar_leaves(spec):
+    """The bed drawn again with every leaf bending in one upright plane, as a tall grass blade does: a star of straight lines from above."""
+    redrawn_reeds(spec, LEAF_TURN=(0.0, 0.0), LEAF_ROLL=0.0)
+
+
+def thin_heads(spec):
+    """Every head made a third as thick: a swelling of the stalk, not a cattail."""
+    def thin(verts, piece, bm):
+        middle = sum((v.co for v in verts), Vector()) / len(verts)
+        for v in verts:
+            v.co.x, v.co.y = middle.x + (v.co.x - middle.x) * 0.33, middle.y + (v.co.y - middle.y) * 0.33
+
+    each_head(spec, thin)
+
+
+def spindle_heads(spec):
+    """The bed drawn again with every head a spindle pointed at both ends, as a grass's seed head is: not a sausage."""
+    redrawn_reeds(spec, HEAD_RINGS=((0.35, 1.0),))
+
+
+def every_stalk_headed(spec):
+    """The bed drawn again with a head on every stalk but one."""
+    redrawn_reeds(spec, HEADS=(0.9, 0.9), HEAD_COUNT=(2, 8), STALKS_PER_M=(10.0, 10.0), HEAD_STALK=(0.9, 1.0))
+
+
 # The table rock (source/table_rock): a cap held off the ground on narrow necks.
 
 
@@ -1362,6 +1740,156 @@ def tall_boulder(spec):
     hi[2] = lo[2] + 3 * (hi[2] - lo[2])
 
 
+
+# A fallen log (source/log): a trunk lying on the ground. Most are drawn again by the generator with one of the
+# numbers it drew changed, in place of the log; the rest change the built mesh.
+
+
+def log_again(spec, tweak, name, **constants):
+    """The log drawn again with `tweak` applied to its numbers and the generator's constants set to `constants`, whatever it then measures."""
+    import plant_parts
+
+    generator = plant_parts.family_generator("log")
+    bpy.data.objects.remove(bpy.data.objects[name])
+    for held in (bpy.data.meshes, bpy.data.materials):
+        for block in list(held):
+            if not block.users:
+                held.remove(block)
+    # A broken log may fill its bounds only by being stretched further than a sound one is allowed.
+    kept = {key: getattr(generator, key) for key in ("MAX_STRETCH", "MAX_STRETCH_ACROSS", *constants)}
+    generator.MAX_STRETCH = generator.MAX_STRETCH_ACROSS = (0.2, 5.0)
+    for key, value in constants.items():
+        setattr(generator, key, value)
+    try:
+        generator.build_log(spec, tweak=tweak, strict=False)
+    finally:
+        for key, value in kept.items():
+            setattr(generator, key, value)
+
+
+def tipped_log(spec):
+    """The log raised toward its top end by 12 degrees: leaning on something, not lying."""
+    def tip(bm):
+        low = min(v.co.x for v in bm.verts)
+        for vert in bm.verts:
+            vert.co.z += (vert.co.x - low) * math.tan(math.radians(12))
+
+    edit(tip, "log_1")
+
+
+def perched_log(spec):
+    """The log lifted 5 cm clear of the ground: it touches nowhere."""
+    edit(lambda bm: bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, 0.05)), "log_1")
+
+
+def round_underside(spec):
+    """The log with no corner pressed onto the ground: a round trunk resting on a line."""
+    log_again(spec, lambda n: n.update(sink=0.002), "log_1", PRESS=0.003)
+
+
+def pole_log(spec):
+    """The log as thick at its top as at its butt."""
+    log_again(spec, lambda n: n.update(taper=0.0), "log_1")
+
+
+def thin_log(spec):
+    """The log drawn in to 0.6 of its thickness."""
+    def squeeze(bm):
+        for vert in bm.verts:
+            vert.co.y, vert.co.z = 0.6 * vert.co.y, 0.6 * vert.co.z
+
+    edit(squeeze, "log_1")
+
+
+def straight_log(spec):
+    """The log along a straight line, and on the ground all the way: a cylinder with ends."""
+    log_again(spec, lambda n: n.update(bend=(0.0, 0.0), lift=(0.5, 0.1, 0.0)), "log_1")
+
+
+def stepped_log(spec):
+    """Every other ring of the trunk a tenth thicker and the rest a tenth thinner: an outline that steps in and out like links."""
+    log_again(spec, lambda n: n.update(swell=[1.1 if k % 2 else 0.9 for k in range(len(n["swell"]))]), "log_1")
+
+
+def square_top(spec):
+    """The top cut square: every corner of its rim broken off at the same place, a ring and not a break."""
+    log_again(spec, lambda n: n["top"].update(out=[0.0] * n["sides"]), "log_1")
+
+
+def ragged_saw(spec):
+    """The sawn butt cut far off square, at 35 degrees: no saw cut."""
+    import math
+
+    log_again(spec, lambda n: n.update(saw=(n["saw"][0], math.radians(35))), "log_1")
+
+
+def bark_ends(spec):
+    """Every face of the log in its bark: ends capped, with no wood showing."""
+    def cover(bm):
+        for face in bm.faces:
+            face.material_index = 0
+
+    edit(cover, "log_1")
+
+
+def no_stubs(spec):
+    """The log with no branch stub."""
+    log_again(spec, lambda n: n.update(stubs=[]), "log_1")
+
+
+def solid_where_hollow(spec):
+    """The hollow log drawn solid: its spec still asks a hollow."""
+    hollow = spec.pop("hollow")
+    log_again(spec, None, "log_3")
+    spec["hollow"] = hollow
+
+
+def narrow_hollow(spec):
+    """The hollow log with a wall nearly half its radius thick: an opening too narrow to crawl into."""
+    log_again(spec, lambda n: n.update(wall=(0.45, *n["wall"][1:])), "log_3")
+
+
+def paper_wall(spec):
+    """The hollow log with a wall a sixteenth of its radius thick, 4 or 5 cm: nearer a surface than a wall."""
+    log_again(spec, lambda n: n.update(wall=(0.06, *n["wall"][1:])), "log_3")
+
+
+def hollow_not_asked(spec):
+    """The hollow log held to a spec that asks a solid one."""
+    del spec["hollow"]
+
+
+def hollow_inside_out(spec):
+    """The wall of the hollow turned to face the wood: seen from inside, it would not be drawn."""
+    def turn(bm):
+        low, high = min(v.co.x for v in bm.verts), max(v.co.x for v in bm.verts)
+        middle = [f for f in bm.faces if f.material_index == 1 and low + 0.3 * (high - low) < f.calc_center_median().x < high - 0.3 * (high - low)]
+        inside = max(log_pieces(bm, middle), key=len)
+        bmesh.ops.reverse_faces(bm, faces=inside)
+
+    edit(turn, "log_3")
+
+
+def log_pieces(bm, faces):
+    """The faces grouped by the edges they share."""
+    faces, groups, seen = set(faces), [], set()
+    for start in faces:
+        if start in seen:
+            continue
+        seen.add(start)
+        group, front = [], [start]
+        while front:
+            face = front.pop()
+            group.append(face)
+            for edge in face.edges:
+                for other in edge.link_faces:
+                    if other in faces and other not in seen:
+                        seen.add(other)
+                        front.append(other)
+        groups.append(group)
+    return groups
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -1451,6 +1979,17 @@ CASES = [
     (plain_box, "block_2.block_chamfers", "block_2"),
     (plain_box, "block_2.cracks", "block_2"),
     (crack_filled, "block_2.cracks", "block_2"),
+    (fragment_inside_out, "rubble_1.scatter_closed", "rubble_1"),
+    (fragment_removed, "rubble_1.scatter_count", "rubble_1"),
+    (fragment_pushed_in, "rubble_1.scatter_apart", "rubble_1"),
+    (fragment_lifted, "rubble_1.scatter_on_ground", "rubble_1"),
+    (fragment_sunk, "rubble_1.scatter_stands", "rubble_1"),
+    (equal_fragments, "rubble_1.scatter_size_order", "rubble_1"),
+    (fragment_strayed, "rubble_1.scatter_grouped", "rubble_1"),
+    (none_touching, "rubble_1.scatter_touching", "rubble_1"),
+    (in_a_line, "rubble_1.scatter_not_line", "rubble_1"),
+    (in_a_ring, "rubble_1.scatter_not_ring", "rubble_1"),
+    (one_hard_point, "rubble_1.soft_edges", "rubble_1"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),
@@ -1501,6 +2040,47 @@ CASES = [
     # NOT CAUGHT, and so not listed: (no_cores, "conifer_1.under_closed"). With every core gone a tier measures as closed
     # as with them: under_closed, taken tier by tier, is not yet shown to catch a tier open underneath.
     (round_leaves, "conifer_1.under_rim", "conifer_1"),
+    (tipped_log, "log_1.log_lies", "log_1"),
+    (perched_log, "log_1.log_lies", "log_1"),
+    (perched_log, "log_1.log_settled", "log_1"),
+    (round_underside, "log_1.log_settled", "log_1"),
+    (pole_log, "log_1.log_tapers", "log_1"),
+    (thin_log, "log_1.log_thick", "log_1"),
+    (straight_log, "log_1.log_bends", "log_1"),
+    (bark_ends, "log_1.log_ends", "log_1"),
+    (stepped_log, "log_1.log_even", "log_1"),
+    (square_top, "log_1.log_ragged", "log_1"),
+    (ragged_saw, "log_1.log_ragged", "log_1"),
+    (no_stubs, "log_1.log_stubs", "log_1"),
+    (solid_where_hollow, "log_3.log_hollow", "log_3"),
+    (narrow_hollow, "log_3.log_hollow", "log_3"),
+    (paper_wall, "log_3.log_wall", "log_3"),
+    (hollow_not_asked, "log_3.log_hollow", "log_3"),
+    (hollow_inside_out, "log_3.winding_consistent", "log_3"),
+    (sparse_clump, "tall_grass_1.clump_dense", "tall_grass_1"),
+    (splayed_clump, "tall_grass_1.clump_upright", "tall_grass_1"),
+    (no_heads, "tall_grass_1.heads", "tall_grass_1"),
+    (fat_heads, "tall_grass_1.heads", "tall_grass_1"),
+    (heads_low, "tall_grass_1.heads_high", "tall_grass_1"),
+    (heads_adrift, "tall_grass_1.heads_carried", "tall_grass_1"),
+    (few_stalks, "reeds_1.stalks", "reeds_1"),
+    (flat_stalks, "reeds_1.stalk_shape", "reeds_1"),
+    (gathered_stalks, "reeds_1.stalks_bed", "reeds_1"),
+    (floating_stalks, "reeds_1.stalks_bed", "reeds_1"),
+    (leaning_stalks, "reeds_1.stalks_lean", "reeds_1"),
+    (swaying_stalks, "reeds_1.clump_upright", "reeds_1"),
+    (sparse_clump, "reeds_1.clump_dense", "reeds_1"),
+    (bare_stalks, "reeds_1.leaves", "reeds_1"),
+    (leaves_adrift, "reeds_1.leaves", "reeds_1"),
+    (broad_leaves, "reeds_1.leaf_shape", "reeds_1"),
+    (planar_leaves, "reeds_1.leaves_bend", "reeds_1"),
+    (thin_heads, "reeds_1.heads_thick", "reeds_1"),
+    (spindle_heads, "reeds_1.heads_thick", "reeds_1"),
+    (every_stalk_headed, "reeds_1.heads_share", "reeds_1"),
+    (no_heads, "reeds_1.heads", "reeds_1"),
+    (fat_heads, "reeds_1.heads", "reeds_1"),
+    (heads_low, "reeds_1.heads_high", "reeds_1"),
+    (heads_adrift, "reeds_1.heads_carried", "reeds_1"),
 ]
 
 

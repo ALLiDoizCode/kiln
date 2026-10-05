@@ -18,7 +18,7 @@ At most 480 triangles: 120 a stone.
 
 The family's bands are the smallest slab's, whose plates are 0.3 m thick. This stack's four stones share 0.7 m, about 0.2 m each, two thirds of that, and its bands are two thirds as wide: 0.027 m of edge light, 0.08 m of crevice shadow, blotches 0.13 m across. The reason is in the sizes and needs no build: a side of a 0.2 m stone, less its chamfer, is 0.12 to 0.14 m tall, and a 0.04 m band from its upper and lower edge with a 0.12 m shadow from the join under it leaves none of it open. The build said the same: with the family's bands the load test found 0 samples of open face (`painted.open_faces`).
 
-A 1024 px texture: at 512 px the triangles used 0.387 of the texture where the conventions ask 0.4 (`uv.coverage`); this stack's many small islands lose more to the 8 px gap round each than the other two do.
+The family's 512 px texture. It was 1024 px while the painter packed islands as boxes: at 512 px the triangles then used 0.387 of the texture where the conventions ask 0.4 (`uv.coverage`). Packed by their outlines (`pack` in `tools/paint.py`) they use 0.550 at 512 px, with 167 texels per metre on the sparsest triangle (100 asked), and the file is 190 kB where it was 520 kB.
 
 ## Seed
 
@@ -39,7 +39,6 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `max_triangles` | `480` | Budget |
 | `overlap.min_count` | `4` | Stones |
 | `overlap.max_count` | `4` | Stones |
-| `painted_shading.texture_px` | `1024` | Paint |
 | `painted_shading.edge_width_m` | `0.027` | Paint: two thirds of the family's 0.04 m |
 | `painted_shading.crevice_width_m` | `0.08` | Paint: two thirds of the family's 0.12 m |
 | `painted_shading.blotch_size_m` | `0.13` | Paint: two thirds of the family's 0.2 m |

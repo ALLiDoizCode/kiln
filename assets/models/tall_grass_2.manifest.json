@@ -1,0 +1,113 @@
+{
+  "asset": "tall_grass_2",
+  "nodes": [
+    "tall_grass_2"
+  ],
+  "mesh_count": 1,
+  "materials": {
+    "m_tall_grass_straw": [
+      0.434154,
+      0.323143,
+      0.111932
+    ],
+    "m_tall_grass_leaf": [
+      0.332452,
+      0.467784,
+      0.076185
+    ]
+  },
+  "watertight": true,
+  "triangles": 690,
+  "bounds": {
+    "min": [
+      -0.65,
+      0.0,
+      -0.6
+    ],
+    "max": [
+      0.65,
+      1.4,
+      0.6
+    ]
+  },
+  "bounds_tolerance": 0.001,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "soft_edges": true,
+  "open_materials": [
+    "m_tall_grass_leaf"
+  ],
+  "foliage": {
+    "material": "m_tall_grass_leaf",
+    "pad_gap_m": 0.06,
+    "min_pad_pieces": 40,
+    "shades": 4,
+    "tones": 3,
+    "variation": 0.14,
+    "under_tint": [
+      0.158961,
+      0.304987,
+      0.381326
+    ],
+    "top_tint": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "swatch_px": 8,
+    "max_palette_error": 0.02,
+    "min_neighbours_differ": 0.5,
+    "min_effect_share": 0.5
+  },
+  "painted": {
+    "texture_px": 256,
+    "base_tint": [
+      0.254152,
+      0.223228,
+      0.187821
+    ],
+    "top_tint": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "edge_light": 0.2,
+    "edge_width_m": 0.002,
+    "hidden_underside": true,
+    "min_texels_per_m": 100,
+    "min_uv_coverage": 0.4,
+    "max_uv_overlap": 0.001,
+    "feature_deg": 30.0,
+    "crevice_sky_hidden": 0.2,
+    "join_sky_hidden": 0.06,
+    "colour_tolerance": 0.08,
+    "min_effect_share": 0.5,
+    "texel_range": [
+      30,
+      240
+    ],
+    "side_shade_normal_z": [
+      0.3,
+      0.7
+    ],
+    "side_shade_half_band": 0.35,
+    "growth_up_normal_z": [
+      0.82,
+      0.94
+    ],
+    "growth_cover": [
+      0.5,
+      1.5
+    ],
+    "growth_patch_edges": 0.61,
+    "blotch_spread": [
+      1.0,
+      2.5
+    ],
+    "max_blotch_grain": 0.2,
+    "max_level_gap": 3
+  }
+}

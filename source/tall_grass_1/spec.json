@@ -1,0 +1,95 @@
+{
+  "asset": "tall_grass_1",
+  "family": "tall_grass",
+  "season": "summer",
+  "objects": [
+    "tall_grass_1"
+  ],
+  "seed": 1,
+  "bounds_m": {
+    "min": [
+      -0.5,
+      -0.5,
+      0.0
+    ],
+    "max": [
+      0.5,
+      0.5,
+      1.15
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 700,
+  "materials": {
+    "m_tall_grass_straw": "#b09a5e",
+    "m_tall_grass_leaf": "#9cb64e"
+  },
+  "painted_shading": {
+    "texture_px": 256,
+    "base_tint": "#8a8278",
+    "top_tint": "#ffffff",
+    "edge_light": 0.2,
+    "edge_width_m": 0.002,
+    "hidden_underside": true
+  },
+  "foliage": {
+    "material": "m_tall_grass_leaf",
+    "pad_gap_m": 0.06,
+    "min_pad_pieces": 40,
+    "piece_m": [
+      0.3,
+      1.8
+    ],
+    "under_tint": "#6f96a6",
+    "top_tint": "#ffffff",
+    "shades": 4,
+    "tones": 3,
+    "variation": 0.14
+  },
+  "blades": {
+    "width_share": [
+      0.008,
+      0.05
+    ],
+    "root_m": 0.25,
+    "max_gap_deg": 60.0,
+    "lean_deg": [
+      0.0,
+      60.0
+    ],
+    "min_arch": 0.05
+  },
+  "clump": {
+    "upright_deg": 15.0,
+    "min_upright_share": 0.3,
+    "max_sky_share": 0.5
+  },
+  "heads": {
+    "count": [
+      3,
+      6
+    ],
+    "size_m": [
+      0.06,
+      0.2
+    ],
+    "min_height": 0.7
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "open_materials": [
+    "m_tall_grass_leaf"
+  ],
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "variants": {
+    "siblings": [
+      "tall_grass_2",
+      "tall_grass_3"
+    ],
+    "min_difference": 0.3
+  }
+}

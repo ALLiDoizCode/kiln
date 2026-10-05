@@ -23,4 +23,3 @@ The rows that are this asset's own. Every other value in `spec.json` is in the f
 | `bounds_m.max` | `[3.2, 3.1, 8.8]` | Real-world size |
 | `max_triangles` | `6000` | Family brief, Growth stages: the budget of an old tree |
 | `skeleton.fork_m` | `[2.5, 4.5]` | Family brief, Growth stages: an old tree forks higher |
-| `painted_shading.texture_px` | `2048` | Family brief, Growth stages: a 1024 px texture gives this trunk 231 texels per metre below 2.5 m, where the brief asks for 250 |
