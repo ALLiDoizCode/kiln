@@ -7,4 +7,4 @@ From `sheet.png` and `benchmarks/out/tall_grass_variants.png` (row 4). The mesh 
 11. **Differences from the brief.**
    - The low blades are more orange than dry grass is: the underside tint `#b08a6a` multiplies a leaf colour that is already yellow.
    - The seed heads have little contrast with the leaves.
-   - Its season is `autumn`, because "dry" is not a season in `conventions.toml`.
+   - Its season is `dry` (it was filed as `autumn` until `conventions.toml` listed dry).

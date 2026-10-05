@@ -129,7 +129,8 @@ class Checks:
         self.results = []
 
     def check(self, check_id, ok, detail=""):
-        self.results.append({"id": check_id, "ok": bool(ok), "detail": "" if ok else str(detail)})
+        # The detail is recorded for a pass too: it carries the measurement, and a pass nobody can read the value of cannot be confirmed from the report.
+        self.results.append({"id": check_id, "ok": bool(ok), "detail": str(detail)})
         return ok
 
     def failed(self):

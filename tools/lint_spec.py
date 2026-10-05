@@ -590,7 +590,7 @@ if not checks.failed():
             with open(path, "rb") as f:
                 recipe = tomllib.load(f)
         checks.check("spec.species", recipe is not None, "an asset with a skeleton names its `family` and a `species` with a recipe at source/<family>/species/<species>.toml")
-    # A season is one of the year's (conventions.toml), and every asset with foliage has one.
+    # A season is one of those in conventions.toml (the year's, and dry), and every asset with foliage has one.
     seasons = conv["palette"]["seasons"]
     if "season" in spec or leaves:
         checks.check("spec.season", spec.get("season") in seasons, f"an asset with foliage names its season, one of {seasons}")

@@ -9,7 +9,7 @@
 #
 # tests/run.sh runs each line in a shell of its own, in any order and several at once, so a case
 # may not depend on another: it writes only under its own "$tmp", and anything two cases share
-# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
+# is a fixture (`broken`, `broken_tree`, `broken_slab`, `broken_pebble`, `broken_rubble`, `exported`, `flipped_normals`, `bark_shot`, `under_shot`, `once`), built once by whichever
 # case asks first. The helpers are in tests/run.sh.
 
 # The build's bake, when it is done on the graphics card (KILN_BAKE=gpu): a card out of memory leaves a wrong
@@ -20,6 +20,9 @@ expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that left the tex
 expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake wrong in a fifth of the texture" tools/bl tests/bake_check.py part_wrong
 expect_id "bake.agrees_with_cpu" "L1 bake check catches a bake that missed one island"         tools/bl tests/bake_check.py island_missing
 
+# Every report (tools/pipeline.py): a check that passes records what it measured, as one that fails does, so a pass can be confirmed from the record.
+uses validate lint_spec
+expect 0 "L1 a passing check records what it measured" python -c 'import sys; sys.path.insert(0, "tools"); from pipeline import Checks; c = Checks("L1-mesh", "x"); c.check("a.size", True, "is 3 m; spec wants 3"); c.check("a.name", False, "is b"); sys.exit(0 if [r["detail"] for r in c.results] == ["is 3 m; spec wants 3", "is b"] and len(c.failed()) == 1 else 1)'
 # L1: each asset broken one way at a time inside Blender (tests/test_validate.py lists the mutations).
 uses tracer validate
 expect 0 "L1 mutation tests: tracer" l1 tracer
@@ -268,6 +271,10 @@ uses pebble_1 smoke
 expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
 uses rock smoke
 expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+# Stones of a group that touch (source/rubble; `[scatter] touch_m`) shade each other where they nearly meet, as overlapping pieces do at a join.
+# rubble_1 painted with nothing dark between its one touching pair, 7 mm apart (tests/rubble_mutations.py).
+uses rubble_1 smoke paint rubble_mutations
+expect_id "painted.crevices_darker" "L4 catches stones that touch with no shadow between them" smoke "$(broken_rubble no_contact_shadow)" assets/models/rubble_1.manifest.json
 # A plant is held to the same rule as a stone: blades and stems that lie apart have no inside corner, the painter's shadow
 # paints nothing on them (no texel of five plants differs by 2 levels with it and without), and a spec that asks it is refused.
 uses grass_tuft_1 smoke
@@ -289,6 +296,11 @@ expect 0 "L4b renders the asset's back"     view "$glb" "$manifest" --back --scr
 # Both cases read one run of the viewer (`away_view`).
 expect_id "asset.in_picture" "L4b fails when the asset is not in the picture" away_view
 expect 1 "L4b saves no picture without the asset in it" away_picture_exists
+# An asset stands on the ground, and where the foot of its sides lies in the ground's plane the two have one depth: the viewer
+# draws the ground a hair behind, or which of them a pixel shows goes by an order that changes from run to run and the contact
+# sheet drifts (reeds_1's picture came out two ways, 3 runs to 7; eight alike by chance is then one in seventeen).
+uses reeds_1 view
+expect 0 "L4b takes the same picture of an asset standing on the ground every time" same_picture reeds_1 8
 
 # L4c: bark seen from 0.5 m, as the gate takes it, with and without its grain.
 uses tree_1 view_checks
@@ -398,7 +410,7 @@ expect_id "spec.growth_height"       "L0 catches a mature tree's height called a
 # `lint_season <python>` lints a copy of tree_1_autumn after that has changed its spec `s`.
 uses tree_1 tree_1_autumn lint_spec
 expect 0 "L0 passes a season's spec"         lint_season 'pass'
-expect_id "spec.season"              "L0 catches a season that is not one of the year's" lint_season 's["season"] = "monsoon"'
+expect_id "spec.season"              "L0 catches a season that is not one of the year's or dry" lint_season 's["season"] = "monsoon"'
 expect_id "spec.season"              "L0 catches a tree with no season"        lint_season 'del s["season"]'
 expect_id "spec.palette_of"          "L0 catches a season drawn from another seed than its base" lint_season 's["seed"] = 2'
 expect_id "spec.palette_of"          "L0 catches a season with a leaf shape of its own" lint_season 's["foliage"]["piece_m"] = [0.2, 0.9]'
@@ -407,6 +419,11 @@ expect_id "spec.palette_of"          "L0 catches a season in its base's own colo
 # A palette variant says what it is a palette of its base in: another season or another cover.
 expect_id "spec.palette_of"          "L0 catches a palette variant in its base's own season" lint_season 's["season"] = "summer"'
 expect_id "spec.palette_of"          "L0 catches a season with moss its base has not" lint_season 's["painted_shading"].update(growth="#7a8a4d", growth_height_m=0.9)'
+# Dry is a season of its own (the catalogue's "tall dry grass"): `lint_dry <python>` lints a copy of tall_grass_1_dry after that has changed its spec `s`.
+uses tall_grass_1 tall_grass_1_dry lint_spec
+expect 0 "L0 passes grass in its dry season" lint_dry 'pass'
+expect_id "spec.season"              "L0 catches dry grass in a season that is not one" lint_dry 's["season"] = "monsoon"'
+expect_id "spec.palette_of"          "L0 catches dry grass in its base's own season" lint_dry 's["season"] = "summer"'
 
 # L2c: a season's GLB carries its base's mesh, UVs included: only the texture differs.
 uses tree_1 tree_1_autumn same_mesh

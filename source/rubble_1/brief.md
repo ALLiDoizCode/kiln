@@ -12,7 +12,7 @@ Exactly five fragments. None lies further than 0.12 m from the rest, half the le
 
 ## Paint
 
-The family's brief gives each painted band as a share of the largest fragment's length (Painted shading), taken at 0.25 m when the bands were set: edge light fading out 0.006 m into each plane (one fortieth), and blotches 0.025 m across (one tenth). No crevice shadow (the family's brief, Painted shading 4): three of this group's stones lie apart, and its one touching pair lies 7 mm apart without a face of one rising in front of a face of the other, so the group has no inside corner and the load test finds no sample in one.
+The family's brief gives each painted band as a share of the largest fragment's length (Painted shading), taken at 0.25 m when the bands were set: edge light fading out 0.006 m into each plane (one fortieth), and blotches 0.025 m across (one tenth). Crevice shadow up to 45% darker, reaching 0.025 m (the family's brief, Painted shading 4): three of this group's stones lie apart, and its one touching pair lies 7 mm apart, inside the touching distance, so the faces of the two that stand over each other there are an inside corner and the load test measures the shadow in them.
 
 ## Seed
 
@@ -34,4 +34,6 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `scatter.max_gap_m` | `0.12` | Group: half the largest fragment's length |
 | `scatter.min_touching` | `1` | Group |
 | `painted_shading.edge_width_m` | `0.006` | Paint: one fortieth of the largest fragment |
+| `painted_shading.crevice_shadow` | `0.45` | Paint: the boulder's strength, between the pair that touches |
+| `painted_shading.crevice_width_m` | `0.025` | Paint: one tenth of the largest fragment |
 | `painted_shading.blotch_size_m` | `0.025` | Paint: one tenth of the largest fragment |

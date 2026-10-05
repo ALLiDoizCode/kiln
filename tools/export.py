@@ -115,6 +115,9 @@ if "painted_shading" in spec:
         **({"growth": [round(c, 6) for c in linear_rgb(want["growth"])]} if "growth" in want else {}),
         **{key: rules[key] for key in ("side_shade_normal_z", "side_shade_half_band", "growth_up_normal_z", "growth_cover", "growth_patch_edges", "blotch_spread", "max_blotch_grain", "max_level_gap")},
     }
+    if "scatter" in spec:
+        # Separate stones that touch shade each other (tools/paint.py), and the load test looks for that shadow where a face of one stands this near the other.
+        manifest["painted"]["touch_m"] = conventions()["scatter"]["touch_m"]
     if "grain" in want or "close_texels_per_m" in want:
         # Grain and close-range texels the spec asks for (ADR 12), and how the load test measures the grain.
         manifest["painted"].update({key: want[key] for key in ("grain", "grain_width_m", "close_height_m", "close_texels_per_m") if key in want})

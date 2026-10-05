@@ -100,6 +100,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/cover_mutations.py) echo cover_mutations ;;
     tests/plant_mutations.py) echo plant_mutations ;;
     tests/log_mutations.py) echo log_mutations ;;
+    tests/rubble_mutations.py) echo rubble_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
@@ -248,6 +249,15 @@ view() {
   fi
   return $code
 }
+# L4b: the same view of one asset taken several times; every picture must have the same pixels.
+same_picture() { # <asset> <times>
+  local i; for i in $(seq 1 "$2"); do
+    view "assets/models/$1.glb" "assets/models/$1.manifest.json" --screenshot "$tmp/same_$i.png" || return 3
+    magick "$tmp/same_$i.png" -depth 8 rgb:- | sha256sum | cut -c1-12
+  done > "$tmp/same.txt"
+  sort "$tmp/same.txt" | uniq -c
+  [[ $(sort -u "$tmp/same.txt" | wc -l) == 1 ]]
+}
 view_checks() { tools/bl tools/view_checks.py "$@"; }
 shade_check() { python tools/shade_check.py "$@"; }
 under_checks() { tools/bl tools/under_checks.py "$@"; }
@@ -376,6 +386,7 @@ mutated_plant() { tools/bl tests/plant_mutations.py "$1" "$2" "$3"; }  # <asset>
 mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 broken_log() { fixture --key "$(key_of tests/log_mutations.py source/log_3/build.py source/log_3/spec.json source/log/*.py)" "log_3_$1.glb" mutated tests/log_mutations.py "$1"; }
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
+broken_rubble() { fixture --key "$(key_of tests/rubble_mutations.py source/rubble_1/build.py source/rubble_1/spec.json source/rubble/*.py)" "rubble_1_$1.glb" mutated tests/rubble_mutations.py "$1"; }
 flipped_normals() { fixture flipped_normals.glb python tests/flip_normals.py "$glb"; }
 bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 
@@ -471,6 +482,7 @@ lint_tree() { lint_copy tree_1 '' "$1"; }      # <python statements changing spe
 lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changing spec s>
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_grass() { lint_copy tall_grass_1 '' "$1"; } # <python statements changing spec s>
+lint_dry() { lint_copy tall_grass_1_dry '' "$1"; } # <python statements changing spec s>
 lint_reeds() { lint_copy reeds_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_cover() { lint_copy crag_1_mossy '' "$1"; } # <python statements changing spec s and its painted block p>

@@ -193,7 +193,8 @@ max_pale_share = 0.0002     # share of the leaf samples that may be pale: glare,
 
 [palette]
 # Variants that are a change of palette on their base asset's mesh (ADR 11, ADR 13).
-seasons = ["summer", "autumn", "winter"]
+# "dry" is not one of the year's: it is how grass and reeds stand after a drought, whatever the month (the catalogue's "tall dry grass").
+seasons = ["summer", "autumn", "winter", "dry"]
 # What a season's spec may change from its base's, besides its materials' colours
 # (tools/lint_spec.py); everything else shapes the mesh or its UVs and must be the base's.
 keys = ["foliage.under_tint", "foliage.top_tint", "foliage.core_tint", "foliage.variation", "painted_shading.base_tint", "painted_shading.top_tint"]

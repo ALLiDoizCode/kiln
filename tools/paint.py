@@ -113,7 +113,8 @@ CLOSE_PASSES = 5  # how many times the layout is repacked to give close faces th
 PACK_COLUMNS = 512
 PACK_TURNS = 4
 PACK_FINE = 1.004
-# Overlapping pieces are baked apart, so that a piece's edge light comes from its own shape (`paint_nodes`, hidden).
+# Overlapping pieces, and the separate stones of a group (`scatter`), are baked apart, so that a piece's edge light
+# comes from its own shape and what another piece hides of the sky can be told from what its own does (`paint_nodes`, hidden).
 # tests/slab_mutations.py turns this off to paint a slab as one solid, joins lit as edges.
 SPLIT_PIECES = True
 # The bake on the graphics card (`KILN_BAKE=gpu`). One at a time on the whole machine, whichever working
@@ -519,7 +520,11 @@ def paint_nodes(tree, colour_rgb, spec, conv, grows=True):
     # a face may then be another piece: that is the crevice at a join. What is missing of the
     # solid behind a face is asked of its own piece alone: another piece passing through it takes
     # nothing away, and would otherwise light every join as an exposed edge.
-    apart = SPLIT_PIECES and "overlap" in spec
+    # The separate stones of a group (`scatter`) are baked the same way: they pass into nothing, but where two lie within
+    # the touching distance (`[scatter] touch_m`) a face of one stands over the other, and the sky it hides there is
+    # what makes the pair read as touching. Painted as one solid, that gap got only the shadow of a fold that hides a
+    # fifth of the sky, which two stones leaning together seldom do, and none at all in a group that asked no crevice shadow.
+    apart = SPLIT_PIECES and ("overlap" in spec or "scatter" in spec)
 
     def hidden(inside, distance, own_piece=None):
         occlusion = node("ShaderNodeAmbientOcclusion", samples=16, only_local=(inside or not apart) if own_piece is None else own_piece, inside=inside)
@@ -894,9 +899,9 @@ def apply(spec, conv):
         bpy.context.view_layer.objects.active = baked[0]
 
     pieces = []
-    if "overlap" in spec and SPLIT_PIECES:
-        # Overlapping pieces (ADR 13): each closed piece is baked as an object of its own, with the
-        # UVs it already has, into the one texture.
+    if ("overlap" in spec or "scatter" in spec) and SPLIT_PIECES:
+        # Overlapping pieces (ADR 13), and the separate stones of a group: each closed piece is baked as an object of
+        # its own, with the UVs it already has, into the one texture.
         for obj in baked:
             bm = bmesh.new()
             bm.from_mesh(obj.data)

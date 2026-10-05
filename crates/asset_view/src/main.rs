@@ -63,6 +63,13 @@ const PIXEL_DIFFERS: u8 = 8;
 const MIN_ASSET_SHARE: f32 = 0.005;
 /// Two captures of the same scene are the same when at most this share of their pixels differ.
 const MAX_UNSTABLE_SHARE: f32 = 0.002;
+/// The ground is drawn this many steps of the depth buffer behind where it lies. An asset stands on the ground, so
+/// the foot of its sides lies in the ground's plane, and a sample on that line has the same depth from both: which
+/// of the two it showed went by the order they were drawn in, which is not the same from one run to the next
+/// (`blade_plant_1`'s picture came out two ways, 4 runs to 6 of ten, one pixel apart by 16 levels of 255, and
+/// `reeds_1`'s 3 to 7). Four steps behind, the asset wins every such tie: ten of ten pictures are the same, and
+/// differ from the old ones only in those pixels. At 4 m four steps are under a tenth of a millimetre.
+const GROUND_DEPTH_BIAS: f32 = -4.0;
 /// The way the sun's light travels: from the asset's front left, above, as in the review renders.
 const SUN_TO: Vec3 = Vec3::new(0.4, -1.0, -0.6);
 const SUN_LUX: f32 = 8000.0;
@@ -288,6 +295,7 @@ fn setup(
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::linear_rgb(0.12, 0.125, 0.135),
             perceptual_roughness: 1.0,
+            depth_bias: GROUND_DEPTH_BIAS,
             ..default()
         })),
     ));
