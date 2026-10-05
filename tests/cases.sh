@@ -268,6 +268,11 @@ uses pebble_1 smoke
 expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
 uses rock smoke
 expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+# A bush's stems are tubes that bend: convex all round, with no fold a shadow could lie in. On a 256 px texture the load
+# test found 12 samples of dome_bush_2 "in inside corners", too few to measure, and on a 512 px one 51, lit as the exposed
+# edges they are, and failed it. What a surface has does not depend on how finely it is sampled.
+uses dome_bush_2 smoke paint plant_mutations
+expect 0 "L4 finds no inside corner on a bush's stems, however fine its texture" smoke "$(broken_plant dome_bush_2 fine_texture)" "$(tamper 'm["painted"]["texture_px"] *= 2' assets/models/dome_bush_2.manifest.json)"
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"

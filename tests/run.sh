@@ -98,6 +98,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tests/slab_mutations.py) echo slab_mutations ;;
     tests/pebble_mutations.py) echo pebble_mutations ;;
     tests/cover_mutations.py) echo cover_mutations ;;
+    tests/plant_mutations.py) echo plant_mutations ;;
     tests/log_mutations.py) echo log_mutations ;;
     tests/flip_normals.py) echo flip_normals ;;
     crates/asset_smoke/*) echo smoke ;;
@@ -367,6 +368,11 @@ print(f"growth patches read {reads[0]:.3f} as gated ({'fails' if fails[0] else '
 sys.exit(0 if fails[0] == fails[1] and apart <= 0.05 else 1)
 PY
 }
+broken_plant() { # <asset> <mutation>
+  local family; family="$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['family'])" "source/$1/spec.json")" || return 3
+  fixture --key "$(key_of tests/plant_mutations.py "source/$1/build.py" "source/$1/spec.json" "source/$family"/*.py)" "$1_$2.glb" mutated_plant "$1" "$2"
+}
+mutated_plant() { tools/bl tests/plant_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 mutated_cover() { tools/bl tests/cover_mutations.py "$1" "$2" "$3"; }  # <asset> <mutation> <out.glb>
 broken_log() { fixture --key "$(key_of tests/log_mutations.py source/log_3/build.py source/log_3/spec.json source/log/*.py)" "log_3_$1.glb" mutated tests/log_mutations.py "$1"; }
 broken_pebble() { fixture --key "$pebble_key" "pebble_1_$1.glb" mutated tests/pebble_mutations.py "$1"; }
