@@ -393,6 +393,7 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
                     positions: [a, b, c],
                     uvs: uvs.as_ref().map(|uvs| [triangle[0], triangle[1], triangle[2]].map(|i| uvs[i])),
                     colour,
+                    no_growth: material.as_ref().is_some_and(|name| manifest.painted.as_ref().is_some_and(|painted| painted.no_growth_on(name))),
                 };
                 if is_leaf {
                     leaf_triangles.push(loaded);
@@ -477,7 +478,6 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
                     want,
                     &painted_triangles,
                     manifest.overlap,
-                    manifest.foliage.is_some(),
                     image,
                     manifest.bounds.min[1],
                     manifest.bounds.max[1],

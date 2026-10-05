@@ -67,12 +67,28 @@ expect 0 "L1 mutation tests: pebble_2" l1 pebble_2
 # A boulder (source/boulder): drawn in to a trunk on a spread foot, notched into roots, and stretched into a column.
 uses boulder_2 validate paint
 expect 0 "L1 mutation tests: boulder_2" l1 boulder_2
+# A fallen log (source/log): a solid one tipped, lifted, straightened, left untapered and capped in bark; a hollow one
+# drawn solid, narrowed, given a paper wall, turned inside out, and held to a spec that asks no hollow.
+uses log_1 validate paint
+expect 0 "L1 mutation tests: log_1" l1 log_1
+uses log_3 validate paint
+expect 0 "L1 mutation tests: log_3" l1 log_3
 # A crag (source/crag): its prisms' heights and leans broken one way at a time.
 uses crag_1 validate paint
 expect 0 "L1 mutation tests: crag_1" l1 crag_1
 # A stack (source/stack): its stones sunk, thickened, evened out and pushed over, one at a time.
 uses stack_1 validate paint
 expect 0 "L1 mutation tests: stack_1" l1 stack_1
+# Rubble (source/rubble): separate stones in one mesh (`scatter`), one turned inside out, taken away, pushed
+# into another, lifted, sunk, and the group made even, strayed, parted, a row and a ring, one at a time.
+uses rubble_1 validate paint
+expect 0 "L1 mutation tests: rubble_1, unbroken" l1 rubble_1 --unbroken
+expect 0 "L1 mutation tests: rubble_1, part 1 of 2" l1 rubble_1 --part 1/2
+expect 0 "L1 mutation tests: rubble_1, part 2 of 2" l1 rubble_1 --part 2/2
+# The group of seven from seed 27: its first draw that met the spec had faces and vertices that vanished when the
+# group, drawn eight metres wide, was shrunk to size. The generator must refuse such a draw and go on to the next.
+uses rubble_2 validate
+expect 0 "L1 rubble_2 from seed 27 builds without slivers" seed_passes rubble_2 27
 
 # A block (source/block): its squareness, its chamfers and its crack broken one way at a time.
 uses block_2 validate paint
@@ -157,8 +173,20 @@ expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone o
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a stack"    smoke "$(broken_cover stack_2_mossy growth_broad_patches)" assets/models/stack_2_mossy.manifest.json
 uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
+# Patches of growth are a property of the surface: the same paint on the same arch, laid out in the texture two ways, reads alike and gets one verdict.
+uses arch_3_mossy smoke paint cover_mutations
+expect 0 "L4 reads an arch's patches of growth alike under two layouts" same_patches arch_3_mossy
+uses standing_stone_1_mossy smoke paint cover_mutations
 expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
+# A mossy log lies: the top fifth of its bounds is its root plate, and the edges moss grows along are those of the
+# trunk's own upper sides, all along it. Its wood, at the ends, takes no growth.
+uses log_2_mossy smoke
+expect 0 "L4 passes an unbroken mossy log, whose upper edges run along its trunk" cover log_2_mossy
+uses log_2_mossy smoke paint cover_mutations
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a mossy log"       smoke "$(broken_cover log_2_mossy no_growth_edges)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_height"  "L4 catches growth all the way up a mossy log"     smoke "$(broken_cover log_2_mossy growth_everywhere)" assets/models/log_2_mossy.manifest.json
+expect_id "painted.growth_wood"    "L4 catches moss on the wood of a log's ends"      smoke "$(broken_cover log_2_mossy growth_on_wood)" assets/models/log_2_mossy.manifest.json
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
@@ -171,6 +199,11 @@ expect_id "uv.in_unit_square"      "L4 catches UVs off the texture"             
 # One load of the rock with its UVs shrunk must fail both checks: `once` runs it for whichever case asks first.
 expect_id "uv.coverage"            "L4 catches a mostly unused texture"             once shrunk smoke "$(broken shrunk_uvs)" "$rock_manifest"
 expect_id "uv.texel_density"       "L4 catches texels too coarse for 0.5 m"         once shrunk smoke "$(broken shrunk_uvs)" "$rock_manifest"
+
+# The painter's packing (tools/paint.py): seven unlike stones, each a net of its own, are the layout it filled worst
+# (0.384 of a 512 px texture as boxes, under the 0.4 asked). The gated asset as it is, so a packer that wastes the texture again fails here.
+uses rubble_2 smoke
+expect 0 "L4 passes a group of seven stones on a 512 px texture" cover rubble_2
 
 # Foliage: tree_1 with its leaf pieces coloured, lit or exported wrongly, against the real manifest.
 uses tree_1 smoke
@@ -226,6 +259,13 @@ expect_id "painted.crevices_darker" "L4 catches joins between pieces lit as expo
 uses table_rock_3 smoke
 expect 0 "L4 passes a table rock whose open faces lie at two heights" smoke assets/models/table_rock_3.glb assets/models/table_rock_3.manifest.json
 
+# A fallen log (source/log): its grain runs along x, level, where a standing trunk's runs up; the manifest says so
+# (`grain_along`) and the grain is then measured along that, on every face of its length and not only on upright ones.
+# log_3 as gated, and painted with its grain running round the trunk (tests/log_mutations.py).
+uses log_3 smoke
+expect 0 "L4 passes an unbroken hollow log, whose grain runs level" cover log_3
+uses log_3 smoke paint log_mutations
+expect_id "painted.grain_along" "L4 catches a log whose grain runs round it" smoke "$(broken_log hoops)" assets/models/log_3.manifest.json
 # A low stone (source/pebble): its open faces are its cap, almost all at one height, so the gradient
 # from base to top is between its foot and its cap. pebble_1 from seed 1, unbroken and with one tint all the way up;
 # that seed draws a stone of 104 triangles, which is all the manifest is changed to say.
@@ -239,6 +279,15 @@ uses pebble_1 smoke
 expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a stone with no inside corner" smoke assets/models/pebble_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.45, crevice_width_m=0.012)' assets/models/pebble_1.manifest.json)"
 uses rock smoke
 expect_id "painted.crevices_darker" "L4 catches inside corners with no crevice shadow asked of them" smoke "$rock" "$(tamper 'del m["painted"]["crevice_shadow"], m["painted"]["crevice_width_m"]' "$rock_manifest")"
+# A plant is held to the same rule as a stone: blades and stems that lie apart have no inside corner, the painter's shadow
+# paints nothing on them (no texel of five plants differs by 2 levels with it and without), and a spec that asks it is refused.
+uses grass_tuft_1 smoke
+expect_id "painted.crevices_darker" "L4 catches a crevice shadow asked of a plant with no inside corner" smoke assets/models/grass_tuft_1.glb "$(tamper 'm["painted"].update(crevice_shadow=0.5, crevice_width_m=0.005)' assets/models/grass_tuft_1.manifest.json)"
+# A bush's stems are tubes that bend: convex all round, with no fold a shadow could lie in. On a 256 px texture the load
+# test found 12 samples of dome_bush_2 "in inside corners", too few to measure, and on a 512 px one 51, lit as the exposed
+# edges they are, and failed it. What a surface has does not depend on how finely it is sampled.
+uses dome_bush_2 smoke paint plant_mutations
+expect 0 "L4 finds no inside corner on a bush's stems, however fine its texture" smoke "$(broken_plant dome_bush_2 fine_texture)" "$(tamper 'm["painted"]["texture_px"] *= 2' assets/models/dome_bush_2.manifest.json)"
 
 uses tracer smoke
 expect 1 "L4 catches an unloadable file"    smoke "$(bad_glb)" "$manifest"
@@ -515,6 +564,16 @@ expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/ima
 uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
+# L0, rubble (source/rubble): rubble_1's spec with one thing wrong in what it asks of its group (`scatter`).
+uses rubble_1 rubble_2 lint_spec
+expect 0 "L0 passes a rubble variant's spec" lint_rubble 'pass'
+expect 0 "L0 passes a rubble variant that asks a crevice shadow, for stones that lie against each other" lint_copy rubble_2 '' 'pass'
+expect_id "spec.scatter"             "L0 catches a scatter block with a key missing" lint_rubble 'del s["scatter"]["max_gap_m"]'
+expect_id "spec.scatter"             "L0 catches a group allowed to be stones of one size" lint_rubble 's["scatter"]["min_size_range"] = 1.0'
+expect_id "spec.scatter"             "L0 catches a group of one stone" lint_rubble 's["scatter"]["min_count"] = 1'
+expect_id "spec.scatter"             "L0 catches more touching pairs asked than the group has fragments to make" lint_rubble 's["scatter"]["min_touching"] = 9'
+expect_id "spec.scatter_or_overlap"  "L0 catches separate stones that are also asked to pass into each other" lint_rubble 's["overlap"] = {"min_count": 5, "max_count": 5, "max_buried_share": 0.3, "min_step_ratio": 1.15}'
+expect_id "brief.numbers_match_spec" "L0 catches a rubble spec without the family's size order" lint_rubble 'del s["scatter"]["min_size_range"]'
 # L0, stacks: stack_1's spec with one thing wrong in what it asks of its stones (`pile`).
 uses stack_1 lint_spec
 expect 0 "L0 passes a stack variant's spec"  lint_stack 'pass'
@@ -554,3 +613,16 @@ expect_id "spec.arch"                "L0 catches piers and a span asked of one c
 expect_id "spec.arch"                "L0 catches an arch whose opening may be a plain rectangle" lint_arch 's["arch"]["max_box_share"] = 1.0'
 expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
 expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
+
+# L0, fallen logs (source/log): log_3's spec with one thing wrong in what it asks of its trunk (`log`) and its hollow (`hollow`).
+uses log_3 lint_spec
+expect 0 "L0 passes a hollow log's spec" lint_log 'pass'
+expect_id "spec.log"                 "L0 catches a log block with a key missing" lint_log 'del s["log"]["max_taper"]'
+expect_id "spec.log"                 "L0 catches a butt the generator does not know" lint_log 's["log"]["butt"] = "burnt"'
+expect_id "spec.log"                 "L0 catches a log that need not taper" lint_log 's["log"]["max_taper"] = 1.0'
+expect_id "spec.log"                 "L0 catches a log whose wood is its bark" lint_log 's["log"]["wood"] = "m_log_bark"'
+expect_id "spec.log"                 "L0 catches a log thicker than its own bounds are tall" lint_log 's["log"]["thickness_m"] = [1.2, 1.9]'
+expect_id "spec.hollow"              "L0 catches a hollow wider than the log is thick" lint_log 's["hollow"]["min_clear_m"] = 1.3'
+expect_id "spec.hollow"              "L0 catches a hollow deeper than the log is long" lint_log 's["hollow"]["min_depth_m"] = 7.0'
+expect_id "spec.hollow"              "L0 catches a hollow with no wall asked" lint_log 'del s["hollow"]["min_wall_m"]'
+expect_id "spec.hollow"              "L0 catches a hollow asked of something that is not a log" lint_log 'del s["log"]'

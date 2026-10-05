@@ -1,0 +1,59 @@
+{
+  "asset": "rubble_2",
+  "family": "rubble",
+  "objects": [
+    "rubble_2"
+  ],
+  "seed": 2,
+  "bounds_m": {
+    "min": [
+      -0.5,
+      -0.4,
+      0.0
+    ],
+    "max": [
+      0.5,
+      0.4,
+      0.2
+    ]
+  },
+  "bounds_tolerance_m": 0.001,
+  "max_triangles": 420,
+  "materials": {
+    "m_rubble": "#a1a7a1"
+  },
+  "painted_shading": {
+    "texture_px": 512,
+    "base_tint": "#8c8c9a",
+    "top_tint": "#c8c8c8",
+    "edge_light": 0.3,
+    "edge_width_m": 0.009,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.036,
+    "blotch": 0.12,
+    "blotch_size_m": 0.036,
+    "hidden_underside": true
+  },
+  "scatter": {
+    "min_count": 7,
+    "max_count": 7,
+    "min_size_range": 2.5,
+    "min_step_ratio": 1.1,
+    "max_gap_m": 0.18,
+    "min_touching": 2,
+    "min_breadth": 0.3,
+    "min_radial_spread": 0.2,
+    "min_stand_share": 0.3
+  },
+  "lean": {
+    "max_upright_share": 0.15,
+    "min_summit_offset": 0.15
+  },
+  "soft_edges": true,
+  "watertight": true,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ]
+}

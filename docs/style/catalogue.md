@@ -34,7 +34,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Block | A run of sizes, some cracked | Three sizes: 0.5, 1.0 and 2.0 m wide, 80 to 164 triangles, bare stone. The smallest is whole, one closed skin; the others are parted along one and two cracks into overlapping pieces (ADR 13). The cracks are straight slots, not wandering lines. Covers: bare, and mossy for one (`block_2_mossy`, a palette variant on `block_2`'s mesh, gated). Not approved. |
 | Terrace | 2 or more | Not started |
 | Pebble | A run of sizes | Three sizes, each one closed skin (not pieces): a low plate of six to eight leaning sides, a broad rim and a tipped cap, 0.12, 0.25 and 0.5 m across and a fifth as tall, 104 to 122 triangles, a 256 px texture, bare stone. Redone lower and rounder after the first review; `low` and `rounded` are checked against limits measured on the benchmark's round pebbles. Twelve seeds of each size are in `benchmarks/out/pebble_<n>_candidates.png` for the owner to pick from. No square pebbles. Covers: bare, and mossy for one (`pebble_3_mossy`, a palette variant on `pebble_3`'s mesh, gated). No growth along its edges: its top fifth is all near level. Not approved. |
-| Rubble | 2 or more groups | Not started |
+| Rubble | 2 or more groups | Three groups of separate stones in one mesh (a spec's `scatter` block, not pieces): 5, 7 and 4 broken fragments, 0.6, 1.0 and 0.44 m across and 0.14, 0.2 and 0.11 m tall, 230 to 382 triangles, a 512 px texture, bare stone, each fragment unwrapped as one net. `rubble_1` and `rubble_3` pass their gates; `rubble_2` stops at the Bevy load test using 0.384 of its texture where 0.4 is asked. Crevice shadow is asked only of the two groups whose stones make inside corners. The fragments read as cut stone more than weathered. Twelve seeds are in `benchmarks/out/rubble_1_candidates.png` for the owner to pick from. No covers. Not reviewed by a second reader, not approved. |
 
 ## Trees
 
@@ -77,7 +77,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 
 | Family | State |
 | --- | --- |
-| Fallen and hollow logs | Not started |
+| Fallen and hollow logs | The family `source/log`: three sizes, each a trunk of seven to nine flat sides lying along x, bent, tapering, twisted, pressed flat onto the ground, with one to three branch stubs and wood at both ends. `log_1` 0.26 to 0.36 m thick and 2.6 m long, sawn butt (stepped over); `log_2` 0.5 to 0.7 m thick and 4.4 m long, torn out with its roots (climbed over); `log_3` 1.2 to 1.5 m thick and 6.4 m long, hollow right through, about 0.95 m clear (crawled through). 372 to 540 triangles, two materials (bark, wood), 1024 and 2048 px textures. Lying, being settled, thickness, taper, bend, the wood at the ends, the stubs, the hollow and its wall are checked (`tools/log_checks.py`); 40 of 40 seeds build at each size. Open: the root end reads as a flared cone and not as roots, the broken ends are barely ragged, the stubs are pegs, the hollow's mouth is a plain polygon, and there is no hollow open at one end only. Twelve seeds of the middle size are in `benchmarks/out/log_2_candidates.png`. Covers: bare, and mossy for one (`log_2_mossy`, a palette variant on `log_2`'s mesh); it fails the load test's `painted.growth_edges`, which measures the top fifth of the bounds, where a lying log has only its root plate. Not approved. |
 | Log pile, stump, branches, roots | Not started |
 
 ## Not assets

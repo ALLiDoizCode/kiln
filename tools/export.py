@@ -124,6 +124,16 @@ if "painted_shading" in spec:
             import paint
 
             manifest["painted"].update(paint.grain_tones(want))
+if "log" in spec and "painted_shading" in spec:
+    # A fallen log lies along x (source/log/brief.md), and its grain with it: the load test measures grain along
+    # this, where a standing trunk's runs up, and growth along the edges of the trunk's own upper sides, where a
+    # standing shape's are in the top of its bounds. In glTF space, where x is x.
+    manifest["painted"]["grain_along"] = [1.0, 0.0, 0.0]
+    if "growth" in spec["painted_shading"]:
+        import paint
+
+        # The wood at its ends takes no growth, and the load test holds it bare.
+        manifest["painted"]["growth_not_on"] = paint.no_growth_on(spec)
 if "skeleton" in spec:
     # Where a player stands against the trunk: its middle at eye height, in glTF space (x, z). A trunk
     # leans, so this is not the origin; crates/asset_view's --stand measures its distance from here.

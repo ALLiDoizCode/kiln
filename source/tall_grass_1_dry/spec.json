@@ -26,13 +26,11 @@
     "m_tall_grass_leaf": "#d8bf62"
   },
   "painted_shading": {
-    "texture_px": 512,
+    "texture_px": 256,
     "base_tint": "#8a8278",
     "top_tint": "#ffffff",
     "edge_light": 0.2,
     "edge_width_m": 0.002,
-    "crevice_shadow": 0.5,
-    "crevice_width_m": 0.005,
     "hidden_underside": true
   },
   "foliage": {

@@ -63,7 +63,7 @@
     "min_effect_share": 0.5
   },
   "painted": {
-    "texture_px": 512,
+    "texture_px": 256,
     "base_tint": [
       0.254152,
       0.223228,
@@ -76,13 +76,13 @@
     ],
     "edge_light": 0.2,
     "edge_width_m": 0.002,
-    "crevice_shadow": 0.5,
-    "crevice_width_m": 0.005,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
     "max_uv_overlap": 0.001,
     "feature_deg": 30.0,
+    "crevice_sky_hidden": 0.2,
+    "join_sky_hidden": 0.06,
     "colour_tolerance": 0.08,
     "min_effect_share": 0.5,
     "texel_range": [
@@ -102,7 +102,7 @@
       0.5,
       1.5
     ],
-    "growth_patch_edges": 0.9,
+    "growth_patch_edges": 0.61,
     "blotch_spread": [
       1.0,
       2.5

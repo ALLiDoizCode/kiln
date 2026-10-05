@@ -203,6 +203,25 @@ def plane_normals(bm, tag, floor):
     return normals, behind
 
 
+SAME_NORMAL_COS = 0.99985  # two normals are one when they agree this closely: the gates' limit (tools/validate.py, `soft_edges`)
+
+
+def hard_places(bm, normals, reach, floor):
+    """How many corners of a softened piece, above the ground, share a place with a corner lit by
+    another normal: places are one when no further apart than `reach` along any axis, as the gates
+    take them (`soft_edges`). `normals` are `plane_normals`'. A soft edge narrower than `reach` is
+    such a place, and so is a point where two planes meet with no soft edge between them. `finish`
+    does not ask this; a generator whose pieces are small beside the bounds' tolerance does."""
+    corners = []
+    index = 0
+    for face in bm.faces:
+        for loop in face.loops:
+            if loop.vert.co.z > floor + reach:
+                corners.append((loop.vert.co, normals[index]))
+            index += 1
+    return sum(1 for co, normal in corners if any(other.dot(normal) < SAME_NORMAL_COS and all(abs(c) <= reach for c in at - co) for at, other in corners))
+
+
 def shortest_edge(bm, floor):
     return min(e.calc_length() for e in bm.edges if not on_floor(e, floor))
 

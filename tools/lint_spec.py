@@ -81,6 +81,12 @@ BLOCK = {"min_square_share": float, "min_chamfers": int, "min_chamfer_m": float}
 CRACKS = {"count": int, "depth_m": float, "width_m": float, "min_span": float}
 # Optional; one convex mass with sloping flanks (a boulder, source/boulder). Every key is required once it is present.
 MASS = {"min_hull_share": float, "min_outline_share": float, "max_steep_share": float}
+# Optional; a group of separate closed stones lying together on the ground (rubble, source/rubble). Every key is required once it is present.
+SCATTER = {"min_count": int, "max_count": int, "min_size_range": float, "min_step_ratio": float, "max_gap_m": float, "min_touching": int, "min_breadth": float, "min_radial_spread": float, "min_stand_share": float}
+# Optional; a trunk lying on the ground (a fallen log, source/log), and, with it, the hollow through it. Every key of a block is required once it is present.
+LOG = {"bark": str, "wood": str, "butt": str, "thickness_m": list, "max_taper": float, "min_bend": float, "min_grounded_share": float, "min_flat_share": float, "min_end_wood": float, "stubs": list}
+LOG_BUTTS = ("sawn", "root", "broken")
+HOLLOW = {"min_clear_m": float, "min_depth_m": float, "min_wall_m": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
 # Grain (streaks along a limb: bark) and its width come together; so do the height below which a
@@ -344,6 +350,65 @@ if not checks.failed():
             and isinstance(box, dict)
         )
         checks.check("spec.cracks", ok, f"optional; needs exactly {sorted(CRACKS)}: at least 1 crack, depth_m and width_m above 0, min_span in (0, 1], on a block (`block`)")
+    scatter = spec.get("scatter")
+    if scatter is not None:
+        ok = (
+            isinstance(scatter, dict)
+            and set(scatter) == set(SCATTER)
+            and all(type(scatter[key]) is kind for key, kind in SCATTER.items())
+            and 2 <= scatter["min_count"] <= scatter["max_count"]
+            and scatter["min_size_range"] > 1
+            and 1 <= scatter["min_step_ratio"] <= scatter["min_size_range"]
+            and scatter["max_gap_m"] > 0
+            and 0 <= scatter["min_touching"] <= scatter["min_count"] - 1
+            and all(0 < scatter[key] < 1 for key in ("min_breadth", "min_radial_spread", "min_stand_share"))
+        )
+        checks.check(
+            "spec.scatter",
+            ok and spec["watertight"],
+            f"optional; needs exactly {sorted(SCATTER)}: at least 2 stones, min_count <= max_count, min_size_range above 1 (at 1 stones of one size pass), min_step_ratio from 1 to min_size_range, "
+            "max_gap_m above 0, min_touching from 0 to one fewer than min_count, min_breadth, min_radial_spread and min_stand_share each above 0 and below 1, on a watertight asset",
+        )
+        # Separate stones pass into nothing, so they are not overlapping pieces; and `fullness` and `pieces` measure one closed skin.
+        other = sorted(block for block in ("overlap", "fullness", "pieces") if block in spec)
+        checks.check("spec.scatter_or_overlap", not other, f"{other} cannot be asked of separate stones (`scatter`): `overlap` wants every piece to pass into another, and the others measure one closed skin")
+    log = spec.get("log")
+    if log is not None:
+        size = [high - low for low, high in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]
+        ok = (
+            isinstance(log, dict)
+            and set(log) == set(LOG)
+            and all(type(log[key]) is kind for key, kind in LOG.items())
+            and log["bark"] in spec["materials"]
+            and log["wood"] in spec["materials"]
+            and log["bark"] != log["wood"]
+            and log["butt"] in LOG_BUTTS
+            and len(log["thickness_m"]) == 2
+            and all(type(v) is float for v in log["thickness_m"])
+            and 0 < log["thickness_m"][0] < log["thickness_m"][1] <= size[2]
+            and 0 < log["max_taper"] < 1
+            and 0 < log["min_bend"] < 1
+            and all(0 < log[key] <= 1 for key in ("min_grounded_share", "min_flat_share", "min_end_wood"))
+            and len(log["stubs"]) == 2
+            and all(type(n) is int for n in log["stubs"])
+            and 0 <= log["stubs"][0] <= log["stubs"][1]
+        )
+        checks.check("spec.log", ok and spec["watertight"], f"optional; needs exactly {sorted(LOG)}: bark and wood two different materials of `materials`, butt one of {LOG_BUTTS}, thickness_m as [least, most] above 0 and no more than the bounds' height, max_taper and min_bend above 0 and below 1 (at 1 and 0 they ask nothing), the shares in (0, 1], stubs as [fewest, most] whole numbers, on a watertight asset")
+    hollow = spec.get("hollow")
+    if hollow is not None:
+        size = [high - low for low, high in zip(spec["bounds_m"]["min"], spec["bounds_m"]["max"])]
+        ok = (
+            isinstance(hollow, dict)
+            and set(hollow) == set(HOLLOW)
+            and all(type(hollow[key]) is kind for key, kind in HOLLOW.items())
+            and isinstance(log, dict)
+            and isinstance(log.get("thickness_m"), list)
+            and len(log["thickness_m"]) == 2
+            and hollow["min_wall_m"] > 0
+            and 0 < hollow["min_clear_m"] + 2 * hollow["min_wall_m"] <= log["thickness_m"][0]
+            and 0 < hollow["min_depth_m"] <= size[0]
+        )
+        checks.check("spec.hollow", ok, f"optional; needs exactly {sorted(HOLLOW)}: min_wall_m above 0, min_clear_m above 0 and, with a wall either side, no more than the log's least thickness, min_depth_m above 0 and no more than the bounds' length (x), on a log (`log`)")
     top = spec.get("top")
     if top is not None:
         ok = isinstance(top, dict) and set(top) == {"min_level_share"} and type(top["min_level_share"]) is float and 0 < top["min_level_share"] <= 1
