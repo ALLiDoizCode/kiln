@@ -28,6 +28,7 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 
 mod foliage;
+mod grain;
 mod painted;
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
@@ -70,6 +71,13 @@ struct Manifest {
     foliage: Option<foliage::Foliage>,
 }
 
+/// The manifest's `painted` block again, for the keys `grain.rs` reads from it.
+#[derive(Deserialize)]
+struct GrainManifest {
+    #[serde(default)]
+    painted: Option<grain::Wanted>,
+}
+
 #[derive(Deserialize, Serialize, Clone, Copy)]
 struct Bounds {
     min: [f32; 3],
@@ -90,6 +98,8 @@ struct Report {
     painted: Option<painted::Measured>,
     #[serde(skip_serializing_if = "Option::is_none")]
     foliage: Option<foliage::Measured>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    grain: Option<grain::Measured>,
 }
 
 fn main() -> ExitCode {
@@ -103,9 +113,9 @@ fn main() -> ExitCode {
     };
     let (glb, manifest_path) = (&positional[0], &positional[1]);
 
-    let manifest: Manifest = match std::fs::read_to_string(manifest_path)
+    let manifest: (Manifest, GrainManifest) = match std::fs::read_to_string(manifest_path)
         .map_err(|e| e.to_string())
-        .and_then(|text| serde_json::from_str(&text).map_err(|e| e.to_string()))
+        .and_then(|text| Ok((serde_json::from_str(&text).map_err(|e| e.to_string())?, serde_json::from_str(&text).map_err(|e| e.to_string())?)))
     {
         Ok(manifest) => manifest,
         Err(e) => {
@@ -119,7 +129,7 @@ fn main() -> ExitCode {
         ..default()
     };
     match load(glb) {
-        Ok(app) => measure(&app, &manifest, &mut report),
+        Ok(app) => measure(&app, &manifest.0, manifest.1.painted.as_ref(), &mut report),
         Err(e) => report.failures.push(e),
     }
     report.passed = report.failures.is_empty();
@@ -208,7 +218,7 @@ fn load(glb: &Path) -> Result<App, String> {
     }
 }
 
-fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
+fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report: &mut Report) {
     let world = app.world();
     let gltf = world
         .resource::<Assets<Gltf>>()
@@ -456,6 +466,14 @@ fn measure(app: &App, manifest: &Manifest, report: &mut Report) {
             }
             None => fail("painted.present: the base colour texture did not load".into()),
         }
+    }
+
+    // Grain and close-range texels (ADR 12), on the same painted triangles and texture.
+    if let Some(want) = grain
+        && let [texture] = textures.as_slice()
+        && let Some(image) = images.get(texture)
+    {
+        report.grain = grain::check(want, &painted_triangles, image, manifest.bounds.min[1], manifest.bounds_tolerance, &mut fail);
     }
 
     if let Some(want) = &manifest.foliage {

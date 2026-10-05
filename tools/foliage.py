@@ -1,6 +1,9 @@
-"""Foliage as the pipeline sees it (ADR 9, ADR 11): leaf pieces, the pads they form, and the palette.
+"""Foliage as the pipeline sees it (ADR 9, ADR 11): leaf pieces, the cores under them, the pads they form, and the palette.
 
-A **piece** is a connected set of faces of the foliage material. A **pad** is
+A **piece** is a connected set of faces of the foliage material with an open
+edge: a flat leaf-shaped piece. A **core** is a connected set of faces of the
+same material with no open edge: a closed solid that sits under the pieces
+(ADR 9 as amended). A **pad** is
 a set of pieces with no clear air between them: space is cut into cubes
 `pad_gap_m` on a side, and two pieces belong to one pad when they touch the
 same cube or two neighbouring cubes. Nothing here trusts a label from the
@@ -19,7 +22,23 @@ from mathutils import Vector, geometry
 
 
 def pieces_of(bm, material_index):
-    """The foliage material's faces, grouped into pieces: sets of faces joined by shared vertices."""
+    """The foliage material's leaf pieces: sets of faces joined by shared vertices, each with an open edge."""
+    return [part for part in parts_of(bm, material_index) if not closed(part)]
+
+
+def cores_of(bm, material_index):
+    """The foliage material's cores: sets of faces joined by shared vertices that close on themselves."""
+    return [part for part in parts_of(bm, material_index) if closed(part)]
+
+
+def closed(part):
+    """Whether a set of faces has no open edge: every edge of it lies between two of its faces."""
+    inside = set(part)
+    return all(sum(1 for f in edge.link_faces if f in inside) == 2 for face in part for edge in face.edges)
+
+
+def parts_of(bm, material_index):
+    """The foliage material's faces, grouped into sets of faces joined by shared vertices."""
     faces = [f for f in bm.faces if f.material_index == material_index]
     seen, pieces = set(), []
     for face in faces:
@@ -127,6 +146,11 @@ def palette(material_rgb, under_tint, top_tint, shades, tones, variation):
     return rows
 
 
+def core_colour(material_rgb, core_tint):
+    """The colour of the cores under the leaf pieces, linear RGB: the leaf material's colour times `core_tint`."""
+    return tuple(m * t for m, t in zip(material_rgb, core_tint))
+
+
 def swatch_layout(texture_px, swatch_px, count):
     """Where the palette lies in the texture: (swatches per row, rows, height of the strip in texels).
 
@@ -152,8 +176,8 @@ def piece_shape(piece):
     Returns a dict: `length_m` (the longest distance between two corners),
     `off_plane_m` (the furthest a corner lies from the piece's plane),
     `sharpest_deg` (its most pointed corner), `notches` (corners of the outline
-    that turn inward), `middle`, and `points` (unit vector from the middle to
-    the sharpest corner).
+    that turn inward), `middle`, `points` (unit vector from the middle to
+    the sharpest corner) and `tip` (that corner, or None).
     """
     verts = list({v for face in piece for v in face.verts})
     middle = sum((v.co for v in verts), Vector()) / len(verts)
@@ -165,6 +189,7 @@ def piece_shape(piece):
         "sharpest_deg": 180.0,
         "notches": 0,
         "points": Vector((0, 0, 0)),
+        "tip": None,
     }
     # The outline: edges with a face on one side only, walked in order.
     inside = set(piece)
@@ -194,6 +219,7 @@ def piece_shape(piece):
         angle, tip = min(corners, key=lambda corner: corner[0])
         shape["sharpest_deg"] = angle
         shape["points"] = (tip.co - middle).normalized()
+        shape["tip"] = tip.co.copy()
     return shape
 
 
@@ -263,3 +289,68 @@ def difference(a, b):
     """How far two outlines differ: the share of what either covers that only one covers (0 the same, 1 nothing shared)."""
     either = numpy.logical_or(a, b).sum()
     return 1.0 - numpy.logical_and(a, b).sum() / max(either, 1)
+
+
+def pads_with_cores(pieces, cores, cell):
+    """The pad each piece and each core belongs to: (pads of the pieces, pads of the cores).
+
+    A core joins the pieces lying on it into one pad, as it does to the eye;
+    a piece hanging under a core belongs to that core's pad."""
+    parts = pieces + cores
+    triangles, owner = triangles_of(parts)
+    pads = pads_of(triangles, owner, len(parts), cell)
+    return pads[: len(pieces)], pads[len(pieces) :]
+
+
+def seen_first(tree, points, direction, rays):
+    """Looking from `direction` with parallel rays over the box of `points`: the index of the face each ray meets first, for the rays that meet one."""
+    toward, across, up = view_axes(direction)
+    xs, ys = [p.dot(across) for p in points], [p.dot(up) for p in points]
+    cell = max(max(xs) - min(xs), max(ys) - min(ys)) / rays
+    far = max(p.dot(toward) for p in points) + 10.0
+    found = []
+    y = min(ys) + cell / 2
+    while y < max(ys):
+        x = min(xs) + cell / 2
+        while x < max(xs):
+            index = tree.ray_cast(across * x + up * y + toward * far, -toward)[2]
+            if index is not None:
+                found.append(index)
+            x += cell
+        y += cell
+    return found
+
+
+def from_below(tree, lo, hi, cell):
+    """Looking straight up from under a tree, one ray per `cell` over the box lo..hi.
+
+    Returns three grids, row by row along y: the face each ray meets first (-1
+    for none), the height it meets it at, and the face a ray straight down
+    from above meets first (which tells what stands over a place)."""
+    columns, rows = int(math.ceil((hi[0] - lo[0]) / cell)), int(math.ceil((hi[1] - lo[1]) / cell))
+    first = numpy.full((rows, columns), -1, dtype=numpy.int64)
+    height = numpy.zeros((rows, columns))
+    over = numpy.full((rows, columns), -1, dtype=numpy.int64)
+    for row in range(rows):
+        for column in range(columns):
+            x, y = lo[0] + (column + 0.5) * cell, lo[1] + (row + 0.5) * cell
+            point, _, index, _ = tree.ray_cast(Vector((x, y, lo[2] - 1.0)), Vector((0, 0, 1)))
+            if index is not None:
+                first[row, column], height[row, column] = index, point.z
+                over[row, column] = tree.ray_cast(Vector((x, y, hi[2] + 1.0)), Vector((0, 0, -1)))[2]
+    return first, height, over
+
+
+def closing(mask, reach):
+    """A grid of booleans with gaps up to `reach` cells wide filled in: grown by `reach`, then shrunk by it."""
+    def spread(grid, value):
+        padded = numpy.pad(grid, reach, constant_values=not value)
+        out = numpy.full(grid.shape, not value)
+        for dy in range(-reach, reach + 1):
+            for dx in range(-reach, reach + 1):
+                if dx * dx + dy * dy <= reach * reach:
+                    part = padded[reach + dy : reach + dy + grid.shape[0], reach + dx : reach + dx + grid.shape[1]]
+                    out = numpy.logical_or(out, part) if value else numpy.logical_and(out, part)
+        return out
+
+    return spread(spread(mask, True), False)

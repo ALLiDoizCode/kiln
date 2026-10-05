@@ -157,7 +157,10 @@ tiles += render_pass("clay_wire")
 
 # The asset under the engine's own renderer, from its front right and from the opposite
 # side, taken by the gate before this script runs.
-for bevy in (out_dir / "bevy.png", out_dir / "bevy_back.png"):
+# A tree is also shown as a player under it sees it: looking up into the canopy from beside the
+# trunk, and straight at the bark from 0.5 m.
+bevy_views = ["bevy", "bevy_back"] + (["bevy_under", "bevy_trunk"] if "skeleton" in spec else [])
+for bevy in (out_dir / f"{view}.png" for view in bevy_views):
     if not bevy.is_file():
         raise RuntimeError(f"{bevy} is missing: run tools/gate.sh, which takes the Bevy screenshots first")
     tiles.append(bevy)

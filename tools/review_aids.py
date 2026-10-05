@@ -40,7 +40,9 @@ def views(image):
             "-label", "as rendered", image,
             "-label", f"value map ({VALUE_LEVELS} levels)", values,
             "-label", "squint", squint,
-            "-tile", "3x", "-geometry", "+4+4", out,
+            "-tile", "3x", "-geometry", "+4+4",
+            # 8 bits and no alpha, as the sheets are, so no viewer bands it (tools/image_lint.py).
+            "-depth", "8", "-alpha", "off", f"PNG24:{out}",
         )
     print(out)
 
@@ -53,7 +55,7 @@ def blind(a, b, out):
     magick(
         "montage", "-background", "#202124", "-fill", "white", "-pointsize", "26",
         "-label", "left", pair[0], "-label", "right", pair[1],
-        "-tile", "2x", "-geometry", "+6+6", out,
+        "-tile", "2x", "-geometry", "+6+6", "-depth", "8", "-alpha", "off", f"PNG24:{out}",
     )
     key = out.with_name(out.name + ".key.txt")
     key.write_text(f"left: {pair[0]}\nright: {pair[1]}\n")

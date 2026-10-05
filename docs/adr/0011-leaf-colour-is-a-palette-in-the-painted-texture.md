@@ -16,4 +16,6 @@ Lighting. Bevy lights the back of a two-sided face with the normal turned round,
 
 Costs accepted: the leaves carry UVs (8 bytes a vertex) that all point at a handful of texels; `tools/paint.py` and the load test each have a second path, for foliage; an asset with foliage must have painted shading, because the palette lives in its texture; and the colour steps are the palette's, 24 colours on the tree.
 
+Added with ADR 9's second amendment: the cores under the leaf pieces are in the leaf material and take one more swatch, after the leaves' (the leaf colour times the spec's `core_tint`), with every corner of every core on it. The load test finds cores as closed sets of the leaf material's triangles and holds them to that one colour, darker than any piece.
+
 Not decided here: palettes shared between assets (each tree variant carries the same strip in its own texture), and how a seasonal palette would be named and chosen.

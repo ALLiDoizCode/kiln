@@ -22,6 +22,15 @@ step "L4b Bevy screenshot";      mkdir -p "source/$asset/review/$phase"
                                    --screenshot "source/$asset/review/$phase/bevy.png" 2> "$reports/L4b-bevy-view.log"
                                  cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --back \
                                    --screenshot "source/$asset/review/$phase/bevy_back.png" 2>> "$reports/L4b-bevy-view.log"
+if grep -q '"skeleton"' "source/$asset/spec.json"; then
+  # A tree is mostly seen from under it and from against its trunk: a player's eye 1 m from the
+  # trunk looking up into the canopy, and 0.5 m from it looking straight at the bark.
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --stand 1 --pitch 78 \
+                                   --screenshot "source/$asset/review/$phase/bevy_under.png" 2>> "$reports/L4b-bevy-view.log"
+                                 cargo run -q -p asset_view -- "$glb" "assets/models/$asset.manifest.json" --stand 0.5 --pitch 0 \
+                                   --screenshot "source/$asset/review/$phase/bevy_trunk.png" 2>> "$reports/L4b-bevy-view.log"
+step "L4c bark seen from 0.5 m"; tools/bl tools/view_checks.py "$asset" "source/$asset/review/$phase/bevy_trunk.png"
+fi
 step "L5  review renders";       tools/bl tools/review_render.py "$asset" "$phase"
 step "L5c review image";         python tools/image_lint.py "source/$asset/review/$phase/sheet.png"
 step "L5b approval baseline";    python tools/baseline.py check "$asset" "$phase"

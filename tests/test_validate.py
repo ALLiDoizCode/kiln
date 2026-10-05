@@ -236,7 +236,8 @@ def regrow(spec, **constants):
     try:
         for key, value in constants.items():
             setattr(generator, key, value)
-        generator.build_tree(spec)
+        # The first tree that fills the bounds, whatever it measures: the generator would refuse these.
+        generator.build_tree(spec, strict=False)
     finally:
         for key, value in saved.items():
             setattr(generator, key, value)
@@ -378,6 +379,64 @@ def leaves_point_in(spec):
     each_piece(spec, turn)
 
 
+def edit_cores(spec, change):
+    """Apply change(bm, the cores as lists of faces) to the tree."""
+    import foliage
+
+    edit(lambda bm: change(bm, foliage.cores_of(bm, leaf_slot(spec))), "tree_1")
+
+
+def no_cores(spec):
+    """Every core removed: pads are open shells again, and from below one looks up into them."""
+    edit_cores(spec, lambda bm, cores: bmesh.ops.delete(bm, geom=[f for core in cores for f in core], context="FACES"))
+
+
+def core_hole(spec):
+    """One face missing from one core: it is no longer closed."""
+    edit_cores(spec, lambda bm, cores: bmesh.ops.delete(bm, geom=[cores[0][0]], context="FACES_ONLY"))
+
+
+def core_inside_out(spec):
+    edit_cores(spec, lambda bm, cores: bmesh.ops.reverse_faces(bm, faces=[f for core in cores for f in core]))
+
+
+def even_lobes(spec):
+    """Every lobe of a pad the same size."""
+    regrow(spec, LOBE_MAIN=(0.56, 0.56), LOBE_SIDE=(0.56, 0.56), LOBE_TALL=(0.8, 0.8))
+
+
+def one_lobe_pads(spec):
+    """Every pad a single round cap, as the first generator drew them."""
+    regrow(spec, LOBE_COUNTS=((1, 1.0),))
+
+
+def bare_cores(spec):
+    """A third of the pieces: the cores are what is seen."""
+    regrow(spec, LEAF_SPACING=0.5, SKIRT_SPACING=1.2, UNDER_SPACING=1.5)
+
+
+def ball_pads(spec):
+    """Every pad stretched to more than twice its height about its own middle: as tall as it is wide."""
+    import foliage
+
+    def stretch(bm):
+        slot = leaf_slot(spec)
+        pieces, cores = foliage.pieces_of(bm, slot), foliage.cores_of(bm, slot)
+        pads = [pad for found in foliage.pads_with_cores(pieces, cores, spec["foliage"]["pad_gap_m"]) for pad in found]
+        for pad in set(pads):
+            verts = list({v for part, at in zip(pieces + cores, pads) if at == pad for face in part for v in face.verts})
+            middle = sum(v.co.z for v in verts) / len(verts)
+            for vert in verts:
+                vert.co.z = middle + (vert.co.z - middle) * 2.2
+
+    edit(stretch, "tree_1")
+
+
+def even_pads(spec):
+    """Every pad the same width."""
+    regrow(spec, PAD_LARGEST=(1.2, 1.2), PAD_SMALLEST=(1.2, 1.2))
+
+
 def identical_variants(spec):
     """The tree compared with itself, as three variants from one seed would be."""
     spec["variants"]["siblings"] = ["tree_1"]
@@ -435,6 +494,17 @@ CASES = [
     (merged_pads, "tree_1.pads", "tree_1"),
     (leaves_point_in, "tree_1.leaves_point_out", "tree_1"),
     (identical_variants, "variants.differ", "tree_1"),
+    (solid_ball, "tree_1.cores", "tree_1"),
+    (no_cores, "tree_1.cores", "tree_1"),
+    (no_cores, "tree_1.under_closed", "tree_1"),
+    (core_hole, "tree_1.cores", "tree_1"),
+    (core_inside_out, "tree_1.cores", "tree_1"),
+    (even_lobes, "tree_1.lobes_differ", "tree_1"),
+    (one_lobe_pads, "tree_1.cores", "tree_1"),
+    (bare_cores, "tree_1.core_hidden", "tree_1"),
+    (ball_pads, "tree_1.pads_wide", "tree_1"),
+    (even_pads, "tree_1.pads_differ", "tree_1"),
+    (round_leaves, "tree_1.under_rim", "tree_1"),
 ]
 
 
@@ -446,7 +516,14 @@ def failures_after(mutate, name="tracer"):
     if "painted_shading" in spec:
         # As tools/build.py does. A small texture is enough for L1, which reads no texels.
         spec["painted_shading"]["texture_px"] = 64
+        # Too small to give a trunk its close texels (ADR 12); L4 measures those on the real texture.
+        for key in ("close_height_m", "close_texels_per_m"):
+            spec["painted_shading"].pop(key, None)
         paint.apply(spec, conventions())
+    if mutate and mutate is not identical_variants:
+        # Only the unbroken asset and `identical_variants` are compared with their siblings: building two
+        # more trees for every mutation of one tree would take most of the suite's time.
+        spec.pop("variants", None)
     if mutate:
         mutate(spec)
     checks = Checks("L1-mesh", name)

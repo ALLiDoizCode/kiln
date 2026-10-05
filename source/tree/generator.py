@@ -5,41 +5,58 @@ each call `build_tree(spec)`. Everything is drawn from `random.Random(seed)`,
 in a fixed order, and built as plain lists of vertices and faces, so the same
 seed gives the same mesh.
 
-1. Pads: three to six flattened ellipsoids, placed round and above the trunk
-   inside the spec's bounds, at staggered heights, and pushed apart until
-   clear air separates every pair.
+1. Pads: three to five, of clearly different widths, placed round and above
+   the trunk inside the spec's bounds, at staggered heights, and pushed apart
+   until clear air separates every pair. A pad is two to four overlapping
+   lobes of different sizes: rounded masses, wider than tall and flat
+   underneath, the largest on the pad's outer side.
 2. Trunk: a tube of flat sides with a narrow strip along every corner (the
    soft edge), leaning and bending a little, tapering, its corners pulled out
    into a few roots at the ground. It carries on past the fork as the leader,
    into the highest pad.
 3. Branches: one tapering tube per remaining pad, leaving the trunk near the
    fork (or the middle of an earlier branch, when that is much nearer),
-   running out first and then up, and ending inside its pad in a few twigs.
-4. Leaves: on each pad's surface, flat pointed pieces with a notch on either
-   side, overlapping like shingles: lying near the surface, pointing down it
-   and lifted outward. A pad is a shell, open underneath, so the branch that
-   carries it shows from below.
-5. Fit: the whole tree is stretched, about the foot of the trunk, to the
+   running out first and then up, and ending inside its pad's main lobe; a
+   twig runs on from there into each of the pad's other lobes.
+4. Cores: a closed, low-triangle dome inside every lobe, in the leaf
+   material (ADR 9 as amended). It is what shows between the pieces, and from
+   below it closes the view up into the pad.
+5. Leaves: flat pointed pieces with a notch on either side. On each lobe a
+   shell of them, overlapping like shingles (lying near the surface, pointing
+   down it and lifted outward); a skirt hanging from its rim, pointing out
+   and down past the underside; and a few hanging under it.
+6. Fit: the whole tree is stretched, about the foot of the trunk, to the
    spec's bounds.
+7. Keep or redraw: the tree is measured as the gate measures it, against the
+   brief's shape checks with room to spare (MARGINS). A tree that misses is
+   thrown away and the seed draws the next one; a seed none of whose trees
+   passes fails the build with every tree's reasons.
 
 Normals are set by hand. Bark: each flat side is lit flat across and smooth
 along its length, and the strips blend from one side to the next. Leaves:
 every corner of a piece carries one normal, part the piece's own and part the
-direction out of its pad and upward, so a pad is lit as a round mass and each
-piece still catches the light at its own angle.
+direction out of its lobe and upward, so a lobe is lit as a round mass and
+each piece still catches the light at its own angle. Cores are lit round.
 
-Each material gets one flat colour; tools/paint.py paints the bark and gives
-each leaf piece its colour (ADR 10, ADR 11).
+Each material gets one flat colour; tools/paint.py paints the bark (with its
+grain, which runs along each limb by the `grain` attribute written here: ADR
+12) and gives each leaf piece and core its colour (ADR 10, ADR 11).
 """
 
+import contextlib
+import copy
+import io
+import json
 import math
 import random
 
+import bmesh
 import bpy
 import foliage
 import numpy
 from mathutils import Quaternion, Vector
-from pipeline import linear_rgb
+from pipeline import Checks, conventions, linear_rgb
+from validate import check_canopy, check_foliage, check_skeleton
 
 Z = Vector((0, 0, 1))
 
@@ -48,8 +65,8 @@ TRUNK_SIDES = (6, 7)  # flat sides, drawn per tree
 STRIP = 0.2  # the soft-edge strip at a corner, as a share of the angle between corners
 BREAST_RADIUS = (0.19, 0.24)  # at 1.3 m
 FORK_HEIGHT = (0.37, 0.45)  # share of the tree's height at which the lowest branch leaves
-TRUNK_TOP = 0.7  # radius below the fork over the radius at 1.3 m
-LEAN = (0.3, 0.55)  # how far the fork stands to one side of the foot
+TRUNK_TOP = 0.64  # radius below the fork over the radius at 1.3 m
+LEAN = (0.38, 0.62)  # how far the fork stands to one side of the foot
 BEND = (0.07, 0.14)  # how far the trunk bows out of the straight line from foot to fork
 ROOTS = (3, 4)  # corners pulled out into roots
 ROOT_REACH = (2.3, 3.0)  # a root's tip from the trunk's axis, over the radius there
@@ -63,34 +80,80 @@ BRANCH_RADIUS = 0.62  # a branch's radius where it leaves, over its parent's the
 BRANCH_RINGS = 5
 BRANCH_START = 0.45  # how far from its parent's axis a branch begins, over the parent's radius there
 FORK_SPREAD = 0.55  # branches leave the trunk within this far below the fork
-TWIGS = 3  # per pad
-TWIG_RADIUS = 0.028
+FORK_LOWEST = 2.35  # and none lower than this: above a player's head, with room to spare
+TWIG_RADIUS = 0.04  # a twig runs from the end of a pad's limb into each of its side lobes
 
 # Pads: (count, how often) drawn per tree.
-PAD_COUNTS = ((4, 0.45), (5, 0.4), (3, 0.15))
-PAD_RADIUS = (1.0, 1.6)  # horizontal, before the fit
-PAD_LUMPS = 3  # swellings on each pad
-PAD_LUMP = (0.08, 0.22)  # how far one stands out, as a share of the radius
-PAD_FLAT = (0.7, 0.85)  # vertical radius over horizontal
-PAD_UNDER = 0.7  # how far the shell hangs below the pad's middle, over its vertical radius
-PAD_CLEAR = 0.3  # clear air between two pads' surfaces before the fit
-PAD_OPEN = -0.7  # the shell stops here (unit sphere height): open underneath
+PAD_COUNTS = ((3, 0.3), (4, 0.5), (5, 0.2))
+PAD_LARGEST = (1.5, 1.75)  # half the width of a tree's widest pad, before the fit
+PAD_SMALLEST = (0.8, 0.92)  # and of its narrowest; the rest fall between
+PAD_CLEAR = 0.15  # clear air between two pads' surfaces before the fit
+PAD_REACH = 0.15  # how far leaf tips stand off a pad's surface
+
+# Lobes: a pad is a few overlapping rounded masses of different sizes. (count, how often) per pad.
+LOBE_COUNTS = ((2, 0.25), (3, 0.5), (4, 0.25))
+LOBE_MAIN = (0.7, 0.82)  # the main lobe's radius, over half the pad's width
+LOBE_SIDE = (0.44, 0.56)  # a side lobe's
+LOBE_TALL = (0.7, 0.9)  # a lobe's height above its middle, over its radius
+LOBE_UNDER = 0.42  # and its depth below its middle, over that height: flat underneath
+LOBE_DROP = (-0.32, 0.06)  # a side lobe's middle above the main lobe's, over the main lobe's radius
+LOBE_OPEN = -0.3  # the shell of pieces stops here (unit sphere height); the skirt hangs from there
+LOBE_BURIED = 0.9  # a piece is left out when its place is this deep inside another lobe
+
+# Cores: one closed, dark, low-triangle solid inside each lobe (ADR 9 as amended).
+CORE = 0.85  # the core's size over its lobe's
+CORE_SIDES = 6  # corners round each of its two rings
+CORE_ROUGH = 0.12  # how far a ring's corner stands in or out, as a share
 
 # Leaves.
-LEAF_SPACING = 0.24  # between neighbouring pieces on a pad's surface
-LEAF_LENGTH = (0.55, 0.75)
+LEAF_SPACING = 0.27  # between neighbouring pieces on a lobe's surface
+LEAF_LENGTH = (0.5, 0.75)
 LEAF_WIDTH = (0.48, 0.56)  # over the length
-LEAF_LIFT = (14.0, 46.0)  # degrees a piece is raised off the surface
+LEAF_LIFT = (12.0, 40.0)  # degrees a piece is raised off the surface
 LEAF_YAW = 38.0  # degrees it may swing either side of straight down the surface
 LEAF_ROLL = 22.0  # and tip about its own length
-LEAF_FOOT = 0.8  # how much of a piece's length lies behind the point where it crosses the pad's surface
-LEAF_ROUND = 0.4  # share of a piece's normal taken from the direction out of its pad
+LEAF_FOOT = 0.8  # how much of a piece's length lies behind the point where it crosses the lobe's surface
+LEAF_ROUND = 0.4  # share of a piece's normal taken from the direction out of its lobe
 LEAF_UP = 0.3  # and how far every piece's normal is tipped toward the sky
+# The skirt: pieces hanging from the rim of a lobe, and a few under it, pointing out and down.
+SKIRT_SPACING = 0.3  # between neighbouring pieces round the rim
+SKIRT_DROOP = (40.0, 72.0)  # degrees below level
+SKIRT_FOOT = 0.4  # how much of a skirt piece's length lies behind the rim
+SKIRT_DROP = 0.45  # how far the skirt hangs below a lobe's underside
+UNDER_SPACING = 0.36  # between pieces hanging under a lobe
+UNDER_DROOP = (35.0, 70.0)
 
 MAX_STRETCH = (0.85, 1.2)  # the fit may not change any dimension by more
 TREES = 40  # how many whole trees one seed may draw before it is given up
 
-SIDE, STRIP_FACE, CONE, GROUND, LEAF = range(5)
+# Room to spare. A tree is kept only when it meets the brief's shape checks with these in place
+# of the spec's own limits, so that no variant sits on the edge of one (spec key -> stricter value).
+MARGINS = {
+    "max_triangles": 3800,
+    "skeleton.fork_m": [2.2, 3.3],
+    "skeleton.lean_m": [0.22, 0.7],
+    "skeleton.max_taper": 0.85,
+    "skeleton.max_branch_taper": 0.72,
+    "skeleton.min_flare": 2.3,
+    "skeleton.min_seen_share": 0.028,
+    "skeleton.min_seen_views": 7,
+    "foliage.piece_m": [0.38, 0.87],
+    "foliage.min_pointing_out": 0.84,
+    "foliage.min_pointing_down": 0.75,
+    "foliage.sky_share": [0.23, 0.46],
+    "foliage.min_sky_views": 6,
+    "foliage.min_lobe_ratio": 1.28,
+    "foliage.max_core_seen": 0.085,
+    "foliage.max_core_seen_below": 0.42,
+    "foliage.min_pad_flatness": 1.4,
+    "foliage.min_pad_spread": 1.5,
+    "foliage.max_seen_into": 0.125,
+    "foliage.min_rim_points_per_m": 1.2,
+}
+
+SIDE, STRIP_FACE, CONE, GROUND, LEAF, CORE_FACE = range(6)
+
+_MEASURED = {}  # (spec, constants, which tree of the seed) -> what `unmet` said of it, within this process
 
 
 class Tree:
@@ -103,14 +166,21 @@ class Tree:
         self.pads = []  # leaf faces only: which pad (index) each belongs to; -1 for bark
         self.pieces = []  # and which piece; -1 for bark
         self.piece_count = 0
+        self.piece_out = []  # per piece: the direction out of its lobe
+        self.core_normals = {}  # core vertex -> its normal
         self.seams = []  # pairs of vertices: bark edges along which the surface is cut open to be painted
+        # Bark faces only: per corner, (metres round the limb, metres along it, a number for the limb), which
+        # tools/paint.py reads to run the grain along each limb; None for every other face.
+        self.grain = []
+        self.limbs = 0
 
     def vert(self, co):
         self.verts.append(Vector(co))
         return len(self.verts) - 1
 
-    def face(self, corners, kind, pad=-1, piece=-1):
+    def face(self, corners, kind, pad=-1, piece=-1, grain=None):
         self.faces.append(tuple(corners))
+        self.grain.append(grain)
         self.kinds.append(kind)
         self.pads.append(pad)
         self.pieces.append(piece)
@@ -159,11 +229,25 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
                 ring.append(tree.vert(point + (across * math.cos(angle) + along * math.sin(angle)) * radius * scale))
         rings.append(ring)
     count = sides * per
-    for lower, upper in zip(rings, rings[1:]):
+    # Grain: how far round the limb each corner of a ring is, in metres over its own surface (so the
+    # grain is as fine on a root's fin as on the trunk above it), and how far along the limb each ring is.
+    round_at = []
+    for ring in rings:
+        far = [0.0]
+        for i in range(count):
+            far.append(far[-1] + (tree.verts[ring[(i + 1) % count]] - tree.verts[ring[i]]).length)
+        round_at.append(far)
+    along_at = [0.0]
+    for a, b in zip(points, points[1:]):
+        along_at.append(along_at[-1] + (b - a).length)
+    limb = tree.limbs * 3.7
+    tree.limbs += 1
+    for k, (lower, upper) in enumerate(zip(rings, rings[1:])):
         for i in range(count):
             j = (i + 1) % count
             kind = STRIP_FACE if strip and i % 2 == 0 else SIDE
-            tree.face((lower[i], lower[j], upper[j], upper[i]), kind)
+            grain = [(round_at[k][i], along_at[k], limb), (round_at[k][i + 1], along_at[k], limb), (round_at[k + 1][i + 1], along_at[k + 1], limb), (round_at[k + 1][i], along_at[k + 1], limb)]
+            tree.face((lower[i], lower[j], upper[j], upper[i]), kind, grain=grain)
         # Each stretch between two rings is cut once along its length, to unroll flat.
         tree.seams.append((lower[0], upper[0]))
     # And every ring is a cut, so no painted island is longer than one stretch of a limb.
@@ -173,15 +257,15 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
     if ground:
         centre = tree.vert(start)
         for i in range(count):
-            tree.face((centre, rings[0][(i + 1) % count], rings[0][i]), GROUND)
+            tree.face((centre, rings[0][(i + 1) % count], rings[0][i]), GROUND, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
     else:
         apex = tree.vert(start - frame[0][0] * radii[0] * 0.35)
         for i in range(count):
-            tree.face((apex, rings[0][(i + 1) % count], rings[0][i]), CONE)
+            tree.face((apex, rings[0][(i + 1) % count], rings[0][i]), CONE, grain=[(round_at[0][i], -radii[0], limb), (round_at[0][i + 1], 0.0, limb), (round_at[0][i], 0.0, limb)])
         tree.seams.append((rings[0][0], apex))
     apex = tree.vert(end + frame[-1][0] * radii[-1] * 2.0)
     for i in range(count):
-        tree.face((rings[-1][i], rings[-1][(i + 1) % count], apex), CONE)
+        tree.face((rings[-1][i], rings[-1][(i + 1) % count], apex), CONE, grain=[(round_at[-1][i], along_at[-1], limb), (round_at[-1][i + 1], along_at[-1], limb), (round_at[-1][i], along_at[-1] + radii[-1] * 2, limb)])
     tree.seams.append((rings[-1][0], apex))
 
 
@@ -189,28 +273,65 @@ def bezier(a, c, b, t):
     return a * (1 - t) ** 2 + c * (2 * t * (1 - t)) + b * t**2
 
 
-class Pad:
-    def __init__(self, centre, radius, flat, lumps):
-        self.centre = centre
-        self.radius = radius  # horizontal
-        self.flat = flat
-        self.lumps = lumps  # (unit direction, height as a share of the radius): swellings on the surface
+class Lobe:
+    """One rounded mass of a pad: an ellipsoid, flatter below its middle than above."""
 
-    def swell(self, unit):
-        """How far the surface stands off the plain ellipsoid toward `unit`, as a factor."""
-        return 1.0 + sum(height * max(0.0, unit.dot(direction)) ** 3 for direction, height in self.lumps)
-
-    def reach(self, direction):
-        """Distance from the centre to the surface along a unit direction."""
-        vertical = self.radius * self.flat * (PAD_UNDER if direction.z < 0 else 1.0)
-        return (1.0 + PAD_LUMP[1]) / math.sqrt((direction.x**2 + direction.y**2) / self.radius**2 + direction.z**2 / vertical**2)
+    def __init__(self, centre, radius, up, down):
+        self.centre, self.radius, self.up, self.down = centre, radius, up, down
 
     def surface(self, unit):
         """The surface point and outward normal for a point on the unit sphere."""
-        vertical = self.radius * self.flat * (PAD_UNDER if unit.z < 0 else 1.0)
-        point = self.centre + Vector((unit.x * self.radius, unit.y * self.radius, unit.z * vertical)) * self.swell(unit)
+        vertical = self.up if unit.z >= 0 else self.down
+        point = self.centre + Vector((unit.x * self.radius, unit.y * self.radius, unit.z * vertical))
         normal = Vector((unit.x / self.radius, unit.y / self.radius, unit.z / vertical)).normalized()
         return point, normal
+
+    def depth(self, point):
+        """Where a point lies: 0 at the lobe's middle, 1 on its surface."""
+        offset = point - self.centre
+        vertical = self.up if offset.z >= 0 else self.down
+        return math.sqrt((offset.x**2 + offset.y**2) / self.radius**2 + offset.z**2 / vertical**2)
+
+
+class Pad:
+    """A clump of foliage: two to four overlapping lobes inside a circle of `radius` about `centre`."""
+
+    def __init__(self, centre, radius, shapes):
+        self.centre = centre
+        self.radius = radius  # half the pad's width
+        # Each lobe as shares of the pad's radius: (offset from the pad's middle, radius, height above its middle).
+        self.shapes = shapes
+
+    def lobes(self):
+        return [Lobe(self.centre + offset * self.radius, share * self.radius, tall * self.radius, tall * self.radius * LOBE_UNDER) for offset, share, tall in self.shapes]
+
+    def above(self):
+        """How far the pad's surface rises above its middle."""
+        return max(offset.z + tall for offset, _, tall in self.shapes) * self.radius
+
+    def below(self):
+        """How far it hangs below its middle, skirt included."""
+        return max(tall * LOBE_UNDER - offset.z for offset, _, tall in self.shapes) * self.radius + SKIRT_DROP
+
+    def reach(self, direction):
+        """Distance from the middle to the outside of the pad along a unit direction, leaf tips included."""
+        vertical = self.above() if direction.z >= 0 else self.below()
+        return PAD_REACH + 1.0 / math.sqrt((direction.x**2 + direction.y**2) / self.radius**2 + direction.z**2 / vertical**2)
+
+
+def draw_lobes(rng, toward):
+    """A pad's lobes, as shares of its radius: one main lobe on the side `toward` (an azimuth) and one to three smaller ones round it."""
+    count = rng.choices([c for c, _ in LOBE_COUNTS], [w for _, w in LOBE_COUNTS])[0]
+    turn = toward + rng.uniform(-0.5, 0.5)
+    main = rng.uniform(*LOBE_MAIN)
+    # The main lobe touches the pad's circle on one side; the others touch it on the other sides.
+    shapes = [(Vector((math.cos(turn), math.sin(turn), 0)) * (1 - main), main, main * rng.uniform(*LOBE_TALL))]
+    for k in range(count - 1):
+        side = rng.uniform(*LOBE_SIDE) * (1.0 - 0.12 * k)
+        azimuth = turn + math.pi + (k - (count - 2) / 2) * 2 * math.pi / 3.2 + rng.uniform(-0.3, 0.3)
+        offset = Vector((math.cos(azimuth), math.sin(azimuth), 0)) * (1 - side) + Z * main * rng.uniform(*LOBE_DROP)
+        shapes.append((offset, side, side * rng.uniform(*LOBE_TALL)))
+    return shapes
 
 
 def place_pads(rng, lo, hi, fork_z):
@@ -221,26 +342,23 @@ def place_pads(rng, lo, hi, fork_z):
     floor, top = fork_z + 0.25, hi.z
 
     def pad(azimuth, level, radius):
-        flat = rng.uniform(*PAD_FLAT)
+        # The main lobe on the outer side, so the canopy reaches the bounds there.
+        new = Pad(Vector(), radius, draw_lobes(rng, azimuth))
         # Its outer edge on the ellipse the bounds allow; its height a share of the crown's.
         out = max(0.0, 1.0 - radius / min(half.x, half.y))
-        centre = middle + Vector((half.x * out * math.cos(azimuth), half.y * out * math.sin(azimuth), 0))
-        low, high = floor + radius * flat * PAD_UNDER, top - radius * flat
-        centre.z = low + (high - low) * level
-        lumps = []
-        for _ in range(PAD_LUMPS):
-            turn, rise = rng.uniform(0, 2 * math.pi), rng.uniform(-0.2, 0.9)
-            lumps.append((Vector((math.cos(turn) * math.cos(rise), math.sin(turn) * math.cos(rise), math.sin(rise))), rng.uniform(*PAD_LUMP)))
-        return Pad(centre, radius, flat, lumps)
+        new.centre = middle + Vector((half.x * out * math.cos(azimuth), half.y * out * math.sin(azimuth), 0))
+        low, high = floor + new.below(), top - new.above()
+        new.centre.z = low + (high - low) * level
+        return new
 
     start = rng.uniform(0, 2 * math.pi)
-    # The crown pad is the largest; the others run down from it.
-    radii = sorted((rng.uniform(*PAD_RADIUS) for _ in range(count)), reverse=True)
+    # The crown pad is the widest and one pad is much narrower; the others fall between, in any order.
+    radii = [rng.uniform(*PAD_LARGEST), rng.uniform(*PAD_SMALLEST)] + [rng.uniform(PAD_SMALLEST[1], PAD_LARGEST[0]) for _ in range(count - 2)]
     radii[1:] = rng.sample(radii[1:], count - 1)
     # The highest pad sits over the middle; the rest go round it, low and high by turns.
-    crown = pad(0.0, 1.0, radii[0])
+    crown = pad(start, 1.0, radii[0])
     lean = rng.uniform(0.0, 0.35)
-    crown.centre += Vector((half.x * lean * math.cos(start), half.y * lean * math.sin(start), 0))
+    crown.centre = Vector((middle.x + half.x * lean * math.cos(start), middle.y + half.y * lean * math.sin(start), crown.centre.z))
     pads = [crown]
     levels = [0.0, 0.5, 0.12, 0.62, 0.3]
     rng.shuffle(levels)
@@ -263,8 +381,7 @@ def place_pads(rng, lo, hi, fork_z):
                     b.centre += push
                     moved = True
         for p in pads:
-            vertical = p.radius * p.flat
-            p.centre.z = min(max(p.centre.z, floor + vertical * PAD_UNDER), top - vertical)
+            p.centre.z = min(max(p.centre.z, floor + p.below()), top - p.above())
             offset = p.centre - middle
             limit = max(0.0, 1.0 - p.radius / min(half.x, half.y))
             share = math.hypot(offset.x / half.x, offset.y / half.y)
@@ -301,7 +418,8 @@ def grow_trunk(tree, rng, hi, fork_z, crown):
     points = [trunk_at(z) for z in heights]
     radii = [radius_at(z) for z in heights]
     # The leader: on from the fork, turning toward the crown pad and thinning at once.
-    end = crown.centre + Vector((0, 0, crown.radius * crown.flat * 0.25))
+    main = crown.lobes()[0]
+    end = main.centre + Z * main.up * 0.2
     control = fork + Vector((0, 0, (end.z - fork.z) * 0.55)) + (fork - Vector((0, 0, fork_z))) * 0.5
     for share in (0.3, 0.62, 1.0):
         points.append(bezier(fork, control, end, share))
@@ -323,7 +441,7 @@ def along(points, radii, share):
 
 
 def grow_branches(tree, rng, pads, trunk):
-    """A branch to every pad but the crown's, and twigs inside every pad."""
+    """A branch to every pad but the crown's, and a twig from its end into each of the pad's side lobes."""
     points, radii = trunk
     fork_index = 5
     fork_z = points[fork_index].z
@@ -331,7 +449,8 @@ def grow_branches(tree, rng, pads, trunk):
     order = sorted(range(1, len(pads)), key=lambda i: pads[i].centre.z)
     for rank, i in enumerate(order):
         pad = pads[i]
-        end = pad.centre - Vector((0, 0, pad.radius * pad.flat * PAD_UNDER * 0.3))
+        main = pad.lobes()[0]
+        end = main.centre - Z * main.down * 0.4
         # From the trunk, a little below the fork, lower for lower pads.
         z = fork_z - FORK_SPREAD * (1.0 - rank / max(1, len(order) - 1)) * rng.uniform(0.6, 1.0)
         share = next(k + (z - points[k].z) / (points[k + 1].z - points[k].z) for k in range(fork_index) if points[k + 1].z >= z) / (len(points) - 1)
@@ -357,15 +476,10 @@ def grow_branches(tree, rng, pads, trunk):
     for rank, i in enumerate(order):
         ends[i] = paths[rank][0][-1]
     for i, pad in enumerate(pads):
-        turn = rng.uniform(0, 2 * math.pi)
-        for k in range(TWIGS):
-            azimuth = turn + 2 * math.pi * k / TWIGS + rng.uniform(-0.4, 0.4)
-            rise = rng.uniform(0.25, 0.7)
-            unit = Vector((math.cos(azimuth) * math.cos(rise), math.sin(azimuth) * math.cos(rise), math.sin(rise)))
-            tip, _ = pad.surface(unit)
-            tip = pad.centre + (tip - pad.centre) * 0.72
+        for lobe in pad.lobes()[1:]:
+            tip = lobe.centre
             base = ends[i] - (tip - ends[i]).normalized() * 0.05
-            tube(tree, [base, base.lerp(tip, 0.5) + Z * 0.06, tip], [TWIG_RADIUS, TWIG_RADIUS * 0.7, TWIG_RADIUS * 0.3], 3)
+            tube(tree, [base, base.lerp(tip, 0.5) - Z * 0.05, tip], [TWIG_RADIUS, TWIG_RADIUS * 0.75, TWIG_RADIUS * 0.4], 3)
 
 
 # One piece, as (along its length, across it), both as shares of the length and the width: the
@@ -375,48 +489,117 @@ LEAF_OUTLINE = [(0.0, 0.0), (0.28, -0.5), (0.47, -0.24), (0.6, -0.38), (1.0, 0.0
 LEAF_TRIANGLES = [(0, 1, 2), (2, 3, 4), (0, 2, 4), (0, 4, 5)]
 
 
+def leaf(tree, rng, pad, point, normal, axis, foot_share):
+    """One piece through `point`, lying along `axis`, its front toward `normal` (the way out of its lobe)."""
+    across = normal.cross(axis)
+    across = (across if across.length > 1e-6 else axis.orthogonal()).normalized()
+    across = Quaternion(axis, math.radians(rng.uniform(-LEAF_ROLL, LEAF_ROLL))) @ across
+    length = rng.uniform(*LEAF_LENGTH)
+    width = length * rng.uniform(*LEAF_WIDTH)
+    mirror = rng.choice((-1, 1))
+    foot = point - axis * length * foot_share
+    corners = [tree.vert(foot + axis * (u * length) + across * (v * width * mirror)) for u, v in LEAF_OUTLINE]
+    face_normal = axis.cross(across) * mirror
+    fan = [tuple(corners[i] for i in triangle) for triangle in LEAF_TRIANGLES]
+    if face_normal.dot(normal) < 0:
+        fan = [(a, c, b) for a, b, c in fan]
+    for triangle in fan:
+        tree.face(triangle, LEAF, pad, tree.piece_count)
+    tree.piece_out.append(normal.copy())
+    tree.piece_count += 1
+
+
+def grow_core(tree, rng, pad, lobe):
+    """A closed solid inside a lobe: an apex, two rings of corners and a low point underneath."""
+    # A dome: widest at its rim, just under the lobe's middle, where it closes the view up into the
+    # pad from below; narrower above, where the shell of pieces lies over it.
+    def at(radius, height):
+        return lobe.centre + Vector((radius.x * lobe.radius, radius.y * lobe.radius, height * (lobe.up if height >= 0 else lobe.down))) * CORE
+
+    spin = rng.uniform(0, 2 * math.pi)
+    rings = []
+    for share, height, shift in ((0.72, 0.55, 0.0), (0.97, -0.15, 0.5)):
+        ring = []
+        for j in range(CORE_SIDES):
+            angle = spin + 2 * math.pi * (j + shift) / CORE_SIDES
+            out = share * (1 + rng.uniform(-CORE_ROUGH, CORE_ROUGH))
+            ring.append(tree.vert(at(Vector((math.cos(angle) * out, math.sin(angle) * out, 0)), height)))
+        rings.append(ring)
+    top, bottom = tree.vert(at(Vector(), 0.9)), tree.vert(at(Vector(), -0.8))
+    upper, lower = rings
+    triangles = []
+    for j in range(CORE_SIDES):
+        k = (j + 1) % CORE_SIDES
+        triangles += [(top, upper[j], upper[k]), (upper[j], lower[j], upper[k]), (upper[k], lower[j], lower[k]), (bottom, lower[k], lower[j])]
+    for a, b, c in triangles:
+        middle = (tree.verts[a] + tree.verts[b] + tree.verts[c]) / 3
+        if (tree.verts[b] - tree.verts[a]).cross(tree.verts[c] - tree.verts[a]).dot(middle - lobe.centre) < 0:
+            b, c = c, b
+        tree.face((a, b, c), CORE_FACE, pad)
+    for i in upper + lower + [top, bottom]:
+        offset = tree.verts[i] - lobe.centre
+        vertical = lobe.up if offset.z >= 0 else lobe.down
+        tree.core_normals[i] = Vector((offset.x / lobe.radius**2, offset.y / lobe.radius**2, offset.z / vertical**2)).normalized()
+
+
 def grow_leaves(tree, rng, pads):
+    """Every pad's cores, and the pieces over them: a shell on each lobe, a skirt hanging from its rim and a few pieces under it."""
     golden = math.pi * (3 - math.sqrt(5))
     for index, pad in enumerate(pads):
-        vertical = pad.radius * pad.flat
-        # Area of the shell, near enough: the upper half and the part of the squashed lower half kept.
-        area = 2 * math.pi * pad.radius * (pad.radius + vertical) / 2 * (1 + 0.5 * -PAD_OPEN)
-        count = round(area / LEAF_SPACING**2)
-        total = round(count * 2 / (1 - PAD_OPEN))
-        turn = rng.uniform(0, 2 * math.pi)
-        for k in range(total):
-            height = 1 - (2 * k + 1) / total
-            if height < PAD_OPEN:
-                break
-            ring = math.sqrt(1 - height * height)
-            azimuth = turn + golden * k + rng.uniform(-0.12, 0.12)
-            unit = Vector((ring * math.cos(azimuth), ring * math.sin(azimuth), height + rng.uniform(-0.04, 0.04))).normalized()
-            point, normal = pad.surface(unit)
-            down = -Z - normal * normal.dot(-Z)
-            if down.length < 0.25:
-                # On the crown of a pad nothing is downhill: point any way round.
-                spin = rng.uniform(0, 2 * math.pi)
-                down = normal.orthogonal().normalized()
-                down = Quaternion(normal, spin) @ down
-            down.normalize()
-            down = Quaternion(normal, math.radians(rng.uniform(-LEAF_YAW, LEAF_YAW))) @ down
-            lift = math.radians(rng.uniform(*LEAF_LIFT))
-            length_axis = (down * math.cos(lift) + normal * math.sin(lift)).normalized()
-            across = normal.cross(length_axis).normalized()
-            across = Quaternion(length_axis, math.radians(rng.uniform(-LEAF_ROLL, LEAF_ROLL))) @ across
-            length = rng.uniform(*LEAF_LENGTH)
-            width = length * rng.uniform(*LEAF_WIDTH)
-            mirror = rng.choice((-1, 1))
-            foot = point - length_axis * length * LEAF_FOOT
-            corners = [tree.vert(foot + length_axis * (u * length) + across * (v * width * mirror)) for u, v in LEAF_OUTLINE]
-            # Front toward the outside of the pad.
-            face_normal = length_axis.cross(across) * mirror
-            fan = [tuple(corners[i] for i in triangle) for triangle in LEAF_TRIANGLES]
-            if face_normal.dot(normal) < 0:
-                fan = [(a, c, b) for a, b, c in fan]
-            for triangle in fan:
-                tree.face(triangle, LEAF, index, tree.piece_count)
-            tree.piece_count += 1
+        lobes = pad.lobes()
+        for lobe in lobes:
+            grow_core(tree, rng, index, lobe)
+        for lobe in lobes:
+            others = [other for other in lobes if other is not lobe]
+
+            def buried(point):
+                return any(other.depth(point) < LOBE_BURIED for other in others)
+
+            # The shell. Area, near enough: the upper half and the part of the squashed lower half kept.
+            area = 2 * math.pi * lobe.radius * (lobe.radius + lobe.up) / 2 * (1 + 0.5 * -LOBE_OPEN)
+            total = round(area / LEAF_SPACING**2 * 2 / (1 - LOBE_OPEN))
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(total):
+                height = 1 - (2 * k + 1) / total
+                if height < LOBE_OPEN:
+                    break
+                ring = math.sqrt(1 - height * height)
+                azimuth = turn + golden * k + rng.uniform(-0.12, 0.12)
+                unit = Vector((ring * math.cos(azimuth), ring * math.sin(azimuth), height + rng.uniform(-0.04, 0.04))).normalized()
+                point, normal = lobe.surface(unit)
+                yaw, lift = rng.uniform(-LEAF_YAW, LEAF_YAW), rng.uniform(*LEAF_LIFT)
+                down = -Z - normal * normal.dot(-Z)
+                if down.length < 0.25:
+                    # On the crown of a lobe nothing is downhill: point any way round.
+                    down = Quaternion(normal, rng.uniform(0, 2 * math.pi)) @ normal.orthogonal().normalized()
+                down = Quaternion(normal, math.radians(yaw)) @ down.normalized()
+                axis = (down * math.cos(math.radians(lift)) + normal * math.sin(math.radians(lift))).normalized()
+                if not buried(point):
+                    leaf(tree, rng, index, point, normal, axis, LEAF_FOOT)
+
+            def hang(point, azimuth, droop, normal):
+                out = Vector((math.cos(azimuth), math.sin(azimuth), 0))
+                axis = out * math.cos(math.radians(droop)) - Z * math.sin(math.radians(droop))
+                if not buried(point):
+                    leaf(tree, rng, index, point, (normal + out * 0.5 - Z * 0.3).normalized(), axis, SKIRT_FOOT)
+
+            # The skirt: round the rim, pointing out and down past the underside.
+            count = max(5, round(2 * math.pi * lobe.radius / SKIRT_SPACING))
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(count):
+                azimuth = turn + 2 * math.pi * (k + rng.uniform(-0.3, 0.3)) / count
+                height = rng.uniform(LOBE_OPEN - 0.25, LOBE_OPEN + 0.05)
+                ring = math.sqrt(1 - height * height)
+                point, normal = lobe.surface(Vector((ring * math.cos(azimuth), ring * math.sin(azimuth), height)))
+                hang(point, azimuth + rng.uniform(-0.5, 0.5), rng.uniform(*SKIRT_DROOP), normal)
+            # And a few under the lobe, hanging steeply.
+            count = round(math.pi * (lobe.radius * 0.75) ** 2 / UNDER_SPACING**2)
+            turn = rng.uniform(0, 2 * math.pi)
+            for k in range(count):
+                share = math.sqrt((k + 0.5) / count) * 0.75
+                azimuth = turn + golden * k
+                point, normal = lobe.surface(Vector((share * math.cos(azimuth), share * math.sin(azimuth), -math.sqrt(1 - share * share))))
+                hang(point, azimuth + rng.uniform(-0.8, 0.8), rng.uniform(*UNDER_DROOP), normal)
 
 
 def fit(tree, lo, hi):
@@ -449,9 +632,12 @@ def fit(tree, lo, hi):
 
 def separate(tree, count, gap):
     """Refuse a tree whose pads, measured as the gate measures them, are not the pads drawn."""
-    corners = numpy.array([[tree.verts[i] for i in face] for face, kind in zip(tree.faces, tree.kinds) if kind == LEAF])
-    owner = numpy.array([piece for piece in tree.pieces if piece >= 0])
-    found = foliage.pads_of(corners, owner, tree.piece_count, gap)
+    # Pieces, and after them the cores (one part for each of a pad's), as the gate groups them.
+    leaves = [(face, piece) for face, kind, piece in zip(tree.faces, tree.kinds, tree.pieces) if kind == LEAF]
+    cores = [(face, tree.piece_count + pad) for face, kind, pad in zip(tree.faces, tree.kinds, tree.pads) if kind == CORE_FACE]
+    corners = numpy.array([[tree.verts[i] for i in face] for face, _ in leaves + cores])
+    owner = numpy.array([part for _, part in leaves + cores])
+    found = foliage.pads_of(corners, owner, tree.piece_count + count, gap)[: tree.piece_count]
     if max(found) + 1 != count:
         raise RuntimeError(f"{count} pads were drawn but {max(found) + 1} are separated by {gap} m of clear air")
 
@@ -474,14 +660,6 @@ def corner_normals(tree):
                 sides[i] += normal
             if kind in (SIDE, STRIP_FACE, CONE):
                 every[i] += normal
-
-    # Each pad's middle, from its own pieces, to tell which way is out.
-    middles = {}
-    for face, pad in zip(tree.faces, tree.pads):
-        if pad >= 0:
-            total, n = middles.get(pad, (Vector(), 0))
-            middles[pad] = (total + sum((tree.verts[i] for i in face), Vector()), n + len(face))
-    middles = {pad: total / n for pad, (total, n) in middles.items()}
 
     # Bark: one normal per vertex, so no edge above the ground is lit hard. It is the blend of the
     # flat sides that meet there; where that would face away from a face it belongs to (the end
@@ -506,7 +684,7 @@ def corner_normals(tree):
     piece_normals = {}
     for face, pad, piece, normal in zip(tree.faces, tree.pads, tree.pieces, face_normals):
         if piece >= 0 and piece not in piece_normals:
-            out = (tree.verts[face[0]] - middles[pad]).normalized()
+            out = tree.piece_out[piece]
             lit = (normal * (1 - LEAF_ROUND) + out * LEAF_ROUND + Z * LEAF_UP).normalized()
             # Never round the back of its own piece: the engine would light it from behind.
             if lit.dot(normal) < 0.3:
@@ -519,24 +697,67 @@ def corner_normals(tree):
             normals += [normal] * len(face)
         elif kind == LEAF:
             normals += [piece_normals[piece]] * len(face)
+        elif kind == CORE_FACE:
+            # Lit as one round mass; where the fit has tipped a corner's normal behind a face, the face's own.
+            normals += [tree.core_normals[i] if tree.core_normals[i].dot(normal) > 0.05 else normal for i in face]
         else:
             normals += [bark_normals[i] for i in face]
     return normals
 
 
-def draw(spec):
+def unmet(tree, spec):
+    """What the brief asks of the shape and this tree does not give with room to spare, as the gate's own failure lines.
+
+    The measurements are the gate's (tools/validate.py), made on the lists
+    before any Blender object exists, against the spec with MARGINS in place
+    of its limits."""
+    strict = copy.deepcopy(spec)
+    for key, value in MARGINS.items():
+        *path, last = key.split(".")
+        block = strict
+        for part in path:
+            block = block[part]
+        block[last] = value
+    name = spec["objects"][0]
+    leaf = spec["foliage"]["material"]
+    slots = [next(m for m in spec["materials"] if m != leaf), leaf]
+    bm = bmesh.new()
+    verts = [bm.verts.new(v) for v in tree.verts]
+    for face, kind in zip(tree.faces, tree.kinds):
+        bm.faces.new([verts[i] for i in face]).material_index = 1 if kind in (LEAF, CORE_FACE) else 0
+    bm.verts.index_update()
+    bm.faces.index_update()
+    bm.faces.ensure_lookup_table()
+    bm.normal_update()
+    checks = Checks("build", name)
+    conv = conventions()
+    with contextlib.redirect_stdout(io.StringIO()):
+        fork = check_skeleton(checks, name, bm, slots, strict, conv)
+        check_foliage(checks, name, bm, slots, strict, conv, fork)
+        check_canopy(checks, name, bm, slots, strict, conv)
+    triangles = sum(len(face) - 2 for face in tree.faces)
+    checks.check("budget.triangles", triangles <= strict["max_triangles"], f"{triangles} > {strict['max_triangles']}")
+    bm.free()
+    return [f"{r['id']}: {r['detail']}" for r in checks.failed()]
+
+
+def draw(spec, strict=True):
     """The tree for the spec's seed, as lists, fitted to the spec's bounds.
 
     A seed draws whole trees, one after another from the same generator, until
-    one fills the bounds without being stretched out of shape. If none does,
-    the build fails and says why.
+    one fills the bounds without being stretched out of shape and meets the
+    brief's shape checks with room to spare (`unmet`). The gate measures the
+    saved scene; this is the same measurement made early, so that a seed that
+    cannot pass stops here with its reasons. If no tree does, the build fails
+    and says why each was refused. `strict=False` keeps the first tree that
+    fills the bounds, whatever it measures (the tests' broken trees).
     """
     lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
     rng = random.Random(spec["seed"])
     refused = []
     for take in range(1, TREES + 1):
         tree = Tree()
-        fork_z = hi.z * rng.uniform(*FORK_HEIGHT)
+        fork_z = max(hi.z * rng.uniform(*FORK_HEIGHT), FORK_LOWEST + FORK_SPREAD)
         try:
             pads = place_pads(rng, lo, hi, fork_z)
             trunk = grow_trunk(tree, rng, hi, fork_z, pads[0])
@@ -547,9 +768,21 @@ def draw(spec):
         except RuntimeError as error:
             refused.append(f"tree {take}: {error}")
             continue
-        print(f"tree seed {spec['seed']}: tree {take} of up to {TREES} fills the bounds; {len(pads)} pads of radius {[round(p.radius, 2) for p in pads]}, {tree.piece_count} leaf pieces")
+        # Measuring a tree takes several seconds, and one process may draw the same tree many times
+        # (the gate draws each sibling variant; the tests draw one tree per mutation). The answer
+        # for a tree already measured here, under the same spec and constants, is remembered.
+        key = (json.dumps(spec, sort_keys=True), repr(sorted((name, value) for name, value in globals().items() if name.isupper() and not name.startswith("_"))), take)
+        if strict and key not in _MEASURED:
+            _MEASURED[key] = unmet(tree, spec)
+        problems = _MEASURED[key] if strict else []
+        if problems:
+            refused.append(f"tree {take}: " + "; ".join(problems))
+            continue
+        triangles = [sum(len(face) - 2 for face, kind in zip(tree.faces, tree.kinds) if kind in kinds) for kinds in ((SIDE, STRIP_FACE, CONE, GROUND), (CORE_FACE,), (LEAF,))]
+        print(f"tree seed {spec['seed']}: tree {take} of up to {TREES} fills the bounds{" and meets the brief with room to spare" if strict else ""}; {len(pads)} pads of half-width {[round(p.radius, 2) for p in pads]} with {[len(p.shapes) for p in pads]} lobes, "
+              f"{tree.piece_count} leaf pieces; triangles: bark {triangles[0]}, core {triangles[1]}, leaf {triangles[2]}, total {sum(triangles)}")
         return tree
-    raise RuntimeError(f"tree seed {spec['seed']}: none of its {TREES} trees fits the bounds:\n  " + "\n  ".join(refused))
+    raise RuntimeError(f"tree seed {spec['seed']}: none of its {TREES} trees fills the bounds and meets the brief with room to spare:\n  " + "\n  ".join(refused))
 
 
 def flat_material(name, colour, two_sided):
@@ -563,9 +796,9 @@ def flat_material(name, colour, two_sided):
     return material
 
 
-def build_tree(spec):
+def build_tree(spec, strict=True):
     """Build the spec's one object from its seed. Bark is the first material in `materials`, leaf the foliage's."""
-    tree = draw(spec)
+    tree = draw(spec, strict)
     name = spec["objects"][0]
     leaf = spec["foliage"]["material"]
     bark = next(m for m in spec["materials"] if m != leaf)
@@ -574,13 +807,16 @@ def build_tree(spec):
     mesh.from_pydata([tuple(v) for v in tree.verts], [], tree.faces)
     mesh.materials.append(flat_material(bark, spec["materials"][bark], two_sided=False))
     mesh.materials.append(flat_material(leaf, spec["materials"][leaf], two_sided=True))
-    mesh.polygons.foreach_set("material_index", [1 if kind == LEAF else 0 for kind in tree.kinds])
+    mesh.polygons.foreach_set("material_index", [1 if kind in (LEAF, CORE_FACE) else 0 for kind in tree.kinds])
     mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
     # Seams say where the bark may be cut to lie flat; tools/paint.py unwraps along them.
     cuts = {frozenset(pair) for pair in tree.seams}
     for edge in mesh.edges:
         edge.use_seam = frozenset(edge.vertices) in cuts
     mesh.normals_split_custom_set([tuple(n) for n in corner_normals(tree)])
+    # Where each corner of the bark lies round and along its limb, for the grain (tools/paint.py).
+    grain = mesh.attributes.new("grain", "FLOAT_VECTOR", "CORNER")
+    grain.data.foreach_set("vector", [c for face, corners in zip(tree.faces, tree.grain) for corner in (corners or [(0.0, 0.0, 0.0)] * len(face)) for c in corner])
     mesh.update()
 
     obj = bpy.data.objects.new(name, mesh)

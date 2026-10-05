@@ -51,6 +51,7 @@ image_mime_types = ["image/png"]
 [metrics]
 # From the game target (ADR 7).
 player_height_m = 1.8
+eye_height_m = 1.7          # where a trunk is stood beside (tools/export.py writes the place; crates/asset_view looks from it)
 
 [review]
 tile_px = 512
@@ -85,6 +86,11 @@ growth_cover = [0.5, 1.5]           # measured cover of level faces, over the gr
 blotch_spread = [1.0, 2.5]          # tone spread of open faces (10th to 90th percentile), over the blotch asked for
 max_blotch_grain = 0.2              # mean tone step between neighbouring samples, over that spread: blotches are broad
 max_level_gap = 3                   # largest run of unused 8-bit levels inside the range open faces span: more is banding
+# Grain (ADR 12), measured where a spec gives close_height_m: on the upright faces below it.
+grain_patch_m = 0.15                # a hand-sized patch: grain is asked of each one, not of the trunk on average
+min_grain_step = 0.25               # mean tone step half a grain width across the grain, over the grain asked for
+min_grain_along = 1.16              # that step, over the step the same distance along the grain: the least the benchmark trees show from 0.5 m (tools/view_checks.py)
+min_grain_patches = 0.8             # share of patches that must show both
 
 [foliage]
 # How leaf pieces take their colour (ADR 11). What a tree wants of its foliage is in its spec.
@@ -97,12 +103,19 @@ views = ["front", "right", "back", "left", "three_quarter", "three_quarter_back"
 view_rays = 96              # parallel rays across the wider side of each view
 max_palette_error = 0.02    # how far a piece's colour may be from the nearest palette colour, per channel (linear)
 min_neighbours_differ = 0.5 # share of pieces whose nearest piece is another colour
+# Looking straight up into a canopy, as a player under it does (the checks under_closed and under_rim).
+below_cell_m = 0.05         # one ray per square of this size
+seen_into_m = 0.6           # a piece met this far above a pad's underside is the inside of the pad
+hole_m = 0.15               # gaps in a pad's outline up to this wide are holes in it, not its edge
+rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
+core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
 
 [skeleton]
 # How a tree's bark is measured: level slices through it. The amounts wanted are in each spec.
 breast_height_m = 1.3       # where a trunk's girth and its sides are taken
 slice_step_m = 0.1          # between the slices that look for the fork and count branches
 side_min_share = 0.06       # an edge of the slice is a flat side when it is this share of the way round
+foot_height_m = 0.4         # where a trunk's foot is taken for its lean: just above where the roots have joined it
 
 [variants]
 # Variants are compared by outline, from the four level views, both standing on their origins.

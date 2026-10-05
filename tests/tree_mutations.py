@@ -42,6 +42,21 @@ elif mutation == "grey_underside":
 elif mutation == "wrong_leaf_colour":
     # An autumn palette, where the brief and the manifest say green.
     spec["materials"][want["material"]] = "#c8782a"
+elif mutation == "light_core":
+    # The solid under the leaves as light as the leaves on top of it.
+    want["core_tint"] = "#ffffff"
+elif mutation == "no_grain":
+    # Bark with its gradient, edge light and blotches, and no grain: flat brown planes at arm's length.
+    spec["painted_shading"]["grain"] = 0.0
+elif mutation == "no_close_texels":
+    # The trunk a player stands against given no more texels than a twig.
+    del spec["painted_shading"]["close_height_m"], spec["painted_shading"]["close_texels_per_m"]
+elif mutation == "grain_across":
+    # The grain's two directions swapped: streaks run round each limb like hoops.
+    values = [0.0] * (len(tree.data.loops) * 3)
+    tree.data.attributes["grain"].data.foreach_get("vector", values)
+    values[0::3], values[1::3] = values[1::3], values[0::3]
+    tree.data.attributes["grain"].data.foreach_set("vector", values)
 
 paint.apply(spec, conv)
 
@@ -56,6 +71,14 @@ elif mutation == "gradient_within_piece":
         if polygon.material_index == slot:
             for step, corner in enumerate(polygon.loop_indices):
                 uvs[corner].uv = foliage.swatch_uv((polygon.index + step * 7) % (want["shades"] * want["tones"]), size, swatch)
+elif mutation in ("no_cores", "core_open"):
+    # Every core removed (pads are open shells again), or one face missing from each core.
+    bm = bmesh.new()
+    bm.from_mesh(tree.data)
+    cores = foliage.cores_of(bm, slot)
+    bmesh.ops.delete(bm, geom=[f for core in cores for f in (core if mutation == "no_cores" else core[:1])], context="FACES")
+    bm.to_mesh(tree.data)
+    bm.free()
 elif mutation == "bark_inside_out":
     bm = bmesh.new()
     bm.from_mesh(tree.data)

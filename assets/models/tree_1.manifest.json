@@ -17,7 +17,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 3366,
+  "triangles": 3554,
   "bounds": {
     "min": [
       -2.4,
@@ -60,7 +60,16 @@
     "swatch_px": 8,
     "max_palette_error": 0.02,
     "min_neighbours_differ": 0.5,
-    "min_effect_share": 0.5
+    "min_effect_share": 0.5,
+    "core_tint": [
+      0.084376,
+      0.194618,
+      0.238398
+    ],
+    "lobes": [
+      2,
+      4
+    ]
   },
   "painted": {
     "texture_px": 1024,
@@ -77,7 +86,7 @@
     "edge_light": 0.2,
     "edge_width_m": 0.03,
     "crevice_shadow": 0.6,
-    "crevice_width_m": 0.06,
+    "crevice_width_m": 0.045,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -89,8 +98,6 @@
       30,
       240
     ],
-    "blotch": 0.1,
-    "blotch_size_m": 0.4,
     "side_shade_normal_z": [
       0.3,
       0.7
@@ -109,6 +116,18 @@
       2.5
     ],
     "max_blotch_grain": 0.2,
-    "max_level_gap": 3
-  }
+    "max_level_gap": 3,
+    "grain": 0.3,
+    "grain_width_m": 0.02,
+    "close_height_m": 2.5,
+    "close_texels_per_m": 250.0,
+    "min_grain_step": 0.25,
+    "min_grain_along": 1.16,
+    "min_grain_patches": 0.8,
+    "grain_patch_m": 0.15
+  },
+  "stand_at": [
+    -0.2093,
+    0.0448
+  ]
 }

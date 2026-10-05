@@ -50,6 +50,10 @@ GROWTH = {"growth": str, "growth_height_m": float}
 GROWTH_WHERE = {"growth_up": float, "growth_edges": float}
 BLOTCH = {"blotch": float, "blotch_size_m": float}
 SIDE_SHADE = {"side_shade": float}
+# Grain (streaks along a limb: bark) and its width come together; so do the height below which a
+# player stands against the surface and the texels per metre it gets there.
+GRAIN = {"grain": float, "grain_width_m": float}
+CLOSE = {"close_height_m": float, "close_texels_per_m": float}
 # Optional; a tree's trunk and branches (source/tree/brief.md). All keys are required once it is present.
 SKELETON = {
     "material": str,
@@ -64,6 +68,8 @@ SKELETON = {
     "max_branch_taper": float,
     "min_seen_share": float,
     "min_seen_views": int,
+    "min_view_tone": float,
+    "min_view_grain": float,
 }
 # Optional; foliage of leaf pieces in pads, coloured from a palette (ADR 11). All keys are required once it is present.
 FOLIAGE = {
@@ -82,6 +88,15 @@ FOLIAGE = {
     "shades": int,
     "tones": int,
     "variation": float,
+    "core_tint": str,
+    "lobes": list,
+    "min_lobe_ratio": float,
+    "max_core_seen": float,
+    "max_core_seen_below": float,
+    "min_pad_flatness": float,
+    "min_pad_spread": float,
+    "max_seen_into": float,
+    "min_rim_points_per_m": float,
 }
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
@@ -137,6 +152,7 @@ if not checks.failed():
         wanted = {**PAINTED, **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
         optional = {**SIDE_SHADE, **(GROWTH_WHERE if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
+        wanted.update({**(GRAIN if keys & set(GRAIN) else {}), **(CLOSE if keys & set(CLOSE) else {})})
         ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
         ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
         checks.check(
@@ -160,6 +176,15 @@ if not checks.failed():
                 amounts_ok and strengths_ok and painted.get("growth_height_m", 1.0) > 0,
                 "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow and side_shade in 0..1 (below 1); widths, growth height and blotch size above 0",
             )
+    if painted is not None and all(type(painted.get(key, 0.0)) is float for key in (*GRAIN, *CLOSE)):
+        checks.check("spec.painted_grain", 0 <= painted.get("grain", 0.0) <= 1 and painted.get("grain_width_m", 1.0) > 0, "grain in 0..1 and grain_width_m above 0")
+        least = conv["painted_shading"]["min_texels_per_m"]
+        checks.check(
+            "spec.painted_close",
+            painted.get("close_height_m", 1.0) > 0 and painted.get("close_texels_per_m", least) >= least,
+            f"close_height_m above 0, and close_texels_per_m at least the {least} every face gets (conventions.toml)",
+        )
+
     def block(key, keys):
         """An optional block with exactly `keys`, each of its type; None when absent or malformed."""
         found = spec.get(key)
@@ -194,7 +219,29 @@ if not checks.failed():
             and 0 < skeleton["min_seen_views"] <= len(conv["foliage"]["views"]) + 1
         )
         checks.check("spec.skeleton_amounts", ok, "material in `materials`; min_sides <= max_sides; lean_m and fork_m as [least, most]; tapers and min_seen_share in 0..1; min_flare above 1; min_seen_views at most the foliage views and the one from below")
+    if skeleton:
+        checks.check(
+            "spec.skeleton_view",
+            0 < skeleton["min_view_tone"] < 1 and skeleton["min_view_grain"] >= 1,
+            "min_view_tone in 0..1; min_view_grain at least 1: tone changes faster across the trunk than along it",
+        )
     leaves = block("foliage", FOLIAGE)
+    if leaves:
+        lobes = leaves["lobes"]
+        checks.check(
+            "spec.foliage_core",
+            len(lobes) == 2 and all(type(n) is int for n in lobes) and 1 <= lobes[0] <= lobes[1]
+            and leaves["min_lobe_ratio"] >= 1 and leaves["min_pad_flatness"] > 0 and leaves["min_pad_spread"] >= 1 and leaves["min_rim_points_per_m"] >= 0
+            and all(0 <= leaves[key] <= 1 for key in ("max_core_seen", "max_core_seen_below", "max_seen_into"))
+            and re.fullmatch(HEX, leaves["core_tint"]) is not None,
+            "lobes as [least, most] whole numbers; min_lobe_ratio and min_pad_spread at least 1; max_core_seen, max_core_seen_below and max_seen_into in 0..1; core_tint as #rrggbb",
+        )
+        if re.fullmatch(HEX, leaves["core_tint"]) and re.fullmatch(HEX, str(leaves["under_tint"])):
+            checks.check(
+                "spec.foliage_core_darker",
+                luma(leaves["core_tint"]) < luma(leaves["under_tint"]),
+                f"core_tint {leaves['core_tint']} is not darker than under_tint {leaves['under_tint']} (ADR 9: a dark core under the leaf pieces)",
+            )
     if leaves:
         ok = (
             leaves["material"] in open_materials

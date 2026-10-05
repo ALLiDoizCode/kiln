@@ -7,8 +7,9 @@ Assets for Bevy, built as code by headless Blender and gated by scripts. Read `C
 - `tools/install_tools.sh` — install the pinned Blender and glTF validator into `.tools/`.
 - `tools/gate.sh <asset>` — build the asset and run every gate, stopping at the first failure.
 - `python tools/baseline.py approve <asset> [phase]` — record the current contact sheet as approved. Run it only when the user has looked at the sheet and said so in this conversation; a rebuilt sheet that drifts from it then fails the gate.
-- `cargo run -p asset_view -- assets/models/<asset>.glb assets/models/<asset>.manifest.json` — open the asset in a Bevy window with hot reload. With `--screenshot <out.png>` it saves one view and exits; `--close`, `--back` and `--stand <metres>` (a player's eye that far from the asset) choose the view.
+- `cargo run -p asset_view -- assets/models/<asset>.glb assets/models/<asset>.manifest.json` — open the asset in a Bevy window with hot reload. With `--screenshot <out.png>` it saves one view and exits 0, or saves nothing and exits 1 when the asset is not in the picture; `--close`, `--back`, `--stand <metres>` (a player's eye that far from the asset) and `--pitch <degrees>` (with `--stand`: how far above level to look) choose the view.
 - `python tools/review_aids.py views <image...>` / `blind <a> <b> <out>` — value map and squint view of a render, and a blind side-by-side of two renders; aids for review, not gates.
+- `tools/variants_sheet.sh <out.png> <benchmark.gltf> <benchmark.manifest.json> <asset...>` — variants beside a benchmark under Bevy from five views, the last from below.
 - `tests/run.sh` — prove the gates themselves can fail. Run after changing anything in `tools/` or `crates/asset_smoke`.
 - `tools/bl <script.py> [args]` — the only way to run Blender here. Never call the binary directly.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tests for the gates themselves: every check must be able to fail.
-# Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds and exports).
+# Needs a passing `tools/gate.sh` for tracer, crate, rock and tree_1 first (uses their builds, exports and review tiles).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 glb=assets/models/tracer.glb
@@ -110,6 +110,13 @@ expect_id "foliage.bluer_below"    "L4 catches undersides darker but no bluer"  
 expect_id "foliage.pieces"         "L4 catches foliage asked of an asset with none" smoke "$rock" "$(tamper 'm["foliage"] = json.load(open("'$tree_manifest'"))["foliage"]; m["foliage"]["material"] = "m_rock"' "$rock_manifest")"
 expect_id "painted.present"        "L4 catches bark and leaf on two copies of the texture" smoke "$(broken_tree two_textures)" "$tree_manifest"
 expect_id "signed volume"          "L4 catches inside-out bark under open leaves"   smoke "$(broken_tree bark_inside_out)" "$tree_manifest"
+# The core under the leaf pieces (ADR 9 as amended), and the bark's grain and close-range texels (ADR 12).
+expect_id "foliage.cores"          "L4 catches pads with no core under their leaves" smoke "$(broken_tree no_cores)" "$tree_manifest"
+expect_id "foliage.cores"          "L4 catches cores that are not closed"           smoke "$(broken_tree core_open)" "$tree_manifest"
+expect_id "foliage.core_colour"    "L4 catches a core as light as the leaves"       smoke "$(broken_tree light_core)" "$tree_manifest"
+expect_id "painted.grain"          "L4 catches bark with no grain"                  smoke "$(broken_tree no_grain)" "$tree_manifest"
+expect_id "painted.grain_along"    "L4 catches grain running round the limbs"       smoke "$(broken_tree grain_across)" "$tree_manifest"
+expect_id "uv.close_density"       "L4 catches a trunk with no more texels than a twig" smoke "$(broken_tree no_close_texels)" "$tree_manifest"
 
 printf 'not a glb' > "$tmp/bad.glb"
 expect 1 "L4 catches an unloadable file"    smoke "$tmp/bad.glb" "$manifest"
@@ -118,6 +125,17 @@ view() { cargo run -q -p asset_view -- "$@"; }
 expect 0 "L4b renders the real asset"       view "$glb" "$manifest" --screenshot "$tmp/shot.png"
 expect 1 "L4b fails on an unloadable file"  view "$tmp/bad.glb" "$manifest" --screenshot "$tmp/bad.png"
 expect 0 "L4b renders the asset's back"     view "$glb" "$manifest" --back --screenshot "$tmp/back.png"
+# The manifest's bounds moved 300 m off: the camera frames empty ground, and no picture may be saved.
+expect_id "asset.in_picture" "L4b fails when the asset is not in the picture" view "$glb" "$(tamper 'b=m["bounds"]; b["min"][0] += 300; b["max"][0] += 300')" --screenshot "$tmp/away.png"
+expect 1 "L4b saves no picture without the asset in it" test -e "$tmp/away.png"
+
+# L4c: bark seen from 0.5 m, as the gate takes it, with and without its grain.
+view_checks() { tools/bl tools/view_checks.py "$@"; }
+expect 0 "L4c passes the real tree's bark"  view_checks tree_1 source/tree_1/review/final/bevy_trunk.png
+view "$(broken_tree no_grain)" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$tmp/flat_bark.png" > /dev/null 2>&1
+expect_id "view.bark_tone"  "L4c catches bark that is flat brown at arm's length" view_checks tree_1 "$tmp/flat_bark.png"
+view "$(broken_tree grain_across)" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$tmp/hoop_bark.png" > /dev/null 2>&1
+expect_id "view.bark_grain" "L4c catches grain seen running round the trunk" view_checks tree_1 "$tmp/hoop_bark.png"
 
 # A GLB that is valid glTF but outside the Bevy profile: Draco-compressed.
 cat > "$tmp/draco.py" <<PY
@@ -208,6 +226,25 @@ tree_copy 's["skeleton"]["fork_m"] = [3.5, 2.0]'
 expect_id "spec.skeleton_amounts"    "L0 catches a fork range given backwards" python tools/lint_spec.py zz_lint
 tree_copy 's["variants"]["siblings"] = ["zz_lint"]'
 expect_id "spec.variants_amounts"    "L0 catches a variant listed as its own sibling" python tools/lint_spec.py zz_lint
+# The core, the lobes, the view from below and the bark's grain (ADR 9 as amended, ADR 12).
+tree_copy 's["foliage"]["core_tint"] = "#9fc0c8"'
+expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" python tools/lint_spec.py zz_lint
+tree_copy 's["foliage"]["lobes"] = [4, 2]'
+expect_id "spec.foliage_core"        "L0 catches a lobe count given backwards" python tools/lint_spec.py zz_lint
+tree_copy 's["foliage"]["max_core_seen"] = 1.5'
+expect_id "spec.foliage_core"        "L0 catches more core seen than there is foliage" python tools/lint_spec.py zz_lint
+tree_copy 'del s["foliage"]["max_seen_into"]'
+expect_id "spec.foliage"             "L0 catches a missing limit on the view from below" python tools/lint_spec.py zz_lint
+tree_copy 'del s["painted_shading"]["grain_width_m"]'
+expect_id "spec.painted_shading"     "L0 catches grain with no width"          python tools/lint_spec.py zz_lint
+tree_copy 's["painted_shading"]["grain"] = 1.5'
+expect_id "spec.painted_grain"       "L0 catches an impossible grain"          python tools/lint_spec.py zz_lint
+tree_copy 'del s["painted_shading"]["close_height_m"]'
+expect_id "spec.painted_shading"     "L0 catches close texels with no height"  python tools/lint_spec.py zz_lint
+tree_copy 's["painted_shading"]["close_texels_per_m"] = 50.0'
+expect_id "spec.painted_close"       "L0 catches close faces asked for fewer texels than any face gets" python tools/lint_spec.py zz_lint
+tree_copy 's["skeleton"]["min_view_grain"] = 0.5'
+expect_id "spec.skeleton_view"       "L0 catches grain in view asked to run across the trunk" python tools/lint_spec.py zz_lint
 rm -rf source/zz_lint
 
 # L5b: an approved sheet, then the same sheet with something drawn on it.
@@ -227,6 +264,11 @@ magick source/rock/review/final/sheet.png -depth 16 "PNG48:$tmp/deep.png"
 expect_id "image.eight_bit" "L5c catches a 16-bit sheet"        python tools/image_lint.py "$tmp/deep.png"
 magick source/rock/review/final/sheet.png -alpha on "PNG32:$tmp/alpha.png"
 expect_id "image.opaque"    "L5c catches a sheet with alpha"    python tools/image_lint.py "$tmp/alpha.png"
+# The review aids are review images too.
+cp source/rock/review/final/sheet.png "$tmp/aid.png"; python tools/review_aids.py views "$tmp/aid.png" > /dev/null
+expect 0 "L5c passes a review aid"          python tools/image_lint.py "$tmp/aid_aids.png"
+python tools/review_aids.py blind "$tmp/aid.png" "$tmp/aid.png" "$tmp/blind.png" > /dev/null
+expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$tmp/blind.png"
 
 echo; [[ $failures -eq 0 ]] && echo "all gate tests passed" || echo "$failures gate tests failed"
 exit $((failures > 0))

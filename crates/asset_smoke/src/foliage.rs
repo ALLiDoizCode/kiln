@@ -8,6 +8,12 @@
 //! are found again from the loaded triangles alone, the way `tools/foliage.py`
 //! finds them: a piece is triangles joined by shared corners, and a pad is
 //! pieces with no clear air between them on a grid of `pad_gap_m`.
+//!
+//! The leaf material also holds the cores (ADR 9 as amended): closed solids
+//! under the pieces, one in each lobe of a pad, in one more colour of the
+//! palette, darker than any piece. A set of triangles joined by shared corners
+//! is a core when every one of its edges lies between two of its triangles,
+//! and a piece otherwise. A core belongs to the pad of the pieces lying on it.
 
 use std::collections::{BTreeSet, HashMap};
 
@@ -34,6 +40,12 @@ pub struct Foliage {
     min_neighbours_differ: f32,
     /// The share of the tints' difference the measured pads must show.
     min_effect_share: f32,
+    /// Cores: the linear RGB multiplier that gives their colour, and the least and most a pad may have.
+    /// Absent (a manifest from before cores): nothing is asked of them.
+    #[serde(default)]
+    core_tint: Option<[f32; 3]>,
+    #[serde(default)]
+    lobes: Option<[usize; 2]>,
 }
 
 #[derive(Serialize, Default)]
@@ -52,6 +64,11 @@ pub struct Measured {
     /// Blue as a share of the colour, in the lowest and the highest quarter of the pads' pieces.
     blue_below: f32,
     blue_above: f32,
+    /// Cores in each pad, in the order of `pads`.
+    cores: Vec<usize>,
+    /// Luminance of the lightest core and of the darkest leaf piece.
+    core_luminance: f32,
+    darkest_piece_luminance: f32,
 }
 
 const LUMA: Vec3 = Vec3::new(0.2126, 0.7152, 0.0722);
@@ -113,7 +130,25 @@ pub fn check(
         })
         .collect();
     let count = piece_of_root.len();
-    measured.pieces = count;
+    // Cores: the sets that close on themselves. Every edge of one lies between two of its triangles.
+    let mut edges: HashMap<(usize, (i64, i64, i64), (i64, i64, i64)), u32> = HashMap::new();
+    let mut volume = vec![0.0f32; count];
+    for (triangle, &part) in triangles.iter().zip(&piece_of) {
+        let [a, b, c] = triangle.positions;
+        volume[part] += a.dot(b.cross(c)) / 6.0;
+        for (from, to) in [(a, b), (b, c), (c, a)] {
+            let (from, to) = (key(from), key(to));
+            *edges.entry((part, from.min(to), from.max(to))).or_default() += 1;
+        }
+    }
+    let mut is_core = vec![true; count];
+    for ((part, _, _), shared) in &edges {
+        if *shared != 2 {
+            is_core[*part] = false;
+        }
+    }
+    let piece_count = is_core.iter().filter(|core| !**core).count();
+    measured.pieces = piece_count;
 
     // Each piece's colour, read at every corner's UV; a piece whose corners disagree is shaded.
     let (width, height) = (image.width() as f32, image.height() as f32);
@@ -143,10 +178,10 @@ pub fn check(
             *entry = (entry.0 + *position, entry.1 + colour, entry.2 + 1);
         }
     }
-    measured.shaded_pieces = shaded.iter().filter(|&&s| s).count();
+    measured.shaded_pieces = shaded.iter().zip(&is_core).filter(|(shaded, core)| **shaded && !**core).count();
     if measured.shaded_pieces > 0 {
         fail(format!(
-            "foliage.flat_colour: {} of {count} leaf pieces show more than one colour across their corners; each piece is one flat colour",
+            "foliage.flat_colour: {} of {piece_count} leaf pieces show more than one colour across their corners; each piece is one flat colour",
             measured.shaded_pieces
         ));
     }
@@ -186,6 +221,7 @@ pub fn check(
         }
     }
     let pieces: Vec<Piece> = (0..count)
+        .filter(|piece| !is_core[*piece])
         .map(|piece| Piece {
             middle: sums[piece].0 / sums[piece].2 as f32,
             colour: sums[piece].1 / sums[piece].2 as f32,
@@ -201,11 +237,49 @@ pub fn check(
     measured.pads = pads.iter().map(Vec::len).collect();
     if pads.is_empty() {
         fail(format!(
-            "foliage.pieces: {count} leaf pieces form no pad of at least {} pieces",
+            "foliage.pieces: {piece_count} leaf pieces form no pad of at least {} pieces",
             want.min_pad_pieces
         ));
+        if want.lobes.is_some() {
+            fail("foliage.cores: no pad, so no core under its leaves".into());
+        }
         return measured;
     }
+
+    // Cores: every pad has its lobes' worth of them, closed and facing outward, in the one core
+    // colour, and that colour is darker than any leaf piece.
+    let cores: Vec<usize> = (0..count).filter(|part| is_core[*part]).collect();
+    let core_pad: Vec<usize> = cores.iter().map(|core| find(&mut pad_parent, *core)).collect();
+    measured.cores = pads.iter().map(|pad| core_pad.iter().filter(|root| **root == pad[0].pad).count()).collect();
+    if let Some([least, most]) = want.lobes {
+        let stray = core_pad.iter().filter(|root| pads.iter().all(|pad| pad[0].pad != **root)).count();
+        let inside_out = cores.iter().filter(|core| volume[**core] <= 0.0).count();
+        if measured.cores.iter().any(|n| *n < least || *n > most) || stray > 0 || inside_out > 0 {
+            fail(format!(
+                "foliage.cores: the pads have {:?} cores (closed solids of '{}') under their leaf pieces, {stray} cores lie in no pad and {inside_out} are inside out; the manifest wants {least} to {most} in every pad",
+                measured.cores, want.material
+            ));
+        }
+    }
+    let piece_colours = || pieces.iter().map(|piece| piece.colour);
+    measured.darkest_piece_luminance = piece_colours().map(|colour| colour.dot(LUMA)).fold(f32::MAX, f32::min);
+    measured.core_luminance = cores.iter().map(|core| (sums[*core].1 / sums[*core].2 as f32).dot(LUMA)).fold(0.0, f32::max);
+    if let Some(tint) = want.core_tint {
+        let expected = Vec3::from(*material_colour) * Vec3::from(tint);
+        let off = cores
+            .iter()
+            .filter(|core| shaded[**core] || (sums[**core].1 / sums[**core].2 as f32 - expected).abs().max_element() > want.max_palette_error)
+            .count();
+        if off > 0 || measured.core_luminance >= measured.darkest_piece_luminance {
+            fail(format!(
+                "foliage.core_colour: {off} of {} cores are not the one colour the leaf colour and core_tint give ({expected:?}, linear), or the lightest core (luminance {:.4}) is not darker than the darkest leaf piece ({:.4})",
+                cores.len(),
+                measured.core_luminance,
+                measured.darkest_piece_luminance
+            ));
+        }
+    }
+    let count = pieces.len();
 
     // The palette the spec gives, and how far each piece's colour is from it.
     let material = Vec3::from(*material_colour);

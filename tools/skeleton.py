@@ -75,6 +75,14 @@ def flat_sides(points, min_share):
     return sum(1 for run in runs if run.length >= min_share * around)
 
 
+def stand_at(bm, material_index, floor, eye_height):
+    """Where a trunk is at a player's eye height: the middle (x, y) of the widest loop of its slice there, or None."""
+    bark = only(bm, material_index)
+    loops = slice_at(bark, floor + eye_height)
+    bark.free()
+    return tuple(loops[0][1]) if loops else None
+
+
 NOTHING = {"fork_m": None, "taper": None, "branches": 0, "branch_taper": None, "sides": None, "breast_m": None, "flare": None, "roots": 0, "lean_m": None}
 
 
@@ -111,9 +119,12 @@ def measure(bark, conv):
         if low and high:
             found["branch_taper"] = high / low
 
-        ground = slice_at(bark, floor + 0.02)
-        if ground:
-            found["lean_m"] = (below[0][1] - ground[0][1]).length
+        # Lean: from the trunk's middle just above its roots to its middle below the fork. The slice at
+        # the ground will not do for the foot: roots reach further on one side than another, and its
+        # middle sits up to 0.2 m off the trunk's, which made an upright trunk measure as leaning.
+        foot = slice_at(bark, floor + rules["foot_height_m"])
+        if foot:
+            found["lean_m"] = (below[0][1] - foot[0][1]).length
     ground = slice_at(bark, floor + 0.02)
     if ground:
         _, middle, points = ground[0]

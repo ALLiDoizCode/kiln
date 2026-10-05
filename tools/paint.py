@@ -69,6 +69,25 @@ FULL_EDGE_OCCLUSION = 0.06
 # Faces within this of straight down, at the floor of the bounds, are the hidden underside.
 UNDERSIDE_COS = 0.999
 UNDERSIDE_UV_SCALE = 0.05  # texel density of an underside nobody sees, beside the rest
+# Grain (bark): tone that runs in streaks along a limb. The build script says which way that is with a
+# face-corner attribute of this name: (metres across the grain, metres along it, a number per limb).
+GRAIN_ATTRIBUTE = "grain"
+GRAIN_STRETCH = 7.0  # a streak is this many times as long as it is wide
+GRAIN_FINE = 0.5  # fine streaks: their width over `grain_width_m`
+GRAIN_FINE_TONE = 0.8  # and how far they lighten and darken, over `grain`
+# Furrows: dark lines that wander along the limb and run into each other, with plates of bark between.
+FURROW_WIDTH = 3.0  # plates are about this many grain widths across
+FURROW_HALF = 0.1  # half a furrow's width, as a share of the noise's range
+FURROW_DEPTH = 1.8  # how dark a furrow is, over `grain`
+FURROW_WANDER = 1.2  # how far furrows wander (the noise's distortion)
+GRAIN_LIFT = 0.96  # the tone is lifted by this, times `grain`, to keep its mean: furrows darken more than ridges lighten
+RIDGE_LIGHT = 0.7  # how light the lip of a plate beside a furrow is, over `grain`
+PLATE_TONE = 0.15  # how far neighbouring plates differ in tone, over `grain`
+KNOT_SPACING_M = 0.3  # one place a knot may be per square of this size
+KNOT_SHARE = 0.22  # share of those places that have one
+KNOT_RADIUS_M = 0.035
+KNOT_DEPTH = 1.3  # how dark a knot's middle is, over `grain`
+CLOSE_PASSES = 5  # how many times the layout is repacked to give close faces their texels
 
 
 def luminance(rgb):
@@ -141,11 +160,80 @@ def unwrap(objects, spec, conv, skip=None, keep_clear=0.0):
     # The exact (concave) packer takes 15 s on the rock for 3% more of the texture; boxes take none.
     run(bpy.ops.uv.pack_islands, rotate=True, scale=True, margin_method="FRACTION", margin=margin, shape_method="AABB")
     run(bpy.ops.object.mode_set, mode="OBJECT")
+    if "close_texels_per_m" in paint:
+        def repack():
+            run(bpy.ops.object.mode_set, mode="EDIT")
+            run(bpy.ops.uv.pack_islands, rotate=True, scale=True, margin_method="FRACTION", margin=margin, shape_method="AABB")
+            run(bpy.ops.object.mode_set, mode="OBJECT")
+
+        densify_close(objects, spec, conv, skip, keep_clear, repack)
     if keep_clear:
         # Shrink the layout toward the bottom-left corner; texels stay square.
         for obj in objects:
             for corner in obj.data.uv_layers[UV_LAYER].data:
                 corner.uv = corner.uv * (1.0 - keep_clear)
+
+
+def texel_densities(obj, size):
+    """Texels per metre of every polygon of an object, as its UVs lie now: the sparsest of the triangles it exports as."""
+    mesh, world = obj.data, obj.matrix_world
+    uvs = mesh.uv_layers[UV_LAYER].data
+    found = []
+    for polygon in mesh.polygons:
+        corners = [uvs[i].uv for i in polygon.loop_indices]
+        points = [world @ mesh.vertices[i].co for i in polygon.vertices]
+        least = float("inf")
+        # Both ways of cutting a quad in two: the exporter picks one.
+        for first in range(2 if len(points) == 4 else 1):
+            for step in range(1, len(points) - 1):
+                a, b, c = (first, first + step, first + step + 1) if len(points) == 4 and step == 1 else (first, (first + step) % len(points), (first + step + 1) % len(points))
+                area = abs((corners[b] - corners[a]).cross(corners[c] - corners[a])) / 2
+                surface = (points[b] - points[a]).cross(points[c] - points[a]).length / 2
+                if surface > 0:
+                    least = min(least, math.sqrt(area * size * size / surface))
+        found.append(least if least < float("inf") else 0.0)
+    return found
+
+
+def densify_close(objects, spec, conv, skip, keep_clear, repack):
+    """Give the surface a player stands against its texels (`close_height_m`, `close_texels_per_m`).
+
+    Islands that reach below `close_height_m` are enlarged, and the layout
+    packed again, until their sparsest face has `close_texels_per_m`. The
+    rest of the surface shrinks to make room; the conventions' own least
+    density still holds for it, and the load test says so if it does not.
+    Call in object mode; `repack` packs the islands again and returns there.
+    """
+    from bpy_extras import mesh_utils
+
+    paint = spec["painted_shading"]
+    size = paint["texture_px"]
+    ceiling = spec["bounds_m"]["min"][2] + paint["close_height_m"]
+    for _ in range(CLOSE_PASSES):
+        least, close = float("inf"), []
+        for obj in objects:
+            mesh, world = obj.data, obj.matrix_world
+            densities = texel_densities(obj, size)
+            for island in mesh_utils.mesh_linked_uv_islands(mesh):
+                polygons = [mesh.polygons[i] for i in island]
+                if skip is not None and any(obj.material_slots[p.material_index].material.name == skip for p in polygons):
+                    continue
+                if any((world @ mesh.vertices[i].co).z <= ceiling for p in polygons for i in p.vertices):
+                    close.append((mesh, polygons))
+                    # The hidden underside keeps its few texels.
+                    least = min([least] + [densities[p.index] for p in polygons if densities[p.index] > 0 and not (p.normal.z < -UNDERSIDE_COS and paint["hidden_underside"])])
+        least *= 1.0 - keep_clear
+        if not close or least >= paint["close_texels_per_m"]:
+            return
+        grow = paint["close_texels_per_m"] / least * 1.08
+        for mesh, polygons in close:
+            uvs = mesh.uv_layers[UV_LAYER].data
+            corners = [i for p in polygons for i in p.loop_indices]
+            middle = sum((uvs[i].uv for i in corners), uvs[corners[0]].uv * 0) / len(corners)
+            for i in corners:
+                uvs[i].uv = middle + (uvs[i].uv - middle) * grow
+        repack()
+    raise RuntimeError(f"the surface below {paint['close_height_m']} m cannot be given {paint['close_texels_per_m']} texels per metre on a {size} px texture: {least:.0f} after {CLOSE_PASSES} passes")
 
 
 def paint_nodes(tree, colour_rgb, spec, conv):
@@ -258,6 +346,45 @@ def paint_nodes(tree, colour_rgb, spec, conv):
         band = math_node("SUBTRACT", 1.0, math_node("DIVIDE", from_middle, rules["side_shade_half_band"]), clamp=True)
         colour = times(colour, math_node("SUBTRACT", 1.0, math_node("MULTIPLY", math_node("MULTIPLY", upright, band), paint["side_shade"])))
 
+    if paint.get("grain"):
+        # Streaks along the limb: lighter ridges and darker furrows, and a few knots. Computed from
+        # where the point lies round and along its limb, which the build script gives.
+        where = node("ShaderNodeAttribute", attribute_type="GEOMETRY", attribute_name=GRAIN_ATTRIBUTE).outputs["Vector"]
+        width = paint["grain_width_m"]
+
+        def streaks(across, shift, detail, wander=0.0):
+            mapping = node("ShaderNodeMapping")
+            tree.links.new(where, mapping.inputs["Vector"])
+            mapping.inputs["Scale"].default_value = (1 / (width * across), 1 / (width * across * GRAIN_STRETCH), 1.0)
+            mapping.inputs["Location"].default_value = (shift, shift * 0.7, shift * 1.3)
+            new = node("ShaderNodeTexNoise", noise_dimensions="3D")
+            tree.links.new(mapping.outputs["Vector"], new.inputs["Vector"])
+            new.inputs["Scale"].default_value, new.inputs["Detail"].default_value = 1.0, detail
+            new.inputs["Distortion"].default_value = wander
+            return new.outputs["Fac"]
+
+        def signed(value):
+            return math_node("SUBTRACT", math_node("MULTIPLY", ramp(value, 0.5 - NOISE_SPREAD, 0.5 + NOISE_SPREAD), 2.0), 1.0)
+
+        fine = signed(streaks(GRAIN_FINE, 71.0, 1.0))
+        plates = streaks(FURROW_WIDTH, 89.0, 1.0, FURROW_WANDER)
+        from_line = math_node("ABSOLUTE", math_node("SUBTRACT", plates, 0.5), 0.0)
+        furrow = ramp(from_line, FURROW_HALF, FURROW_HALF * 0.4, smooth=True)
+        ridge = math_node("MULTIPLY", ramp(from_line, FURROW_HALF * 0.8, FURROW_HALF * 1.3, smooth=True), ramp(from_line, FURROW_HALF * 3.0, FURROW_HALF * 1.3, smooth=True))
+        tone = math_node("ADD", math_node("ADD", math_node("MULTIPLY", fine, GRAIN_FINE_TONE), math_node("MULTIPLY", signed(plates), PLATE_TONE)), math_node("MULTIPLY", ridge, RIDGE_LIGHT))
+        knots = node("ShaderNodeTexVoronoi", voronoi_dimensions="3D", feature="F1")
+        spread = node("ShaderNodeMapping")
+        tree.links.new(where, spread.inputs["Vector"])
+        spread.inputs["Scale"].default_value = (1 / KNOT_SPACING_M, 1 / KNOT_SPACING_M, 1.0)
+        tree.links.new(spread.outputs["Vector"], knots.inputs["Vector"])
+        knots.inputs["Scale"].default_value = 1.0
+        chosen = node("ShaderNodeSeparateColor")
+        tree.links.new(knots.outputs["Color"], chosen.inputs[0])
+        knot = math_node("MULTIPLY", ramp(knots.outputs["Distance"], KNOT_RADIUS_M / KNOT_SPACING_M, 0.3 * KNOT_RADIUS_M / KNOT_SPACING_M, smooth=True), math_node("LESS_THAN", chosen.outputs[0], KNOT_SHARE))
+        dark = math_node("MAXIMUM", math_node("MULTIPLY", furrow, FURROW_DEPTH), math_node("MULTIPLY", knot, KNOT_DEPTH))
+        factor = math_node("MULTIPLY", math_node("ADD", 1.0 + paint["grain"] * GRAIN_LIFT, math_node("MULTIPLY", tone, paint["grain"])), math_node("SUBTRACT", 1.0, math_node("MULTIPLY", dark, paint["grain"])))
+        colour = times(colour, factor)
+
     if paint.get("blotch"):
         # Broad patches of lighter and darker tone, as much one as the other.
         pattern = ramp(noise(1 / paint["blotch_size_m"], 1.0, 37.0), 0.5 - BLOTCH_EDGE, 0.5 + BLOTCH_EDGE, smooth=True)
@@ -295,12 +422,15 @@ def leaf_colours(objects, spec, conv, image):
     size, swatch = spec["painted_shading"]["texture_px"], conv["foliage"]["swatch_px"]
     shades, tones = want["shades"], want["tones"]
     colours = foliage.palette(linear_rgb(spec["materials"][want["material"]]), linear_rgb(want["under_tint"]), linear_rgb(want["top_tint"]), shades, tones, want["variation"])
-    per_row, rows, strip = foliage.swatch_layout(size, swatch, shades * tones)
+    per_row, rows, strip = foliage.swatch_layout(size, swatch, shades * tones + 1)
 
     texels = numpy.empty(size * size * 4, dtype=numpy.float32)
     image.pixels.foreach_get(texels)
     texels = texels.reshape(size, size, 4)  # row 0 is the bottom of the image
     flat = [colour for row in colours for colour in row]
+    if "core_tint" in want:
+        # One more swatch after the leaves': the cores' colour (ADR 9 as amended).
+        flat.append(foliage.core_colour(linear_rgb(spec["materials"][want["material"]]), linear_rgb(want["core_tint"])))
     for index in range(per_row * rows):
         # Swatches past the last colour repeat it, so the strip has no unpainted texel.
         colour = flat[min(index, len(flat) - 1)]
@@ -324,8 +454,8 @@ def leaf_colours(objects, spec, conv, image):
         bm.transform(obj.matrix_world)
         bm.faces.index_update()
         pieces = foliage.pieces_of(bm, slot)
-        triangles, owner = foliage.triangles_of(pieces)
-        pads = foliage.pads_of(triangles, owner, len(pieces), want["pad_gap_m"])
+        # A core joins the pieces lying on it into one pad (ADR 9 as amended).
+        pads, _ = foliage.pads_with_cores(pieces, foliage.cores_of(bm, slot), want["pad_gap_m"])
         heights = foliage.heights_in_pads(pieces, pads)
         uvs = obj.data.uv_layers[UV_LAYER].data
         for piece, height in zip(pieces, heights):
@@ -334,6 +464,11 @@ def leaf_colours(objects, spec, conv, image):
             for face in piece:
                 for corner in obj.data.polygons[face.index].loop_indices:
                     uvs[corner].uv = uv
+        # Cores: every corner on the one swatch after the leaves'.
+        for core in foliage.cores_of(bm, slot):
+            for face in core:
+                for corner in obj.data.polygons[face.index].loop_indices:
+                    uvs[corner].uv = foliage.swatch_uv(shades * tones, size, swatch)
         bm.free()
 
 
@@ -346,7 +481,7 @@ def apply(spec, conv):
     leaf = spec["foliage"]["material"] if "foliage" in spec else None
     strip = 0
     if leaf:
-        strip = foliage.swatch_layout(size, conv["foliage"]["swatch_px"], spec["foliage"]["shades"] * spec["foliage"]["tones"])[2]
+        strip = foliage.swatch_layout(size, conv["foliage"]["swatch_px"], spec["foliage"]["shades"] * spec["foliage"]["tones"] + 1)[2]
     unwrap(objects, spec, conv, skip=leaf, keep_clear=strip / size)
 
     image = bpy.data.images.new(f"{spec['asset']}_paint", size, size, alpha=False)

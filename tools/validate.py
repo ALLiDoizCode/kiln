@@ -15,7 +15,8 @@ from pathlib import Path
 
 import bmesh
 import bpy
-from mathutils import Vector
+import numpy
+from mathutils import Matrix, Vector, geometry
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -301,8 +302,9 @@ def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
         f"of {len(pieces)} leaf pieces, {bent} are not flat (within {rules['flat_m']} m), {blunt} have no corner of {rules['pointed_deg']} degrees or less, {smooth} have no notch in their outline",
     )
 
-    triangles, owner = foliage.triangles_of(pieces)
-    pads = foliage.pads_of(triangles, owner, len(pieces), want["pad_gap_m"])
+    # Cores (ADR 9 as amended) join the pieces lying on them into one pad; check_canopy measures the cores themselves.
+    cores = foliage.cores_of(bm, leaf)
+    pads, _ = foliage.pads_with_cores(pieces, cores, want["pad_gap_m"])
     sizes = [pads.count(pad) for pad in range(max(pads, default=-1) + 1)]
     whole = [size for size in sizes if size >= want["min_pad_pieces"]]
     strays = sum(size for size in sizes if size < want["min_pad_pieces"])
@@ -325,11 +327,11 @@ def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
     )
 
     # What each view shows: sky through the canopy, and bark among what is seen above the fork.
-    if not pieces:
+    if not pieces and not cores:
         return
     tree = BVHTree.FromBMesh(bm)
     bm.faces.ensure_lookup_table()
-    canopy = [v.co.copy() for piece in pieces for face in piece for v in face.verts]
+    canopy = [v.co.copy() for part in pieces + cores for face in part for v in face.verts]
     floor = spec["bounds_m"]["min"][2]
     above = floor + (fork_m if fork_m is not None else spec.get("skeleton", {}).get("fork_m", [0.0])[0])
     bark = slots.index(spec["skeleton"]["material"]) if "skeleton" in spec else -1
@@ -338,7 +340,7 @@ def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
     sky = {view: round(seen[view][0], 3) for view in views}
     low, high = want["sky_share"]
     open_views = [view for view in views if low <= sky[view] <= high]
-    print(f"{name} foliage: {len(pieces)} pieces {lengths[0]:.2f} to {lengths[-1]:.2f} m, pads {sizes}, pointing out {out:.2f} and down {down:.2f}, sky {sky}")
+    print(f"{name} foliage: {len(pieces)} pieces {lengths[0] if lengths else 0:.2f} to {lengths[-1] if lengths else 0:.2f} m, pads {sizes}, pointing out {out:.2f} and down {down:.2f}, sky {sky}")
     checks.check(
         f"{name}.sky",
         len(open_views) >= want["min_sky_views"],
@@ -354,6 +356,140 @@ def check_foliage(checks, name, bm, slots, spec, conv, fork_m):
             f"bark is at least {spec['skeleton']['min_seen_share']} of what is seen above the fork from {len(showing)} of {len(seen)} views; "
             f"spec wants {spec['skeleton']['min_seen_views']}; shares {share}",
         )
+
+
+def check_canopy(checks, name, bm, slots, spec, conv):
+    """Pads are lumpy masses of leaf pieces over dark cores, wider than tall and of different sizes, and read as foliage from below (ADR 9 as amended)."""
+    want, rules = spec["foliage"], conv["foliage"]
+    leaf = slots.index(want["material"])
+    pieces, cores = foliage.pieces_of(bm, leaf), foliage.cores_of(bm, leaf)
+    piece_pads, core_pads = foliage.pads_with_cores(pieces, cores, want["pad_gap_m"])
+    whole = sorted(pad for pad in set(piece_pads) if piece_pads.count(pad) >= want["min_pad_pieces"])
+
+    def box(parts):
+        points = [v.co for part in parts for face in part for v in face.verts]
+        return [max(p[i] for p in points) - min(p[i] for p in points) for i in range(3)]
+
+    def width(parts):
+        x, y, _ = box(parts)
+        return math.sqrt(x * y)
+
+    # Cores: each pad has its lobes, each a closed solid facing outward.
+    low, high = want["lobes"]
+    in_pad = {pad: [core for core, at in zip(cores, core_pads) if at == pad] for pad in whole}
+    counts = [len(in_pad[pad]) for pad in whole]
+    stray = sum(1 for at in core_pads if at not in whole)
+    volumes = [sum(f.verts[0].co.dot(a.co.cross(b.co)) for f in core for a, b in zip(f.verts[1:], f.verts[2:])) / 6 for core in cores]
+    inside_out = sum(1 for volume in volumes if volume <= 0)
+    # A part too large to be a leaf piece, and not closed, is a core with a hole in it.
+    holed = sum(1 for piece in pieces if sum(len(f.verts) - 2 for f in piece) >= rules["core_min_triangles"])
+    checks.check(
+        f"{name}.cores",
+        whole and all(low <= count <= high for count in counts) and not stray and not inside_out and not holed,
+        f"the {len(whole)} pads have {counts} cores (closed solids of the foliage material), {stray} cores lie outside any pad, {inside_out} are inside out and {holed} are not closed; spec wants {low} to {high} closed cores in every pad",
+    )
+    ratios = [round(max(map(lambda core: width([core]), found)) / min(map(lambda core: width([core]), found)), 2) if len(found) > 1 else 1.0 for found in in_pad.values()]
+    checks.check(
+        f"{name}.lobes_differ",
+        ratios and min(ratios) >= want["min_lobe_ratio"],
+        f"in each pad the widest core over the narrowest is {ratios}; spec wants at least {want['min_lobe_ratio']} in every pad: lobes of different sizes",
+    )
+
+    # Pads: wider than tall, and of different widths within the tree.
+    of_pad = {pad: [piece for piece, at in zip(pieces, piece_pads) if at == pad] for pad in whole}
+    widths = [round(width(found), 2) for found in of_pad.values()]
+    flatness = [round(width(found) / box(found)[2], 2) for found in of_pad.values()]
+    spread = max(widths) / min(widths) if widths else 0.0
+    print(f"{name} canopy: pads {widths} m wide, {flatness} times as wide as tall; cores per pad {counts}, widest core over narrowest {ratios}")
+    checks.check(
+        f"{name}.pads_wide",
+        flatness and min(flatness) >= want["min_pad_flatness"],
+        f"the pads are {flatness} times as wide as they are tall (widths {widths} m); spec wants at least {want['min_pad_flatness']} of every pad",
+    )
+    checks.check(
+        f"{name}.pads_differ",
+        spread >= want["min_pad_spread"],
+        f"the widest pad is {spread:.2f} times the narrowest (widths {widths} m); spec wants at least {want['min_pad_spread']}",
+    )
+    if not pieces and not cores:
+        return
+
+    # How much core each view shows, of the foliage it shows.
+    tree = BVHTree.FromBMesh(bm)
+    bm.faces.ensure_lookup_table()
+    canopy = [v.co.copy() for part in pieces + cores for face in part for v in face.verts]
+    is_core = {face.index for core in cores for face in core}
+    is_piece = {face.index for piece in pieces for face in piece}
+    shown = {}
+    for view, direction in {**{view: VIEW_DIRECTIONS[view] for view in rules["views"]}, "below": (0, 0, -1)}.items():
+        hits = foliage.seen_first(tree, canopy, direction, rules["view_rays"])
+        core, leaves = sum(1 for index in hits if index in is_core), sum(1 for index in hits if index in is_piece)
+        shown[view] = round(core / max(core + leaves, 1), 3)
+    print(f"{name} core seen, as a share of the foliage seen: {shown}")
+    over = {view: share for view, share in shown.items() if share > (want["max_core_seen_below"] if view == "below" else want["max_core_seen"])}
+    checks.check(
+        f"{name}.core_hidden",
+        not over,
+        f"core is {over} of the foliage seen; spec wants at most {want['max_core_seen']} from each side and {want['max_core_seen_below']} from below: the leaf pieces are what is seen; all {shown}",
+    )
+
+    # From below: what a pad's outline shows. A ray straight up inside it must stop at the pad's
+    # underside (a core, or pieces hanging there), not pass up into the pad or through it to the sky.
+    lo, hi = [min(p[i] for p in canopy) for i in range(3)], [max(p[i] for p in canopy) for i in range(3)]
+    cell = rules["below_cell_m"]
+    first, height, above = foliage.from_below(tree, lo, hi, cell)
+    pad_of_face = {face.index: pad for part, pad in zip(pieces + cores, piece_pads + core_pads) for face in part}
+    pad_first = numpy.vectorize(lambda index: pad_of_face.get(index, -1))(first)
+    pad_above = numpy.vectorize(lambda index: pad_of_face.get(index, -1))(above)
+    piece_first = numpy.isin(first, list(is_piece))
+    into = {}
+    for pad in whole:
+        mine = pad_first == pad
+        outline = numpy.logical_or(mine, pad_above == pad)
+        if not mine.any():
+            into[pad] = 1.0
+            continue
+        underside = numpy.percentile(height[mine], 20)
+        deep = numpy.logical_and(numpy.logical_and(mine, piece_first), height > underside + rules["seen_into_m"])
+        holes = numpy.logical_and(foliage.closing(outline, max(1, round(rules["hole_m"] / cell))), first < 0)
+        into[pad] = round(float((deep.sum() + holes.sum()) / (outline.sum() + holes.sum())), 3)
+    worst = max(into.values(), default=1.0)
+    checks.check(
+        f"{name}.under_closed",
+        whole and worst <= want["max_seen_into"],
+        f"looking straight up, {worst:.3f} of the worst pad's outline shows the inside of the pad (a piece more than {rules['seen_into_m']} m above its underside) or sky through a gap; "
+        f"spec wants at most {want['max_seen_into']} of every pad; pads {list(into.values())}",
+    )
+
+    # And its rim reads as leaves: points of pieces stand clear against the sky.
+    def clear(x, y):
+        return tree.ray_cast(Vector((x, y, lo[2] - 1.0)), Vector((0, 0, 1)))[2] is None
+
+    points = {pad: 0 for pad in whole}
+    for piece, pad in zip(pieces, piece_pads):
+        shape = foliage.piece_shape(piece)
+        out = Vector((shape["points"].x, shape["points"].y))
+        if pad not in points or shape["tip"] is None or out.length < 0.2:
+            continue
+        out.normalize()
+        tip = Vector((shape["tip"].x, shape["tip"].y))
+        mine = {face.index for face in piece}
+        # The tip itself is seen from below, and there is sky just past it and either side of it.
+        seen = tree.ray_cast(Vector((*(tip - out * rules["rim_step_m"]), lo[2] - 1.0)), Vector((0, 0, 1)))[2] in mine
+        around = [tip + Matrix.Rotation(math.radians(turn), 2) @ out * rules["rim_step_m"] for turn in (-70, 0, 70)]
+        if seen and all(clear(*at) for at in around):
+            points[pad] += 1
+    rim = {}
+    for pad in whole:
+        flat = [(v.co.x, v.co.y) for piece in of_pad[pad] for face in piece for v in face.verts]
+        hull = [Vector(flat[i]) for i in geometry.convex_hull_2d(flat)]
+        rim[pad] = round(points[pad] / sum((b - a).length for a, b in zip(hull, hull[1:] + hull[:1])), 2)
+    print(f"{name} from below: seen into each pad {list(into.values())}; points clear against the sky per metre of outline {list(rim.values())}")
+    checks.check(
+        f"{name}.under_rim",
+        whole and min(rim.values()) >= want["min_rim_points_per_m"],
+        f"looking straight up, the pads show {list(rim.values())} points of leaf pieces clear against the sky per metre of their outline; spec wants at least {want['min_rim_points_per_m']} of every pad",
+    )
 
 
 def check_variants(checks, name, bm, spec, conv):
@@ -504,6 +640,7 @@ def check_scene(checks, spec, conv):
         fork_m = check_skeleton(checks, name, bm, slot_names, spec, conv) if "skeleton" in spec and spec["skeleton"]["material"] in slot_names else None
         if "foliage" in spec and spec["foliage"]["material"] in slot_names:
             check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
+            check_canopy(checks, name, bm, slot_names, spec, conv)
         if "variants" in spec:
             check_variants(checks, name, bm, spec, conv)
 

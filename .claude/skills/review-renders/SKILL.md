@@ -9,7 +9,7 @@ Gates prove an asset is well-formed. The **contact sheet** is where you find out
 
 ## 1. Render
 
-Run `tools/gate.sh <asset> <phase>`; its last two steps take a screenshot in Bevy and render the sheet in Blender. The phase names the stage being reviewed: `blockout`, `final`. Views are named from the asset's point of view: `front` looks at its front. The `scale` view and the `bevy` tile show the asset beside a player-height figure.
+Run `tools/gate.sh <asset> <phase>`; its last two steps take a screenshot in Bevy and render the sheet in Blender. The phase names the stage being reviewed: `blockout`, `final`. Views are named from the asset's point of view: `front` looks at its front. The `scale` view and the `bevy` tile show the asset beside a player-height figure. A tree's sheet has two more Bevy tiles, taken as a player mostly sees one: `bevy_under` (eye 1 m from the trunk, looking up into the canopy) and `bevy_trunk` (0.5 m from it, looking straight at the bark).
 
 ## 2. Read the sheet
 
