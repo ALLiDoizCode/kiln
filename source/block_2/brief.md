@@ -32,6 +32,7 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `painted_shading.texture_px` | `512` | Paint: about 200 texels per block width |
 | `painted_shading.edge_width_m` | `0.0312` | Paint: one thirty-second of the width |
 | `painted_shading.crevice_width_m` | `0.06` | Paint: 0.06 of the width |
+| `painted_shading.crevice_shadow` | `0.45` | The family brief, Painted shading 4: a crack loses 45% of its light; asked of the cracked blocks only |
 | `painted_shading.blotch_size_m` | `0.15` | Paint: 0.15 of the width |
 | `block.min_chamfer_m` | `0.08` | Silhouette 3 (family): 0.08 of the width |
 | `overlap.min_count` | `2` | Pieces |

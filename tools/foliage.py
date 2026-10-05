@@ -82,7 +82,19 @@ def pads_of(triangles, owner, piece_count, cell):
     points = a[:, None, :] + (b - a)[:, None, :] * weights[None, :, 0:1] + (c - a)[:, None, :] * weights[None, :, 1:2]
     cubes = numpy.floor(points / cell).astype(numpy.int64).reshape(-1, 3)
     owners = numpy.repeat(owner, len(weights))
-    seen = numpy.unique(numpy.column_stack((cubes, owners)), axis=0)
+    # Every (cube, piece) met, once, in order of cube and then piece. Each row is packed into one
+    # integer that sorts as the row does: sorting rows of four (`unique(axis=0)`) is forty times slower.
+    low = cubes.min(axis=0)
+    nx, ny, nz = (int(n) for n in cubes.max(axis=0) - low + 1)
+    if nx * ny * nz * piece_count < 2**62:
+        x, y, z = (cubes - low).T
+        packed = numpy.unique(((x * ny + y) * nz + z) * piece_count + owners)
+        packed, pieces = numpy.divmod(packed, piece_count)
+        packed, z = numpy.divmod(packed, nz)
+        x, y = numpy.divmod(packed, ny)
+        seen = numpy.column_stack((x + low[0], y + low[1], z + low[2], pieces))
+    else:
+        seen = numpy.unique(numpy.column_stack((cubes, owners)), axis=0)
 
     parent = list(range(piece_count))
 
@@ -248,10 +260,11 @@ def sky_and_bark(tree, faces, bark_index, canopy_points, direction, rays, above_
         return all((bx - ax) * (y - ay) - (by - ay) * (x - ax) >= 0 for (ax, ay), (bx, by) in zip(hull, hull[1:] + hull[:1]))
 
     sky = total = bark = seen = 0
+    left, right, top = min(xs), max(xs), max(ys)
     y = min(ys) + cell / 2
-    while y < max(ys):
-        x = min(xs) + cell / 2
-        while x < max(xs):
+    while y < top:
+        x = left + cell / 2
+        while x < right:
             if inside(x, y):
                 total += 1
                 point, _, index, _ = tree.ray_cast(across * x + up * y + toward * far, -toward)
@@ -273,11 +286,12 @@ def outline(tree, lo, hi, direction, rays):
     cell = max(max(xs) - min(xs), max(ys) - min(ys)) / rays
     far = max(c.dot(toward) for c in corners) + 10.0
     grid = []
+    left, right, top = min(xs), max(xs), max(ys)
     y = min(ys) + cell / 2
-    while y < max(ys):
-        x = min(xs) + cell / 2
+    while y < top:
+        x = left + cell / 2
         row = []
-        while x < max(xs):
+        while x < right:
             row.append(tree.ray_cast(across * x + up * y + toward * far, -toward)[2] is not None)
             x += cell
         grid.append(row)
@@ -309,10 +323,12 @@ def seen_first(tree, points, direction, rays):
     cell = max(max(xs) - min(xs), max(ys) - min(ys)) / rays
     far = max(p.dot(toward) for p in points) + 10.0
     found = []
+    # The box's sides, found once: `points` is every corner of the canopy, and there is a ray per cell.
+    left, right, top = min(xs), max(xs), max(ys)
     y = min(ys) + cell / 2
-    while y < max(ys):
-        x = min(xs) + cell / 2
-        while x < max(xs):
+    while y < top:
+        x = left + cell / 2
+        while x < right:
             index = tree.ray_cast(across * x + up * y + toward * far, -toward)[2]
             if index is not None:
                 found.append(index)

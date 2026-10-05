@@ -12,7 +12,7 @@ Whole: one closed skin, no crack.
 
 ## Paint
 
-The family's brief gives each painted band as a share of the block's width (Painted shading). At 0.5 m wide: edge light fading out 0.0156 m into each plane, blotches about 0.075 m across, and crevice shadow fading out over 0.03 m, which paints nothing on a whole block. A 256 px texture. Chamfers are at least 0.04 m across.
+The family's brief gives each painted band as a share of the block's width (Painted shading). At 0.5 m wide: edge light fading out 0.0156 m into each plane, blotches about 0.075 m across. No crevice shadow: a whole block has no inside corner for one to lie in, so its spec leaves `crevice_shadow` and `crevice_width_m` out, as the load test asks (`painted.crevices_darker`). A 256 px texture. Chamfers are at least 0.04 m across.
 
 ## Seed
 
@@ -31,6 +31,5 @@ The rows that are this variant's own. Every other value in `spec.json` is in the
 | `max_triangles` | `150` | Budget (family): 150 and 100 more for each crack |
 | `painted_shading.texture_px` | `256` | Paint: about 200 texels per block width |
 | `painted_shading.edge_width_m` | `0.0156` | Paint: one thirty-second of the width |
-| `painted_shading.crevice_width_m` | `0.03` | Paint: 0.06 of the width |
 | `painted_shading.blotch_size_m` | `0.075` | Paint: 0.15 of the width |
 | `block.min_chamfer_m` | `0.04` | Silhouette 3 (family): 0.08 of the width |

@@ -28,6 +28,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 cases_file=tests/cases.sh
+unset KILN_BAKE  # fixtures are baked on the CPU, as the gate bakes: only that bake is the same every time (tools/paint.py)
 
 usage() { sed -n '2,/^set /p' "$0" | sed '$d; s/^# \{0,1\}//'; }
 die() { echo "tests/run.sh: $*" >&2; exit 2; }
@@ -92,6 +93,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/validate.py|tools/skeleton.py|tests/test_validate.py|tests/fixtures/*) echo validate ;;
     tools/paint.py|tools/foliage.py) echo paint ;;
     tests/paint_mutations.py) echo rock_mutations ;;
+    tests/bake_check.py) echo bake_check ;;
     tests/tree_mutations.py) echo tree_mutations ;;
     tests/slab_mutations.py) echo slab_mutations ;;
     tests/pebble_mutations.py) echo pebble_mutations ;;
@@ -112,9 +114,10 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*) echo slab_1 ;;  # the generator and the brief slab_1 is built with
     source/crag/*) echo crag_1 ;;
+    source/stack/*) echo stack_1 ;;
     source/block/*) echo block_2 ;;  # the generator and the brief block_2 is built with
     source/pebble/*) echo pebble_1 pebble_2 ;;  # the generator and the brief pebble_1 and pebble_2 are built with
-    tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 ;;  # the kit all three are built with
+    tools/stone.py) echo slab_1 crag_1 pebble_1 pebble_2 stack_1 ;;  # the kit all four are built with
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
     assets/models/*) local file="${1##*/}"; echo "${file%%.*}" ;;
@@ -426,6 +429,7 @@ lint_season() { lint_copy tree_1_autumn '' "$1"; }  # <python statements changin
 lint_blade() { lint_copy blade_plant_1 '' "$1"; } # <python statements changing spec s>
 lint_slab() { lint_copy slab_1 '' "$1"; }      # <python statements changing spec s>
 lint_crag() { lint_copy crag_1 '' "$1"; }      # <python statements changing spec s>
+lint_stack() { lint_copy stack_1 '' "$1"; }    # <python statements changing spec s>
 lint_table() { lint_copy table_rock_1 '' "$1"; } # <python statements changing spec s>
 lint_block() { lint_copy block_2 '' "$1"; }    # <python statements changing spec s>
 lint_pebble() { lint_copy pebble_2 '' "$1"; }  # <python statements changing spec s>

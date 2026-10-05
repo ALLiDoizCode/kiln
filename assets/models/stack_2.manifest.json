@@ -1,28 +1,28 @@
 {
-  "asset": "block_1",
+  "asset": "stack_2",
   "nodes": [
-    "block_1"
+    "stack_2"
   ],
   "mesh_count": 1,
   "materials": {
-    "m_block": [
+    "m_stack": [
       0.3564,
       0.386429,
       0.3564
     ]
   },
   "watertight": true,
-  "triangles": 80,
+  "triangles": 528,
   "bounds": {
     "min": [
-      -0.25,
+      -0.6,
       0.0,
-      -0.175
+      -0.525
     ],
     "max": [
-      0.25,
-      0.3,
-      0.175
+      0.6,
+      1.1,
+      0.525
     ]
   },
   "bounds_tolerance": 0.001,
@@ -32,8 +32,9 @@
     "TEXCOORD_0"
   ],
   "soft_edges": true,
+  "overlap": true,
   "painted": {
-    "texture_px": 256,
+    "texture_px": 1024,
     "base_tint": [
       0.262251,
       0.262251,
@@ -45,7 +46,9 @@
       0.57758
     ],
     "edge_light": 0.3,
-    "edge_width_m": 0.0156,
+    "edge_width_m": 0.04,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.12,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
@@ -58,8 +61,7 @@
       240
     ],
     "blotch": 0.12,
-    "blotch_size_m": 0.075,
-    "side_shade": 0.22,
+    "blotch_size_m": 0.2,
     "side_shade_normal_z": [
       0.3,
       0.7
