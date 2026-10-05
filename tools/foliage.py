@@ -370,3 +370,14 @@ def closing(mask, reach):
         return out
 
     return spread(spread(mask, True), False)
+
+
+def shrunk(mask, reach):
+    """A grid of booleans with `reach` cells taken off its edge all round: what is left is its interior."""
+    padded = numpy.pad(mask, reach, constant_values=False)
+    out = numpy.full(mask.shape, True)
+    for dy in range(-reach, reach + 1):
+        for dx in range(-reach, reach + 1):
+            if dx * dx + dy * dy <= reach * reach:
+                out = numpy.logical_and(out, padded[reach + dy : reach + dy + mask.shape[0], reach + dx : reach + dx + mask.shape[1]])
+    return out

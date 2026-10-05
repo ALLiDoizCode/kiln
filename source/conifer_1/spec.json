@@ -4,7 +4,7 @@
   "objects": [
     "conifer_1"
   ],
-  "seed": 1,
+  "seed": 7,
   "species": "conifer",
   "growth_stage": 1.0,
   "season": "summer",
@@ -27,7 +27,7 @@
     "m_tree_leaf": "#8fb65e"
   },
   "painted_shading": {
-    "texture_px": 1024,
+    "texture_px": 2048,
     "base_tint": "#b9a8a0",
     "top_tint": "#ffffff",
     "edge_light": 0.2,

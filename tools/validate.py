@@ -514,6 +514,7 @@ def check_canopy(checks, name, bm, slots, spec, conv):
     piece_first = numpy.isin(first, list(is_piece))
     into = {}
     alone, numbered = {}, {}
+    faces_up = numpy.array([face.normal.z > 0 for face in bm.faces])
     for pad in whole:
         if tiered:
             # A tier stands over the wider tiers below it, which hide it from straight below; a player sees its
@@ -544,6 +545,14 @@ def check_canopy(checks, name, bm, slots, spec, conv):
                 at = ring == number
                 underside[rows[at], columns[at]] = numpy.percentile(height[rows[at], columns[at]], 20)
         deep = numpy.logical_and(numpy.logical_and(mine, piece_first), height > underside + rules["seen_into_m"])
+        if tiered:
+            # A bough is thinner than `seen_into_m`: no piece of it is that far above its underside, open or closed. What is
+            # seen through an open underside is the back of the pieces lying on top, so a piece met from behind (its
+            # face turned up, away from the eye under it) is the inside of the tier too. Not at the tier's edge, where
+            # the pieces that overhang it are its fringe against the sky (`under_rim` asks for them), but in from it.
+            interior = foliage.shrunk(outline, max(1, round(rules["tier_fringe_m"] / cell)))
+            behind = numpy.logical_and(numpy.logical_and(first >= 0, faces_up[numpy.maximum(first, 0)]), interior)
+            deep = numpy.logical_or(deep, numpy.logical_and(numpy.logical_and(mine, piece_first), behind))
         holes = numpy.logical_and(foliage.closing(outline, max(1, round(rules["hole_m"] / cell))), first < 0)
         into[pad] = round(float((deep.sum() + holes.sum()) / (outline.sum() + holes.sum())), 3)
     worst = max(into.values(), default=1.0)
@@ -585,6 +594,75 @@ def check_canopy(checks, name, bm, slots, spec, conv):
         f"{name}.under_rim",
         whole and min(rim.values()) >= want["min_rim_points_per_m"],
         f"looking straight up, the pads show {list(rim.values())} points of leaf pieces clear against the sky per metre of their outline; spec wants at least {want['min_rim_points_per_m']} of every pad",
+    )
+
+
+def check_tiers(checks, name, bm, slots, spec, conv):
+    """A conifer's crown (source/tree/species/conifer.md): tiers that narrow upward and droop, a pointed top, and one straight leader a little off true.
+
+    A tier is found as a pad is; its width is a pad's (the square root of its footprint's sides)."""
+    want, rules = spec["tiers"], conv["tiers"]
+    leaf = slots.index(spec["foliage"]["material"])
+    pieces, cores = foliage.pieces_of(bm, leaf), foliage.cores_of(bm, leaf)
+    piece_pads, _ = foliage.pads_with_cores(pieces, cores, spec["foliage"]["pad_gap_m"])
+    tiers = []
+    for pad in sorted(set(piece_pads)):
+        points = [v.co for piece, at in zip(pieces, piece_pads) if at == pad for face in piece for v in face.verts]
+        if piece_pads.count(pad) < spec["foliage"]["min_pad_pieces"]:
+            continue
+        xs, ys, zs = ([p[i] for p in points] for i in range(3))
+        middle = Vector((sum(xs) / len(xs), sum(ys) / len(ys)))
+        # How fast it hangs: the slope of height against distance from the tier's middle, by least squares.
+        far = [(Vector((p.x, p.y)) - middle).length for p in points]
+        mean_far, mean_z = sum(far) / len(far), sum(zs) / len(zs)
+        spread = sum((f - mean_far) ** 2 for f in far)
+        droop = -sum((f - mean_far) * (z - mean_z) for f, z in zip(far, zs)) / spread if spread > 1e-9 else 0.0
+        tiers.append((mean_z, math.sqrt((max(xs) - min(xs)) * (max(ys) - min(ys))), droop))
+    tiers.sort()
+    widths = [round(width, 2) for _, width, _ in tiers]
+    droops = [round(droop, 2) for _, _, droop in tiers]
+    steps = [upper < lower for lower, upper in zip(widths, widths[1:])]
+    narrowing = sum(steps) / len(steps) if steps else 0.0
+    widest = widths.index(max(widths)) + 1 if widths else 0
+    top_share = widths[-1] / max(widths) if widths else 1.0
+    print(f"{name} tiers, lowest first: widths {widths} m, hanging {droops} m per metre out")
+    checks.check(
+        f"{name}.tiers_narrow",
+        len(tiers) >= 3 and widest <= want["widest_among_lowest"] and narrowing >= want["min_narrowing"] and top_share <= want["max_top_share"],
+        f"the tiers are {widths} m wide from the lowest up: the widest is number {widest}, the upper is the narrower at {narrowing:.2f} of the steps, and the top is {top_share:.2f} of the widest; "
+        f"spec wants the widest among the lowest {want['widest_among_lowest']}, at least {want['min_narrowing']} of the steps and a top at most {want['max_top_share']}",
+    )
+    checks.check(
+        f"{name}.tiers_droop",
+        len(tiers) >= 3 and min(droops[:-1]) >= want["min_droop"],
+        f"the tiers below the top hang {droops[:-1]} m lower per metre out from their middle; spec wants at least {want['min_droop']} of each",
+    )
+    foliage_points = [v.co for part in pieces + cores for face in part for v in face.verts]
+    tip_width = None
+    if foliage_points:
+        top = max(p.z for p in foliage_points)
+        band = [p for p in foliage_points if p.z >= top - rules["tip_band_m"]]
+        tip_width = math.sqrt((max(p.x for p in band) - min(p.x for p in band)) * (max(p.y for p in band) - min(p.y for p in band)))
+    checks.check(
+        f"{name}.top_pointed",
+        tip_width is not None and tip_width <= want["max_tip_width_m"],
+        f"the highest {rules['tip_band_m']} m of foliage is {tip_width if tip_width is None else round(tip_width, 2)} m across; spec wants at most {want['max_tip_width_m']}: a point",
+    )
+    # The leader: the bark's middle, slice by slice from just above the roots to its tip, following the loop nearest the last.
+    bark = skeleton.only(bm, slots.index(spec["skeleton"]["material"]))
+    path = skeleton.leader_path(bark, conv)
+    bark.free()
+    bow = off = None
+    if len(path) >= 3:
+        (foot, foot_z), (tip, tip_z) = path[0], path[-1]
+        off = (tip - foot).length
+        bow = max((middle - foot.lerp(tip, (z - foot_z) / (tip_z - foot_z))).length for middle, z in path)
+    low, high = want["tip_off_m"]
+    checks.check(
+        f"{name}.leader_straight",
+        bow is not None and bow <= want["max_leader_bow_m"] and low <= off <= high,
+        f"the leader's middle is at most {bow if bow is None else round(bow, 3)} m from the straight line from its foot to its tip, which stands {off if off is None else round(off, 3)} m to one side of the foot; "
+        f"spec wants at most {want['max_leader_bow_m']} m, and a tip {low} to {high} m off",
     )
 
 
@@ -1901,6 +1979,8 @@ def check_scene(checks, spec, conv):
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)
+                if "tiers" in spec:
+                    check_tiers(checks, name, bm, slot_names, spec, conv)
         if "variants" in spec:
             check_variants(checks, name, bm, spec, conv)
         if "pieces" in spec:

@@ -776,8 +776,14 @@ def true_top(spec):
 
 
 def fat_tiers(spec):
-    """Tiers as tall as they are wide: balls on a pole."""
-    regrow(spec, boughs__up=1.6, boughs__down=1.0, tiers__droop=[0.0, 0.0], tiers__counts=[[3, 1.0]])
+    """Every tier drawn in to a third of its width about the leader, and no lower: each is taller than it is wide."""
+    slot = leaf_slot(spec)
+
+    def narrow(bm):
+        for vert in {v for f in bm.faces if f.material_index == slot for v in f.verts}:
+            vert.co.x, vert.co.y = vert.co.x * 0.3, vert.co.y * 0.3
+
+    edit(narrow, spec["objects"][0])
 
 
 def stout_leader(spec):

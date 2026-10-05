@@ -13,7 +13,7 @@ form = "tiers"
 [trunk]
 sides = [6, 7]                 # flat sides, drawn per tree
 strip = 0.2                    # the soft-edge strip at a corner, as a share of the angle between corners
-breast_radius = [0.19, 0.24]   # at 1.3 m, for a mature tree
+breast_radius = [0.21, 0.26]   # at 1.3 m, for a mature tree
 fork_height = [0.28, 0.32]     # share of the tree's height at which the lowest whorl leaves the leader
 top = 0.64                     # radius at the lowest whorl over the radius at 1.3 m
 lean = [0.07, 0.14]            # how far the lowest whorl stands to one side of the foot: a leader stands straight
@@ -28,7 +28,7 @@ root_valley = 1.08
 root_width = 0.42
 rings = [0.85, 1.6]            # heights of the trunk's two rings between its roots and the stretch below the lowest whorl
 leader = 0.95                  # radius of the leader just above the lowest whorl, over the trunk's just below: it does not fork
-tip_radius = 0.03
+tip_radius = 0.045
 
 [tiers]
 counts = [[5, 0.4], [6, 0.4], [7, 0.2]]  # tiers below the top (count, how often), drawn per tree; fewer when they do not fit the height
@@ -36,9 +36,9 @@ count_share = 1.0              # scaled by the growth stage
 fewest = 3                     # however young the tree
 lowest = [3.0, 3.4]            # the height the lowest whorl leaves at: its boughs hang from there to about head height
 taper = [0.7, 1.0]             # the cone: a tier's width falls from the lowest to the top as (share of the way up) to this power
-jitter = [0.86, 1.07]          # and each tier's width is this much off the cone
+jitter = [0.9, 1.06]           # and each tier's width is this much off the cone
 first = [0.8, 1.0]             # the lowest tier's, again: the tier above it is sometimes the widest
-droop = [0.36, 0.6]            # how far a bough's tip hangs below where it leaves, over its length; drawn per tier
+droop = [0.32, 0.54]           # how far a bough's tip hangs below where it leaves, over its length; drawn per tier
 sag = 1.5                      # a bough hangs as (share of its length) to this power: nearly level at the leader, steepest at its tip
 thin = 0.6                     # how thick the narrowest tier's foliage is, over the widest's
 clear = 0.14                   # clear air between one tier's foliage and the next, at least, before the fit
@@ -59,8 +59,8 @@ up = 0.2                       # foliage above a bough's middle line, in the wid
 down = 0.1                     # and below it
 lift = 0.1                     # the foliage's middle line above the wood
 scatter = 0.05                 # boughs of one whorl leave within this far above or below its height
-radius = 0.52                  # a bough's radius where it leaves, over the leader's there
-wood = 0.6                     # the wood runs this share of the bough's length, the rest is foliage alone
+radius = 0.62                  # a bough's radius where it leaves, over the leader's there
+wood = 0.68                    # the wood runs this share of the bough's length, the rest is foliage alone
 rings = [5, 3]                 # rings of a bough's wood: in the lowest two tiers, and above
 sides = [4, 3]                 # flat sides of a bough's wood: in the lowest two tiers, and above
 start = 0.45                   # how far from the leader's axis a bough begins, over the leader's radius there
@@ -69,7 +69,7 @@ start = 0.45                   # how far from the leader's axis a bough begins, 
 # The top: a narrow spire of foliage on the leader's tip, over a small whorl of short boughs.
 off = [0.18, 0.45]             # how far the tip stands to one side of the foot: off true
 width = [0.24, 0.3]            # the top whorl's width over the widest tier's
-boughs = 3
+boughs = 4
 droop = [0.1, 0.25]
 spire_radius = [0.17, 0.22]
 spire_up = [0.7, 0.9]          # the spire's height above its middle
@@ -84,9 +84,10 @@ open = -0.3                    # the shell of pieces stops here (unit sphere hei
 buried = 0.9                   # a piece is left out when its place is this deep inside another bough
 
 [core]
-size = 0.8
+size = 0.75                    # the spire's core, a dome as a pad's lobe has, over the spire's size
+plate_size = 0.95              # a bough's plate, over the bough's plan
 sides = 4
-plate = [-0.9, -0.15]           # a bough's core is a plate along its underside: from here to here, in the bough's depth below its middle line
+plate = [-0.1, -0.6, -1.6]     # a bough's core is a plate along its underside: its top, the foot of its edge and its keel, in the bough's depth below its middle line
 rough = 0.12
 
 [leaf]
@@ -98,7 +99,7 @@ yaw = 30.0
 roll = 18.0
 foot = 0.55                    # how much of a piece's length lies behind the point where it crosses the bough's surface: a bough is thin
 fall = 30.0                    # pieces point away from the leader and this far below level, along the surface
-cover = 1.1                    # pieces on a bough, over what its plan holds at one a spacing squared
+cover = 1.0                    # pieces on a bough, over what its plan holds at one a spacing squared
 round = 0.4
 up = 0.3
 outline = [[0.0, 0.0], [0.28, -0.5], [0.47, -0.24], [0.6, -0.38], [1.0, 0.0], [0.38, 0.5]]  # the broadleaf's piece
@@ -109,7 +110,7 @@ spacing = 0.26                 # between neighbouring pieces round a bough's rim
 droop = [38.0, 68.0]           # degrees below level
 foot = 0.4
 drop = 0.26                    # how far the skirt hangs below a bough's underside
-under_spacing = 0.36           # between pieces hanging under a bough
+under_spacing = 0.27           # between pieces hanging under a bough
 under_droop = [40.0, 70.0]
 out = 0.8                      # a skirt piece points this much away from the leader, against 0.6 out of its own bough's rim
 

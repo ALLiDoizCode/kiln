@@ -65,7 +65,7 @@ import foliage
 import numpy
 from mathutils import Quaternion, Vector
 from pipeline import Checks, conventions, linear_rgb
-from validate import check_canopy, check_foliage, check_skeleton
+from validate import check_canopy, check_foliage, check_skeleton, check_tiers
 
 Z = Vector((0, 0, 1))
 
@@ -716,20 +716,24 @@ def grow_core(r, tree, rng, pad, lobe):
         if isinstance(lobe, Bough):
             # A bough's core is a plate along its underside: it closes the view up into the tier, and from above and
             # from the side it lies under the whole depth of the bough's pieces.
-            low, high = r.core.plate
-            return lobe.inside(Vector((radius.x * r.core.size, radius.y * r.core.size, low + (high - low) * (height + 0.8) / 1.7)))
+            return lobe.inside(Vector((radius.x * r.core.plate_size, radius.y * r.core.plate_size, height)))
         return lobe.centre + Vector((radius.x * lobe.radius, radius.y * lobe.radius, height * (lobe.up if height >= 0 else lobe.down))) * r.core.size
 
     spin = rng.uniform(0, 2 * math.pi)
     rings = []
-    for share, height, shift in ((0.72, 0.55, 0.0), (0.97, -0.15, 0.5)):
+    shape, ends = ((0.72, 0.55, 0.0), (0.97, -0.15, 0.5)), (0.9, -0.8)
+    if isinstance(lobe, Bough):
+        # The plate: flat on top, a steep edge round its rim, and a shallow keel underneath, at these depths in the bough.
+        top_z, rim_z, keel_z = r.core.plate
+        shape, ends = ((0.88, top_z, 0.5), (0.96, rim_z, 0.5)), (top_z, keel_z)  # corner over corner: staggered, as a dome's are, the edge would fold under itself
+    for share, height, shift in shape:
         ring = []
         for j in range(r.core.sides):
             angle = spin + 2 * math.pi * (j + shift) / r.core.sides
             out = share * (1 + rng.uniform(-r.core.rough, r.core.rough))
             ring.append(tree.vert(at(Vector((math.cos(angle) * out, math.sin(angle) * out, 0)), height)))
         rings.append(ring)
-    top, bottom = tree.vert(at(Vector(), 0.9)), tree.vert(at(Vector(), -0.8))
+    top, bottom = tree.vert(at(Vector(), ends[0])), tree.vert(at(Vector(), ends[1]))
     upper, lower = rings
     triangles = []
     for j in range(r.core.sides):
@@ -746,7 +750,9 @@ def grow_core(r, tree, rng, pad, lobe):
         tree.face((a, b, c), CORE_FACE, pad)
     for i in upper + lower + [top, bottom]:
         if isinstance(lobe, Bough):
-            tree.core_normals[i] = lobe.out_of(lobe.unit_of(tree.verts[i]).normalized())
+            # Lit as a plate with a rounded edge: each corner by the faces that meet at it (`corner_normals`), since a plate
+            # that sags has no middle to light it outward from.
+            tree.core_normals[i] = None
             continue
         offset = tree.verts[i] - lobe.centre
         vertical = lobe.up if offset.z >= 0 else lobe.down
@@ -1105,6 +1111,23 @@ def corner_normals(r, tree):
                 lit = Vector((lit.x, lit.y, normal.z)).normalized()
             piece_normals[piece] = lit
 
+    # A bough's plate: each corner lit by the blend of the faces that meet at it.
+    # Round its thin edge the upper faces and the keel's meet at a knife's angle, and at a corner of the plate from three
+    # sides, so the blend is the one that favours none: turned, step by step, toward whichever face it lights least.
+    plates = {i: [] for i, lit in tree.core_normals.items() if lit is None}
+    for face, kind, normal in zip(tree.faces, tree.kinds, face_normals):
+        if kind == CORE_FACE:
+            for i in face:
+                if i in plates:
+                    plates[i].append(normal)
+    core_normals = dict(tree.core_normals)
+    for i, around in plates.items():
+        lit = sum(around, Vector()).normalized()
+        for step in range(300):
+            worst = min(around, key=lit.dot)
+            lit = (lit + worst * (0.5 / (1 + step / 10))).normalized()
+        core_normals[i] = lit
+
     normals = []
     for face, kind, piece, normal in zip(tree.faces, tree.kinds, tree.pieces, face_normals):
         if kind == GROUND:
@@ -1113,7 +1136,7 @@ def corner_normals(r, tree):
             normals += [piece_normals[piece]] * len(face)
         elif kind == CORE_FACE:
             # Lit as one round mass; where the fit has tipped a corner's normal behind a face, the face's own.
-            normals += [tree.core_normals[i] if tree.core_normals[i].dot(normal) > 0.05 else normal for i in face]
+            normals += [core_normals[i] if core_normals[i].dot(normal) > 0.05 else normal for i in face]
         else:
             normals += [bark_normals[i] for i in face]
     return normals
@@ -1149,6 +1172,8 @@ def unmet(tree, spec):
         fork = check_skeleton(checks, name, bm, slots, strict, conv)
         check_foliage(checks, name, bm, slots, strict, conv, fork)
         check_canopy(checks, name, bm, slots, strict, conv)
+        if "tiers" in strict:
+            check_tiers(checks, name, bm, slots, strict, conv)
     triangles = sum(len(face) - 2 for face in tree.faces)
     checks.check("budget.triangles", triangles <= strict["max_triangles"], f"{triangles} > {strict['max_triangles']}")
     bm.free()

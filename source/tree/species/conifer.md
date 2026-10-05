@@ -88,7 +88,7 @@ New, because nothing asked for what makes a conifer one: `tiers_narrow`, `tiers_
 
 ## Budget
 
-At most 5,500 triangles for a mature conifer, on the family's 1024 px texture. Estimated before the build: about 29 boughs in six tiers and a top; bark about 1,050 (the trunk 420, boughs of four sides in the lowest two tiers and three above, 630), cores about 600 (20 a bough), leaf pieces about 3,300 (the tiers' upper surface, about 31 m2, and about 80 m of rim). That is about 4,950; the ceiling leaves a tenth over it and is under the 6,000 the owner first proposed for a tree. The benchmark's pines are 1,646 to 4,964.
+At most 5,500 triangles for a mature conifer, on a 2048 px texture (Decisions). Estimated before the build: about 29 boughs in six tiers and a top; bark about 1,050 (the trunk 420, boughs of four sides in the lowest two tiers and three above, 630), cores about 600 (20 a bough), leaf pieces about 3,300 (the tiers' upper surface, about 31 m2, and about 80 m of rim). That is about 4,950; the ceiling leaves a tenth over it and is under the 6,000 the owner first proposed for a tree. The benchmark's pines are 1,646 to 4,964.
 
 ## Growth stages
 
@@ -111,6 +111,7 @@ The rows that are a conifer's own; every other value is the family brief's. Each
 | --- | --- | --- |
 | `species` | `"conifer"` | The recipe `species/conifer.toml` |
 | `max_triangles` | `5500` | Budget |
+| `painted_shading.texture_px` | `2048` | Budget: the texture. Changed from the family's 1024 after the first export, see Decisions |
 | `materials.m_tree_leaf` | `"#8fb65e"` | Colour: the top of a tier |
 | `skeleton.lean_m` | `[0.0, 0.2]` | Silhouette 2: the leader does not lean at its lowest whorl |
 | `skeleton.min_seen_views` | `4` | The family's checks, `branches_seen`: every view counted but one, of the five that do not look down |
@@ -136,5 +137,6 @@ All the agent's, and open to change at review.
 - **Invented, not measured**: `tiers.min_narrowing` 0.75, `tiers.min_droop` 0.15, `tiers.max_tip_width_m` 0.9 (the benchmark's leaf cards are 1.0 to 1.7 m across in their top 24th: ours asks for a sharper point than theirs), `tiers.max_leader_bow_m` 0.25, the lean of 0.2 m, the lower end of `tip_off_m`, the budgets, the colours.
 - **`branches_seen` does not count the views that look down on a tree of tiers, and asks four of the remaining five.** The brief first said six of seven, as the family's. The first conifers drawn showed bark as 2.7 to 6.7% of what is seen from the level views, 2.2 to 4.0% from below and 1.0 to 2.4% from the two views that look down. The reason in the table is geometry and holds without a build, but a build is what pointed at it; the check was changed for every tree with tiers, with a case, and no spec value was moved to pass. **The owner should confirm it.**
 - **`branches_taper` measures the leader on a tree of tiers**, for the reason in the table; a case holds it to a leader that does not thin.
+- **The texture is 2048 px, changed after a build.** The brief first kept the family's 1024 px. A conifer's bark is a longer trunk and about thirty boughs where a broadleaf has four limbs; on 1024 px the surface below 2.5 m could be given its 250 texels per metre only just (247 with thicker limb tips), and the sparsest triangle above it then had 90 texels per metre where the conventions ask 100. The old broadleaf has a 2048 px texture for the same reason. The file is larger for it.
 - **A bough's core is a plate along its underside**, not the dome a pad's lobe has: a dome under a thin bough showed between its pieces from above and round its rim (core 12 to 19% of the foliage seen, against 10%), and made small enough to hide left the tier open from below. The plate closes the underside and lies under the whole depth of the pieces. A bough's pieces are spread evenly over its plan and are the broadleaf's size.
 - **No autumn conifer.** The season rule (a season is a palette on the base's mesh) is used for winter only.

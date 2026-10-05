@@ -177,6 +177,7 @@ hole_m = 0.15               # gaps in a pad's outline up to this wide are holes 
 rim_step_m = 0.05           # a point stands clear when there is sky this far past it and either side of it
 core_min_triangles = 12     # an open part of the foliage material with this many triangles is a core with a hole, not a leaf piece
 tier_ring_m = 0.3           # a tier droops, so its underside is taken in rings this wide round its middle (the check under_closed, for a spec with `tiers`)
+tier_fringe_m = 0.3         # and the outer this much of a tier, seen from below, is its fringe: pieces met from behind there are not the inside of the tier
 
 [under_view]
 # A tree's canopy as a player under it sees it (tools/under_checks.py, gate L4e). The picture is the
@@ -210,6 +211,11 @@ max_root_fill = 0.25        # at most this share of that circle is root: three q
 root_curve_height = 0.5     # a root's sweep is taken this many times the trunk's radius (at breast height) above the ground slice
 max_root_curve = 0.65       # where the foot reaches at most this share as far beyond the trunk as at the ground
 max_limb_bend_deg = 16.0    # the sharpest turn between two stretches of a limb, ring to ring: more shows from below as an elbow (the reviewers' were 17 to 21)
+
+[tiers]
+# How a conifer's crown is measured (the checks tiers_narrow, tiers_droop, top_pointed, leader_straight). The amounts wanted are in each spec's `tiers`.
+tip_band_m = 0.5            # the top is the highest this much of the foliage
+leader_step_m = 0.5         # between the slices that follow the leader from its foot to its tip
 
 [variants]
 # Variants are compared by outline, from the four level views, both standing on their origins.

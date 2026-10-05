@@ -138,8 +138,26 @@ def limb_bends(bark, floor):
     return found
 
 
+def leader_path(bark, conv):
+    """A leader's middle from just above its roots to its tip: [(middle in the plane, height)], following from slice to slice the loop nearest the last one's middle."""
+    rules = conv["skeleton"]
+    if not bark.verts:
+        return []
+    floor, top = min(v.co.z for v in bark.verts), max(v.co.z for v in bark.verts)
+    z, path = floor + rules["foot_height_m"], []
+    while z < top - 0.05:
+        loops = slice_at(bark, z)
+        if loops:
+            loop = min(loops, key=lambda loop: (loop[1] - path[-1][0]).length) if path else loops[0]
+            path.append((loop[1], z))
+        z += conv["tiers"]["leader_step_m"]
+    return path
+
+
 def measure(bark, conv, leader=False):
-    """What the slices say about a skeleton, as a dict; an entry is None when it cannot be measured."""
+    """What the slices say about a skeleton, as a dict; an entry is None when it cannot be measured.
+
+    `leader`: the tree has one leader and whorls of boughs, and `branch_taper` is the leader's own."""
     rules = conv["skeleton"]
     if not bark.verts:
         return dict(NOTHING)
@@ -165,6 +183,9 @@ def measure(bark, conv, leader=False):
 
         def mean_radius(share):
             loops = slice_at(bark, fork + (top - fork) * share)
+            if leader and loops:
+                # A tree of tiers: its one limb above the lowest whorl is the leader, the thickest thing a slice cuts.
+                return loops[0][0]
             return sum(radius for radius, _, _ in loops) / len(loops) if loops else None
 
         low, high = mean_radius(0.2), mean_radius(0.8)
