@@ -591,12 +591,20 @@ pub fn check(
             ));
         }
         if want.growth_up > 0.0 {
-            let (count, cover) = average(&|s| s.zone == Zone::Open && level(s) && s.above > high, &|s| s.growth);
+            let (mut count, mut cover) = average(&|s| s.zone == Zone::Open && level(s) && s.above > high, &|s| s.growth);
+            let [least, mut most] = want.growth_cover.map(|share| share * want.growth_up);
+            let mut on = "level open faces";
+            if count < MIN_SAMPLES {
+                // No level face clear of an edge or a join: the level faces there are. Growth along edges lies on them
+                // too, so they may show the two together; bare of both, or carpeted, they fail as the open ones do.
+                (count, cover) = average(&|s| seen(s) && level(s), &|s| s.growth);
+                on = "level faces, none of them clear of an edge or a join";
+                most = want.growth_cover[1] * (want.growth_up + want.growth_edges - want.growth_up * want.growth_edges);
+            }
             measured.growth_up = cover;
-            let [least, most] = want.growth_cover.map(|share| share * want.growth_up);
             if count < MIN_SAMPLES || cover < least || cover > most {
                 fail(format!(
-                    "painted.growth_up: growth covers {cover:.2} of level open faces above {high:.2} m ({count} samples); growth_up {} wants {least:.2} to {most:.2}: patches, neither bare nor a carpet",
+                    "painted.growth_up: growth covers {cover:.2} of {on} above {high:.2} m ({count} samples); growth_up {} wants {least:.2} to {most:.2}: patches, neither bare nor a carpet. A shape with no face near level above its wash leaves growth_up out of its spec",
                     want.growth_up
                 ));
             }
