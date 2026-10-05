@@ -324,19 +324,19 @@ def pack(objects, skip, gap, height):
 
     area = sum(island["box"] for island in islands)
     orders = [sorted(range(len(islands)), key=lambda i: (-islands[i][by], i)) for by in ("long", "box")]
-    best = None
-    for order in orders:
-        outlines = {}
+
+    def filled(order):
+        """The largest scale found at which the islands fit in this order, and where they then lie; None if none does."""
         # Start well above any scale that fits (at a quarter of this the islands' boxes have the texture's area) and come down.
-        too_big = 4.0 * math.sqrt(height / area) if area > 0 else 1.0
+        too_big = start = 4.0 * math.sqrt(height / area) if area > 0 else 1.0
         fits, found = too_big, None
         while found is None:
             fits /= 1.25
+            if fits < start * 1e-3:
+                return None
             found = laid(order, fits)
             if found is None:
                 too_big = fits
-            if fits < 1e-9:
-                raise RuntimeError("the islands cannot be laid out at any scale")
         while too_big / fits > PACK_FINE:
             middle = math.sqrt(too_big * fits)
             tried = laid(order, middle)
@@ -344,8 +344,22 @@ def pack(objects, skip, gap, height):
                 too_big = middle
             else:
                 fits, found = middle, tried
-        if best is None or fits > best[0]:
-            best = (fits, found)
+        return fits, found
+
+    best = None
+    while best is None:
+        for order in orders:
+            outlines = {}
+            found = filled(order)
+            if found is not None and (best is None or found[0] > best[0]):
+                best = found
+        if best is None:
+            # More islands than the texture has room for gaps between: the tests' 64 px texture under a tree's hundred.
+            # A layout that came to this in a gated build uses next to none of its texture, and the load test says so.
+            if half < 1e-6:
+                raise RuntimeError("the islands cannot be laid out at any scale")
+            print(f"pack: {len(islands)} islands do not fit {gap:.4f} of the texture apart; trying half that")
+            gap, half = gap / 2, half / 2
     scale, placed = best
     for index, (turn, at, rest) in placed.items():
         island = islands[index]

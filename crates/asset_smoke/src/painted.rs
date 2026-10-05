@@ -725,10 +725,14 @@ pub fn check(
             let outline = |pick: &dyn Fn(&Sample) -> bool| {
                 let grown: std::collections::HashMap<(u32, u32), (bool, f32)> = samples.iter().filter(|s| pick(s)).map(|s| (s.at, (s.growth >= 0.5, s.step_m))).collect();
                 let (mut edges, mut metres) = (0usize, 0.0f32);
+                // Along the rows of the texture and up its columns: read one way only, the count changed by a
+                // tenth with how the islands happened to be turned in the layout (0.98 and 0.86 on one arch).
                 for (&(x, y), &(here, step)) in &grown {
-                    if let Some(&(next, _)) = grown.get(&(x + stride, y)) {
-                        edges += usize::from(here != next);
-                        metres += step;
+                    for beside in [(x + stride, y), (x, y + stride)] {
+                        if let Some(&(next, _)) = grown.get(&beside) {
+                            edges += usize::from(here != next);
+                            metres += step;
+                        }
                     }
                 }
                 (edges, metres)
