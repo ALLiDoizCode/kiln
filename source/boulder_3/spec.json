@@ -29,7 +29,7 @@
     "edge_light": 0.3,
     "edge_width_m": 0.086,
     "blotch": 0.12,
-    "blotch_size_m": 0.64,
+    "blotch_size_m": 0.3,
     "side_shade": 0.22,
     "hidden_underside": true
   },

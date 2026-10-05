@@ -60,7 +60,7 @@ The grey is painted over by script (ADR 9, ADR 10; `tools/paint.py`), into one t
 
 1. **Gradient.** A light grey `#c8c8c8` at the top of the bounds and a cool grey `#8c8c9a` at the ground.
 2. **Side shade.** Upright faces are darker at mid height, by up to 22%.
-3. **Blotches.** Lighter and darker by up to 12%, in soft patches a fifth of the stone's width across (the first boulder: 0.6 m of 3.0 m).
+3. **Blotches.** Lighter and darker by up to 12%, in soft patches a fifth of the stone's width across (the first boulder: 0.6 m of 3.0 m) and never more than 0.3 m. From 0.5 m, the closest a stone is seen (ADR 7), a view about 60 degrees wide shows 0.6 m of a plane: a patch 0.64 m across, as a fifth of the large boulder is, fills it with one tone, and the first large boulder was one blank tone from there (`benchmarks/out/boulder_variants.png`, first round). At 0.3 m two patches cross the view.
 4. **Edge light.** Exposed edges gain up to 30%, fading out one thirty-seventh of the width into each plane (the first boulder: 0.08 m of 3.0 m).
 5. **No crevice shadow.** The stone is convex and has no inside corner, so its spec asks none, as the pebble's.
 
