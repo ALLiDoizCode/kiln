@@ -33,7 +33,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Stack | 3 or more | Not started |
 | Block | A run of sizes, some cracked | Three sizes: 0.5, 1.0 and 2.0 m wide, 80 to 164 triangles, bare stone. The smallest is whole, one closed skin; the others are parted along one and two cracks into overlapping pieces (ADR 13). The cracks are straight slots, not wandering lines. No covers. Not approved. |
 | Terrace | 2 or more | Not started |
-| Pebble | A run of sizes | Three sizes, each one closed skin cut by planes (not pieces): 0.12, 0.25 and 0.5 m across, 92 to 104 triangles, a 256 px texture, bare stone. No square pebbles, no covers. Not approved. |
+| Pebble | A run of sizes | Three sizes, each one closed skin (not pieces): a low plate of six to eight leaning sides, a broad rim and a tipped cap, 0.12, 0.25 and 0.5 m across and a fifth as tall, 104 to 122 triangles, a 256 px texture, bare stone. Redone lower and rounder after the first review; `low` and `rounded` are checked against limits measured on the benchmark's round pebbles. Twelve seeds of each size are in `benchmarks/out/pebble_<n>_candidates.png` for the owner to pick from. No square pebbles, no covers. Not approved. |
 | Rubble | 2 or more groups | Not started |
 
 ## Trees

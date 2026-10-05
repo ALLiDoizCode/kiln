@@ -56,6 +56,10 @@ PIECES = {"min_count": int, "min_shown_m2": float, "min_dominant_ratio": float, 
 FOOT = {"min_sides": int, "min_side_m2": float}
 CHAMFERS = {"min_count": int, "min_m2": float, "min_width_m": float}
 LEAN = {"max_upright_share": float, "min_summit_offset": float}
+# Optional; a low, rounded stone (source/pebble): how tall it may be for its wider side, and how much of
+# the surface that is seen one steep plane may hold. Each block has exactly its one key, a share in (0, 1).
+LOW = {"max_height_share": float}
+ROUNDED = {"max_steep_plane_share": float}
 # Optional; a shape of several closed pieces that pass into each other (ADR 13). Every key is required once it is present.
 OVERLAP = {"min_count": int, "max_count": int, "max_buried_share": float, "min_step_ratio": float}
 # Optional, with `overlap`: a cluster of leaning prisms on one base (a crag).
@@ -180,6 +184,11 @@ if not checks.failed():
         # Chamfers are measured against what counts as a large plane, and all four against a closed shape.
         ok = ok and spec["watertight"] and (block != "chamfers" or (isinstance(planes, dict) and wanted_block["min_m2"] < planes.get("large_m2", 0)))
         checks.check(f"spec.{block}", ok, f"optional; needs exactly {sorted(keys)}, none negative, shares at most 1, ratios at least 1, on a watertight asset (chamfers: with `planes`, and min_m2 below planes.large_m2)")
+    for block, keys in (("low", LOW), ("rounded", ROUNDED)):
+        wanted_block = spec.get(block)
+        if wanted_block is not None:
+            ok = isinstance(wanted_block, dict) and set(wanted_block) == set(keys) and all(type(wanted_block[key]) is float and 0 < wanted_block[key] < 1 for key in keys)
+            checks.check(f"spec.{block}", ok and spec["watertight"], f"optional; needs exactly {sorted(keys)}, a share above 0 and below 1, on a watertight asset")
     overlap = spec.get("overlap")
     if overlap is not None:
         ok = (

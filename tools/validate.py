@@ -233,6 +233,45 @@ def check_fullness(checks, name, bm, spec, conv):
     )
 
 
+def check_low(checks, name, bm, spec, conv):
+    """The shape is low: its height is a small share of its wider side. Measured on the mesh, not read from the spec's bounds."""
+    lo, hi = (Vector(pick(v.co[i] for v in bm.verts) for i in range(3)) for pick in (min, max))
+    width = max(hi.x - lo.x, hi.y - lo.y)
+    share = (hi.z - lo.z) / width if width > 0 else math.inf
+    print(f"{name} low: {hi.z - lo.z:.3f} m tall on {width:.3f} m, {share:.3f} of its wider side")
+    checks.check(
+        f"{name}.low",
+        share <= spec["low"]["max_height_share"],
+        f"the shape is {hi.z - lo.z:.3f} m tall and {width:.3f} m across its wider side, {share:.3f} of it; spec wants at most {spec['low']['max_height_share']}",
+    )
+
+
+def check_rounded(checks, name, bm, spec, conv):
+    """The shape is rounded and not a cut block: no one steep plane holds much of the surface that is seen.
+
+    A plane is steep when it is a side (conventions, `lean.side_normal_z`): steeper than 45 degrees,
+    whether it leans in or is undercut. A low stone goes round by many short sides under a broad
+    shoulder; a block shows one cut face."""
+    floor, tol = spec["bounds_m"]["min"][2], spec["bounds_tolerance_m"]
+    _, visible, _, plane_of = planes_of(bm, floor, tol, conv)
+    planes = {}
+    for face in bm.faces:
+        root = plane_of(face)
+        if root is not None:
+            area, normal = planes.get(root, (0.0, Vector()))
+            planes[root] = (area + face.calc_area(), normal + face.normal * face.calc_area())
+    steep = [(area, normal.normalized()) for area, normal in planes.values() if normal.normalized().z < conv["lean"]["side_normal_z"]]
+    area, normal = max(steep, key=lambda plane: plane[0], default=(0.0, Vector((0, 0, 1))))
+    share = area / visible if visible else 1.0
+    slope = math.degrees(math.acos(max(-1.0, min(1.0, normal.z))))
+    print(f"{name} rounded: the largest steep plane is {share:.3f} of the visible surface, {slope:.0f} degrees from level; {len(steep)} steep planes of {len(planes)}")
+    checks.check(
+        f"{name}.rounded",
+        share <= spec["rounded"]["max_steep_plane_share"],
+        f"one plane {slope:.0f} degrees from level holds {share:.3f} of the visible surface ({area:.4f} of {visible:.4f} m2); spec wants no steep plane above {spec['rounded']['max_steep_plane_share']}",
+    )
+
+
 def check_skeleton(checks, name, bm, slots, spec, conv):
     """The bark is a designed trunk that forks into tapering limbs (source/tree/brief.md). Returns the fork's height, or None."""
     want = spec["skeleton"]
@@ -1368,7 +1407,7 @@ def check_scene(checks, spec, conv):
             check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
         if "overlap" in spec:
             check_overlap(checks, name, [f for f in bm.faces if f.material_index not in opened], spec, conv)
-        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster)):
+        for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean), ("top", check_top), ("cluster", check_cluster), ("low", check_low), ("rounded", check_rounded)):
             if block in spec:
                 check(checks, name, bm, spec, conv)
         if "table" in spec:

@@ -887,6 +887,37 @@ def neck_at_rim(spec):
     edit(move, "table_rock_1")
 
 
+def tall_pebble(spec):
+    """The pebble stretched to 0.36 as tall as it is wide, and its spec with it: the proportion the
+    first pebble_2 was specified, built and passed with, while its brief said "low"."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    height = 0.36 * max(hi[0] - lo[0], hi[1] - lo[1])
+    stretch = height / (hi[2] - lo[2])
+
+    def raise_it(bm):
+        for vert in bm.verts:
+            vert.co.z = lo[2] + (vert.co.z - lo[2]) * stretch
+
+    edit(raise_it, "pebble_2")
+    hi[2] = lo[2] + height
+
+
+def cut_block(spec):
+    """The pebble cut through by one steep plane and stretched back to its bounds: a block with one big cut face."""
+
+    def cut(bm):
+        lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+        normal = Vector((math.cos(math.radians(20)), 0, math.sin(math.radians(20))))
+        through = (lo + hi) / 2 + Vector((0.1 * (hi.x - lo.x), 0, 0))
+        result = bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-7, plane_co=through, plane_no=normal, clear_outer=True)
+        before = set(bm.faces)
+        bmesh.ops.holes_fill(bm, edges=[g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge)])
+        bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if f not in before])
+        fit_to_bounds(bm, spec)
+
+    edit(cut, "pebble_2")
+
+
 # mutation -> the check id that must fail because of it. Cases break the
 # tracer unless they name another asset.
 CASES = [
@@ -937,6 +968,8 @@ CASES = [
     (tipped_tops, "slab_1.top_level", "slab_1"),
     (plate_lifted, "slab_1.overlap_touch", "slab_1"),
     (plate_inside_out, "slab_1.normals_outward", "slab_1"),
+    (tall_pebble, "pebble_2.low", "pebble_2"),
+    (cut_block, "pebble_2.rounded", "pebble_2"),
     (even_heights, "crag_1.cluster_steps_down", "crag_1"),
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),

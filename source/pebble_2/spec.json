@@ -14,7 +14,7 @@
     "max": [
       0.125,
       0.1,
-      0.09
+      0.05
     ]
   },
   "bounds_tolerance_m": 0.001,
@@ -41,6 +41,12 @@
   "lean": {
     "max_upright_share": 0.15,
     "min_summit_offset": 0.15
+  },
+  "low": {
+    "max_height_share": 0.25
+  },
+  "rounded": {
+    "max_steep_plane_share": 0.07
   },
   "soft_edges": true,
   "watertight": true,
