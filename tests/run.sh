@@ -5,7 +5,7 @@
 # Usage: tests/run.sh [selector...] [options]
 #   no selector, no option   every case
 #   <asset>                  the cases that read that asset: tracer, crate, rock, tree_1, ...
-#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L5b, L5c
+#   <gate>                   the cases of that gate: L0, L1, L2b, L2c, L4, L4b, L4c, L4d, L5b, L5c
 #   <tool>                   the cases behind one tool: smoke, view, paint, validate, ... (`--list` shows every tag)
 #       Several assets or tools select the cases with any of them, several gates likewise, and
 #       gates together with assets or tools select the cases with both: `tests/run.sh L4 rock`.
@@ -98,6 +98,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     crates/asset_smoke/*) echo smoke ;;
     crates/asset_view/*) echo view ;;
     tools/view_checks.py) echo view_checks ;;
+    tools/shade_check.py) echo shade_check ;;
     tools/bevy_lint.py) echo bevy_lint ;;
     tools/same_mesh.py) echo same_mesh ;;
     tools/baseline.py) echo baseline ;;
@@ -228,6 +229,7 @@ view() {
   return $code
 }
 view_checks() { tools/bl tools/view_checks.py "$@"; }
+shade_check() { python tools/shade_check.py "$@"; }
 
 # A case passes or fails here. Each runs in a shell of its own with $tmp to itself.
 verdict() { # <ok|FAIL> <name> [why]
@@ -391,6 +393,15 @@ away_picture_exists() { away_view > /dev/null 2>&1; test -e "$fx/away.png"; }
 # so only the picture is asked of the viewer here; L4b is where its exit code is tested.
 bark_shot() { fixture "bark_$1.png" bark_view "$1"; }
 bark_view() { view "$(broken_tree "$1")" "$tree_manifest" --stand 0.5 --pitch 0 --screenshot "$2"; [[ -e "$2" ]]; }
+
+# L4d: slab_1 with its paint broken, seen as the gate takes a rock's shaded sides; the check reads
+# what the viewer measured in its own picture.
+shade_shot() { fixture "shade_$1.json" shade_view "$1"; }
+shade_report() { # <python statements changing a passing report r> -> path of the report
+  python -c "import json; r={'rays': 65536, 'asset_pixels': 15000, 'away': {'pixels': 3500, 'median': 0.026, 'tenth': 0.02}, 'toward': {'pixels': 1800, 'median': 0.22}}; $1; json.dump(r, open('$tmp/shade.json', 'w'))"
+  echo "$tmp/shade.json"
+}
+shade_view() { view "$(broken_slab "$1")" "$slab_manifest" --back --close --screenshot "$2.png" --shade "$2"; [[ -e "$2" ]]; }
 
 # L0: a copy of an asset's brief and spec under a name of its own, linted and removed.
 lint_copy() { # <asset> <sed expression for the brief> <python statements for the spec s> -> lints the copy
