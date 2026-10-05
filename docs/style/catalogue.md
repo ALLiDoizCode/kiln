@@ -23,7 +23,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 | Family | To build | State |
 | --- | --- | --- |
 | Boulder | 3 or more variants in 3 sizes | One built from several pieces, 322 triangles; reads as a stump more than a boulder. Not approved. |
-| Standing stone | Slab and lozenge kinds, several heights | Not started |
+| Standing stone | Slab and lozenge kinds, several heights | Three variants built from pieces (ADR 13): 2.6, 3.6 and 1.8 m tall, 172 to 204 triangles, bare stone, each with one or two foot blocks. Not approved. |
 | Stepped spire | 3 or more, with foot blocks | Not started |
 | Crag | 3 or more clusters | Not started |
 | Arch | Lintel arch and wedged-block arch | Not started |

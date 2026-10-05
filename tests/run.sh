@@ -103,6 +103,7 @@ tags_of_file() { # <path> -> tags, ALL when every case may be affected, nothing 
     tools/image_lint.py) echo image_lint ;;
     tools/review_aids.py) echo review_aids ;;
     source/tree/*) echo tree_1 tree_2 tree_3 ;;  # the generator and brief the variants share
+    source/standing_stone*) ;;  # no case reads the standing stones; tools/gate.sh proves them
     source/slab/*|tools/stone.py) echo slab_1 ;;  # the generator, the brief and the kit slab_1 is built with
     tools/try_seeds.py) ;;  # an aid, read by no case
     source/*/*) local asset="${1#source/}"; echo "${asset%%/*}" ;;
