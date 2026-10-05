@@ -50,6 +50,8 @@ GROWTH = {"growth": str, "growth_height_m": float}
 # Optional variation, each a strength from 0 to 1. Growth on upward faces and along upper edges
 # needs `growth`; `blotch` and `blotch_size_m` come together.
 GROWTH_WHERE = {"growth_up": float, "growth_edges": float}
+# With `growth_edges`, and only then: how far in from an exposed edge its growth reaches, metres.
+GROWTH_EDGE = {"growth_edges": float, "growth_edge_m": float}
 # Optional, with `growth`: how much darker than the surface its patches are (0 to below 1), and how large they are, metres.
 GROWTH_LOOK = {"growth_darker": float, "growth_patch_m": float}
 # Optional; the habits of a designed rock (docs/style/rock-shapes.md). Every key of a block is required once the block is present.
@@ -333,13 +335,14 @@ if not checks.failed():
         wanted = {**PAINTED, **(CREVICE if keys & set(CREVICE) else {}), **(GROWTH if keys & set(GROWTH) else {}), **(BLOTCH if keys & set(BLOTCH) else {})}
         optional = {**SIDE_SHADE, **({**GROWTH_WHERE, **GROWTH_LOOK} if "growth" in keys else {})}
         wanted.update({key: kind for key, kind in optional.items() if key in keys})
+        wanted.update(GROWTH_EDGE if "growth" in keys and keys & set(GROWTH_EDGE) else {})
         wanted.update({**(GRAIN if keys & set(GRAIN) else {}), **(CLOSE if keys & set(CLOSE) else {})})
         ok = keys == set(wanted) and all(type(painted[key]) is kind for key, kind in wanted.items())
         ok = ok and all(re.fullmatch(HEX, painted[key]) for key in ("base_tint", "top_tint", "growth") if key in painted)
         checks.check(
             "spec.painted_shading",
             ok,
-            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
+            f"optional; needs exactly {sorted(PAINTED)}, with or without {sorted(CREVICE)} together, {sorted(GROWTH)} (and then {sorted(GROWTH_WHERE)}, {sorted(GROWTH_LOOK)}; {sorted(GROWTH_EDGE)} together), {sorted(BLOTCH)} together, {sorted(SIDE_SHADE)}; colours as #rrggbb",
         )
         if ok:
             size = painted["texture_px"]
@@ -354,11 +357,11 @@ if not checks.failed():
             if "overlap" in spec:
                 checks.check("spec.painted_joins", "crevice_shadow" in painted, "overlapping pieces are joined by what the crevice shadow hides (ADR 13): painted_shading needs crevice_shadow and crevice_width_m")
             strengths_ok = all(0 <= painted.get(key, 0.0) <= 1 for key in (*GROWTH_WHERE, "blotch")) and 0 <= painted.get("side_shade", 0.0) < 1 and painted.get("blotch_size_m", 1.0) > 0
-            strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0
+            strengths_ok = strengths_ok and 0 <= painted.get("growth_darker", 0.0) < 1 and painted.get("growth_patch_m", 1.0) > 0 and painted.get("growth_edge_m", 1.0) > 0
             checks.check(
                 "spec.painted_amounts",
                 amounts_ok and strengths_ok and painted.get("growth_height_m", 1.0) > 0,
-                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow, side_shade and growth_darker in 0..1 (below 1); widths, growth height, growth patch size and blotch size above 0",
+                "edge_light, growth_up, growth_edges and blotch in 0..1; crevice_shadow, side_shade and growth_darker in 0..1 (below 1); widths, growth height, growth patch size, growth_edge_m and blotch size above 0",
             )
     if painted is not None and all(type(painted.get(key, 0.0)) is float for key in (*GRAIN, *CLOSE)):
         checks.check("spec.painted_grain", 0 <= painted.get("grain", 0.0) <= 1 and painted.get("grain_width_m", 1.0) > 0, "grain in 0..1 and grain_width_m above 0")
@@ -487,12 +490,26 @@ if not checks.failed():
     seasons = conv["palette"]["seasons"]
     if "season" in spec or leaves:
         checks.check("spec.season", spec.get("season") in seasons, f"an asset with foliage names its season, one of {seasons}")
+    # What lies on the asset (docs/style/catalogue.md): a cover other than bare is growth painted on it (ADR 10).
+    covers = conv["palette"]["covers"]
+    if "cover" in spec:
+        grown = isinstance(spec.get("painted_shading"), dict) and "growth" in spec["painted_shading"]
+        checks.check(
+            "spec.cover",
+            spec["cover"] in covers and grown == (spec["cover"] != "bare"),
+            f"optional; one of {covers}; every cover but bare has `growth` in its painted_shading, and bare has none",
+        )
     # A palette variant is its base asset drawn again with other colours (ADR 11, ADR 13): the two
-    # specs agree on everything that shapes the mesh, and differ in what the palette is made from.
+    # specs agree on everything that shapes the mesh, and differ in what the variant is a variant in.
+    # A season differs in its palette and its materials' colours, a cover in the growth painted on it.
     if "palette_of" in spec:
         base_path = ROOT / "source" / str(spec["palette_of"]) / "spec.json"
         ok = isinstance(spec["palette_of"], str) and spec["palette_of"] != asset.name and base_path.is_file()
-        shape, colours = [], []
+        shape, colours, kinds = [], [], []
+        allowed = {
+            "season": set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]},
+            "cover": set(conv["palette"]["cover_keys"]),
+        }
         if ok:
             base = json.loads(base_path.read_text())
 
@@ -510,16 +527,21 @@ if not checks.failed():
                 return found
 
             mine, theirs = values(spec), values(base)
-            free = set(conv["palette"]["keys"]) | {f"materials.{name}" for name in spec["materials"]}
-            # The asset's own name and season, and the comparison with sibling seeds, which a season does not repeat.
-            apart = {"asset", "objects", "palette_of", "season"} | {key for key in set(mine) | set(theirs) if key.startswith("variants.")}
+            # A base that names no cover is bare, unless it has growth of its own, and then what it is under is not known.
+            theirs.setdefault("cover", None if "painted_shading.growth" in theirs else "bare")
+            # What this is a variant in: what it names (its season, its cover) that is not its base's.
+            kinds = [kind for kind in allowed if kind in mine and mine[kind] != theirs.get(kind)]
+            free = set().union(*(allowed[kind] for kind in kinds))
+            # The asset's own name, and the comparison with sibling seeds, which a palette variant does not repeat.
+            apart = {"asset", "objects", "palette_of", *allowed} | {key for key in set(mine) | set(theirs) if key.startswith("variants.")}
             shape = sorted(key for key in (set(mine) | set(theirs)) - free - apart if mine.get(key) != theirs.get(key))
             colours = sorted(key for key in free if mine.get(key) != theirs.get(key))
         checks.check(
             "spec.palette_of",
-            ok and not shape and colours,
-            f"names another asset with a spec.json, whose spec this one matches in everything but the palette ({sorted(conv['palette']['keys'])} and the material colours), and differs from there; "
-            f"differs outside the palette in {shape}, and in the palette in {colours}",
+            ok and kinds and not shape and colours,
+            f"names another asset with a spec.json, and a season or a cover that is not that asset's (it differs in {kinds}); its spec then matches the base's in everything but what that may change "
+            f"(a season: {sorted(conv['palette']['keys'])} and the material colours; a cover: {sorted(conv['palette']['cover_keys'])}), and differs from it there; "
+            f"differs outside that in {shape}, and inside it in {colours}",
         )
     stage = spec.get("growth_stage")
     if stage is not None or recipe is not None:

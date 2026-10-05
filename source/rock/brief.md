@@ -48,7 +48,7 @@ One material:
 
 The grey is painted over by script (ADR 9, ADR 10; `tools/paint.py`), into one 1024 px texture. Nothing is painted by hand. Read as a painter's layers:
 
-1. **Growth.** Moss covers the rock from the ground up to about 0.9 m, half the player's height, and stops there with a ragged, patchy upper edge. At the base it is an olive green, `#7a8a4d`, taken at the rock's own lightness: a wash that changes the hue and not the value, as the benchmark's base is (measured below). Above that it sits where it would settle, in small broken patches about 0.2 m across: over about 25% of the faces that are near level, and along about 40% of the exposed edges in the upper part of the rock. Those patches are 50% darker than the rock they sit on.
+1. **Growth.** Moss covers the rock from the ground up to about 0.9 m, half the player's height, and stops there with a ragged, patchy upper edge. At the base it is an olive green, `#7a8a4d`, taken at the rock's own lightness: a wash that changes the hue and not the value, as the benchmark's base is (measured below). Above that it sits where it would settle, in small broken patches about 0.2 m across: over about 25% of the faces that are near level, and along about 40% of the exposed edges in the upper part of the rock, reaching 0.2 m in from an edge (one patch deep; the painter's fixed reach until 2026-10-05, when it became the spec's). Those patches are 50% darker than the rock they sit on.
 2. **Gradient.** The rock is darker toward the base and lighter toward the top. At the top the colour is multiplied by a light grey, `#c8c8c8`, which leaves about 58% of the light; at the ground by a cool grey, `#8c8c9a`, which leaves about 27%. The tint runs evenly with height between the two.
 3. **Side shade.** Upright faces are darker at mid height, by up to 22%, fading to nothing toward the ground and the top.
 4. **Blotches.** Within each plane the tone drifts lighter and darker by up to 12%, in broad soft-edged patches about 0.6 m across, as much lighter as darker.
@@ -146,6 +146,7 @@ Every value in `spec.json`, and the sentence above it comes from. `tools/lint_sp
 | `painted_shading.growth_height_m` | `0.9` | Painted shading 1: from the ground up to about 0.9 m |
 | `painted_shading.growth_up` | `0.25` | Painted shading 1: patches over about 25% of the faces near level |
 | `painted_shading.growth_edges` | `0.4` | Painted shading 1: along about 40% of the exposed upper edges |
+| `painted_shading.growth_edge_m` | `0.2` | Painted shading 1: the growth along an edge reaches 0.2 m in from it |
 | `painted_shading.growth_darker` | `0.5` | Painted shading 1: the patches are 50% darker than the rock; measured against the benchmark |
 | `painted_shading.growth_patch_m` | `0.2` | Painted shading 1: patches about 0.2 m across |
 | `painted_shading.blotch` | `0.12` | Painted shading 4: lighter and darker by up to 12% |

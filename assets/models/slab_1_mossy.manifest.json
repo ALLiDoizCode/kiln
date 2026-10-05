@@ -1,0 +1,96 @@
+{
+  "asset": "slab_1_mossy",
+  "nodes": [
+    "slab_1_mossy"
+  ],
+  "mesh_count": 1,
+  "materials": {
+    "m_slab": [
+      0.3564,
+      0.386429,
+      0.3564
+    ]
+  },
+  "watertight": true,
+  "triangles": 208,
+  "bounds": {
+    "min": [
+      -1.3,
+      0.0,
+      -1.1
+    ],
+    "max": [
+      1.3,
+      0.5,
+      1.1
+    ]
+  },
+  "bounds_tolerance": 0.001,
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0"
+  ],
+  "soft_edges": true,
+  "overlap": true,
+  "painted": {
+    "texture_px": 1024,
+    "base_tint": [
+      0.262251,
+      0.262251,
+      0.323143
+    ],
+    "top_tint": [
+      0.57758,
+      0.57758,
+      0.57758
+    ],
+    "edge_light": 0.3,
+    "edge_width_m": 0.08,
+    "crevice_shadow": 0.45,
+    "crevice_width_m": 0.3,
+    "hidden_underside": true,
+    "min_texels_per_m": 100,
+    "min_uv_coverage": 0.4,
+    "max_uv_overlap": 0.001,
+    "feature_deg": 30.0,
+    "colour_tolerance": 0.08,
+    "min_effect_share": 0.5,
+    "texel_range": [
+      30,
+      240
+    ],
+    "growth_height_m": 0.15,
+    "growth_up": 0.25,
+    "growth_edges": 0.4,
+    "growth_darker": 0.5,
+    "growth_patch_m": 0.17,
+    "blotch": 0.12,
+    "blotch_size_m": 0.3,
+    "growth": [
+      0.194618,
+      0.254152,
+      0.074214
+    ],
+    "side_shade_normal_z": [
+      0.3,
+      0.7
+    ],
+    "side_shade_half_band": 0.35,
+    "growth_up_normal_z": [
+      0.82,
+      0.94
+    ],
+    "growth_cover": [
+      0.5,
+      1.5
+    ],
+    "growth_patch_edges": 0.9,
+    "blotch_spread": [
+      1.0,
+      2.5
+    ],
+    "max_blotch_grain": 0.2,
+    "max_level_gap": 3
+  }
+}

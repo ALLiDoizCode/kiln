@@ -21,7 +21,7 @@ step "L2  glTF validator";       .tools/gltf_validator -a -o "$glb" > "$reports/
 step "L2b Bevy profile lint";    python tools/bevy_lint.py "$glb"
 base="$(python -c "import json,sys; print(json.load(open(sys.argv[1])).get('palette_of', ''))" "source/$asset/spec.json")"
 if [[ -n $base ]]; then
-  # A palette variant (a season): its base's mesh with another texture. The base's gate comes first.
+  # A palette variant (a season, a cover): its base's mesh with another texture. The base's gate comes first.
 step "L2c same mesh as $base";   python tools/same_mesh.py "$glb" "assets/models/$base.glb" --report "$reports/L2c-same-mesh.json"
 fi
 step "L4  Bevy load test";       cargo run -q -p asset_smoke -- "$glb" "assets/models/$asset.manifest.json" \

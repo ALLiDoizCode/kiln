@@ -70,7 +70,19 @@ The underside of the cap is painted by the same rules as any other face: there i
 
 `hidden_underside` is true: it names the faces lying on the ground, under the necks and blocks, which get almost none of the texture. It does not touch the underside of the cap, which is above the ground.
 
-No growth: moss is a cover, and covers are palette variants on the same mesh (ADR 13).
+No growth on the bare stone: moss is a cover, and covers are palette variants on the same mesh (ADR 13; Covers, below).
+
+## Covers
+
+A cover is what lies on the stone: `bare`, or `mossy` (`docs/style/catalogue.md`; snow is not built). The assets above are bare. A mossy one is a palette variant (ADR 13, `CONTEXT.md`): a separate asset, `<base>_mossy`, whose spec names its base as `palette_of` and its `cover`, and differs from the base's only in the growth keys of `painted_shading`. It is the base's mesh, UVs included, with another texture, and the gate holds it to that (`spec.cover`, `spec.palette_of`, `palette.same_mesh`).
+
+Moss is growth as ADR 10 and `tools/paint.py` paint it: a wash from the ground up to a height, and small patches on faces near level and along exposed upper edges. Its colour, how dark it is and how sparse come from the first mossy rock (`source/rock/brief.md`, measured there against the benchmark): olive `#7a8a4d` at the stone's own lightness; patches 50% darker than the stone they sit on; patches over about 25% of near-level faces and along about 40% of exposed upper edges, because the benchmark's moss is sparse. How high the wash reaches and how large a patch is are shares of the stone, not that rock's metres:
+
+- **Reach.** Three tenths of the stone's height, and at most 0.9 m, half the player's height, which is where the first rock's stops. The wash's ragged top wanders up to half its reach either way, so at three tenths it stays under half the height, where the growth along upper edges begins; the two never close into a coat.
+- **Patch.** A thirteenth of the narrower side of the footprint, and at most 0.2 m, the benchmark's larger flecks (the first rock: 0.2 m on a 2.6 m side). A stone then carries about a dozen patches across whatever its size.
+- **Edge reach.** The growth along an upper edge reaches one patch in from it (`growth_edge_m`, the patch's own size; the first rock: 0.2 m). Until 2026-10-05 the painter used 0.2 m for every stone, which on a top 0.7 m wide is most of the top: `block_2_mossy` then measured growth on 0.44 of its top where 0.25 was asked.
+
+A table rock's cap is a broad near-level top out in the weather, and that is where its patches lie, with the wash round the foot of the neck. The underside of the cap faces down and is sheltered: nothing settles there, and the painter puts growth only on faces that look up. `table_rock_1_mossy`: 2.9 m tall, so the wash reaches 0.9 m (0.87, at the cap of 0.9), well under the cap's underside at 2.0 m; 3.0 m on its narrower side, so patches of 0.2 m (0.23, at the cap of 0.2).
 
 ## Parts
 
@@ -87,7 +99,7 @@ One object and one mesh per variant, with one material. The mesh is three or fiv
 
 ## Out of scope
 
-Collision shapes and the climbable flag (ADR 7: not implemented), LODs, mossy and snow-capped covers, other stone colours, a table rock that grows out of a cliff face (placement is the game's), darkening the underside as shadow (lighting is the engine's), finished faces under the necks.
+Collision shapes and the climbable flag (ADR 7: not implemented), LODs, snow-capped covers, other stone colours, a table rock that grows out of a cliff face (placement is the game's), darkening the underside as shadow (lighting is the engine's), finished faces under the necks.
 
 ## Numbers
 
@@ -133,3 +145,5 @@ Proposed by the agent, and open to change:
 - Enlarging the blocks after the first contact sheet, from 0.5 to 0.65 of their neck's radius to 0.7 to 0.95: at the first size one was a few pixels in every view. No spec value changed with it.
 - The under-the-cap Bevy tile (`bevy_under`) looks 35 degrees up from 1 m beside the origin, not the 78 degrees used under a tree: at 78 the underside, 0.3 to 0.5 m from the eye, filled the picture with one tone.
 - The budgets, from the triangle counts of softened prisms; every painted value, the crag's; a 2048 px texture for the largest.
+
+- **Covers (2026-10-05).** Asked for by the owner through the catalogue (bare, mossy, snow-capped for rocks) and ADR 13: a cover is a palette variant of its base, as a season is of a tree. Proposed by the agent, and open to change: the `cover` field and what a cover variant's spec may change; that the reach is three tenths of the height and at most 0.9 m, and a patch a thirteenth of the narrower side and at most 0.2 m (neither share is measured on a reference: they are the first mossy rock's 0.9 m and 0.2 m turned into shares, the reach lowered from that rock's 0.45 of its height so the wash stays under half way up); the colour, darkness and the two shares of cover, which are that rock's. Which variant of the family got the cover was the coordinator's choice. Not approved.

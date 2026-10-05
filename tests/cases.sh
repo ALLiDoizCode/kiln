@@ -113,8 +113,34 @@ expect_id "painted.growth_height"  "L4 catches growth all the way up the sides" 
 expect_id "painted.growth_up"      "L4 catches bare upward-facing surfaces"          smoke "$(broken no_growth_up)" "$rock_manifest"
 expect_id "painted.growth_up"      "L4 catches growth carpeting the top, not patchy" smoke "$(broken growth_carpets_the_top)" "$rock_manifest"
 expect_id "painted.growth_edges"   "L4 catches bare upper edges"                     smoke "$(broken no_growth_edges)" "$rock_manifest"
+expect_id "painted.growth_up"      "L4 catches edge growth reaching across the tops"  smoke "$(broken growth_edges_reach_far)" "$rock_manifest"
 expect_id "painted.growth_darker"  "L4 catches growth no darker than the rock"       smoke "$(broken growth_not_darker)" "$rock_manifest"
 expect_id "painted.growth_patches" "L4 catches growth in broad patches"              smoke "$(broken growth_broad_patches)" "$rock_manifest"
+# Growth on shapes the rock is not (the mossy covers): each growth check measured on the surface the shape has.
+# `cover <asset>` loads a gated cover as it is; `broken_cover <asset> <mutation>` builds it with its growth wrong (tests/cover_mutations.py).
+uses slab_1_mossy smoke
+expect 0 "L4 passes an unbroken mossy slab, which has no upright face above its wash" cover slab_1_mossy
+uses pebble_3_mossy smoke
+expect 0 "L4 passes an unbroken mossy pebble, which has no upright face" cover pebble_3_mossy
+uses stack_2_mossy smoke
+expect 0 "L4 passes an unbroken mossy stack, which has no open face above its wash" cover stack_2_mossy
+uses standing_stone_1_mossy smoke
+expect 0 "L4 passes an unbroken mossy standing stone, which has no near-level face" cover standing_stone_1_mossy
+uses slab_1_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a slab"          smoke "$(broken_cover slab_1_mossy growth_everywhere)" assets/models/slab_1_mossy.manifest.json
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a slab"            smoke "$(broken_cover slab_1_mossy no_growth_edges)" assets/models/slab_1_mossy.manifest.json
+uses pebble_3_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a pebble"        smoke "$(broken_cover pebble_3_mossy growth_everywhere)" assets/models/pebble_3_mossy.manifest.json
+uses stack_2_mossy smoke paint cover_mutations
+expect_id "painted.growth_height"  "L4 catches growth all the way up a stack"         smoke "$(broken_cover stack_2_mossy growth_everywhere)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_up"      "L4 catches growth carpeting a stack's stones"     smoke "$(broken_cover stack_2_mossy growth_carpets_the_top)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_edges"   "L4 catches bare upper edges on a stack"           smoke "$(broken_cover stack_2_mossy no_growth_edges)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a stack" smoke "$(broken_cover stack_2_mossy growth_not_darker)" assets/models/stack_2_mossy.manifest.json
+expect_id "painted.growth_patches" "L4 catches growth in broad patches on a stack"    smoke "$(broken_cover stack_2_mossy growth_broad_patches)" assets/models/stack_2_mossy.manifest.json
+uses standing_stone_1_mossy smoke paint cover_mutations
+expect_id "painted.growth_darker"  "L4 catches growth no darker than the stone on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_not_darker)" assets/models/standing_stone_1_mossy.manifest.json
+expect_id "painted.growth_patches" "L4 catches growth in broad patches on a standing stone" smoke "$(broken_cover standing_stone_1_mossy growth_broad_patches)" assets/models/standing_stone_1_mossy.manifest.json
+expect_id "painted.growth_up"      "L4 catches growth carpeting a standing stone's cap" smoke "$(broken_cover standing_stone_1_mossy growth_carpets_the_top)" assets/models/standing_stone_1_mossy.manifest.json
 expect_id "painted.blotches"       "L4 catches planes with no blotches"              smoke "$(broken no_blotches)" "$rock_manifest"
 expect_id "painted.blotches"       "L4 catches blotches stronger than asked"         smoke "$(broken harsh_blotches)" "$rock_manifest"
 expect_id "painted.blotches_broad" "L4 catches blotches as fine grain"               smoke "$(broken speckle)" "$rock_manifest"
@@ -261,6 +287,9 @@ expect_id "spec.painted_shading"     "L0 catches growth placed with no growth co
 expect_id "spec.painted_amounts"     "L0 catches a side shade that leaves no light" lint_rock 'p["side_shade"] = 1.0'
 expect_id "spec.fullness"            "L0 catches a fullness above the whole box" lint_rock 's["fullness"]["min_volume_share"] = 1.5'
 expect_id "spec.painted_amounts"     "L0 catches growth darkened to black"    lint_rock 'p["growth_darker"] = 1.0'
+expect_id "spec.painted_shading"     "L0 catches growth along edges with no reach given" lint_rock 'del p["growth_edge_m"]'
+expect_id "spec.painted_shading"     "L0 catches a reach given for no growth along edges" lint_rock 'del p["growth_edges"]'
+expect_id "spec.painted_amounts"     "L0 catches growth along edges that reaches nowhere" lint_rock 'p["growth_edge_m"] = 0.0'
 expect_id "spec.pieces"              "L0 catches a pieces block with a key missing" lint_rock 'del s["pieces"]["min_step_ratio"]'
 expect_id "spec.foot"                "L0 catches a foot on more sides than there are" lint_rock 's["foot"]["min_sides"] = 5'
 expect_id "spec.chamfers"            "L0 catches a chamfer as big as a large plane" lint_rock 's["chamfers"]["min_m2"] = 0.5'
@@ -319,6 +348,9 @@ expect_id "spec.palette_of"          "L0 catches a season drawn from another see
 expect_id "spec.palette_of"          "L0 catches a season with a leaf shape of its own" lint_season 's["foliage"]["piece_m"] = [0.2, 0.9]'
 expect_id "spec.palette_of"          "L0 catches a palette of an asset that does not exist" lint_season 's["palette_of"] = "zz_nope"'
 expect_id "spec.palette_of"          "L0 catches a season in its base's own colours" lint_season 'b = json.load(open("source/tree_1/spec.json")); s["materials"] = b["materials"]; s["foliage"] = b["foliage"]'
+# A palette variant says what it is a palette of its base in: another season or another cover.
+expect_id "spec.palette_of"          "L0 catches a palette variant in its base's own season" lint_season 's["season"] = "summer"'
+expect_id "spec.palette_of"          "L0 catches a season with moss its base has not" lint_season 's["painted_shading"].update(growth="#7a8a4d", growth_height_m=0.9)'
 
 # L2c: a season's GLB carries its base's mesh, UVs included: only the texture differs.
 uses tree_1 tree_1_autumn same_mesh
@@ -329,6 +361,27 @@ uses tree_1 tree_1_autumn same_mesh paint tree_mutations
 expect_id "palette.same_mesh"        "L2c catches a season whose leaves sit on other swatches" python tools/same_mesh.py "$(broken_tree gradient_within_piece)" assets/models/tree_1.glb
 uses tree_1 same_mesh
 expect_id "palette.other_texture"    "L2c catches a season with its base's own texture" python tools/same_mesh.py assets/models/tree_1.glb assets/models/tree_1.glb
+# Covers (ADR 10, ADR 13): a cover is another palette variant, its base's spec but for the growth painted on it.
+# `lint_cover <python>` lints a copy of crag_1_mossy after that has changed its spec `s` and painted block `p`.
+uses crag_1 crag_1_mossy lint_spec
+expect 0 "L0 passes a cover's spec"          lint_cover 'pass'
+expect_id "spec.cover"               "L0 catches a cover that is not one of the catalogue's" lint_cover 's["cover"] = "rusty"'
+expect_id "spec.cover"               "L0 catches a mossy cover with no growth" lint_cover '[p.pop(k) for k in list(p) if k.startswith("growth")]'
+expect_id "spec.cover"               "L0 catches growth on a cover called bare" lint_cover 's["cover"] = "bare"'
+expect_id "spec.palette_of"          "L0 catches a cover drawn from another seed than its base" lint_cover 's["seed"] = 2'
+expect_id "spec.palette_of"          "L0 catches a cover with pieces of its own" lint_cover 's["overlap"]["max_buried_share"] = 0.5'
+expect_id "spec.palette_of"          "L0 catches a cover on stone of another colour" lint_cover 's["materials"]["m_crag"] = "#b0a080"'
+expect_id "spec.palette_of"          "L0 catches a cover with a tint of its own" lint_cover 'p["top_tint"] = "#ffffff"'
+expect_id "spec.palette_of"          "L0 catches a cover with blotches of its own" lint_cover 'p["blotch"] = 0.3'
+expect_id "spec.palette_of"          "L0 catches a cover of an asset that does not exist" lint_cover 's["palette_of"] = "zz_nope"'
+expect_id "spec.palette_of"          "L0 catches moss on a mesh that says no cover" lint_cover 'del s["cover"]'
+# L2c: a cover's GLB carries its base's mesh, UVs included: only the texture differs.
+uses crag_1 crag_1_mossy same_mesh
+expect 0 "L2c passes a cover on its base's mesh" python tools/same_mesh.py assets/models/crag_1_mossy.glb assets/models/crag_1.glb
+uses crag_1 crag_1_mossy slab_1 same_mesh
+expect_id "palette.same_mesh"        "L2c catches a cover on another rock's mesh" python tools/same_mesh.py assets/models/crag_1_mossy.glb assets/models/slab_1.glb
+uses crag_1 same_mesh
+expect_id "palette.other_texture"    "L2c catches a cover with its base's own texture" python tools/same_mesh.py assets/models/crag_1.glb assets/models/crag_1.glb
 # L0, blades: blade_plant_1's spec with one thing wrong, and a tree's with blades added.
 # `lint_blade <python>` lints a copy of blade_plant_1 after that has changed its spec `s`.
 uses blade_plant_1 lint_spec
