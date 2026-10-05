@@ -450,6 +450,53 @@ def fanned_prisms(spec):
     edit(fan, "crag_1")
 
 
+# The block (source/block): a near-cuboid with big chamfers, parted along a crack.
+
+
+def tapered_block(spec):
+    """The block drawn in toward its top, to six tenths of its footprint there: a stump of a pyramid, with no side square to anything."""
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+
+    def taper(bm):
+        for vert in bm.verts:
+            narrow = 1 - 0.4 * (vert.co.z - lo.z) / (hi.z - lo.z)
+            vert.co.x, vert.co.y = vert.co.x * narrow, vert.co.y * narrow
+
+    edit(taper, "block_2")
+
+
+def plain_box(spec):
+    """The block's two pieces each swapped for the plain box round it: no chamfer anywhere, and no groove between them."""
+    from validate import pieces_in
+
+    def swap(bm):
+        boxes = []
+        for piece in pieces_in(bm.faces):
+            corners = [v.co for f in piece for v in f.verts]
+            boxes.append(box([min(co[i] for co in corners) for i in range(3)], [max(co[i] for co in corners) for i in range(3)]))
+        bm.clear()
+        for piece in boxes:
+            verts = [bm.verts.new(co) for co in piece["vertices"]]
+            for face in piece["faces"]:
+                bm.faces.new([verts[i] for i in face])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    edit(swap, "block_2")
+
+
+def crack_filled(spec):
+    """A flat plate laid into the top of the block, over its whole footprint and up to its full height: the groove of the crack is filled level."""
+    lo, hi = spec["bounds_m"]["min"], spec["bounds_m"]["max"]
+    plate = box((lo[0], lo[1], lo[2] + 0.8 * (hi[2] - lo[2])), hi)
+
+    def fill(bm):
+        verts = [bm.verts.new(co) for co in plate["vertices"]]
+        for face in plate["faces"]:
+            bm.faces.new([verts[i] for i in face])
+
+    edit(fill, "block_2")
+
+
 def paint_removed(spec):
     """The rock back to its flat colour: the texture is no longer what colours it."""
     socket = bpy.data.materials["m_rock"].node_tree.nodes["Principled BSDF"].inputs["Base Color"]
@@ -835,6 +882,10 @@ CASES = [
     (one_prism, "crag_1.cluster_steps_down", "crag_1"),
     (upright_prisms, "crag_1.cluster_leans", "crag_1"),
     (fanned_prisms, "crag_1.cluster_leans_together", "crag_1"),
+    (tapered_block, "block_2.block_square", "block_2"),
+    (plain_box, "block_2.block_chamfers", "block_2"),
+    (plain_box, "block_2.cracks", "block_2"),
+    (crack_filled, "block_2.cracks", "block_2"),
     (bark_hole, "tree_1.manifold", "tree_1"),
     (round_trunk, "tree_1.trunk_sides", "tree_1"),
     (pole_trunk, "tree_1.trunk_tapers", "tree_1"),
