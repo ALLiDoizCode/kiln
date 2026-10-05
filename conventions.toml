@@ -37,6 +37,12 @@ grid = 24                   # points along each side of the bounds where the mes
 max_mismatch = 0.04         # share of the space they fill where the two may differ; soft edges take about 0.02
 min_owned_share = 0.7       # share of the visible surface that lies on a recorded piece; the rest is soft edge
 
+[overlap]
+# A shape of several closed pieces that pass into each other (ADR 13), measured on the mesh.
+grid = 96                   # surface samples are no further apart than the longest side of the bounds over this
+in_front_m = 0.0001         # a point of a surface is buried when the space this far in front of it is inside another piece
+min_join_share = 0.02       # two pieces are joined when this share of the smaller one's surface lies inside the other
+
 [foot]
 # A foot is near-level surface low on a shape that nothing stands over, seen from straight above.
 band = 0.3                  # below this share of the height; the benchmark rock's weaker side reads 0.15 m2 here

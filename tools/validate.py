@@ -761,6 +761,156 @@ def check_lean(checks, name, bm, spec, conv):
     )
 
 
+# Overlapping pieces (ADR 13): a shape may be several closed pieces that pass into each other, each
+# softened on its own. They stay separate in the mesh, so they are read back from it: no record.
+
+
+def pieces_in(faces):
+    """The closed pieces a set of faces is made of: its faces grouped by the vertices they share."""
+    faces = set(faces)
+    pieces, seen = [], set()
+    for start in sorted(faces, key=lambda face: face.index):
+        if start in seen:
+            continue
+        seen.add(start)
+        piece, front = [], [start]
+        while front:
+            face = front.pop()
+            piece.append(face)
+            for vert in face.verts:
+                for other in vert.link_faces:
+                    if other in faces and other not in seen:
+                        seen.add(other)
+                        front.append(other)
+        pieces.append(piece)
+    return pieces
+
+
+def signed_volume(faces):
+    """The volume a closed set of faces encloses: positive when they face outward."""
+    return sum(f.verts[0].co.dot(a.co.cross(b.co)) for f in faces for a, b in zip(f.verts[1:], f.verts[2:])) / 6
+
+
+class Solid:
+    """One closed piece, as something a point can be inside of."""
+
+    # Not along any axis or likely face: a ray along a face, or through an edge, counts wrongly.
+    RAY = Vector((0.137, 0.291, 0.947)).normalized()
+
+    def __init__(self, faces):
+        verts = list({v for f in faces for v in f.verts})
+        index = {v: i for i, v in enumerate(verts)}
+        self.tree = BVHTree.FromPolygons([v.co.copy() for v in verts], [[index[v] for v in f.verts] for f in faces])
+        self.lo = Vector(min(v.co[i] for v in verts) for i in range(3))
+        self.hi = Vector(max(v.co[i] for v in verts) for i in range(3))
+
+    def holds(self, point):
+        """Whether the point is inside: a ray from it leaves through the surface an odd number of times."""
+        if any(point[i] < self.lo[i] or point[i] > self.hi[i] for i in range(3)):
+            return False
+        crossings, origin = 0, point
+        while crossings < 64:
+            hit = self.tree.ray_cast(origin, self.RAY)[0]
+            if hit is None:
+                break
+            crossings += 1
+            origin = hit + self.RAY * 1e-6
+        return crossings % 2 == 1
+
+
+def surface_samples(face, spacing):
+    """Points spread evenly over a face, no further apart than `spacing`, and the area each stands for."""
+    corners = [v.co for v in face.verts]
+    for b, c in zip(corners[1:], corners[2:]):
+        a = corners[0]
+        area = (b - a).cross(c - a).length / 2
+        n = max(1, math.ceil(max((b - a).length, (c - a).length, (c - b).length) / spacing))
+        # The middles of the n * n small triangles the triangle divides into.
+        for i in range(n):
+            for j in range(n - i):
+                yield a + (b - a) * ((i + 1 / 3) / n) + (c - a) * ((j + 1 / 3) / n), area / (n * n)
+                if j < n - i - 1:
+                    yield a + (b - a) * ((i + 2 / 3) / n) + (c - a) * ((j + 2 / 3) / n), area / (n * n)
+
+
+def overlaps(faces, spec, conv):
+    """How the closed pieces among `faces` pass into each other, measured on the mesh.
+
+    Returns (the pieces, each one's surface, how much of each one's surface lies inside each
+    other piece, how much of each lies inside any other). A point of a surface is inside
+    another piece, and so never seen, when the space just in front of it is.
+    """
+    rules = conv["overlap"]
+    lo, hi = Vector(spec["bounds_m"]["min"]), Vector(spec["bounds_m"]["max"])
+    spacing = max(hi - lo) / rules["grid"]
+    pieces = pieces_in(faces)
+    solids = [Solid(piece) for piece in pieces]
+    areas = [sum(f.calc_area() for f in piece) for piece in pieces]
+    inside = [[0.0] * len(pieces) for _ in pieces]
+    buried = [0.0] * len(pieces)
+    for index, piece in enumerate(pieces):
+        for face in piece:
+            for point, area in surface_samples(face, spacing):
+                front = point + face.normal * rules["in_front_m"]
+                within = [other for other, solid in enumerate(solids) if other != index and solid.holds(front)]
+                for other in within:
+                    inside[index][other] += area
+                if within:
+                    buried[index] += area
+    return pieces, areas, inside, buried
+
+
+def check_overlap(checks, name, faces, spec, conv):
+    """The shape is several closed pieces pushed into each other (ADR 13): how many, that each
+    touches another so nothing floats, how much of their surface is buried, and their size order."""
+    want, rules = spec["overlap"], conv["overlap"]
+    pieces, areas, inside, buried = overlaps(faces, spec, conv)
+    count, total = len(pieces), sum(areas)
+    checks.check(
+        f"{name}.overlap_count",
+        want["min_count"] <= count <= want["max_count"],
+        f"the mesh is {count} separate closed pieces; spec wants {want['min_count']} to {want['max_count']}",
+    )
+    # Two pieces are joined when one passes into the other: enough of the smaller one's surface is inside it.
+    def joined(a, b):
+        return max(inside[a][b], inside[b][a]) >= rules["min_join_share"] * min(areas[a], areas[b])
+
+    reached, front = {0}, [0]
+    while front:
+        a = front.pop()
+        for b in range(count):
+            if b not in reached and joined(a, b):
+                reached.add(b)
+                front.append(b)
+    alone = [index for index in range(count) if not any(joined(index, other) for other in range(count) if other != index)]
+    checks.check(
+        f"{name}.overlap_touch",
+        len(reached) == count,
+        f"{count - len(reached)} of {count} pieces are not joined to the largest group, and {len(alone)} pass into no other piece at all: "
+        f"a piece is joined to another when at least {rules['min_join_share']} of the smaller one's surface lies inside the other (conventions); "
+        f"surface of each inside another, as a share of its own {[round(max(row) / area, 3) for row, area in zip(inside, areas)]}",
+    )
+    share = sum(buried) / total if total else 1.0
+    checks.check(
+        f"{name}.overlap_buried",
+        share <= want["max_buried_share"],
+        f"{share:.3f} of the surface ({sum(buried):.2f} of {total:.2f} m2) lies inside another piece and is never seen; spec allows {want['max_buried_share']}",
+    )
+    # A piece's size is the surface it shows. Each must be clearly larger than the next: no twins.
+    shown = sorted((area - hidden for area, hidden in zip(areas, buried)), reverse=True)
+    steps = [shown[i] / shown[i + 1] if shown[i + 1] > 0 else float("inf") for i in range(len(shown) - 1)]
+    checks.check(
+        f"{name}.overlap_size_order",
+        bool(steps) and min(steps) >= want["min_step_ratio"],
+        f"the pieces show {[round(area, 2) for area in shown]} m2, each over the next {[round(step, 2) for step in steps]}; spec wants every step at least {want['min_step_ratio']}",
+    )
+    print(
+        f"{name} overlap: {count} pieces of {[round(area, 2) for area in areas]} m2, buried {[round(area, 2) for area in buried]} m2 "
+        f"({share:.3f} of the surface), shown in size order {[round(area, 2) for area in shown]} m2, steps {[round(step, 2) for step in steps]}"
+    )
+    return pieces
+
+
 def check_scene(checks, spec, conv):
     """Run every L1 check against the scene currently open in Blender."""
     # matrix_world is stale until the depsgraph has been evaluated.
@@ -807,8 +957,15 @@ def check_scene(checks, spec, conv):
             checks.check(f"{name}.manifold", closed and not non_manifold, f"{len(non_manifold)} non-manifold edges on the {len(closed)} faces that must form a closed surface")
             flipped = [e.index for e in closed_edges if e.is_manifold and not e.is_contiguous]
             checks.check(f"{name}.winding_consistent", not flipped, f"{len(flipped)} edges join faces with opposite winding")
-            volume = sum(f.verts[0].co.dot(a.co.cross(b.co)) for f in closed for a, b in zip(f.verts[1:], f.verts[2:])) / 6
-            checks.check(f"{name}.normals_outward", volume > 0, f"signed volume {volume:.6f}")
+            volume = signed_volume(closed)
+            if "overlap" in spec:
+                # Several closed pieces (ADR 13): facing outward is asked of each. One small piece
+                # inside out leaves the volume of the whole positive.
+                volumes = [signed_volume(piece) for piece in pieces_in(closed)]
+                inside_out = [round(v, 6) for v in volumes if v <= 0]
+                checks.check(f"{name}.normals_outward", volumes and not inside_out, f"{len(inside_out)} of {len(volumes)} pieces are inside out: signed volumes {inside_out}")
+            else:
+                checks.check(f"{name}.normals_outward", volume > 0, f"signed volume {volume:.6f}")
         loose = [v.index for v in bm.verts if not v.link_faces]
         checks.check(f"{name}.no_loose_vertices", not loose, f"{len(loose)} vertices belong to no face")
         tiny = [f.index for f in bm.faces if f.calc_area() < conv["mesh"]["min_face_area_m2"]]
@@ -881,6 +1038,8 @@ def check_scene(checks, spec, conv):
             check_variants(checks, name, bm, spec, conv)
         if "pieces" in spec:
             check_pieces(checks, name, bm, spec, conv, recorded_pieces(name))
+        if "overlap" in spec:
+            check_overlap(checks, name, [f for f in bm.faces if f.material_index not in opened], spec, conv)
         for block, check in (("foot", check_foot), ("chamfers", check_chamfers), ("lean", check_lean)):
             if block in spec:
                 check(checks, name, bm, spec, conv)

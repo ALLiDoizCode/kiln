@@ -30,6 +30,7 @@ use serde::{Deserialize, Serialize};
 mod foliage;
 mod grain;
 mod painted;
+mod pieces;
 
 const LOAD_TIMEOUT: Duration = Duration::from_secs(60);
 /// Per channel, in linear RGB. 8-bit sRGB steps are larger than this.
@@ -65,6 +66,10 @@ struct Manifest {
     /// nothing, so `watertight` is asked of every other material's triangles.
     #[serde(default)]
     open_materials: Vec<String>,
+    /// Several closed pieces that pass into each other (ADR 13): facing outward is asked of
+    /// each piece, and surface buried inside another piece is not measured as painted surface.
+    #[serde(default)]
+    overlap: bool,
     /// Foliage: one material's triangles are leaf pieces coloured from a palette
     /// in the painted texture, and are measured as such instead of as painted surface.
     #[serde(default)]
@@ -315,6 +320,8 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
 
     let mut triangles = 0;
     let mut volume = 0.0;
+    // Every triangle that must be part of a closed surface, to find the pieces among them.
+    let mut closed: Vec<[Vec3; 3]> = Vec::new();
     let mut against_winding = 0;
     // (position, normal) of every vertex, to find positions lit as a hard edge.
     let mut lit: Vec<(Vec3, Vec3)> = Vec::new();
@@ -394,6 +401,7 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
                 }
                 if !is_open {
                     volume += a.dot(b.cross(c)) / 6.0;
+                    closed.push([a, b, c]);
                 }
                 // The side a triangle's winding makes its front must be the
                 // side its vertex normals point to, or it lights wrongly.
@@ -434,6 +442,17 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
     if manifest.watertight && volume <= 0.0 {
         fail(format!("signed volume {volume} is not positive: faces are inside out or the mesh is open"));
     }
+    if manifest.watertight && manifest.overlap {
+        // One small piece inside out leaves the volume of the whole positive.
+        let (piece, count) = pieces::split(&closed);
+        let inside_out: Vec<f32> = pieces::volumes(&closed, &piece, count).into_iter().filter(|v| *v <= 0.0).collect();
+        if !inside_out.is_empty() {
+            fail(format!(
+                "pieces.outward: {} of {count} pieces are inside out or open: signed volumes {inside_out:?}",
+                inside_out.len()
+            ));
+        }
+    }
 
     if triangles != manifest.triangles {
         fail(format!("triangles {triangles} != manifest {}", manifest.triangles));
@@ -457,6 +476,7 @@ fn measure(app: &App, manifest: &Manifest, grain: Option<&grain::Wanted>, report
                 report.painted = Some(painted::check(
                     want,
                     &painted_triangles,
+                    manifest.overlap,
                     image,
                     manifest.bounds.min[1],
                     manifest.bounds.max[1],

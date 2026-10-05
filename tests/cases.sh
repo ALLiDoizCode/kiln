@@ -44,6 +44,9 @@ uses tracer smoke flip_normals
 expect 1 "L4 catches normals against winding" smoke "$(flipped_normals)" "$manifest"
 uses tracer smoke
 expect 1 "L4 catches an inside-out mesh"    smoke "$(exported inside_out)" "$manifest"
+# Overlapping pieces (ADR 13): the tracer with a small box pushed into its leg, and a manifest that says so.
+expect 0 "L4 passes two closed pieces that overlap" smoke "$(exported two_pieces)" "$(tamper 'm["triangles"] += 12; m["overlap"] = True')"
+expect_id "pieces.outward" "L4 catches one piece inside out among several" smoke "$(exported piece_inside_out)" "$(tamper 'm["triangles"] += 12; m["overlap"] = True')"
 # The rock with every face lit flat: the same triangles, but no soft edges.
 uses rock smoke
 expect 0 "L4 passes the real rock"          smoke assets/models/rock.glb assets/models/rock.manifest.json
@@ -164,6 +167,13 @@ expect_id "spec.lean"                "L0 catches an upright share above the whol
 expect_id "spec.planes"              "L0 catches a ledge's smaller plane set above a large one" lint_rock 's["planes"]["ledge_plane_m2"] = 0.9'
 expect_id "spec.planes"              "L0 catches more ledge views than there are views" lint_rock 's["planes"]["min_ledge_views"] = 9'
 expect_id "spec.painted_needs_uvs"   "L0 catches UVs on a flat-coloured asset" lint_rock 'del s["painted_shading"]'
+# L0, overlapping pieces (ADR 13). The rock is one closed skin, so its copy is first stripped of the
+# two blocks that measure one, and then says it is several pieces, with one thing wrong.
+expect_id "spec.overlap"             "L0 catches an overlap block with a key missing" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3}'
+expect_id "spec.overlap"             "L0 catches a buried share of the whole surface" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 1.0, "min_step_ratio": 1.2}'
+expect_id "spec.overlap"             "L0 catches overlapping pieces of which there need be only one" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 1, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 1.2}'
+expect_id "spec.overlap"             "L0 catches a size step that lets twins through" lint_rock 'del s["fullness"], s["pieces"]; s["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 0.9}'
+expect_id "spec.one_skin_checks"     "L0 catches overlapping pieces measured as one closed skin" lint_rock 's["overlap"] = {"min_count": 2, "max_count": 3, "max_buried_share": 0.3, "min_step_ratio": 1.2}'
 # L0, trees: tree_1's spec with one thing wrong. Its numbers come from its own brief and its family's.
 # `lint_tree <python>` lints a copy of tree_1 after that has changed its spec `s`; `name` is the copy's own name.
 uses tree_1 lint_spec

@@ -319,7 +319,7 @@ bad_glb() { printf 'not a glb' > "$tmp/bad.glb"; echo "$tmp/bad.glb"; }
 
 # A built asset changed in Blender and exported with the exporter's defaults.
 exported() { fixture "$1.glb" export_scene "$1"; }
-export_scene() { # <inside_out|hard_edges|draco> <out.glb>
+export_scene() { # <inside_out|hard_edges|two_pieces|piece_inside_out|draco> <out.glb>
   local script="$fx/$1.py"
   case "$1" in
     inside_out) cat > "$script" <<PY
@@ -338,6 +338,20 @@ bm = bmesh.new(); bm.from_mesh(rock.data)
 for face in bm.faces: face.smooth = False
 flat = bpy.data.meshes.new("rock_flat"); bm.to_mesh(flat); flat.materials.append(rock.data.materials[0])
 rock.data = flat
+bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
+PY
+    ;;
+    two_pieces|piece_inside_out) cat > "$script" <<PY
+# The tracer with a small box pushed into its leg as a second closed piece (ADR 13), the right way out or inside out.
+import bmesh, bpy
+bpy.ops.wm.open_mainfile(filepath="source/tracer/out/tracer.blend")
+mesh = bpy.data.objects["tracer"].data
+bm = bmesh.new(); bm.from_mesh(mesh)
+lo, hi = (0.0, 0.3, 0.5), (0.4, 0.5, 0.9)
+corners = [bm.verts.new((x, y, z)) for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
+faces = [bm.faces.new([corners[i] for i in face]) for face in ([0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3])]
+if "$1" == "piece_inside_out": bmesh.ops.reverse_faces(bm, faces=faces)
+bm.to_mesh(mesh)
 bpy.ops.export_scene.gltf(filepath="$2", export_format="GLB")
 PY
     ;;
