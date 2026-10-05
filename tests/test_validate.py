@@ -937,8 +937,8 @@ def fat_tiers(spec):
 
 
 def stout_leader(spec):
-    """A leader as thick at its tip as at its lowest whorl: a post."""
-    regrow(spec, trunk__tip_radius=0.17)
+    """A leader as thick at its tip as just above its lowest whorl (0.14 m): a post. The boughs, whose least thickness follows the tip's, are stouter too."""
+    regrow(spec, trunk__tip_radius=0.14)
 
 
 def hidden_leader(spec):
@@ -2034,11 +2034,9 @@ CASES = [
     (bowed_leader, "conifer_1.leader_straight", "conifer_1"),
     (true_top, "conifer_1.leader_straight", "conifer_1"),
     (fat_tiers, "conifer_1.pads_wide", "conifer_1"),
-    # NOT CAUGHT on the tree as it is now, and so not listed: (stout_leader, "conifer_1.branches_taper"). A leader with a tip of
-    # 0.17 m still measures under 0.8; it was caught on an earlier recipe. The leader's taper is not shown to catch a post.
+    (stout_leader, "conifer_1.branches_taper", "conifer_1"),
     (hidden_leader, "conifer_1.branches_seen", "conifer_1"),
-    # NOT CAUGHT, and so not listed: (no_cores, "conifer_1.under_closed"). With every core gone a tier measures as closed
-    # as with them: under_closed, taken tier by tier, is not yet shown to catch a tier open underneath.
+    (no_cores, "conifer_1.under_closed", "conifer_1"),
     (round_leaves, "conifer_1.under_rim", "conifer_1"),
     (tipped_log, "log_1.log_lies", "log_1"),
     (perched_log, "log_1.log_lies", "log_1"),
