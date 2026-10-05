@@ -222,7 +222,8 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
     ground between two roots comes back to the trunk. The first ring above
     them joins those vertices to its own corners with triangles.
     `grain_from` is the first ring whose grain is measured round itself;
-    the rings below it (the foot) take its measure.
+    the rings below it (the foot) take its measure at their corners, and on
+    a root's flank measure on from the root's crest over the flank itself.
     """
     rings = []
     frame = frame or frames(points, Vector((1, 0, 0)) if ground else None)
@@ -263,12 +264,19 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
         round_at.append(far)
     # But not below `grain_from`, on the foot: a ring there is far longer than the trunk's above it, and by its own
     # measure the grain would slant across the flare by the difference. Those rings take that ring's measure, corner
-    # for corner, so a streak runs straight down the trunk and out along a root, wider where the foot spreads.
+    # for corner, so a streak runs straight down the trunk and out along a root's crest.
+    # A root's flank is several times as wide as the side of the trunk it grows from, and by the trunk's measure
+    # its grain would be stretched into broad patches. So a flank measures on from its root's crest over its own
+    # surface: `flank_at[ring, place]` is a valley vertex's measure as each of the two flanks that meet there
+    # has it. The grain breaks along the valley, where the bark folds and the painted islands are cut anyway.
+    flank_at = {}
     for k in range(grain_from):
-        above, far = round_at[grain_from], []
+        above, far, own = round_at[grain_from], [], round_at[k]
         for j in range(sides):
             far += above[per * j : per * j + per]
             if len(rings[k]) > count:
+                place = len(far)
+                flank_at[k, place] = (above[per * j + per - 1] + own[place] - own[place - 1], above[per * j + per] - (own[place + 1] - own[place]))
                 far.append(above[per * j + per - 1] + (above[per * j + per] - above[per * j + per - 1]) * valleys[k][j])
         round_at[k] = far + [above[count]]
     along_at = [0.0]
@@ -277,9 +285,12 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
     limb = tree.limbs * 3.7
     tree.limbs += 1
 
-    def face(kind, *corners):
-        """A face from (ring, place in the ring) corners; a place one past a ring's end is its first vertex again."""
-        tree.face([rings[k][i % len(rings[k])] for k, i in corners], kind, grain=[(round_at[k][i], along_at[k], limb) for k, i in corners])
+    def face(kind, *corners, flank=None):
+        """A face from (ring, place in the ring) corners; a place one past a ring's end is its first vertex again.
+
+        `flank` says which root's flank the face is: 0 that of the corner before its valley vertices, 1 the one after."""
+        across = [round_at[k][i] if flank is None or (k, i) not in flank_at else flank_at[k, i][flank] for k, i in corners]
+        tree.face([rings[k][i % len(rings[k])] for k, i in corners], kind, grain=[(far, along_at[k], limb) for far, (k, _) in zip(across, corners)])
 
     for k in range(len(rings) - 1):
         for j in range(sides):
@@ -287,14 +298,14 @@ def tube(tree, points, radii, sides, strip=0.0, spin=0.0, ground=False, reach=No
             if strip:
                 face(STRIP_FACE, (k, lower[0] - 1), (k, lower[0]), (k + 1, upper[0]), (k + 1, upper[0] - 1))
             if len(lower) == len(upper):
-                for a, b, c, d in zip(lower, lower[1:], upper[1:], upper):
-                    face(SIDE, (k, a), (k, b), (k + 1, c), (k + 1, d))
+                for flank, (a, b, c, d) in enumerate(zip(lower, lower[1:], upper[1:], upper)):
+                    face(SIDE, (k, a), (k, b), (k + 1, c), (k + 1, d), flank=flank if len(lower) == 3 else None)
             else:
                 # Where the valley's vertices end: a fan from each to the two corners above it.
                 first, middle, last = lower
-                face(SIDE, (k, first), (k, middle), (k + 1, upper[0]))
+                face(SIDE, (k, first), (k, middle), (k + 1, upper[0]), flank=0)
                 face(SIDE, (k, middle), (k + 1, upper[1]), (k + 1, upper[0]))
-                face(SIDE, (k, middle), (k, last), (k + 1, upper[1]))
+                face(SIDE, (k, middle), (k, last), (k + 1, upper[1]), flank=1)
         # Each stretch between two rings is cut once along its length, to unroll flat.
         tree.seams.append((rings[k][0], rings[k + 1][0]))
         # The foot does not unroll: a band of fins folds over itself. It is cut along every valley, so each

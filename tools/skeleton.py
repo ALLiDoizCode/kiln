@@ -140,8 +140,12 @@ def measure(bark, conv):
         reach = [(p - middle).length for p in points]
         found["flare"] = max(reach) / breast[0][0]
         # A root is a corner of the ground slice that stands well out from the trunk: further than
-        # its neighbours on the loop, and at least one and a half times the girth at breast height.
-        tips = [i for i, r in enumerate(reach) if r >= 1.5 * breast[0][0] and r >= reach[i - 1] and r >= reach[(i + 1) % len(reach)]]
+        # its neighbours on the loop, at least one and a half times the girth at breast height, and as
+        # far as the circle the roots are told from a plinth on (below). A corner of the trunk that is
+        # no root stands out from the ground either side of it too, now that the foot comes back to the
+        # trunk between corners, and it is thick enough at the ground to pass the first two alone.
+        ring = breast[0][0] + (max(reach) - breast[0][0]) * rules["root_ring_share"]
+        tips = [i for i, r in enumerate(reach) if r >= max(1.5 * breast[0][0], ring) and r >= reach[i - 1] and r >= reach[(i + 1) % len(reach)]]
         # Two tips close together on the loop are the two corners of one root.
         roots = []
         for i in tips:
@@ -152,7 +156,7 @@ def measure(bark, conv):
         # ridges with ground between them, so little of the circle is inside the slice, in as many runs as there
         # are roots that reach it; a skirt with flat sides from tip to tip holds most of the circle, in one run.
         steps = 720
-        radius = breast[0][0] + (max(reach) - breast[0][0]) * rules["root_ring_share"]
+        radius = ring
         within = [inside(points, middle + Vector((math.cos(2 * math.pi * i / steps), math.sin(2 * math.pi * i / steps))) * radius) for i in range(steps)]
         found["root_fill"] = sum(within) / steps
         found["root_ridges"] = sum(1 for i in range(steps) if within[i] and not within[i - 1])

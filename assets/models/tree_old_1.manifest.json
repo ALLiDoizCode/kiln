@@ -17,7 +17,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 5340,
+  "triangles": 5438,
   "bounds": {
     "min": [
       -3.2,
@@ -92,6 +92,8 @@
     "min_uv_coverage": 0.4,
     "max_uv_overlap": 0.001,
     "feature_deg": 30.0,
+    "crevice_sky_hidden": 0.2,
+    "join_sky_hidden": 0.06,
     "colour_tolerance": 0.08,
     "min_effect_share": 0.5,
     "texel_range": [
