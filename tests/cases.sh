@@ -223,7 +223,7 @@ expect_id "spec.skeleton"            "L0 catches a missing skeleton key"       l
 expect_id "spec.skeleton_amounts"    "L0 catches a fork range given backwards" lint_tree 's["skeleton"]["fork_m"] = [3.5, 2.0]'
 expect_id "spec.variants_amounts"    "L0 catches a variant listed as its own sibling" lint_tree 's["variants"]["siblings"] = [name]'
 # The core, the lobes, the view from below and the bark's grain (ADR 9 as amended, ADR 12).
-expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" lint_tree 's["foliage"]["core_tint"] = "#9fc0c8"'
+expect_id "spec.foliage_core_darker" "L0 catches a core lighter than the leaves' underside" lint_tree 's["foliage"]["core_tint"] = "#c8e6f0"'
 expect_id "spec.foliage_core"        "L0 catches a lobe count given backwards" lint_tree 's["foliage"]["lobes"] = [4, 2]'
 expect_id "spec.foliage_core"        "L0 catches more core seen than there is foliage" lint_tree 's["foliage"]["max_core_seen"] = 1.5'
 expect_id "spec.foliage"             "L0 catches a missing limit on the view from below" lint_tree 'del s["foliage"]["max_seen_into"]'
