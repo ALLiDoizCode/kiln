@@ -135,6 +135,10 @@ FOLIAGE = {
 FOLIAGE_SHARED = ("material", "pad_gap_m", "min_pad_pieces", "piece_m", "under_tint", "top_tint", "shades", "tones", "variation")
 # Optional; blades from one point (source/blade_plant/brief.md), in place of pads over cores. All keys are required once it is present.
 BLADES = {"width_share": list, "root_m": float, "max_gap_deg": float, "lean_deg": list, "min_arch": float}
+# Optional, with `blades`: a clump of them (source/tall_grass/brief.md): how many stand near upright, and how much sky shows through it from the side.
+CLUMP = {"upright_deg": float, "min_upright_share": float, "max_sky_share": float}
+# Optional, with `blades`: heads (seed heads, cattails), closed pieces of the closed material carried on blades. Every key is required once it is present.
+HEADS = {"count": list, "size_m": list, "min_height": float}
 # Optional; the other assets made by the same generator, and how far this one must differ from each.
 VARIANTS = {"siblings": list, "min_difference": float}
 HEX = "#[0-9a-f]{6}"
@@ -417,6 +421,22 @@ if not checks.failed():
             span(blades["width_share"]) and blades["width_share"][1] <= 1 and blades["root_m"] > 0 and 0 < blades["max_gap_deg"] <= 360
             and span(blades["lean_deg"]) and blades["lean_deg"][1] <= 180 and 0 <= blades["min_arch"] < 1,
             "width_share and lean_deg as [least, most], a width at most the length and a lean at most 180 degrees; root_m above 0; max_gap_deg in 0..360; min_arch in 0..1",
+        )
+    clump = block("clump", CLUMP)
+    if clump:
+        checks.check(
+            "spec.clump_amounts",
+            bladed and 0 < clump["upright_deg"] < 90 and 0 < clump["min_upright_share"] <= 1 and 0 < clump["max_sky_share"] < 1,
+            "on a plant of blades (`blades`); upright_deg in 0..90; min_upright_share in (0, 1]; max_sky_share above 0 and below 1 (at 1 it asks nothing)",
+        )
+    heads = block("heads", HEADS)
+    if heads:
+        count = heads["count"]
+        checks.check(
+            "spec.heads_amounts",
+            bladed and spec["watertight"] and len(count) == 2 and all(type(n) is int for n in count) and 1 <= count[0] <= count[1]
+            and span(heads["size_m"]) and heads["size_m"][0] > 0 and 0 < heads["min_height"] < 1,
+            "on a watertight plant of blades (`blades`): a head is closed, and a blade carries it; count as [least, most] whole numbers, at least 1; size_m as [least, most], above 0; min_height above 0 and below 1, a share of the bounds' height",
         )
     if bladed:
         checks.check("spec.blades_need_foliage", isinstance(spec.get("foliage"), dict), "blades are foliage: the spec needs a foliage block for their material, size and palette")

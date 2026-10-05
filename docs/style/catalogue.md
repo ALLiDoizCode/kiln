@@ -60,7 +60,7 @@ Every tree family is wanted in four **growth stages** and in the seasons and col
 | --- | --- |
 | Dome bush | Three variants built in three sizes, 0.75 to 1.5 m tall (664 to 1,432 triangles). Not approved. No flowers, seasons or colours yet. |
 | Blade plant (ferns, understorey) | Three variants built in three sizes, 0.45 to 1.0 m tall (164 to 248 triangles): whole-leaf rosettes. Not approved. No fronds cut into leaflets, seasons or colours yet. |
-| Grass tuft, tall grass, reeds | Grass tuft: three variants built in three sizes, 0.25 to 0.9 m tall (104 to 124 triangles). Not approved. Tall dry grass and reeds not started. |
+| Grass tuft, tall grass, reeds | Grass tuft: three variants built in three sizes, 0.25 to 0.9 m tall (104 to 124 triangles). Tall grass (`source/tall_grass`): three clumps, 1.0, 1.15 and 1.4 m tall (hip, waist, chest), of 72 to 84 arching blades and 3 to 6 seed heads, 567 to 690 triangles, on a 512 px texture; one dried, as a palette on the same mesh (`tall_grass_1_dry`, season `autumn`: "dry" is not one of the year's seasons). Checked for what the grass tuft lacked: blades near upright and how much sky shows through the clump (`clump`), and seed heads at the top, each on a stalk (`heads`). Twelve seeds of the first are in `benchmarks/out/tall_grass_1_candidates.png`: all twelve read as a clump of grass from 3 m and they are nearly alike. Looked down on from inside, a clump is still a star of straight blades. Reeds: a brief and specs were drafted and no generator written; not started as far as the repo goes. None approved. |
 | Leaf mat | Not started |
 | Lily pad and flowers | Not started |
 | Flower scatter | Not started |

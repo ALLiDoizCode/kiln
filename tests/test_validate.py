@@ -1044,6 +1044,88 @@ def straight_blades(spec):
         generator.ARCH = saved
 
 
+# Tall grass and reeds (source/tall_grass, source/reeds): a clump of blades, some of them stalks that carry a head.
+
+
+def sparse_clump(spec):
+    """Two blades of every three taken out: a few spikes, with sky between them."""
+    import foliage
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+
+    def thin(bm):
+        pieces = foliage.pieces_of(bm, slot)
+        gone = {face for k, piece in enumerate(pieces) if k % 3 for face in piece}
+        bmesh.ops.delete(bm, geom=list(gone), context="FACES")
+
+    edit(thin, name)
+
+
+def splayed_clump(spec):
+    """Every blade tipped 25 degrees further out about its foot: a fan, with nothing standing."""
+    def tip_out(verts, foot, tip, piece, bm):
+        way = Vector((tip.co.x - foot.x, tip.co.y - foot.y, 0))
+        way = way.normalized() if way.length > 1e-6 else Vector((1, 0, 0))
+        turn = Matrix.Rotation(math.radians(25), 3, Vector((0, 0, 1)).cross(way))
+        for v in verts:
+            v.co = foot + turn @ (v.co - foot)
+
+    each_blade(spec, tip_out)
+
+
+def each_head(spec, change):
+    """Apply change(head's vertices, its faces, bm) to every head: every closed piece of the closed material that does not stand on the ground."""
+    from validate import pieces_in
+
+    name = spec["objects"][0]
+    slot = [slot.material.name for slot in bpy.data.objects[name].material_slots].index(spec["foliage"]["material"])
+    ground = spec["bounds_m"]["min"][2]
+
+    def run(bm):
+        for piece in pieces_in([f for f in bm.faces if f.material_index != slot]):
+            verts = list({v for face in piece for v in face.verts})
+            if min(v.co.z for v in verts) > ground + 0.01:
+                change(verts, piece, bm)
+
+    edit(run, name)
+
+
+def no_heads(spec):
+    """Every head taken off its stalk."""
+    each_head(spec, lambda verts, piece, bm: bmesh.ops.delete(bm, geom=verts, context="VERTS"))
+
+
+def heads_low(spec):
+    """Every head slid down to under half the plant's height."""
+    drop = (spec["bounds_m"]["max"][2] - spec["bounds_m"]["min"][2]) * 0.5
+
+    def lower(verts, piece, bm):
+        for v in verts:
+            v.co.z -= drop
+
+    each_head(spec, lower)
+
+
+def heads_adrift(spec):
+    """Every head moved 0.4 m to one side, and up out of the plant: carried by nothing."""
+    def move(verts, piece, bm):
+        for v in verts:
+            v.co += Vector((0.4, 0.0, 0.3))
+
+    each_head(spec, move)
+
+
+def fat_heads(spec):
+    """Every head made three times its size about its own middle."""
+    def swell(verts, piece, bm):
+        middle = sum((v.co for v in verts), Vector()) / len(verts)
+        for v in verts:
+            v.co = middle + (v.co - middle) * 3
+
+    each_head(spec, swell)
+
+
 # The table rock (source/table_rock): a cap held off the ground on narrow necks.
 
 
@@ -1374,6 +1456,12 @@ CASES = [
     (one_sided_blades, "blade_plant_1.blades_spread", "blade_plant_1"),
     (upright_blades, "blade_plant_1.blades_lean", "blade_plant_1"),
     (straight_blades, "blade_plant_1.blades_arch", "blade_plant_1"),
+    (sparse_clump, "tall_grass_1.clump_dense", "tall_grass_1"),
+    (splayed_clump, "tall_grass_1.clump_upright", "tall_grass_1"),
+    (no_heads, "tall_grass_1.heads", "tall_grass_1"),
+    (fat_heads, "tall_grass_1.heads", "tall_grass_1"),
+    (heads_low, "tall_grass_1.heads_high", "tall_grass_1"),
+    (heads_adrift, "tall_grass_1.heads_carried", "tall_grass_1"),
 ]
 
 

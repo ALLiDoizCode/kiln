@@ -40,6 +40,9 @@ expect 0 "L1 mutation tests: tree_1, part 6 of 6" l1 tree_1 --part 6/6
 # A plant of blades (source/blade_plant): its blades broken one way at a time.
 uses blade_plant_1 blade_plant_2 blade_plant_3 validate paint
 expect 0 "L1 mutation tests: blade_plant_1" l1 blade_plant_1
+# A clump of tall grass (source/tall_grass): thinned out, splayed, and its seed heads taken off, swollen, slid down and set adrift.
+uses tall_grass_1 tall_grass_2 tall_grass_3 validate paint
+expect 0 "L1 mutation tests: tall_grass_1" l1 tall_grass_1
 
 uses slab_1 validate paint
 expect 0 "L1 mutation tests: slab_1" l1 slab_1
@@ -327,6 +330,15 @@ expect_id "spec.blades_amounts"      "L0 catches a lean range given backwards" l
 expect_id "spec.blades_amounts"      "L0 catches a blade wider than it is long" lint_blade 's["blades"]["width_share"] = [0.08, 1.5]'
 expect_id "spec.foliage"             "L0 catches a canopy's keys on a plant of blades" lint_blade 's["foliage"]["lobes"] = [1, 2]'
 expect_id "spec.blades_need_foliage" "L0 catches blades with no foliage to be" lint_blade 'del s["foliage"]; s["open_materials"] = []'
+# L0, a clump and its heads: tall_grass_1's spec with one thing wrong. `lint_grass <python>` lints a copy of tall_grass_1 after that has changed its spec `s`.
+uses tall_grass_1 lint_spec
+expect 0 "L0 passes a tall grass's spec"   lint_grass 'pass'
+expect_id "spec.clump"               "L0 catches a missing clump key"          lint_grass 'del s["clump"]["max_sky_share"]'
+expect_id "spec.clump_amounts"       "L0 catches a sky share above 1"          lint_grass 's["clump"]["max_sky_share"] = 1.5'
+expect_id "spec.clump_amounts"       "L0 catches a clump that is not of blades" lint_grass 'del s["blades"]'
+expect_id "spec.heads"               "L0 catches a missing heads key"          lint_grass 'del s["heads"]["min_height"]'
+expect_id "spec.heads_amounts"       "L0 catches a head count given backwards" lint_grass 's["heads"]["count"] = [6, 3]'
+expect_id "spec.heads_amounts"       "L0 catches heads asked above the plant's top" lint_grass 's["heads"]["min_height"] = 1.2'
 uses tree_1 lint_spec
 expect_id "spec.foliage"             "L0 catches blades asked of a canopy"     lint_tree 's["blades"] = {"width_share": [0.08, 0.25], "root_m": 0.15, "max_gap_deg": 100.0, "lean_deg": [15.0, 85.0], "min_arch": 0.08}'
 

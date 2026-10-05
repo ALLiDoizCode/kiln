@@ -620,6 +620,87 @@ def check_blades(checks, name, bm, slots, spec, conv):
         arch >= want["min_arch"],
         f"the median blade stands {arch:.3f} of its length off the straight line from its foot to its tip (blades run {span('arch')}); spec wants at least {want['min_arch']}: blades arch",
     )
+    return found
+
+
+def check_clump(checks, name, bm, slots, spec, conv, blades):
+    """The blades are a clump (source/tall_grass/brief.md): part of it stands near upright, and from the side it is more blade than sky.
+
+    `blades` are check_blades' measurements. The grass tufts, which read as
+    spikes, have at most one blade in twenty within 15 degrees of upright and
+    show 0.68 to 0.80 of their outline as sky."""
+    want, rules = spec["clump"], conv["foliage"]
+    standing = sum(1 for blade in blades if blade["lean"] <= want["upright_deg"])
+    share = standing / max(len(blades), 1)
+    checks.check(
+        f"{name}.clump_upright",
+        share >= want["min_upright_share"],
+        f"{standing} of {len(blades)} blades ({share:.2f}) lean {want['upright_deg']} degrees or less from upright, foot to tip; spec wants at least {want['min_upright_share']} of them: part of a clump stands",
+    )
+    leaf = slots.index(spec["foliage"]["material"])
+    points = [v.co.copy() for piece in foliage.pieces_of(bm, leaf) for face in piece for v in face.verts]
+    sky = {}
+    if len(points) >= 3:
+        # Everything is in the way of the eye, the rootstock and the heads too; the outline is the blades'.
+        tree = BVHTree.FromBMesh(bm)
+        sky = {view: round(foliage.sky_and_bark(tree, bm.faces, -1, points, VIEW_DIRECTIONS[view], rules["view_rays"], float("inf"))[0], 3) for view in rules["views"]}
+    mean = sum(sky.values()) / len(sky) if sky else 1.0
+    print(f"{name} clump: {standing} of {len(blades)} blades within {want['upright_deg']} degrees of upright ({share:.2f}); sky through its outline {sky}, mean {mean:.3f}")
+    checks.check(
+        f"{name}.clump_dense",
+        mean <= want["max_sky_share"],
+        f"seen from {rules['views']}, sky is {mean:.3f} of the blades' outline on average; spec wants at most {want['max_sky_share']}: a clump, not a few spikes; all {sky}",
+    )
+
+
+def check_heads(checks, name, bm, slots, spec, conv):
+    """Some blades carry a head (a seed head, a cattail): a closed piece of the closed material, high on the plant, with a blade in it.
+
+    A head is found from the mesh: a connected piece of the closed surface that does not stand on the ground."""
+    want = spec["heads"]
+    leaf = slots.index(spec["foliage"]["material"])
+    ground, top = spec["bounds_m"]["min"][2], spec["bounds_m"]["max"][2]
+    heads = []
+    for piece in pieces_in([f for f in bm.faces if f.material_index != leaf]):
+        verts = list({v for face in piece for v in face.verts})
+        if min(v.co.z for v in verts) > ground + spec["bounds_tolerance_m"]:
+            middle = sum((v.co for v in verts), Vector()) / len(verts)
+            heads.append({
+                "closed": foliage.closed(piece),
+                "size": max((a.co - b.co).length for a in verts for b in verts),
+                "low": (min(v.co.z for v in verts) - ground) / (top - ground),
+                "middle": middle,
+                "reach": max((v.co - middle).length for v in verts),
+            })
+    low, high = want["size_m"]
+    sizes = sorted(round(head["size"], 3) for head in heads)
+    odd = sum(1 for head in heads if not low <= head["size"] <= high)
+    holed = sum(1 for head in heads if not head["closed"])
+    checks.check(
+        f"{name}.heads",
+        want["count"][0] <= len(heads) <= want["count"][1] and not odd and not holed,
+        f"{len(heads)} heads (closed pieces of the closed surface off the ground), {holed} of them not closed and {odd} not {low} to {high} m long (they are {sizes}); spec wants {want['count'][0]} to {want['count'][1]}, all of that size",
+    )
+    lows = sorted(round(head["low"], 2) for head in heads)
+    checks.check(
+        f"{name}.heads_high",
+        heads and lows[0] >= want["min_height"],
+        f"the heads' lowest points are {lows} of the way up the bounds; spec wants every head above {want['min_height']}: heads are at the top",
+    )
+    blades = [f for f in bm.faces if f.material_index == leaf]
+    index = {v: i for i, v in enumerate({v for f in blades for v in f.verts})}
+    tree = BVHTree.FromPolygons([tuple(v.co) for v in index], [[index[v] for v in f.verts] for f in blades]) if blades else None
+    off = []
+    for head in heads:
+        near = tree.find_nearest(head["middle"])[3] if tree else None
+        if near is None or near > head["reach"]:
+            off.append(None if near is None else round(near, 3))
+    print(f"{name} heads: {len(heads)}, {sizes} m long, lowest points {lows} of the height, {len(off)} carried by nothing")
+    checks.check(
+        f"{name}.heads_carried",
+        heads and not off,
+        f"{len(off)} of {len(heads)} heads have no blade within their own reach of their middle (the nearest are {off} m away): a head is on a stalk",
+    )
 
 
 def check_variants(checks, name, bm, spec, conv):
@@ -1844,7 +1925,11 @@ def check_scene(checks, spec, conv):
         if "foliage" in spec and spec["foliage"]["material"] in slot_names:
             # Foliage is leaf pieces in pads over cores, or, where the spec has `blades`, blades from one point.
             if "blades" in spec:
-                check_blades(checks, name, bm, slot_names, spec, conv)
+                blades = check_blades(checks, name, bm, slot_names, spec, conv)
+                if "clump" in spec:
+                    check_clump(checks, name, bm, slot_names, spec, conv, blades)
+                if "heads" in spec:
+                    check_heads(checks, name, bm, slot_names, spec, conv)
             else:
                 check_foliage(checks, name, bm, slot_names, spec, conv, fork_m)
                 check_canopy(checks, name, bm, slot_names, spec, conv)
