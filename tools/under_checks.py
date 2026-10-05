@@ -99,6 +99,26 @@ def seen(obj, cores, bark_slot, floor, eye, forward, size):
     return kind, unlit
 
 
+def sky_share(tree, at, stand, pitch, eye_height, cells=128):
+    """The share of the view from under a tree that is sky, from its geometry alone: `tree` is a BVH of the whole mesh, `at` the trunk's place.
+
+    The same eye, direction and field of view as `measure`, on a coarser grid, and as there a sample counts only when
+    its neighbours are sky too. source/tree/generator.py asks it of a tree before keeping it: `view.under_seen` cannot
+    read a picture that holds no sky."""
+    eye = Vector((at[0] + stand / math.sqrt(2), at[1] - stand / math.sqrt(2), eye_height))
+    forward = Vector((-math.cos(pitch) / math.sqrt(2), math.cos(pitch) / math.sqrt(2), math.sin(pitch)))
+    right = forward.cross(Vector((0, 0, 1))).normalized()
+    up = right.cross(forward)
+    half = math.tan(FOV / 2)
+    sky = numpy.zeros((cells, cells), dtype=bool)
+    for row in range(cells):
+        y = 1 - (row + 0.5) / cells * 2
+        for column in range(cells):
+            x = (column + 0.5) / cells * 2 - 1
+            sky[row, column] = tree.ray_cast(eye, (forward + right * (x * half) + up * (y * half)).normalized())[2] is None
+    return float(inner(sky).sum() / sky.size)
+
+
 def inner(mask):
     """A grid of booleans with every cell dropped that has a neighbour outside it."""
     padded = numpy.pad(mask, 1, constant_values=False)

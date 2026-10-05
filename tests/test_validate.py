@@ -891,8 +891,63 @@ def regrow(spec, **changes):
     generator.build_tree(spec, strict=False, recipe=recipe)
 
 
+def even_tiers(spec):
+    """A conifer whose tiers are all one width, the top's whorl with them: a column, not a cone."""
+    regrow(spec, tiers__taper=[0.0, 0.0], tiers__jitter=[1.0, 1.0], tiers__first=[1.0, 1.0], top__width=[0.97, 1.0])
+
+
+def level_tiers(spec):
+    """Boughs that do not hang: every tier a level plate."""
+    regrow(spec, tiers__droop=[0.0, 0.0], top__droop=[0.0, 0.0])
+
+
+def blunt_top(spec):
+    """The highest metre of foliage spread to four times its width about the leader: a mop where the point should be."""
+    slot = leaf_slot(spec)
+
+    def spread(bm):
+        verts = {v for f in bm.faces if f.material_index == slot for v in f.verts}
+        top = max(v.co.z for v in verts)
+        for vert in verts:
+            if vert.co.z > top - 1.0:
+                vert.co.x, vert.co.y = vert.co.x * 4, vert.co.y * 4
+
+    edit(spread, spec["objects"][0])
+
+
+def bowed_leader(spec):
+    """A trunk that bows half a metre out of the line from foot to tip."""
+    regrow(spec, trunk__bend=[0.55, 0.55])
+
+
+def true_top(spec):
+    """A leader drawn with a ruler: the tip stands straight over the foot."""
+    regrow(spec, top__off=[0.0, 0.0], trunk__lean=[0.0, 0.0], trunk__bend=[0.0, 0.0])
+
+
+def fat_tiers(spec):
+    """Every tier drawn in to a third of its width about the leader, and no lower: each is taller than it is wide."""
+    slot = leaf_slot(spec)
+
+    def narrow(bm):
+        for vert in {v for f in bm.faces if f.material_index == slot for v in f.verts}:
+            vert.co.x, vert.co.y = vert.co.x * 0.3, vert.co.y * 0.3
+
+    edit(narrow, spec["objects"][0])
+
+
+def stout_leader(spec):
+    """A leader as thick at its tip as just above its lowest whorl (0.14 m): a post. The boughs, whose least thickness follows the tip's, are stouter too."""
+    regrow(spec, trunk__tip_radius=0.14)
+
+
+def hidden_leader(spec):
+    """A leader and boughs no thicker than twigs above the lowest whorl: no bark shows between the tiers."""
+    regrow(spec, trunk__leader=0.12, trunk__tip_radius=0.004, boughs__radius=0.05)
+
+
 def leaf_slot(spec):
-    names = [slot.material.name for slot in bpy.data.objects["tree_1"].material_slots]
+    names = [slot.material.name for slot in bpy.data.objects[spec["objects"][0]].material_slots]
     return names.index(spec["foliage"]["material"])
 
 
@@ -905,7 +960,7 @@ def each_piece(spec, change):
             verts = list({v for face in piece for v in face.verts})
             change(verts, sum((v.co for v in verts), Vector()) / len(verts), piece, bm)
 
-    edit(run, "tree_1")
+    edit(run, spec["objects"][0])
 
 
 def bark_hole(spec):
@@ -1088,7 +1143,7 @@ def edit_cores(spec, change):
     """Apply change(bm, the cores as lists of faces) to the tree."""
     import foliage
 
-    edit(lambda bm: change(bm, foliage.cores_of(bm, leaf_slot(spec))), "tree_1")
+    edit(lambda bm: change(bm, foliage.cores_of(bm, leaf_slot(spec))), spec["objects"][0])
 
 
 def no_cores(spec):
@@ -2403,6 +2458,16 @@ CASES = [
     (no_blooms, "lily_pad_1.blooms", "lily_pad_1"),
     (ball_blooms, "lily_pad_1.blooms_petals", "lily_pad_1"),
     (bloom_on_a_disc, "lily_pad_1.blooms_between", "lily_pad_1"),
+    (even_tiers, "conifer_1.tiers_narrow", "conifer_1"),
+    (level_tiers, "conifer_1.tiers_droop", "conifer_1"),
+    (blunt_top, "conifer_1.top_pointed", "conifer_1"),
+    (bowed_leader, "conifer_1.leader_straight", "conifer_1"),
+    (true_top, "conifer_1.leader_straight", "conifer_1"),
+    (fat_tiers, "conifer_1.pads_wide", "conifer_1"),
+    (stout_leader, "conifer_1.branches_taper", "conifer_1"),
+    (hidden_leader, "conifer_1.branches_seen", "conifer_1"),
+    (no_cores, "conifer_1.under_closed", "conifer_1"),
+    (round_leaves, "conifer_1.under_rim", "conifer_1"),
     (tipped_log, "log_1.log_lies", "log_1"),
     (perched_log, "log_1.log_lies", "log_1"),
     (perched_log, "log_1.log_settled", "log_1"),

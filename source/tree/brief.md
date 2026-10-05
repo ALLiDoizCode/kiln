@@ -31,7 +31,7 @@ The origin is on the ground at the middle of the foot of the trunk, so a tree is
 
 ## Species
 
-A species is a recipe the one generator reads: `species/<name>.toml`, named by a spec's `species`. It holds every number that says how the trunk leans, flares and forks, where the pads sit and how they are built, and the shape of a leaf piece; the generator has none of its own besides how hard it tries (`TREES`, `MAX_STRETCH`) and the room it keeps to each limit (`MARGINS`). The broadleaf (`species/broadleaf.toml`) is the only one. The checks below are this family's, and a species that needs others (a conifer has no pads) will need its own rows.
+A species is a recipe the one generator reads: `species/<name>.toml`, named by a spec's `species`. It holds every number that says how the trunk leans, flares and forks, where the pads sit and how they are built, and the shape of a leaf piece; the generator has none of its own besides how hard it tries (`TREES`, `MAX_STRETCH`) and the room it keeps to each limit (`MARGINS`). The broadleaf (`species/broadleaf.toml`) was the first, and this brief is its brief as well as the family's. A second species has a brief of its own beside its recipe (`species/conifer.md`), which gives the rows of the Numbers table it changes; `tools/lint_spec.py` reads the family's rows, then the species', then the asset's.
 
 ## Growth stages
 

@@ -33,6 +33,13 @@ expect 0 "L1 mutation tests: rock" l1 rock
 # tree_1's are done in shares side by side, and its unbroken check, which builds its two siblings, apart.
 uses tree_1 tree_2 tree_3 validate paint
 expect 0 "L1 mutation tests: tree_1, unbroken" l1 tree_1 --unbroken
+# The conifer, the second species: what makes it one (tiers narrowing, drooping, a pointed top, a straight leader off
+# true), and the family's checks that measure a tier their own way (pads_wide, under_closed, under_rim, branches_seen, branches_taper).
+uses conifer_1 validate paint
+expect 0 "L1 mutation tests: conifer_1, unbroken" l1 conifer_1 --unbroken
+expect 0 "L1 mutation tests: conifer_1, part 1 of 3" l1 conifer_1 --part 1/3
+expect 0 "L1 mutation tests: conifer_1, part 2 of 3" l1 conifer_1 --part 2/3
+expect 0 "L1 mutation tests: conifer_1, part 3 of 3" l1 conifer_1 --part 3/3
 uses tree_1 validate paint
 expect 0 "L1 mutation tests: tree_1, part 1 of 6" l1 tree_1 --part 1/6
 expect 0 "L1 mutation tests: tree_1, part 2 of 6" l1 tree_1 --part 2/6
@@ -639,6 +646,15 @@ expect_id "spec.arch"                "L0 catches an arch whose opening may be a 
 expect_id "spec.arch"                "L0 catches an arch whose two sides may stand equally high" lint_arch 's["arch"]["min_side_step"] = 0.0'
 expect_id "spec.arch"                "L0 catches an arch whose top may be a level table" lint_arch 's["arch"]["max_level_share"] = 1.0'
 
+# L0, a second species: a conifer's numbers come from its species' brief (source/tree/species/conifer.md) between the
+# family's and its own, and its spec has a `tiers` block. `lint_conifer <python>` lints a copy of conifer_1.
+uses conifer_1 lint_spec
+expect 0 "L0 passes a conifer's spec"        lint_conifer 'pass'
+# The broadleaf's lobes in a conifer's spec: that row, and no other, disagrees once the species' brief is read (before, ten rows did).
+expect 0 "L0 names the one row a conifer's spec and its species' brief disagree on" lint_conifer_names 's["foliage"]["lobes"] = [2, 4]' "disagree on ['foliage.lobes']"
+expect_id "spec.tiers"               "L0 catches a missing tiers key"          lint_conifer 'del s["tiers"]["min_droop"]'
+expect_id "spec.tiers_amounts"       "L0 catches a tip range given backwards"  lint_conifer 's["tiers"]["tip_off_m"] = [0.6, 0.1]'
+expect_id "spec.tiers_amounts"       "L0 catches tiers asked of a tree with no foliage block" lint_conifer 'del s["foliage"]'
 # L0, fallen logs (source/log): log_3's spec with one thing wrong in what it asks of its trunk (`log`) and its hollow (`hollow`).
 uses log_3 lint_spec
 expect 0 "L0 passes a hollow log's spec" lint_log 'pass'
