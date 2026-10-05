@@ -22,7 +22,7 @@ Season, colour and cover are meant to be changes of palette and painted shading 
 
 | Family | To build | State |
 | --- | --- | --- |
-| Boulder | 3 or more variants in 3 sizes | One built from several pieces, 322 triangles; reads as a stump more than a boulder. Not approved. |
+| Boulder | 3 or more variants in 3 sizes | The family `source/boulder` supersedes `source/rock` (several fused pieces, 322 triangles; reads as a stump, and is kept as a test fixture): `boulder_1` to `boulder_3`, 0.7, 1.2 and 1.9 m tall, each one convex skin of planes, 126 to 160 triangles; 40 of 40 seeds build at each size. They read as heavy lumps, but faceted, and about a third of the seeds as cut wedges. Not approved. |
 | Standing stone | Slab and lozenge kinds, several heights | Three variants built from pieces (ADR 13): 2.6, 3.6 and 1.8 m tall, 172 to 204 triangles, bare stone, each with one or two foot blocks. Not approved. |
 | Stepped spire | 3 or more, with foot blocks | Not started |
 | Crag | 3 or more clusters | Three variants built from pieces (ADR 13): 3.0, 4.6 and 1.7 m tall, of 6, 8 and 5 pieces (4, 5 and 3 leaning prisms, the rest foot blocks), 394 to 634 triangles, bare stone. The largest needs a 2048 px texture. No covers. Not approved. |
