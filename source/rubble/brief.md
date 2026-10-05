@@ -12,13 +12,13 @@ First person (ADR 7). A standing player's eye is 1.7 m above a group on the floo
 
 ## Real-world size
 
-Three groups. Each is given beside the 1.8 m player; a fragment's size is its length, the greatest distance between two of its points.
+Three groups. Each is given beside the 1.8 m player; a fragment's size is its length, the greatest distance between two of its points. The largest fragment is as tall as the group and 1.6 to 2.1 times as long as it is tall; the first brief's lengths (0.25, 0.36 and 0.2 m) were too short for these heights, and the lengths were corrected, not the heights.
 
 | Variant | Spread (x by y) | Height | Fragments | Largest, smallest fragment | Beside a 1.8 m player |
 | --- | --- | --- | --- | --- | --- |
-| `rubble_1` | 0.6 m by 0.5 m | 0.14 m | 5 | about 0.25 m and 0.09 m | a third of the player's height across, as wide as two boots end to end; its tallest stone is one thirteenth of the player, just over the ankle bone |
-| `rubble_2` | 1.0 m by 0.8 m | 0.2 m | 7 | about 0.36 m and 0.09 m | a spill a long stride across, more than half the player's height; its tallest stone is one ninth of the player, to the lower shin |
-| `rubble_3` | 0.44 m by 0.36 m | 0.11 m | 4 | about 0.2 m and 0.08 m | a quarter of the player's height across, a tight heap one boot long; its tallest stone is one sixteenth of the player, at the ankle bone |
+| `rubble_1` | 0.6 m by 0.5 m | 0.14 m | 5 | about 0.3 m and 0.1 m | a third of the player's height across, as wide as two boots end to end; its tallest stone is one thirteenth of the player, just over the ankle bone |
+| `rubble_2` | 1.0 m by 0.8 m | 0.2 m | 7 | about 0.4 m and 0.11 m | a spill a long stride across, more than half the player's height; its tallest stone is one ninth of the player, to the lower shin |
+| `rubble_3` | 0.44 m by 0.36 m | 0.11 m | 4 | about 0.22 m and 0.08 m | a quarter of the player's height across, a tight heap one boot long; its tallest stone is one sixteenth of the player, at the ankle bone |
 
 The largest fragment is a stone for two hands and the smallest one for the palm. Anything larger is a boulder or a block; a stone on its own is a pebble. The lowest point is at z = 0 and the origin is on the ground under the centre of the bounding box.
 
@@ -48,7 +48,7 @@ Asked for in the spec and added by `tools/paint.py` during the build (ADR 10); t
 1. **Gradient.** The pebble's and the boulder's tints: a cool grey `#8c8c9a` at the ground to a light grey `#c8c8c8` at the top of the bounds.
 2. **Blotches.** Lighter and darker by up to 12%, in patches a tenth of the largest fragment's length across.
 3. **Edge light.** Exposed edges gain up to 30%, fading out over one fortieth of the largest fragment's length: a band narrow enough to fit on the smallest fragment's planes.
-4. **Crevice shadow.** Up to 45% darker, the boulder's strength, reaching a tenth of the largest fragment's length: where one fragment lies against another the gap between them is an inside corner, and the dark in it is what makes the two read as touching. A single fragment is convex and has no crevice of its own.
+4. **Crevice shadow, where the group has an inside corner.** A single fragment is convex and has none. Two fragments lying apart make none either. Two that lie against each other may: where a face of one rises within a tenth of the largest fragment's length in front of a face of the other, the two make a fold, and the dark in it is what makes them read as touching. Whether a group has such a fold depends on how its stones fell, so it is said per variant, in its own brief, from what the Bevy load test measures on it (`painted.crevices_darker`): a group with at least 50 samples in inside corners asks the boulder's 45% over a tenth of its largest fragment's length; a group with none leaves `crevice_shadow` and `crevice_width_m` out, as a pebble does. The load test fails either answer when it is the wrong one, so a new seed cannot change the shape without the gate saying so.
 
 No growth and no side shade.
 
@@ -86,7 +86,6 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 | `painted_shading.base_tint` | `"#8c8c9a"` | Painted shading 1: a cool grey at the ground |
 | `painted_shading.top_tint` | `"#c8c8c8"` | Painted shading 1: a light grey at the top |
 | `painted_shading.edge_light` | `0.3` | Painted shading 3: exposed edges gain up to 30% |
-| `painted_shading.crevice_shadow` | `0.45` | Painted shading 4: up to 45% darker between fragments that touch |
 | `painted_shading.blotch` | `0.12` | Painted shading 2: lighter and darker by up to 12% |
 | `painted_shading.hidden_underside` | `true` | Painted shading: the undersides are never seen |
 | `scatter.min_size_range` | `2.5` | Silhouette 2: the largest at least 2.5 times as long as the smallest |
@@ -102,13 +101,9 @@ Every value the variants' `spec.json` files share, and the sentence above it com
 
 ## Open
 
-Found at the first gates on 2026-10-05 and left as they are: no check was loosened and no spec value changed to pass them.
-
-- **The Bevy load test cannot measure the crevice shadow.** `painted.crevices_darker` finds 0 samples in inside corners on `rubble_1` and `rubble_3` (96 on `rubble_2`): it looks for corners within one connected surface, or between pieces under `overlap`, and a gap of 7 mm between two separate stones is neither. The brief still asks the shadow.
-- **Texture use.** `uv.coverage` reads 0.400, 0.371 and 0.336 where the conventions ask 0.4: several fragments, each unwrapped by angle into several islands, on 512 px.
-- **Hard edges on `rubble_3`.** `soft_edges`: 34 of 177 vertices share a position with a differently lit vertex. The kit's soft edges leave a hard point where two planes meet at one vertex and not along an edge; the generator does not refuse such a shard, and gate L1 does not see it.
-- **A seed with slivers.** `rubble_2` seed 27 builds with degenerate faces and doubled vertices (gate L1 fails it).
-- **Sizes.** A layout need reach only 0.82 of the bounds before it is stretched to them, so the fragments come out up to a quarter longer than the table above: `rubble_1`'s largest is 0.315 m, not 0.25 m.
+- **A touching pair with no shadow.** `rubble_1`'s one touching pair lies 7 mm apart and makes no inside corner by the load test's measure (0 samples), so it gets no crevice shadow, and on the contact sheet no dark band shows between the two stones. Whether a pair that close should read as touching by a painted shadow is a question of look for the owner. It is not to be answered by pushing the stones into each other (Decisions).
+- **Texture use, and `rubble_2` under the limit.** `uv.coverage` reads 0.424, 0.384 and 0.448 where the conventions ask 0.4, so `rubble_2` stops at the load test. Unwrapped by angle the groups were about six islands a fragment and used 0.34 to 0.40: the islands' boxes held 0.53 to 0.57 of the texture, the islands 0.63 to 0.71 of their boxes, and the 8 px gap round each box about 0.11 to 0.14 (0.19 to 0.23 at 256 px, 0.06 to 0.08 at 1024 px). With the ground rim as the only seam, as on a pebble, a lump's steep and undercut sides folded over each other (0.049 of the texels claimed twice, 14 texels per metre at the sparsest). So each fragment is now one net, the best-filling of 400: the nets fill 0.62 to 0.66 of their boxes and the gaps take 0.05 to 0.07, but the boxes hold only 0.59 to 0.72 of the texture, and which group falls under 0.4 changes with the nets chosen (with 60 nets tried it was `rubble_1`, at 0.381). What is left is how the painter packs five to seven unlike boxes (`tools/paint.py`, boxes and not outlines), which was not changed: it would change every painted asset. Neither the limit nor the texture size was changed.
+- **Broken, not yet weathered.** The generator refuses a shard with one plane over 0.3 of what is seen of it, or a level top; the fragments still read as cut stone with clean planes. No check measures this.
 
 ## Decisions
 

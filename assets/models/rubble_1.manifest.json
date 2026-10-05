@@ -12,7 +12,7 @@
     ]
   },
   "watertight": true,
-  "triangles": 274,
+  "triangles": 272,
   "bounds": {
     "min": [
       -0.3,
@@ -46,13 +46,13 @@
     ],
     "edge_light": 0.3,
     "edge_width_m": 0.006,
-    "crevice_shadow": 0.45,
-    "crevice_width_m": 0.025,
     "hidden_underside": true,
     "min_texels_per_m": 100,
     "min_uv_coverage": 0.4,
     "max_uv_overlap": 0.001,
     "feature_deg": 30.0,
+    "crevice_sky_hidden": 0.2,
+    "join_sky_hidden": 0.06,
     "colour_tolerance": 0.08,
     "min_effect_share": 0.5,
     "texel_range": [

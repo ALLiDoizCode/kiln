@@ -459,8 +459,9 @@ uses rock image_lint review_aids
 expect 0 "L5c passes a review aid"          python tools/image_lint.py "$(review_aid views)"
 expect 0 "L5c passes a blind comparison"    python tools/image_lint.py "$(review_aid blind)"
 # L0, rubble (source/rubble): rubble_1's spec with one thing wrong in what it asks of its group (`scatter`).
-uses rubble_1 lint_spec
+uses rubble_1 rubble_2 lint_spec
 expect 0 "L0 passes a rubble variant's spec" lint_rubble 'pass'
+expect 0 "L0 passes a rubble variant that asks a crevice shadow, for stones that lie against each other" lint_copy rubble_2 '' 'pass'
 expect_id "spec.scatter"             "L0 catches a scatter block with a key missing" lint_rubble 'del s["scatter"]["max_gap_m"]'
 expect_id "spec.scatter"             "L0 catches a group allowed to be stones of one size" lint_rubble 's["scatter"]["min_size_range"] = 1.0'
 expect_id "spec.scatter"             "L0 catches a group of one stone" lint_rubble 's["scatter"]["min_count"] = 1'

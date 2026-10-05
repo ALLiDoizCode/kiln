@@ -29,7 +29,7 @@ from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 from pipeline import conventions
 
-GROUPS = 60  # how many whole groups one seed may draw before it is given up
+GROUPS = 150  # how many whole groups one seed may draw before it is given up
 DRAWN_M = 8.0  # the width every group is drawn at, metres
 SOFT = (0.015, 0.1)  # the least and most a soft edge eats into each plane beside it, metres at the drawn width
 SHARDS = 400  # how many shards may be drawn for one fragment before the group is given up
@@ -55,7 +55,7 @@ RANGE_MARGIN, STEP_MARGIN = 1.06, 1.03  # the size order is drawn this much clea
 STEP_GROWTH = (1.2, 1.28)  # the size range of a group goes as these to the power of its steps, where that is more
 OFF_MIDDLE = (0.5, 1.0)  # how far toward the edge of the bounds the largest fragment lies
 TRIES = 40  # places tried for one fragment
-LAYOUTS = 30  # layouts tried for one set of fragments
+LAYOUTS = 60  # layouts tried for one set of fragments
 AIMS = 3  # a fragment that touches nothing is aimed at the emptiest of this many spots
 UPRIGHT_CLEAR = 2.0  # a shard's sides are counted upright this many degrees sooner than the gate counts them
 UPRIGHT_MARGIN = 0.7  # and it may have this share of the upright surface the spec allows the group
@@ -65,12 +65,14 @@ TOUCH = (0.2, 0.6)  # the gap between two fragments that touch, as a share of th
 APART = (0.25, 0.85)  # the gap between two that do not, as a share of the largest the spec allows
 MORE_TOUCH = 0.4  # how often one more pair touches than the spec asks
 HIGH_END = 0.6  # a fragment against another has its high end within this of straight toward it, radians
+ONE_PLANE = 0.3  # a shard is refused when one plane is more than this share of what is seen of it
+LEVEL_TOP, LEVEL_PLANE = 10.0, 0.12  # or when a plane within this many degrees of level is more than this share
 SLIVER = 4.0  # a shard's shortest edge and smallest face, shrunk, must be this many times what the conventions call none
 HARD_CLEAR = 1.3  # and its soft edges this many times wider than the place the gates take two vertices to share
-NETS = 60  # nets tried for one fragment
+NETS = 400  # nets tried for one fragment
 NET_WEIGHT = (0.3, 1.0)  # a net grows across its longest edges, each length taken at a share drawn from these
 NET_TURNS = 18  # ways a net's box is turned to find its smallest
-FILL = 0.82  # a layout must reach this share of the bounds' width and depth before it is stretched to them
+FILL = 0.9  # a layout must reach this share of the bounds' width and depth before it is stretched to them
 
 
 def off_upright(rng, normal):
@@ -249,6 +251,15 @@ def unsound(pieces, normals, spec, conv):
     )
 
 
+def dressed(bm):
+    """Whether a raw shard reads as a cut block and not a broken stone: one plane that is most of
+    what is seen of it, or a top lying level, as the top of a block standing square on a face does."""
+    seen = [f for f in bm.faces if not (f.normal.z < -0.999 and stone.on_floor(f, 0.0))]
+    whole = sum(f.calc_area() for f in seen)
+    level = math.cos(math.radians(LEVEL_TOP))
+    return any(f.calc_area() > ONE_PLANE * whole or (f.normal.z > level and f.calc_area() > LEVEL_PLANE * whole) for f in seen)
+
+
 def upright_share(bm, conv):
     """How much of the shard's side surface is upright, as the gate's `lean` measures it."""
     rules = conv["lean"]
@@ -279,7 +290,7 @@ def draw(rng, spec, conv, shrink, lo, hi, touch_m, gap_m):
             else:
                 ok = stands >= STANDS_MARGIN * want["min_stand_share"]
                 most = budget * (TRIANGLES[1] if index == 1 else (count - sum(TRIANGLES)) / (count - 2))
-            if ok and upright_share(found[0], conv) <= spec["lean"]["max_upright_share"] * UPRIGHT_MARGIN:
+            if ok and not dressed(found[0]) and upright_share(found[0], conv) <= spec["lean"]["max_upright_share"] * UPRIGHT_MARGIN:
                 triangles = softened(found[0], largest * sizes[index], shrink, spec, conv)
                 if triangles is not None and triangles <= most:
                     break
