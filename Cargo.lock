@@ -232,6 +232,7 @@ name = "asset_view"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "image",
  "serde_json",
 ]
 
