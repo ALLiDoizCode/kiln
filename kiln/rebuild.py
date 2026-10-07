@@ -17,20 +17,28 @@ One line per asset says what became of it:
                            record says so and no finished model is left
     raw output missing     or "raw output changed since its asset record was written": that
                            asset is not rebuilt, and nothing in its folder is touched
+    waiting for shape review   nobody has decided its shape review: it is not built, and
+                           nothing in its folder is touched
+    rejected at shape review   its run ended there: it is not built, now or later
     problem                anything else that stopped one asset: an unreadable record, a missing
                            profile, a stage that broke, a stage that wrote to the raw output
 
 A finished model that is missing, or that differs from its record, is reported and then
 rebuilt, because the raw output is the input and the model is only its result. One asset's
 problem never stops the others. The exit code is 0 unless an asset failed a check or had a
-problem.
+problem. An asset waiting for its shape review, or rejected at it, is neither: the store is as
+it should be, and the line says why there is no finished model.
+
+A rebuild never asks for a review. The decision is in the asset record with the pictures it
+was made on, and it stands for as long as the raw output is the file the record names.
 
 Repeatability was tried on this machine and no difference was found: the same raw output, size
 and profile gave byte-identical finished models in different store paths, with Blender on 1, 3
 and all threads, and for models with and without a texture (tests.test_rebuild.Repeatability).
 The asset record holds no time or date, so it repeats too.
 
-With --check nothing is built or written. Each asset is reported "up to date" or "out of date"
+With --check nothing is built or written. An asset waiting for its shape review or rejected at
+it is reported as that. Every other asset is reported "up to date" or "out of date"
 with the reasons: a large file missing or changed, the profile's checksum no longer the one in
 the record, or a last build that failed a check. Tool versions are not looked at, since that
 would start Blender; a rebuild reports them. The exit code is 1 if any asset is not up to date.
@@ -39,7 +47,7 @@ import argparse
 import os
 import sys
 
-from kiln import KilnError, run as kiln_run
+from kiln import KilnError, review, run as kiln_run
 from kiln.checks import describe
 from kiln.profile import PROFILES_DIR, load_profile
 from kiln.record import RECORD_NAME, read_record, record_path, sha256_of
@@ -72,6 +80,21 @@ def raw_output_problem(asset_dir, record):
     if state == "changed":
         return f"raw output changed since its asset record was written: {path}"
     return None
+
+
+def unbuilt(name, record):
+    """The result for an asset that is not to be built because of its shape review, or None."""
+    state = review.state(record)
+    if state == "approved":
+        return None
+    if state == "rejected":
+        status = "rejected at shape review"
+        was = record["shape_review"]
+        more = f" on {was['decided_on']}" + (f" ({was['note']})" if was["note"] else "")
+    else:
+        status = "waiting for shape review"
+        more = f" (decide with `python3 -m kiln review {name} --approve` or `--reject`)"
+    return {"name": name, "status": status, "text": status + more, "lines": []}
 
 
 def problem_text(error):
@@ -113,6 +136,8 @@ def rebuild_one(store, name, profiles_dir, stages):
         old = read_record(asset_dir)
         if raw_output_problem(asset_dir, old):
             return result("problem", raw_output_problem(asset_dir, old))
+        if unbuilt(name, old):
+            return unbuilt(name, old)
         notes = []
         if old["model"]:
             model_state = file_state(asset_dir, old["model"])
@@ -144,6 +169,8 @@ def check_one(store, name, profiles_dir):
         record = read_record(asset_dir)
         if raw_output_problem(asset_dir, record):
             return result("problem", raw_output_problem(asset_dir, record))
+        if unbuilt(name, record):
+            return unbuilt(name, record)
         reasons = []
         if record["model"] and file_state(asset_dir, record["model"]) != "ok":
             reasons.append("the finished model is missing"
@@ -171,7 +198,10 @@ def check(store, profiles_dir, names=None):
     return [check_one(store, name, profiles_dir) for name in asset_names(store, names)]
 
 
-SUMMARY_ORDER = ("ok", "unchanged", "changed", "out of date", "failed a check", "problem")
+SUMMARY_ORDER = ("ok", "unchanged", "changed", "waiting for shape review",
+                 "rejected at shape review", "out of date", "failed a check", "problem")
+# The statuses that leave the exit code at 0: nothing is wrong with the store.
+FINE = ("ok", "unchanged", "changed", "waiting for shape review", "rejected at shape review")
 SUMMARY_WORDS = {"ok": "up to date", "problem": "with a problem"}
 
 
@@ -204,7 +234,7 @@ def main(argv=None):
         for line in result["lines"]:
             print(line)
     print(summary(results))
-    return 0 if all(r["status"] in ("ok", "unchanged", "changed") for r in results) else 1
+    return 0 if all(r["status"] in FINE for r in results) else 1
 
 
 if __name__ == "__main__":
