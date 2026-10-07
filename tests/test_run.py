@@ -355,6 +355,7 @@ class TakingIn(RunCase):
         self.refused("positive number of metres", size=0)
         self.refused("positive number of metres", size=-0.8)
         self.refused("positive number of metres", size=math.nan)
+        self.refused("positive number of metres", size=math.inf)
         self.refused("no target profile 'desert'", profile="desert")
         self.refused("licence must be given", licence="  ")
         self.refused("source must be given", source="")
@@ -498,6 +499,18 @@ class Building(RunCase):
             self.build(asset_dir, stages=(broken,))
         self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
         self.assertEqual(review.state(read_record(asset_dir)), "approved")
+
+    def test_a_stage_that_breaks_on_a_built_asset_leaves_its_model_and_record_as_they_were(self):
+        def broken(source, work, record, profile):
+            raise KilnError("the stage broke")
+        asset_dir = self.approved(self.cube())
+        built = self.build(asset_dir, stages=(copy_stage,))
+        with self.assertRaisesRegex(KilnError, "the stage broke"):
+            self.build(asset_dir, stages=(broken,))
+        self.assertEqual(read_record(asset_dir), built)
+        self.assertEqual(sha256_of(os.path.join(asset_dir, "cube.glb")), built["model"]["sha256"])
+        self.assertEqual(sorted(os.listdir(asset_dir)),
+                         [RECORD_NAME, "cube.glb", "raw_output.glb", "review"])
 
 
 # ---- the command line ----------------------------------------------------------------------

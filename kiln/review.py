@@ -48,6 +48,7 @@ import os
 import shutil
 import struct
 import subprocess
+import sys
 
 from kiln import KilnError
 from kiln.profile import PROFILES_DIR, load_profile
@@ -75,10 +76,27 @@ def renderer_path():
     return os.path.join(target, "release", "review_pictures")
 
 
-def require_renderer():
-    """The path of the built renderer; raises with how to build it if it is missing or stale.
+def build_renderer():
+    """Build the renderer with cargo; raises with cargo's last lines if that fails."""
+    print(f"kiln: the review picture renderer is older than its source; building it "
+          f"(`{BUILD_RENDERER}`)", file=sys.stderr)
+    try:
+        done = subprocess.run(BUILD_RENDERER.split(), cwd=REPO_ROOT, capture_output=True,
+                              text=True)
+    except OSError as error:
+        raise KilnError(f"could not start `{BUILD_RENDERER}`: {error}") from None
+    if done.returncode != 0:
+        tail = "\n".join(done.stderr.strip().splitlines()[-8:])
+        raise KilnError(f"`{BUILD_RENDERER}` failed:\n{tail}")
 
-    Kiln never starts the build itself: the first one takes several minutes.
+
+def require_renderer():
+    """The path of the built renderer.
+
+    A renderer that was never built is refused, with how to build it: the first build takes
+    several minutes, and kiln does not start that by itself. One that is older than its source
+    is built again here, which takes seconds; cargo goes by the same file times, so after a
+    checkout that touched the source this is what `cargo build` would do anyway.
     """
     path = renderer_path()
     if not os.path.isfile(path):
@@ -90,9 +108,8 @@ def require_renderer():
         sources = [os.path.join(folder, name) for folder, _, names in os.walk(RENDERER_SOURCE)
                    for name in names if name.endswith(".rs") and name != "main.rs"]
         if any(os.path.getmtime(source) > built for source in sources):
-            raise KilnError(f"the program that renders the review pictures is older than its "
-                            f"source in {RENDERER_SOURCE}. Build it again with "
-                            f"`{BUILD_RENDERER}`.")
+            build_renderer()
+            os.utime(path)  # cargo leaves the file alone when only a time changed
     return path
 
 

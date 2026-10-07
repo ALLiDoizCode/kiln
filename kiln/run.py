@@ -34,6 +34,7 @@ A failed check stops the run: the record is written with every check's result an
 """
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -115,7 +116,7 @@ def take_in(model, size, profile, licence, source, name=None, store=STORE,
     Nothing is written unless every input is usable. An asset of the same name is never
     overwritten: the caller removes its folder first if it is to be made again.
     """
-    if not size > 0:  # also catches NaN
+    if not (math.isfinite(size) and size > 0):
         raise KilnError(f"the size must be a positive number of metres, not {size}")
     for value, what in ((licence, "licence"), (source, "source")):
         if not value or not value.strip():
@@ -194,8 +195,6 @@ def build(asset_dir, profiles_dir=PROFILES_DIR, stages=None):
     require_tools()
 
     finished = os.path.join(asset_dir, record["name"] + ".glb")
-    if os.path.lexists(finished):
-        os.remove(finished)  # an earlier build's model must not outlive a build that fails
     done_stages = []
     with tempfile.TemporaryDirectory(dir=asset_dir, prefix="work-") as work:
         model = raw
@@ -208,8 +207,12 @@ def build(asset_dir, profiles_dir=PROFILES_DIR, stages=None):
         report = measure(model, size=record["size"])
         checks = run_checks(report, profile)
         passed = all(check["passed"] for check in checks)
+        # Only now is the folder touched, so a build that breaks part-way leaves the earlier
+        # model and the record that describes it as they were.
         if passed:
             os.replace(model, finished)
+        elif os.path.lexists(finished):
+            os.remove(finished)  # an earlier build's model must not outlive a failed check
 
     record["target_profile"] = {"name": profile["name"], "sha256": profile["sha256"]}
     record["tools"] = {"blender": blender_version(),
