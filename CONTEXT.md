@@ -39,6 +39,10 @@ _Avoid_: Manifest, metadata, sidecar
 The file a generator returns, kept unchanged as an input so that every later stage can be repeated without generating again.
 _Avoid_: Draft, source mesh
 
+**Store**:
+The folder that holds every asset: one folder per asset, with its asset record, its raw output and its finished model. Only the asset records are in git.
+_Avoid_: Library (which is where a bought asset comes from), output folder
+
 ### Where an asset comes from
 
 **Generator**:
