@@ -1,0 +1,7 @@
+# The pit game's target profile: the numbers an asset is checked against for that game.
+#
+# PROVISIONAL. Every field here is a placeholder until issue #11 fixes what a target
+# profile holds and fills in budgets measured in Bevy. Do not read meaning into the numbers.
+
+# Placeholder, not measured: the most triangles one asset may have.
+triangle_budget = 20000

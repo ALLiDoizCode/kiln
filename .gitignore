@@ -1,5 +1,5 @@
-# pinned toolchain downloads (tools/install_tools.sh)
-/.tools/
+# pinned toolchain downloads (tools/install_tools.sh); a folder, or a link to one
+/.tools
 # Rust
 /target/
 # Blender user dir used for hermetic runs
@@ -8,3 +8,7 @@ __pycache__/
 *.blend1
 # third-party packs used only as benchmarks; never shipped or committed
 /benchmarks/
+# the store: one folder per asset. Only the asset record is kept in git; the raw output and
+# the finished model are large files, found missing or changed by the record's checksums.
+/assets/*/*
+!/assets/*/asset_record.json

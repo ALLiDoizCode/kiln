@@ -1,4 +1,5 @@
 """Write tiny .glb files from Python lists, so tests can know every answer by hand."""
+import base64
 import json
 import struct
 import zlib
@@ -16,6 +17,22 @@ def png(width, height):
     rows = (b"\x00" + b"\x80" * (3 * width)) * height
     return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+
+
+def jpeg():
+    """A real JPEG, 8 x 8 pixels of one brown, as Blender 5.2.2 saved it."""
+    return base64.b64decode(
+        "/9j/4AAQSkZJRgABAQAAAQABAAD/4QAMTmVvR2VvAAAAWv/bAEMAAwICAwICAwMDAwQDAwQFCAUFBAQFCgcH"
+        "BggMCgwMCwoLCw0OEhANDhEOCwsQFhARExQVFRUMDxcYFhQYEhQVFP/bAEMBAwQEBQQFCQUFCRQNCw0UFBQU"
+        "FBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIAAgACAMBIgACEQED"
+        "EQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEF"
+        "EiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZX"
+        "WFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK"
+        "0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/"
+        "xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXx"
+        "FxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeY"
+        "mZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEA"
+        "AhEDEQA/AOHooor5I+oP/9k=")
 
 
 class GlbBuilder:
@@ -66,8 +83,10 @@ class GlbBuilder:
         return len(self.doc["materials"]) - 1
 
     def primitive(self, positions, uvs=None, indices=None, material=None,
-                  index_component=U16, uv_component=FLOAT, mode=None):
+                  index_component=U16, uv_component=FLOAT, mode=None, normals=None):
         attributes = {"POSITION": self.accessor(positions)}
+        if normals is not None:
+            attributes["NORMAL"] = self.accessor(normals)
         if uvs is not None:
             attributes["TEXCOORD_0"] = self.accessor(uvs, uv_component,
                                                      normalized=uv_component != FLOAT)
