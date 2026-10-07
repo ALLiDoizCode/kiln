@@ -1,15 +1,16 @@
 """The kiln command:  python3 -m kiln <command> [arguments]
 
     run       make an asset from a model file
+    rebuild   rebuild assets from their kept raw outputs
     measure   measure one model file
 
 `python3 -m kiln <command> --help` lists a command's arguments.
 """
 import sys
 
-from kiln import measure, run
+from kiln import measure, rebuild, run
 
-COMMANDS = {"run": run.main, "measure": measure.main}
+COMMANDS = {"run": run.main, "rebuild": rebuild.main, "measure": measure.main}
 
 
 def main(argv=None):
