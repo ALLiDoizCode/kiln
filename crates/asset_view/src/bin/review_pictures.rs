@@ -48,6 +48,8 @@ const BEVY: &str = "0.19.1";
 /// camera, the post and the shadows where they belong.
 const SETTLE_FRAMES: u32 = 6;
 const LOAD_LIMIT: Duration = Duration::from_secs(120);
+/// A model whose file is read and whose scene still has no mesh after this many frames has none.
+const NO_MESH_FRAMES: u32 = 300;
 
 struct Arguments {
     glb: PathBuf,
@@ -111,10 +113,12 @@ struct Post;
 
 #[derive(Resource, Default)]
 enum Step {
-    /// The model is not there yet. Counts the frames in a row its meshes have been seen.
+    /// The model's file is still being read.
     #[default]
     Loading,
-    Seen(u32),
+    /// The file is read, textures and all. `frames` have been drawn since, and the model's
+    /// meshes were in the scene for the last `seen` of them.
+    Loaded { frames: u32, seen: u32 },
     /// The camera is in place for view `view`; `frames` more are drawn before the picture.
     Settling { view: usize, frames: u32 },
     /// The picture of view `view` has been asked for.
@@ -225,7 +229,7 @@ fn step(
     )>,
 ) {
     match *step {
-        Step::Loading | Step::Seen(_) => {
+        Step::Loading | Step::Loaded { .. } => {
             if let LoadState::Failed(error) = asset_server.load_state(&loading.0) {
                 return fail(&mut exit, &mut step, format!("the model could not be loaded: {error}"));
             }
@@ -239,15 +243,15 @@ fn step(
             if !asset_server.is_loaded_with_dependencies(&loading.0) {
                 return;
             }
-            // Loaded, textures and all. The scene's entities appear a frame or two later.
+            // The scene's entities appear a frame or two after the file is read, and they are
+            // where the scene places them a frame after that.
             let found = scene::vertex_box(*model, &children, &mesh_entities, &mesh_assets);
-            let seen = if let Step::Seen(frames) = *step { frames } else { 0 };
+            let (frames, seen) = if let Step::Loaded { frames, seen } = *step { (frames, seen) } else { (0, 0) };
             if seen < 2 {
-                // Too long with a loaded scene and no mesh in it means the file holds none.
-                if found.is_none() && job.started.elapsed() > LOAD_LIMIT / 4 {
+                if found.is_none() && frames > NO_MESH_FRAMES {
                     return fail(&mut exit, &mut step, "the model holds no mesh to take a picture of");
                 }
-                *step = if found.is_some() { Step::Seen(seen + 1) } else { Step::Loading };
+                *step = Step::Loaded { frames: frames + 1, seen: if found.is_some() { seen + 1 } else { 0 } };
                 return;
             }
             let Some((min, max, meshes)) = found else {
