@@ -30,7 +30,7 @@ const SETTLE_FRAMES: u32 = 30;
 const WARM_UP_FRAMES: u32 = 40;
 /// Frames are never recorded for longer than this.
 const SAMPLE_MAX_SECONDS: f64 = 20.0;
-/// Bytes of one vertex as Bevy stores it: position 12, normal 12, UV 8, tangent 16.
+/// Bytes of one vertex: position 12, normal 12, UV 8, tangent 16. An index is 4 bytes.
 const VERTEX_BYTES: u64 = 48;
 
 /// How long a scene is drawn before and while its frames are recorded.
@@ -85,6 +85,8 @@ struct SceneFacts {
     materials: u32,
     textures: u32,
     texture_bytes: u64,
+    /// Bytes of the different meshes: each is stored once however often it is drawn.
+    mesh_bytes: u64,
     farthest_m: f32,
     build_seconds: f64,
 }
@@ -213,6 +215,7 @@ fn build_scene(
         materials: unique as u32,
         textures: unique as u32 * 3,
         texture_bytes: unique as u64 * 3 * scene::texture_bytes(case.tex, case.mips, case.format),
+        mesh_bytes: asset_meshes.values().map(|(_, triangles, vertices)| *vertices as u64 * VERTEX_BYTES + *triangles as u64 * 12).sum(),
         ..default()
     };
     for (i, (at, turn)) in placed.iter().enumerate() {
@@ -314,7 +317,7 @@ fn step(
         "triangles_total": bench.scene.triangles, "vertices_total": bench.scene.vertices,
         "meshes": bench.scene.meshes, "materials": bench.scene.materials, "textures": bench.scene.textures,
         "texture_mib_computed": bench.scene.texture_bytes as f64 / 1048576.0,
-        "mesh_mib_computed": (bench.scene.vertices * VERTEX_BYTES + bench.scene.triangles * 12) as f64 / 1048576.0,
+        "mesh_mib_computed": bench.scene.mesh_bytes as f64 / 1048576.0,
         "farthest_asset_m": bench.scene.farthest_m,
         "window_width": window.physical_width(), "window_height": window.physical_height(),
         "frames": frames.len(), "sample_seconds": sampled, "build_seconds": bench.scene.build_seconds,
