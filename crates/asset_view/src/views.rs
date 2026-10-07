@@ -25,9 +25,11 @@ pub const PLAYER_FOV: f32 = 72.0;
 /// that the near parts of the asset are not drawn much larger than the far parts.
 pub const WHOLE_FOV: f32 = 30.0;
 /// How far the camera of a picture taken straight along an axis stands from the middle of the
-/// bounding box, in sizes. At 2.5 sizes a box as large as the size in every dimension just fits.
-pub const AXIS_DISTANCE: f32 = 2.5;
-/// The same for the picture taken from a corner, where the box's diagonal has to fit.
+/// bounding box, in sizes. At 3 sizes a cube as large as the size is three quarters of the
+/// picture's height, and nothing of the size can reach the edge.
+pub const AXIS_DISTANCE: f32 = 3.0;
+/// The same for the picture taken from a corner, where the box's diagonal has to fit: a cube
+/// as large as the size is then nine tenths of the picture's height from corner to corner.
 pub const CORNER_DISTANCE: f32 = 3.5;
 /// How far the `standing` picture's camera is from the front of the bounding box, in metres.
 pub const STANDING_DISTANCE: f32 = 2.0;
@@ -132,6 +134,9 @@ pub struct Shot {
     pub fov: f32,
     /// Nothing nearer the eye than this is drawn. In metres.
     pub near: f32,
+    /// Shadows are drawn as far from the eye as this, which is past the asset, the post and
+    /// where their shadows fall. In metres. The shorter it is, the sharper the shadows.
+    pub shadows_to: f32,
 }
 
 /// The camera for one view of a placed model. `size` is the run's size in metres and `closest`
@@ -157,7 +162,15 @@ pub fn shot(view: &View, placed: &Placing, size: f32, closest: f32) -> Shot {
         Stand::Closest => closest,
         _ => eye.distance(middle),
     };
-    Shot { eye, looks_at, up, fov, near: (reach * 0.05).clamp(1e-4, 0.1) }
+    let tallest = if view.stand == Stand::Standing { size.max(POST_HEIGHT) } else { size };
+    Shot {
+        eye,
+        looks_at,
+        up,
+        fov,
+        near: (reach * 0.05).clamp(1e-4, 0.1),
+        shadows_to: eye.distance(middle) + 2.0 * tallest,
+    }
 }
 
 /// The middle of the post that stands beside a placed model in the `standing` picture: to the
@@ -222,11 +235,11 @@ mod tests {
         let placed = tall();
         let middle = Vec3::new(0.0, 0.4, 0.0);
         for (name, eye) in [
-            ("front", Vec3::new(0.0, 0.4, 2.0)),
-            ("right", Vec3::new(2.0, 0.4, 0.0)),
-            ("back", Vec3::new(0.0, 0.4, -2.0)),
-            ("left", Vec3::new(-2.0, 0.4, 0.0)),
-            ("top", Vec3::new(0.0, 2.4, 0.0)),
+            ("front", Vec3::new(0.0, 0.4, 2.4)),
+            ("right", Vec3::new(2.4, 0.4, 0.0)),
+            ("back", Vec3::new(0.0, 0.4, -2.4)),
+            ("left", Vec3::new(-2.4, 0.4, 0.0)),
+            ("top", Vec3::new(0.0, 2.8, 0.0)),
         ] {
             let shot = shot(view(name), &placed, 0.8, 0.5);
             assert!(close(shot.eye, eye), "{name}: {}", shot.eye);
@@ -324,6 +337,15 @@ mod tests {
         for y in [0.0, POST_HEIGHT] {
             assert!(in_frame(&shot, Vec3::new(post.x, y, post.z)));
         }
+    }
+
+    #[test]
+    fn shadows_reach_past_the_asset_and_past_the_post_when_it_is_there() {
+        let placed = tall();
+        let front = shot(view("front"), &placed, 0.8, 0.5);
+        assert!((front.shadows_to - (2.4 + 1.6)).abs() < 1e-5, "{}", front.shadows_to);
+        let standing = shot(view("standing"), &placed, 0.8, 0.5);
+        assert!(standing.shadows_to > standing.eye.distance(post_middle(&placed)) + POST_HEIGHT);
     }
 
     #[test]

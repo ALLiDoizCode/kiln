@@ -468,8 +468,9 @@ class ReviewPicturesForReal(RunCase):
             row = rows[540]
             widths.append(sum(1 for x in range(1920) if strongest(row[3 * x:3 * x + 3]) == "r"))
         self.assertEqual(widths[0], widths[1])
-        # 0.8 m wide, its front face 1.6 m from the eye, 30 degrees of view up and down.
-        self.assertAlmostEqual(widths[0], 0.8 / 1.6 / (2 * 0.26795) * 1080, delta=4)
+        # 0.8 m wide, its front face 2.0 m from the eye (3 sizes, less half the cube), and
+        # 30 degrees of view from the top of the picture to the bottom.
+        self.assertAlmostEqual(widths[0], 0.8 / 2.0 / (2 * 0.26795) * 1080, delta=4)
 
     def test_png_and_jpeg_textures_are_drawn(self):
         for kind, picture, mime in (("png", png(8, 8), "image/png"), ("jpeg", jpeg(), "image/jpeg")):

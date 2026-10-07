@@ -27,6 +27,7 @@ use asset_view::{
 use bevy::{
     app::ScheduleRunnerPlugin,
     asset::{LoadState, RecursiveDependencyLoadState},
+    light::{CascadeShadowConfig, CascadeShadowConfigBuilder, DirectionalLightShadowMap},
     camera::RenderTarget,
     prelude::*,
     render::{
@@ -165,6 +166,8 @@ fn main() -> AppExit {
         out: args.out,
         started: Instant::now(),
     })
+    // Twice Bevy's 2048, for the same reason as the one shadow map per picture in `step`.
+    .insert_resource(DirectionalLightShadowMap { size: 4096 })
     .init_resource::<Step>()
     .init_resource::<Taken>()
     .add_systems(Startup, setup)
@@ -221,6 +224,7 @@ fn step(
     model: Single<Entity, With<Model>>,
     children: Query<&Children>,
     mesh_entities: Query<(&Mesh3d, &GlobalTransform)>,
+    mut sun: Single<&mut CascadeShadowConfig, With<DirectionalLight>>,
     // What this system moves: the model, the camera and the post.
     mut transforms: ParamSet<(
         Single<&mut Transform, With<Model>>,
@@ -275,6 +279,15 @@ fn step(
                     near: shot.near,
                     ..default()
                 });
+                // One shadow map over just the depth this picture needs, so that a shadow's
+                // edge is not drawn in steps a reviewer could take for a fault in the model.
+                **sun = CascadeShadowConfigBuilder {
+                    num_cascades: 1,
+                    minimum_distance: shot.near,
+                    maximum_distance: shot.shadows_to,
+                    ..default()
+                }
+                .build();
                 let mut post = transforms.p2();
                 *post.0 = Transform::from_translation(views::post_middle(&placing));
                 *post.1 = if VIEWS[view].stand == Stand::Standing { Visibility::Visible } else { Visibility::Hidden };
