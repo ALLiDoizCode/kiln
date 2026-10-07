@@ -13,6 +13,7 @@ The first attempt is at the git tag `first-attempt`. It was built without domain
 - `assets/` — the store, one folder per asset: `asset_record.json` (in git), `raw_output.glb` and `<name>.glb` (both ignored by git; the record holds their checksums). The first run creates it.
 - `tests/` — `unittest` tests; `tests/glb_fixture.py` writes tiny `.glb` files from Python lists. `tests/cross_check/blender_figures.py` counts the same figures in Blender for comparison.
 - `crates/asset_view` — a Bevy window that shows a `.glb` on a ground plane under a slow turntable, framed by its bounding box, with hot reload. PNG, JPEG and WebP textures show, including WebP given through `EXT_texture_webp` (which Bevy cannot read itself: `src/webp.rs` rewrites the file's JSON as it loads).
+- `crates/budget_bench` — the measurement behind the pit target profile's budgets: draws procedural scenes in a full-screen Bevy window with vsync off and times the frames against triangles per asset, texture size and assets on screen. It needs the development machine's GPU and display. The scene list is `src/case.rs`; results and the write-up are `learn/research/pit-budget-measurement.md` and the directory of the same name.
 - `tools/install_tools.sh` — installs the pinned Blender and glTF validator into `.tools/`.
 - `tools/bl <script.py> [args]` — runs a script in the pinned Blender, headless and with factory settings.
 - `benchmarks/` — third-party asset packs for comparison; ignored by git, never committed or shipped.
@@ -21,6 +22,8 @@ The first attempt is at the git tag `first-attempt`. It was built without domain
 
 - `cargo run -p asset_view -- <asset.glb>` — open an asset in the viewer.
 - `cargo test -p asset_view` — run the viewer crate's unit tests (the WebP rewrite).
+- `cargo run --release -p budget_bench -- --out learn/research/pit-budget-measurement` — run the whole budget measurement again and overwrite its CSV files. Takes about 16 minutes and the whole screen; leave the machine alone while it runs. `--only <name prefix>` runs some scenes, `--repeats N` changes the three repeats.
+- `cargo test -p budget_bench` — unit tests of the scene generators (triangle counts, texture bytes, layout).
 - `python3 learn/assets/glb_inspect.py <asset.glb>` — print what a model file holds.
 - `python3 -m kiln.measure <asset.glb> [--size METRES] [--json]` — measure a model file: counts, bounding box, materials, textures, UVs, texel density, validator result. Each number is defined in `learn/reference/measuring-a-model.html`.
 - `python3 -m kiln run --model <file.glb> --size <metres> --profile pit --licence <text> --source <text> [--name NAME] [--store DIR]` — a run from an existing model file (a bought or hand-modelled one): scales it to the size, checks it against the target profile, and writes the asset into the store. Exit 0 when every check passes; 1 when a check fails (the check, the measured value, the limit and the overshoot are printed, and no finished model is written); 2 when an input cannot be used. An asset is never overwritten: remove `assets/<name>/` to make it again.
