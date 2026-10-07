@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference: review pictures</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="reference">
+<main>
+
+<header class="lesson">
+  <div class="kicker">Reference</div>
+  <h1>Review pictures</h1>
+  <p class="lede">The eight pictures kiln renders for a review: where each camera stands, and what the picture is for.</p>
+</header>
+
+<h2>Run it</h2>
+<pre><code>python3 -m kiln run --model rock.glb --size 0.8 --profile pit ...    renders them and stops
+python3 -m kiln review rock                                          says where they are
+python3 -m kiln review rock --approve     or     --reject            records the decision</code></pre>
+<p>They are written to <code>assets/&lt;name&gt;/review/shape/&lt;view&gt;.png</code>, with a page beside them, <code>index.html</code>, that shows the reference image next to every picture. The renderer can also be run by itself:</p>
+<pre><code>cargo build --release -p asset_view --bin review_pictures
+target/release/review_pictures rock.glb --size 0.8 --closest 0.5 --out pictures/</code></pre>
+
+<h2>How the model is placed</h2>
+<p>The model file is only read. For the pictures the model is put in front of the cameras like this:</p>
+<table>
+  <tr><th>Step</th><th>What is done</th><th>Why</th></tr>
+  <tr><td>Scale</td><td>One factor on all three axes, so the largest dimension of the bounding box is the run's size.</td><td>A raw output arrives at any scale. The pictures must show the asset as large as it will be.</td></tr>
+  <tr><td>Stand on the ground</td><td>Moved so the lowest point of the bounding box is at height 0.</td><td>A ground plane is drawn at height 0. The shadow on it shows whether the model rests flat.</td></tr>
+  <tr><td>Centre</td><td>Moved so the middle of the bounding box is over the origin.</td><td>Every camera aims at the same place whatever offset the file has.</td></tr>
+  <tr><td>Turn</td><td>Nothing. The model keeps the orientation it has in the file.</td><td>A model that lies on its side or faces backwards is a fault the review should show.</td></tr>
+</table>
+<p>The bounding box is taken over every vertex where the scene places it, as in <a href="measuring-a-model.html">Measuring a model</a>.</p>
+
+<h2>Axes and names</h2>
+<table>
+  <tr><th>Axis</th><th>In glTF and in Bevy</th></tr>
+  <tr><td>+Y</td><td>Up.</td></tr>
+  <tr><td>+Z</td><td>The way the front of a model faces. A camera that looks at the front stands on +Z and looks towards -Z.</td></tr>
+  <tr><td>+X</td><td>To the right in the <code>front</code> picture.</td></tr>
+</table>
+<p><code>right</code> and <code>left</code> are named as Blender names its views: by the side of the <code>front</code> picture they are taken from, not by the model's own right and left hand.</p>
+
+<h2>The set</h2>
+<p>Every picture is 1920 × 1080 pixels. "Size" below is the run's size, so the first six distances grow with the asset and it fills the same share of the picture whatever it is. The last two are fixed distances in metres, as a player meets the asset.</p>
+<table>
+  <tr><th>Name</th><th>Where the camera stands</th><th>Looks at</th><th>Field of view</th><th>What it is for</th></tr>
+  <tr><td><code>front</code></td><td>3 sizes from the middle of the box, on +Z</td><td>The middle of the box</td><td>30°</td><td>The outline to compare with the reference image, if that shows the front.</td></tr>
+  <tr><td><code>right</code></td><td>3 sizes, on +X</td><td>The middle</td><td>30°</td><td>The outline from the side.</td></tr>
+  <tr><td><code>back</code></td><td>3 sizes, on -Z</td><td>The middle</td><td>30°</td><td>What the reference image does not show. Generators guess it.</td></tr>
+  <tr><td><code>left</code></td><td>3 sizes, on -X</td><td>The middle</td><td>30°</td><td>The other side.</td></tr>
+  <tr><td><code>top</code></td><td>3 sizes, straight above</td><td>The middle; the front is towards the bottom of the picture</td><td>30°</td><td>The footprint, and holes or mess on top.</td></tr>
+  <tr><td><code>three_quarter</code></td><td>3.5 sizes, half way between front and right, 30° above level</td><td>The middle</td><td>30°</td><td>The form as a whole: three faces at once, lit from the side.</td></tr>
+  <tr><td><code>standing</code></td><td>2 m out from the front of the box, 1.7 m above the ground</td><td>The middle</td><td>72°</td><td>Whether the size is right. A post 1.8 m tall, as tall as a player, stands 0.3 m to the right of the box.</td></tr>
+  <tr><td><code>closest</code></td><td>The target profile's closest viewing distance out from the front of the box (0.5 m for the pit profile), at 1.7 m above the ground or at the middle of the asset's height if that is lower</td><td>Level, straight at the front</td><td>72°</td><td>The surface as the player sees it from as near as the game allows. The asset need not fit in the picture.</td></tr>
+</table>
+<p>"Field of view" is the angle from the top of the picture to the bottom. The "front of the box" is the face of the bounding box on +Z, so the surface itself is at that distance or a little further.</p>
+
+<h2>The numbers and where they come from</h2>
+<table>
+  <tr><th>Number</th><th>Value</th><th>From</th></tr>
+  <tr><td>Closest viewing distance</td><td>0.5 m</td><td><code>closest_viewing_distance</code> in the target profile. For the pit profile it is the distance the budget measurement assumed, and a placeholder until the profile's fields are settled.</td></tr>
+  <tr><td>Eye height</td><td>1.7 m</td><td>The budget measurement: a player 1.8 m tall.</td></tr>
+  <tr><td>Player's field of view</td><td>72°</td><td>The budget measurement.</td></tr>
+  <tr><td>Picture size</td><td>1920 × 1080</td><td>The budget measurement. With the field of view, it makes a pixel of <code>closest</code> and <code>standing</code> a pixel of the game.</td></tr>
+  <tr><td>Field of view of the whole pictures</td><td>30°</td><td>Chosen here. A narrow angle from further away draws the near and far parts of the asset at nearly the same scale, so an outline can be compared with a reference image.</td></tr>
+  <tr><td>3 sizes</td><td></td><td>Chosen here. A cube as large as the size is three quarters of the picture's height; nothing of the size reaches the edge.</td></tr>
+  <tr><td>3.5 sizes</td><td></td><td>Chosen here. From a corner the diagonal of the box has to fit: a cube takes about 85% of the height.</td></tr>
+  <tr><td>2 m, and the post</td><td></td><td>Chosen here. Near enough to judge the size against the post, far enough that a prop is seen whole.</td></tr>
+</table>
+<p>The eye height, field of view and picture size are assumptions of <code>learn/research/pit-budget-measurement.md</code>, section 2. They are written into the renderer, not read from the target profile, until the profile holds them.</p>
+
+<h2>Light and surroundings</h2>
+<table>
+  <tr><th>Thing</th><th>What it is</th><th>What to expect in the pictures</th></tr>
+  <tr><td>Sun</td><td>One directional light from above, in front and to the left. It does not move with the camera.</td><td><code>front</code>, <code>left</code> and <code>top</code> are lit. <code>back</code> and <code>right</code> show the shaded sides, lit only by the ambient light.</td></tr>
+  <tr><td>Ambient light</td><td>The same from every direction.</td><td>Shaded sides stay readable, with less contrast.</td></tr>
+  <tr><td>Ground</td><td>A flat grey plane at height 0.</td><td>The cast shadow falls behind and to the right.</td></tr>
+  <tr><td>Background</td><td>One flat grey.</td><td></td></tr>
+</table>
+<p>The scene and the light are the viewer's (<code>cargo run -p asset_view</code>), so a picture shows what the viewer shows. The pictures use a finer shadow map than the viewer, so that a shadow's edge is not drawn in steps.</p>
+
+<h2>The same pictures every time</h2>
+<table>
+  <tr><th>What is fixed</th><th>How</th></tr>
+  <tr><td>Cameras, light, background, picture size</td><td>Constants. The camera positions follow only from the size, the bounding box and the closest viewing distance.</td></tr>
+  <tr><td>Time</td><td>Nothing in the scene moves. Each picture is taken a set number of frames after its camera is placed.</td></tr>
+  <tr><td>Loading</td><td>No picture is taken until the model and its textures have loaded, and every shader is compiled before the frame that uses it. A model that does not load ends the renderer with an error and no pictures.</td></tr>
+</table>
+<p>Measured on the development machine (RTX 3080, Vulkan): two specimens and two textured test models, five renders each, gave the same bytes for every picture every time. Another graphics card or driver may round differently. The asset record therefore keeps the pictures' checksums only inside the review, to say which pictures a decision was made on. Nothing that <code>kiln rebuild</code> compares depends on them.</p>
+
+<h2>What the asset record keeps</h2>
+<pre><code>"shape_review": {
+  "decision": "approved",            null while the review waits; or "rejected"
+  "note": "matches the picture",     or null
+  "decided_on": "2026-10-07",        the day of the decision
+  "pictures": {
+    "view_set": 1,                   goes up whenever a camera of the set changes
+    "closest_viewing_distance": 0.5,
+    "picture_size": [1920, 1080],
+    "renderer": { the program, its version, Bevy's version, the graphics card },
+    "views": [ {"name": "front", "path": "review/shape/front.png", "sha256": "..."}, ... ]
+  }
+}</code></pre>
+<p>Pictures with different <code>view_set</code> numbers cannot be compared with each other. The pictures themselves are not in git.</p>
+
+<h2>In code</h2>
+<table>
+  <tr><th>What</th><th>Where</th></tr>
+  <tr><td>The set, as data, and the camera arithmetic</td><td><code>crates/asset_view/src/views.rs</code></td></tr>
+  <tr><td>The renderer</td><td><code>crates/asset_view/src/bin/review_pictures.rs</code></td></tr>
+  <tr><td>Scene and light, shared with the viewer</td><td><code>crates/asset_view/src/scene.rs</code></td></tr>
+  <tr><td>Taking the pictures in a run, and the decision</td><td><code>kiln/review.py</code></td></tr>
+</table>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li><a href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units">glTF 2.0 Specification</a>, section 3.3: +Y is up, the front of an asset faces +Z, the unit is the metre.</li>
+  <li><a href="https://docs.blender.org/manual/en/latest/editors/3dview/navigate/viewpoint.html">Blender Manual, Viewpoint</a>: the names of the front, back, left, right and top views.</li>
+  <li><code>learn/research/pit-budget-measurement.md</code>, section 2: the closest view, eye height, field of view and resolution assumed for the pit profile.</li>
+  <li>The set itself, and the distances marked "chosen here", are kiln's own choices.</li>
+</ol>
+
+<nav class="course">
+  <a href="measuring-a-model.html">Reference: measuring a model</a>
+</nav>
+
+</main>
+</body>
+</html>

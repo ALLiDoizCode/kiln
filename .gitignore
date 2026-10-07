@@ -8,7 +8,11 @@ __pycache__/
 *.blend1
 # third-party packs used only as benchmarks; never shipped or committed
 /benchmarks/
-# the store: one folder per asset. Only the asset record is kept in git; the raw output and
-# the finished model are large files, found missing or changed by the record's checksums.
+# the store: one folder per asset. The asset record and the reference image are kept in git.
+# The raw output and the finished model are large files, found missing or changed by the
+# record's checksums. The review pictures (review/) are large too, about 1 MB each: the record
+# holds the checksums of the ones a decision was made on, and while a review waits they can be
+# rendered again.
 /assets/*/*
 !/assets/*/asset_record.json
+!/assets/*/reference_image.*

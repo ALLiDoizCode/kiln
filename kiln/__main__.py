@@ -1,6 +1,7 @@
 """The kiln command:  python3 -m kiln <command> [arguments]
 
-    run       make an asset from a model file
+    run       start an asset from a model file, as far as the shape review
+    review    approve or reject an asset's shape review; approving builds it
     rebuild   rebuild assets from their kept raw outputs
     measure   measure one model file
 
@@ -10,7 +11,7 @@ import sys
 
 from kiln import measure, rebuild, run
 
-COMMANDS = {"run": run.main, "rebuild": rebuild.main, "measure": measure.main}
+COMMANDS = {"run": run.main, "review": run.review_main, "rebuild": rebuild.main, "measure": measure.main}
 
 
 def main(argv=None):

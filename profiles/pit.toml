@@ -5,3 +5,8 @@
 
 # Placeholder, not measured: the most triangles one asset may have.
 triangle_budget = 20000
+
+# Placeholder, not decided: the nearest a player's eye comes to an asset, in metres. One of
+# the review pictures is taken from this far away. 0.5 m is what the budget measurement
+# assumed (learn/research/pit-budget-measurement.md, section 2).
+closest_viewing_distance = 0.5

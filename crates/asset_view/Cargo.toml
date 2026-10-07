@@ -3,8 +3,12 @@ name = "asset_view"
 version = "0.1.0"
 edition = "2024"
 publish = false
+# `cargo run -p asset_view -- <asset.glb>` opens the viewer; the other program is src/bin/review_pictures.rs.
+default-run = "asset_view"
 
 [dependencies]
 # jpeg and webp: glTF textures may be PNG, JPEG or WebP (EXT_texture_webp).
 bevy = { workspace = true, features = ["3d", "file_watcher", "jpeg", "webp"] }
 serde_json = "1"
+# Writes the review pictures as PNG. The version Bevy itself uses.
+image = { version = "0.25", default-features = false, features = ["png"] }

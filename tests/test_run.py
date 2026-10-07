@@ -16,7 +16,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from kiln import KilnError, __main__ as kiln_command, run as kiln_run
+from kiln import KilnError, __main__ as kiln_command, review, run as kiln_run
 from kiln.checks import describe, run_checks, triangle_count, validator_errors
 from kiln.glb import load
 from kiln.measure import DEFAULT_VALIDATOR, measure
@@ -36,6 +36,22 @@ needs_tools = unittest.skipUnless(HAVE_TOOLS, "the pinned Blender and glTF valid
 # given by this share of it. Positions are stored as 32-bit floats, good to about 1 in 10^7.
 SIZE_TOLERANCE = 1e-5
 
+# The day every test's shape review is decided on, so that records repeat.
+TODAY = "2026-10-07"
+CLOSEST = "closest_viewing_distance = 0.5\n"
+
+
+def stand_in_renderer(model, size, closest, out_dir):
+    """Stands in for review.render_pictures: two tiny pictures, written at once, with the
+    report the real renderer gives. The pictures are the same bytes every time."""
+    views = []
+    for name in ("front", "closest"):
+        with open(os.path.join(out_dir, name + ".png"), "wb") as f:
+            f.write(png(4, 3))
+        views.append({"name": name, "file": name + ".png", "shows": f"the {name} <view>"})
+    return {"view_set": 1, "picture_size": [4, 3], "views": views,
+            "renderer": {"name": "stand-in", "version": "0"}}
+
 
 class RunCase(unittest.TestCase):
     """A temporary folder holding a store, a folder of target profiles and model files."""
@@ -51,9 +67,10 @@ class RunCase(unittest.TestCase):
     def path(self, *parts):
         return os.path.join(self._dir.name, *parts)
 
-    def profile(self, name, text):
+    def profile(self, name, text, closest=CLOSEST):
+        """Write a target profile: `text`, and the closest viewing distance unless told not to."""
         with open(os.path.join(self.profiles, name + ".toml"), "w", encoding="utf-8") as f:
-            f.write(text)
+            f.write(text + closest)
 
     def cube(self, name="cube.glb"):
         """A unit cube of 12 triangles."""
@@ -67,8 +84,27 @@ class RunCase(unittest.TestCase):
                                 store=self.store, profiles_dir=self.profiles, **more)
 
     def run_asset(self, model=None, size=0.8, profile="pit", **more):
+        """A run as far as the shape review: (the asset's folder, its record)."""
+        more.setdefault("renderer", stand_in_renderer)
         return kiln_run.run(model or self.cube(), size, profile, "CC0 1.0", "modelled by a test",
                             store=self.store, profiles_dir=self.profiles, **more)
+
+    def approved(self, model=None, **more):
+        """An asset whose shape review is approved and that is not built yet: its folder."""
+        asset_dir, _ = self.run_asset(model, **more)
+        review.decide(asset_dir, "approved", today=TODAY)
+        return asset_dir
+
+    def run_and_approve(self, model=None, **more):
+        """A whole run with an approval: (the asset's folder, its completed record)."""
+        asset_dir = self.approved(model, **more)
+        return asset_dir, kiln_run.build(asset_dir, self.profiles)
+
+    def files(self, asset_dir):
+        """Every file in an asset's folder with its checksum, by its path within the folder."""
+        return {os.path.relpath(os.path.join(folder, name), asset_dir):
+                sha256_of(os.path.join(folder, name))
+                for folder, _, names in os.walk(asset_dir) for name in names}
 
     def command(self, *argv):
         """Run `python3 -m kiln <argv>` in this process: (exit code, stdout, stderr)."""
@@ -93,9 +129,22 @@ def without_tools(test):
         patch = mock.patch.object(kiln_run, name, stand_in)
         patch.start()
         test.addCleanup(patch.stop)
+    without_renderer(test)
+
+
+def without_renderer(test):
+    """Stand in for the program that renders the review pictures: it counts as built, and
+    the pictures are stand_in_renderer's."""
+    for name, stand_in in (("require_renderer", lambda: "stand-in"),
+                           ("render_pictures", stand_in_renderer)):
+        patch = mock.patch.object(review, name, stand_in)
+        patch.start()
+        test.addCleanup(patch.stop)
 
 
 REAL_REQUIRE_TOOLS = kiln_run.require_tools
+REAL_REQUIRE_RENDERER = review.require_renderer
+REAL_RENDER_PICTURES = review.render_pictures
 
 
 def read_bytes(path):
@@ -117,6 +166,7 @@ class Profiles(RunCase):
         profile = load_profile("pit")
         self.assertEqual(profile["name"], "pit")
         self.assertIsInstance(profile["triangle_budget"], int)
+        self.assertEqual(profile["closest_viewing_distance"], 0.5)
         self.assertEqual(profile["sha256"], sha256_of(os.path.join(REPO, "profiles", "pit.toml")))
 
     def test_the_checksum_follows_the_file(self):
@@ -133,12 +183,25 @@ class Profiles(RunCase):
         self.assertIn("pit", str(caught.exception))
 
     def test_a_profile_that_cannot_be_used_is_refused(self):
-        for text, expected in (("triangle_budget = 0\n", "triangle_budget"),
-                               ("triangle_budget = 2.5\n", "triangle_budget"),
-                               ("", "missing"),
-                               ("triangle_budget = 5\nviewing_distance = 2\n", "viewing_distance"),
+        for text, expected in (("triangle_budget = 0\n" + CLOSEST, "triangle_budget"),
+                               ("triangle_budget = 2.5\n" + CLOSEST, "triangle_budget"),
+                               (CLOSEST, "triangle_budget must be a whole number above zero, "
+                                         "but it is missing"),
+                               ("triangle_budget = 5\n", "closest_viewing_distance must be a "
+                                                         "number of metres above zero, but it "
+                                                         "is missing"),
+                               ("triangle_budget = 5\nclosest_viewing_distance = 0\n",
+                                "closest_viewing_distance"),
+                               ("triangle_budget = 5\nclosest_viewing_distance = -0.5\n",
+                                "closest_viewing_distance"),
+                               ("triangle_budget = 5\nclosest_viewing_distance = inf\n",
+                                "closest_viewing_distance"),
+                               ("triangle_budget = 5\nclosest_viewing_distance = \"near\"\n",
+                                "closest_viewing_distance"),
+                               ("triangle_budget = 5\nviewing_distance = 2\n" + CLOSEST,
+                                "viewing_distance"),
                                ("triangle_budget = \n", "not valid TOML")):
-            self.profile("odd", text)
+            self.profile("odd", text, closest="")
             with self.assertRaises(KilnError, msg=text) as caught:
                 load_profile("odd", self.profiles)
             self.assertIn(expected, str(caught.exception))
@@ -146,6 +209,10 @@ class Profiles(RunCase):
     def test_a_name_that_could_leave_the_folder_is_refused(self):
         with self.assertRaises(KilnError):
             load_profile("../pit", self.profiles)
+
+    def test_the_closest_viewing_distance_may_be_a_whole_number_of_metres(self):
+        self.profile("far", "triangle_budget = 5\nclosest_viewing_distance = 2\n", closest="")
+        self.assertEqual(load_profile("far", self.profiles)["closest_viewing_distance"], 2)
 
 
 # ---- checks --------------------------------------------------------------------------------
@@ -251,8 +318,11 @@ class TakingIn(RunCase):
         self.assertFalse(os.stat(raw).st_mode & 0o222, "the raw output can be written to")
         record = read_record(asset_dir)
         self.assertEqual(list(record), ["name", "licence", "source", "size", "target_profile",
-                                        "raw_output", "tools", "stages", "checks", "passed",
-                                        "model"])
+                                        "reference_image", "raw_output", "shape_review",
+                                        "tools", "stages", "checks", "passed", "model"])
+        self.assertIsNone(record["reference_image"])
+        self.assertEqual(record["shape_review"], {"decision": None, "note": None,
+                                                  "decided_on": None, "pictures": None})
         self.assertEqual((record["name"], record["licence"], record["source"], record["size"]),
                          ("rock", "CC0 1.0", "bought at a shop", 2.0))
         self.assertEqual(record["target_profile"]["name"], "pit")
@@ -261,6 +331,18 @@ class TakingIn(RunCase):
 
     def test_the_name_can_be_given(self):
         self.assertTrue(self.take_in(name="big-rock_2").endswith("big-rock_2"))
+
+    def test_a_reference_image_is_copied_beside_the_record_with_its_checksum(self):
+        for kind in (".png", ".JPG", ".webp"):
+            picture = self.path("what it should look like" + kind)
+            with open(picture, "wb") as f:
+                f.write(png(2, 2) + kind.encode())
+            asset_dir = self.take_in(reference_image=picture, name="rock" + kind[1:].lower())
+            kept = os.path.join(asset_dir, "reference_image" + kind.lower())
+            self.assertEqual(read_bytes(kept), read_bytes(picture))
+            self.assertEqual(read_record(asset_dir)["reference_image"],
+                             {"path": "reference_image" + kind.lower(),
+                              "sha256": sha256_of(picture)})
 
     def refused(self, expected, **inputs):
         with self.assertRaises(KilnError) as caught:
@@ -286,11 +368,18 @@ class TakingIn(RunCase):
         with open(broken, "wb") as f:
             f.write(b"not a model")
         self.refused("cannot be read", model=broken)
+        self.refused("no reference image", reference_image=self.path("missing.png"))
+        self.refused("reference image must be one of", reference_image=text)
 
     def test_missing_tools_are_refused_with_how_to_install_them(self):
         with mock.patch.object(kiln_run, "require_tools", REAL_REQUIRE_TOOLS), \
                 mock.patch.object(kiln_run, "BLENDER", self.path("no-blender")):
             self.refused("tools/install_tools.sh")
+
+    def test_a_renderer_that_is_not_built_is_refused_with_how_to_build_it(self):
+        with mock.patch.object(review, "require_renderer", REAL_REQUIRE_RENDERER), \
+                mock.patch.dict(os.environ, {"KILN_REVIEW_RENDERER": self.path("no-renderer")}):
+            self.refused("cargo build --release -p asset_view --bin review_pictures")
 
     def test_an_asset_that_exists_is_not_overwritten(self):
         asset_dir = self.take_in()
@@ -311,10 +400,10 @@ class Building(RunCase):
         return kiln_run.build(asset_dir, profiles_dir=self.profiles, stages=stages)
 
     def test_a_passing_build_writes_the_model_and_completes_the_record(self):
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         record = self.build(asset_dir)
         self.assertEqual(sorted(os.listdir(asset_dir)),
-                         [RECORD_NAME, "cube.glb", "raw_output.glb"])
+                         [RECORD_NAME, "cube.glb", "raw_output.glb", "review"])
         self.assertEqual(record, read_record(asset_dir))
         self.assertTrue(record["passed"])
         self.assertEqual(record["model"], file_entry(os.path.join(asset_dir, "cube.glb")))
@@ -328,9 +417,9 @@ class Building(RunCase):
 
     def test_a_failed_check_leaves_the_record_and_the_raw_output_but_no_model(self):
         self.profile("pit", "triangle_budget = 10\n")
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         record = self.build(asset_dir)
-        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb"])
+        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
         self.assertFalse(record["passed"])
         self.assertIsNone(record["model"])
         self.assertEqual(record["checks"][1], {"name": "triangle_count", "measured": 12,
@@ -338,7 +427,7 @@ class Building(RunCase):
         self.assertEqual(read_record(asset_dir), record)
 
     def test_a_model_from_an_earlier_build_does_not_outlive_a_build_that_fails(self):
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         self.build(asset_dir)
         self.profile("pit", "triangle_budget = 10\n")
         record = self.build(asset_dir)
@@ -346,15 +435,20 @@ class Building(RunCase):
         self.assertFalse(os.path.exists(os.path.join(asset_dir, "cube.glb")))
 
     def test_building_again_gives_the_same_record_and_model(self):
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         self.build(asset_dir)
-        first = {name: sha256_of(os.path.join(asset_dir, name)) for name in os.listdir(asset_dir)}
+        first = self.files(asset_dir)
         self.build(asset_dir)
-        again = {name: sha256_of(os.path.join(asset_dir, name)) for name in os.listdir(asset_dir)}
-        self.assertEqual(first, again)
+        self.assertEqual(self.files(asset_dir), first)
+
+    def test_a_build_copies_the_shape_review_as_it_finds_it(self):
+        asset_dir = self.approved(self.cube())
+        before = read_record(asset_dir)["shape_review"]
+        self.assertEqual(self.build(asset_dir)["shape_review"], before)
+        self.assertEqual(before["decided_on"], TODAY)
 
     def test_a_missing_or_changed_raw_output_is_not_built_from(self):
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         raw = os.path.join(asset_dir, "raw_output.glb")
         os.chmod(raw, 0o644)
         with open(raw, "ab") as f:
@@ -372,7 +466,7 @@ class Building(RunCase):
             with open(source, "ab") as f:
                 f.write(b"\0\0\0\0")
             return copy_stage(source, work, record, profile)
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         with self.assertRaisesRegex(KilnError, "raw output has changed"):
             self.build(asset_dir, stages=(scribbling_stage,))
         self.assertFalse(os.path.exists(os.path.join(asset_dir, "cube.glb")))
@@ -389,20 +483,21 @@ class Building(RunCase):
             target = os.path.join(work, "second.glb")
             shutil.copyfile(source, target)
             return target, {}
-        asset_dir = self.take_in(self.cube())
+        asset_dir = self.approved(self.cube())
         record = self.build(asset_dir, stages=(first, second))
         self.assertEqual(seen, [("first", "raw_output.glb", 0.8, "pit"), ("second", "copy.glb")])
         self.assertEqual(record["stages"], [{"name": "first", "note": 1}, {"name": "second"}])
         self.assertEqual(sorted(os.listdir(asset_dir)),
-                         [RECORD_NAME, "cube.glb", "raw_output.glb"])
+                         [RECORD_NAME, "cube.glb", "raw_output.glb", "review"])
 
-    def test_a_run_that_breaks_in_a_stage_leaves_nothing_in_the_store(self):
+    def test_a_stage_that_breaks_leaves_the_approval_and_the_raw_output_but_no_model(self):
         def broken(source, work, record, profile):
             raise KilnError("the stage broke")
-        with mock.patch.object(kiln_run, "STAGES", (broken,)):
-            with self.assertRaisesRegex(KilnError, "the stage broke"):
-                self.run_asset()
-        self.assertEqual(os.listdir(self.store), [])
+        asset_dir = self.approved(self.cube())
+        with self.assertRaisesRegex(KilnError, "the stage broke"):
+            self.build(asset_dir, stages=(broken,))
+        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
+        self.assertEqual(review.state(read_record(asset_dir)), "approved")
 
 
 # ---- the command line ----------------------------------------------------------------------
@@ -422,20 +517,124 @@ class CommandLine(RunCase):
         given.update(changed)
         return ["run"] + [part for pair in given.items() if pair[1] is not None for part in pair]
 
-    def test_a_passing_run_prints_each_check_and_where_the_asset_is(self):
+    def review(self, *argv):
+        return self.command("review", "--store", self.store, "--profiles", self.profiles, *argv)
+
+    def test_a_run_stops_for_the_shape_review_saying_where_the_pictures_are_and_how_to_decide(self):
         code, out, err = self.command(*self.arguments())
         self.assertEqual((code, err), (0, ""))
-        for part in ("validator_errors", "triangle_count", "measured 12 triangles",
-                     "limit 20,000", os.path.join(self.store, "cube", "cube.glb"), RECORD_NAME):
+        asset_dir = os.path.join(self.store, "cube")
+        for part in ("waiting for its shape review", "Nothing is built yet",
+                     os.path.join(asset_dir, "review", "shape"), "front, closest", "index.html",
+                     f"python3 -m kiln review cube --approve --store {self.store}",
+                     f"python3 -m kiln review cube --reject --store {self.store}"):
             self.assertIn(part, out)
+        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
+        self.assertIsNone(read_record(asset_dir)["checks"])
 
-    def test_a_failed_check_exits_1_naming_the_check_the_value_the_limit_and_the_overshoot(self):
+    def test_approving_builds_the_asset_and_prints_each_check_and_where_it_is(self):
+        self.command(*self.arguments())
+        code, out, err = self.review("cube", "--approve", "--note", "the right shape")
+        self.assertEqual((code, err), (0, ""))
+        for part in ("shape review approved", "validator_errors", "triangle_count",
+                     "measured 12 triangles", "limit 20,000",
+                     os.path.join(self.store, "cube", "cube.glb"), RECORD_NAME):
+            self.assertIn(part, out)
+        record = read_record(os.path.join(self.store, "cube"))
+        self.assertTrue(record["passed"])
+        self.assertEqual((record["shape_review"]["decision"], record["shape_review"]["note"]),
+                         ("approved", "the right shape"))
+
+    def test_rejecting_ends_the_run_with_no_finished_asset(self):
+        self.command(*self.arguments())
+        asset_dir = os.path.join(self.store, "cube")
+        with mock.patch.object(kiln_run, "build", side_effect=AssertionError("built")):
+            code, out, err = self.review("cube", "--reject", "--note", "two legs short")
+        self.assertEqual((code, err), (0, ""))
+        for part in ("shape review rejected", "nothing is built", asset_dir):
+            self.assertIn(part, out)
+        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
+        record = read_record(asset_dir)
+        self.assertEqual((record["shape_review"]["decision"], record["shape_review"]["note"]),
+                         ("rejected", "two legs short"))
+        self.assertEqual((record["checks"], record["passed"], record["model"]),
+                         (None, None, None))
+        # And it stays ended: it cannot be approved afterwards.
+        code, out, err = self.review("cube", "--approve")
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("already decided: rejected", err)
+        self.assertFalse(os.path.exists(os.path.join(asset_dir, "cube.glb")))
+
+    def test_review_with_no_decision_says_where_the_review_stands(self):
+        self.command(*self.arguments())
+        code, out, _ = self.review("cube")
+        self.assertEqual(code, 0)
+        self.assertIn("waiting for its shape review", out)
+        self.assertIn("--approve", out)
+        self.review("cube", "--reject", "--note", "too tall")
+        code, out, _ = self.review("cube")
+        self.assertEqual(code, 0)
+        self.assertRegex(out, r"shape review rejected on \d{4}-\d\d-\d\d \(too tall\)")
+
+    def test_a_failed_check_after_approval_exits_1_naming_the_check_the_value_the_limit_and_the_overshoot(self):
         self.profile("pit", "triangle_budget = 10\n")
-        code, out, err = self.command(*self.arguments())
-        self.assertEqual((code, out), (1, ""))
+        self.command(*self.arguments())
+        code, out, err = self.review("cube", "--approve")
+        self.assertEqual(code, 1)
+        self.assertIn("shape review approved", out)
         for part in ("stopped", "triangle_count", "measured 12 triangles", "limit 10",
                      "over by 2", "No finished model"):
             self.assertIn(part, err)
+
+    def test_a_review_that_cannot_be_made_exits_2_with_one_plain_line(self):
+        code, out, err = self.review("nothing")
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("no asset named 'nothing'", err)
+        self.command(*self.arguments())
+        shutil.rmtree(os.path.join(self.store, "cube", "review"))
+        for decision in ("--approve", "--reject"):
+            code, out, err = self.review("cube", decision)
+            self.assertEqual((code, out), (2, ""))
+            self.assertIn("the review picture 'front' is missing", err)
+            self.assertIn("kiln review cube --render", err)
+            self.assertNotIn("Traceback", err)
+        self.assertEqual(review.state(read_record(os.path.join(self.store, "cube"))), "pending")
+        code, _, err = self.review("cube", "--approve", "--reject")
+        self.assertEqual(code, 2)
+        code, _, err = self.review("cube", "--note", "no decision")
+        self.assertEqual(code, 2)
+        self.assertIn("--note goes with", err)
+
+    def test_the_pictures_can_be_rendered_again_while_the_review_waits(self):
+        self.command(*self.arguments())
+        asset_dir = os.path.join(self.store, "cube")
+        shutil.rmtree(os.path.join(asset_dir, "review"))
+        code, out, _ = self.review("cube")
+        self.assertEqual(code, 0)
+        self.assertIn("the review picture 'front' is missing", out)
+        code, out, err = self.review("cube", "--render")
+        self.assertEqual((code, err), (0, ""))
+        self.assertIn("review pictures rendered", out)
+        self.assertTrue(os.path.isfile(os.path.join(asset_dir, "review", "shape", "front.png")))
+        self.assertEqual(self.review("cube", "--approve")[0], 0)
+        code, _, err = self.review("cube", "--render")
+        self.assertEqual(code, 2)
+        self.assertIn("already decided (approved)", err)
+
+    def test_an_approval_stands_when_the_build_cannot_run_and_says_how_to_build_later(self):
+        self.command(*self.arguments())
+
+        def broken(source, work, record, profile):
+            raise KilnError("the stage broke")
+        with mock.patch.object(kiln_run, "STAGES", (broken,)):
+            code, _, err = self.review("cube", "--approve")
+        self.assertEqual(code, 2)
+        self.assertIn("the stage broke", err)
+        self.assertIn("python3 -m kiln rebuild cube", err)
+        self.assertEqual(review.state(read_record(os.path.join(self.store, "cube"))), "approved")
+        code, out, _ = self.command("rebuild", "--store", self.store, "--profiles", self.profiles)
+        self.assertEqual(code, 0, out)
+        self.assertIn("cube: rebuilt, changed", out)
 
     def test_the_licence_the_source_the_size_and_the_profile_must_be_given(self):
         for missing in ("--licence", "--source", "--size", "--profile", "--model"):
@@ -482,8 +681,12 @@ def figures(report):
 
 @needs_tools
 class ScalingToSize(RunCase):
+    def setUp(self):
+        super().setUp()
+        without_renderer(self)
+
     def finished(self, model, size=0.8, **more):
-        asset_dir, record = self.run_asset(model, size=size, **more)
+        asset_dir, record = self.run_and_approve(model, size=size, **more)
         self.assertTrue(record["passed"], record["checks"])
         return os.path.join(asset_dir, record["model"]["path"]), record
 
@@ -576,23 +779,38 @@ class ScalingToSize(RunCase):
         b = GlbBuilder()
         b.node(b.mesh([b.primitive([(1, 1, 1)] * 3, None, [0, 1, 2])]))
         with self.assertRaisesRegex(KilnError, "no extent"):
-            self.run_asset(b.write(self.path("dot.glb")))
-        self.assertEqual(os.listdir(self.store), [])
+            self.run_and_approve(b.write(self.path("dot.glb")))
+        self.assertFalse(os.path.exists(os.path.join(self.store, "dot", "dot.glb")))
 
 
 @needs_tools
 class WholeRuns(RunCase):
+    """Whole runs with the real Blender and validator. The review pictures are stood in for:
+    ReviewPicturesForReal renders them."""
+
+    def setUp(self):
+        super().setUp()
+        without_renderer(self)
+
+    def run_then_approve(self, *run_arguments):
+        """`kiln run` then `kiln review --approve`: the approval's (exit code, stdout, stderr)."""
+        code, out, err = self.command("run", *run_arguments, "--store", self.store,
+                                      "--profiles", self.profiles)
+        self.assertEqual((code, err), (0, ""))
+        name = out.split("'")[1]
+        return self.command("review", name, "--approve", "--store", self.store,
+                            "--profiles", self.profiles)
+
     def test_a_model_over_the_triangle_budget_stops_the_run(self):
         self.profile("tight", "triangle_budget = 10\n")
-        code, out, err = self.command(
-            "run", "--model", self.cube(), "--size", "0.8", "--profile", "tight",
-            "--licence", "CC0 1.0", "--source", "modelled by a test", "--store", self.store,
-            "--profiles", self.profiles)
-        self.assertEqual((code, out), (1, ""))
+        code, out, err = self.run_then_approve(
+            "--model", self.cube(), "--size", "0.8", "--profile", "tight",
+            "--licence", "CC0 1.0", "--source", "modelled by a test")
+        self.assertEqual(code, 1)
         for part in ("triangle_count", "measured 12 triangles", "limit 10", "over by 2"):
             self.assertIn(part, err)
         asset_dir = os.path.join(self.store, "cube")
-        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb"])
+        self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
         record = read_record(asset_dir)
         self.assertFalse(record["passed"])
         self.assertIsNone(record["model"])
@@ -604,14 +822,13 @@ class WholeRuns(RunCase):
         for specimen in SPECIMENS:
             name = os.path.splitext(os.path.basename(specimen))[0]
             before_sum = sha256_of(specimen)
-            code, out, err = self.command(
-                "run", "--model", specimen, "--size", "0.8", "--profile", "pit",
-                "--licence", "CC0 1.0", "--source", "kiln's first attempt", "--store", self.store,
-                "--profiles", self.profiles)
+            code, out, err = self.run_then_approve(
+                "--model", specimen, "--size", "0.8", "--profile", "pit",
+                "--licence", "CC0 1.0", "--source", "kiln's first attempt")
             self.assertEqual((code, err), (0, ""), name)
             asset_dir = os.path.join(self.store, name)
             self.assertEqual(sorted(os.listdir(asset_dir)),
-                             sorted([RECORD_NAME, "raw_output.glb", name + ".glb"]))
+                             sorted([RECORD_NAME, "raw_output.glb", name + ".glb", "review"]))
             record = read_record(asset_dir)
             self.assertTrue(record["passed"])
             self.assertEqual((record["licence"], record["source"]),
@@ -640,14 +857,14 @@ class WholeRuns(RunCase):
         for store in (self.path("one"), self.path("two", "deeper")):
             asset_dir, record = kiln_run.run(SPECIMENS[1], 0.8, "pit", "CC0 1.0", "a test",
                                              store=store, profiles_dir=self.profiles)
-            sums.append({name: sha256_of(os.path.join(asset_dir, name))
-                         for name in sorted(os.listdir(asset_dir))})
-            self.assertEqual(len(sums[-1]), 3)
+            kiln_run.approve(asset_dir, self.profiles, today=TODAY)
+            sums.append(self.files(asset_dir))
+            for large in (RECORD_NAME, "boulder_1.glb", "raw_output.glb"):
+                self.assertIn(large, sums[-1])
         self.assertEqual(sums[0], sums[1])
         # And building again in place, from the asset record alone, changes nothing.
         kiln_run.build(asset_dir, profiles_dir=self.profiles)
-        self.assertEqual({name: sha256_of(os.path.join(asset_dir, name))
-                          for name in sorted(os.listdir(asset_dir))}, sums[1])
+        self.assertEqual(self.files(asset_dir), sums[1])
 
 
 class Housekeeping(unittest.TestCase):
@@ -661,7 +878,11 @@ class Housekeeping(unittest.TestCase):
         self.assertTrue(ignored("assets/rock/raw_output.glb"))
         self.assertTrue(ignored("assets/rock/rock.glb"))
         self.assertTrue(ignored("assets/rock/work-abc/scale_to_size.glb"))
+        self.assertTrue(ignored("assets/rock/review/shape/front.png"))
+        self.assertTrue(ignored("assets/rock/review/shape/index.html"))
         self.assertFalse(ignored("assets/rock/asset_record.json"))
+        for kind in ("png", "jpg", "jpeg", "webp"):
+            self.assertFalse(ignored("assets/rock/reference_image." + kind))
         self.assertFalse(ignored("profiles/pit.toml"))
 
 

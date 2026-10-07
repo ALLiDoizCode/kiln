@@ -12,12 +12,12 @@ import shutil
 import unittest
 from unittest import mock
 
-from kiln import run as kiln_run
+from kiln import review, run as kiln_run
 from kiln.rebuild import rebuild
 from kiln.record import RECORD_NAME, read_record, sha256_of, write_record
 from tests.glb_fixture import GlbBuilder, cube_cross, png
-from tests.test_run import (RunCase, SPECIMENS, copy_stage, needs_tools, read_bytes,
-                            without_tools)
+from tests.test_run import (RunCase, SPECIMENS, TODAY, copy_stage, needs_tools,
+                            without_renderer, without_tools)
 
 
 class RebuildCase(RunCase):
@@ -25,7 +25,7 @@ class RebuildCase(RunCase):
         return self.command("rebuild", "--store", self.store, "--profiles", self.profiles, *argv)
 
     def sums(self, asset_dir):
-        return {name: sha256_of(os.path.join(asset_dir, name)) for name in os.listdir(asset_dir)}
+        return self.files(asset_dir)
 
 
 class StoodIn(RebuildCase):
@@ -39,9 +39,16 @@ class StoodIn(RebuildCase):
         self.addCleanup(patch.stop)
 
     def made(self, name, **more):
-        """An asset taken in and built, as `kiln run` leaves it."""
-        asset_dir = self.take_in(self.cube(name + ".glb"), **more)
-        kiln_run.build(asset_dir, self.profiles)
+        """An asset run, approved at its shape review and built."""
+        return self.run_and_approve(self.cube(name + ".glb"), **more)[0]
+
+    def waiting(self, name):
+        """An asset whose shape review nobody has decided."""
+        return self.run_asset(self.cube(name + ".glb"))[0]
+
+    def rejected(self, name, note=None):
+        asset_dir = self.waiting(name)
+        kiln_run.reject(asset_dir, note, today=TODAY)
         return asset_dir
 
 
@@ -147,11 +154,11 @@ class MissingAndChangedFiles(StoodIn):
         with open(raw, "ab") as f:
             f.write(b"\0")
         self.profile("pit", "triangle_budget = 30000\n")  # a rebuild would change the record
-        before = {n: read_bytes(os.path.join(a, n)) for n in os.listdir(a)}
+        before = self.sums(a)
         code, out, _ = self.rebuild()
         self.assertEqual(code, 1)
         self.assertIn(f"a: raw output changed since its asset record was written: {raw}", out)
-        self.assertEqual({n: read_bytes(os.path.join(a, n)) for n in os.listdir(a)}, before)
+        self.assertEqual(self.sums(a), before)
 
     def test_a_missing_finished_model_is_reported_then_rebuilt(self):
         a = self.made("a")
@@ -214,6 +221,74 @@ class Checking(StoodIn):
         self.assertIn("a: the last build failed a check", out)
 
 
+class ShapeReviews(StoodIn):
+    """An asset is rebuilt only when its shape review is approved, and is never asked again."""
+
+    def test_an_asset_waiting_for_its_shape_review_is_not_built_and_is_not_a_failure(self):
+        a, b = self.made("a"), self.waiting("b")
+        before = self.sums(b)
+        code, out, _ = self.rebuild()
+        self.assertEqual(code, 0)
+        self.assertIn("a: rebuilt, unchanged", out)
+        self.assertIn("b: waiting for shape review (decide with `python3 -m kiln review b "
+                      "--approve` or `--reject`)", out)
+        self.assertIn("2 assets: 1 unchanged, 1 waiting for shape review", out)
+        self.assertEqual(self.sums(b), before)
+        self.assertFalse(os.path.exists(os.path.join(b, "b.glb")))
+
+    def test_a_rejected_asset_is_not_built_and_is_not_a_failure(self):
+        a = self.rejected("a", note="two legs short")
+        before = self.sums(a)
+        with mock.patch.object(kiln_run, "build", side_effect=AssertionError("built")):
+            code, out, _ = self.rebuild()
+        self.assertEqual(code, 0)
+        self.assertIn(f"a: rejected at shape review on {TODAY} (two legs short)", out)
+        self.assertIn("1 asset: 1 rejected at shape review", out)
+        self.assertEqual(self.sums(a), before)
+        # Not by name either.
+        self.assertIn("a: rejected at shape review", self.rebuild("a")[1])
+        self.assertFalse(os.path.exists(os.path.join(a, "a.glb")))
+
+    def test_check_reports_waiting_and_rejected_assets_without_failing(self):
+        self.made("a"), self.waiting("b"), self.rejected("c")
+        code, out, _ = self.rebuild("--check")
+        self.assertEqual(code, 0)
+        self.assertEqual(out.splitlines()[0], "a: up to date")
+        self.assertIn("b: waiting for shape review", out)
+        self.assertIn(f"c: rejected at shape review on {TODAY}", out)
+        self.assertIn("3 assets: 1 up to date, 1 waiting for shape review, 1 rejected at shape "
+                      "review", out)
+
+    def test_a_waiting_asset_with_no_raw_output_is_still_a_problem(self):
+        b = self.waiting("b")
+        os.remove(os.path.join(b, "raw_output.glb"))
+        for arguments in ((), ("--check",)):
+            code, out, _ = self.rebuild(*arguments)
+            self.assertEqual(code, 1)
+            self.assertIn("b: raw output missing", out)
+
+    def test_an_approved_asset_is_rebuilt_without_rendering_or_deciding_again(self):
+        a = self.made("a")
+        approved = read_record(a)["shape_review"]
+        shutil.rmtree(os.path.join(a, "review"))  # the pictures are not needed to rebuild
+        self.profile("pit", "triangle_budget = 30000\n")
+        with mock.patch.object(review, "render_pictures", side_effect=AssertionError("rendered")), \
+                mock.patch.object(review, "decide", side_effect=AssertionError("decided")):
+            code, out, _ = self.rebuild()
+        self.assertEqual(code, 0)
+        self.assertIn("a: rebuilt, unchanged (profile checksum", out)
+        self.assertEqual(read_record(a)["shape_review"], approved)
+
+    def test_a_record_with_no_shape_review_counts_as_waiting(self):
+        a = self.made("a")
+        record = read_record(a)
+        del record["shape_review"]
+        write_record(a, record)
+        code, out, _ = self.rebuild()
+        self.assertEqual(code, 0)
+        self.assertIn("a: waiting for shape review", out)
+
+
 class StagesAndTheRawOutput(StoodIn):
     def rebuild_with(self, stage):
         return rebuild(self.store, self.profiles, stages=(stage,))
@@ -258,7 +333,15 @@ class StagesAndTheRawOutput(StoodIn):
 
 @needs_tools
 class Repeatability(RebuildCase):
-    """The same raw output, size and profile give the same bytes, with the real Blender."""
+    """The same raw output, size and profile give the same bytes, with the real Blender.
+
+    The review pictures are stood in for, and the day of the decision is fixed: neither is
+    made by a build. Whether the real pictures repeat is measured in tests.test_review.
+    """
+
+    def setUp(self):
+        super().setUp()
+        without_renderer(self)
 
     def textured(self):
         b = GlbBuilder()
@@ -272,9 +355,9 @@ class Repeatability(RebuildCase):
         if threads:
             env["KILN_BLENDER_THREADS"] = threads
         with mock.patch.dict(os.environ, env, clear=True):
-            asset_dir = kiln_run.take_in(model, 0.8, "pit", "CC0 1.0", "a test", store=store,
-                                         profiles_dir=self.profiles)
-            kiln_run.build(asset_dir, self.profiles)
+            asset_dir, _ = kiln_run.run(model, 0.8, "pit", "CC0 1.0", "a test", store=store,
+                                        profiles_dir=self.profiles)
+            kiln_run.approve(asset_dir, self.profiles, today=TODAY)
         return self.sums(asset_dir)
 
     def test_other_store_paths_and_thread_counts_give_the_same_bytes(self):
@@ -287,13 +370,13 @@ class Repeatability(RebuildCase):
                         self.build_in(model, self.path("s4"), "3")]
                 for other in runs[1:]:
                     self.assertEqual(other, runs[0])
-                self.assertEqual(len(runs[0]), 3, name)
+                for large in ("asset_record.json", name + ".glb", "raw_output.glb"):
+                    self.assertIn(large, runs[0])
                 for store in ("s1", "s2", "s3", "s4"):
                     shutil.rmtree(self.path(store))
 
     def test_rebuilding_in_place_gives_the_same_bytes_and_says_unchanged(self):
-        asset_dir, _ = kiln_run.run(self.textured(), 0.8, "pit", "CC0 1.0", "a test",
-                                    store=self.store, profiles_dir=self.profiles)
+        asset_dir, _ = self.run_and_approve(self.textured())
         before = self.sums(asset_dir)
         code, out, _ = self.rebuild()
         self.assertEqual(code, 0, out)

@@ -3,24 +3,15 @@
 //!
 //! Usage: asset_view <asset.glb>
 
-mod webp;
-
-use bevy::{
-    asset::UnapprovedPathMode, camera::primitives::Aabb, gltf::GltfPlugin, pbr::PbrPlugin, prelude::*, world_serialization::WorldAsset,
-};
+use asset_view::scene::{self, Model};
+use bevy::{camera::primitives::Aabb, prelude::*};
 
 const FOV: f32 = std::f32::consts::FRAC_PI_4;
 /// Radians per second the camera circles the model.
 const TURN_SPEED: f32 = 0.3;
-const SUN_TO: Vec3 = Vec3::new(0.4, -1.0, -0.6);
-const SUN_LUX: f32 = 8000.0;
-const AMBIENT: f32 = 900.0;
 
 #[derive(Resource)]
 struct AssetFile(String);
-
-#[derive(Component)]
-struct Model;
 
 fn main() -> AppExit {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -37,34 +28,13 @@ fn main() -> AppExit {
     };
     let name = glb.file_name().unwrap().to_string_lossy().into_owned();
 
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .build()
-                .disable::<GltfPlugin>()
-                .add_before::<PbrPlugin>(webp::WebpGlbPlugin)
-                .set(AssetPlugin {
-                    file_path: glb.parent().unwrap().to_string_lossy().into_owned(),
-                    unapproved_path_mode: UnapprovedPathMode::Deny,
-                    ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: format!("asset_view: {name}"),
-                        ..default()
-                    }),
-                    ..default()
-                }),
-        )
-        .insert_resource(ClearColor(Color::linear_rgb(0.18, 0.19, 0.21)))
-        .insert_resource(GlobalAmbientLight {
-            brightness: AMBIENT,
-            ..default()
-        })
-        .insert_resource(AssetFile(name))
-        .add_systems(Startup, setup)
-        .add_systems(Update, frame_model)
-        .run()
+    let mut app = App::new();
+    app.add_plugins(scene::plugins(&glb, true).set(WindowPlugin {
+        primary_window: Some(Window { title: format!("asset_view: {name}"), ..default() }),
+        ..default()
+    }));
+    scene::light_the_world(&mut app);
+    app.insert_resource(AssetFile(name)).add_systems(Startup, setup).add_systems(Update, frame_model).run()
 }
 
 fn setup(
@@ -74,28 +44,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let scene: Handle<WorldAsset> = asset_server.load(GltfAssetLabel::Scene(0).from_asset(file.0.clone()));
-    commands.spawn((Model, WorldAssetRoot(scene)));
-
-    // Ground, so the model's contact with it and its cast shadow are visible.
-    commands.spawn((
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(200.0, 200.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::linear_rgb(0.12, 0.125, 0.135),
-            perceptual_roughness: 1.0,
-            // Behind the model's own faces where they meet the ground, so the model wins the tie.
-            depth_bias: -4.0,
-            ..default()
-        })),
-    ));
-    commands.spawn((
-        DirectionalLight {
-            illuminance: SUN_LUX,
-            shadow_maps_enabled: true,
-            ..default()
-        },
-        Transform::default().looking_to(SUN_TO, Vec3::Y),
-    ));
+    scene::spawn_scene(&mut commands, &asset_server, &mut meshes, &mut materials, &file.0);
     commands.spawn((
         Camera3d::default(),
         Projection::Perspective(PerspectiveProjection { fov: FOV, ..default() }),

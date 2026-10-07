@@ -1,7 +1,9 @@
 """The asset record: the file beside the model, as JSON.
 
-Its keys are written in the order kiln put them in, and it holds no time or date, so the
-same run always writes the same bytes. Paths in it are file names in the record's own folder.
+Its keys are written in the order kiln put them in. What a build writes into it holds no time
+or date, so building again from the same record writes the same bytes. The one date in it is
+the day a person decided a review, which is a fact about the review: a build copies the review
+as it finds it. Paths in it are relative to the record's own folder.
 """
 import hashlib
 import json
