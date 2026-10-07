@@ -277,7 +277,7 @@ class TheRenderer(RunCase):
             with self.assertRaisesRegex(KilnError, "is not built.*cargo build --release"):
                 review.require_renderer()
 
-    def test_a_renderer_older_than_its_source_is_refused(self):
+    def test_a_renderer_older_than_its_source_is_built_again(self):
         source = self.path("src")
         os.makedirs(os.path.join(source, "bin"))
         os.makedirs(self.path("built", "release"))
@@ -294,8 +294,16 @@ class TheRenderer(RunCase):
             os.utime(os.path.join(source, "main.rs"), (2000, 2000))  # the viewer, not the renderer
             self.assertEqual(review.require_renderer(), binary)
             os.utime(os.path.join(source, "bin", "review_pictures.rs"), (2000, 2000))
-            with self.assertRaisesRegex(KilnError, "older than its source.*cargo build --release"):
-                review.require_renderer()
+            with mock.patch.object(review, "build_renderer") as build:
+                self.assertEqual(review.require_renderer(), binary)
+                build.assert_called_once_with()
+                self.assertEqual(review.require_renderer(), binary)  # no longer older
+                build.assert_called_once_with()
+            os.utime(os.path.join(source, "views.rs"), (4_000_000_000, 4_000_000_000))
+            with mock.patch.object(review, "build_renderer",
+                                   side_effect=KilnError("cargo build failed")):
+                with self.assertRaisesRegex(KilnError, "cargo build failed"):
+                    review.require_renderer()
 
     def test_the_size_of_a_png_is_read_from_its_header(self):
         path = self.path("p.png")

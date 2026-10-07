@@ -293,7 +293,7 @@ class StagesAndTheRawOutput(StoodIn):
     def rebuild_with(self, stage):
         return rebuild(self.store, self.profiles, stages=(stage,))
 
-    def test_a_stage_that_writes_to_the_raw_output_is_reported_and_no_asset_results(self):
+    def test_a_stage_that_writes_to_the_raw_output_is_reported_and_nothing_of_that_build_is_kept(self):
         def scribbling(source, work, record, profile):
             os.chmod(source, 0o644)  # a chmod proves nothing: the checksum is the guard
             with open(source, "ab") as f:
@@ -315,10 +315,14 @@ class StagesAndTheRawOutput(StoodIn):
             with self.subTest(stage.__name__):
                 shutil.rmtree(self.store, ignore_errors=True)
                 a = self.made("a")
+                before = read_record(a)
                 (result,) = self.rebuild_with(stage)
                 self.assertEqual(result["status"], "problem")
                 self.assertRegex(result["text"], "raw output (has changed|is missing)")
-                self.assertFalse(os.path.exists(os.path.join(a, "a.glb")))
+                # The earlier build's model and its record stay as they were.
+                self.assertEqual(read_record(a), before)
+                self.assertEqual(sha256_of(os.path.join(a, "a.glb")), before["model"]["sha256"])
+                self.assertEqual([n for n in os.listdir(a) if n.startswith("work-")], [])
 
     def test_the_raw_output_is_read_only_while_the_stages_run(self):
         modes = []
