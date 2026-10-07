@@ -2,22 +2,23 @@
 """Print what a .glb holds: each mesh primitive, its attributes, counts and material.
 
 Usage: python3 learn/assets/glb_inspect.py <file.glb>
-Reads only the JSON chunk of the file; needs nothing but the standard library.
+Needs nothing but the standard library. For measurements (bounding box, UV islands,
+texel density and more) use: python3 -m kiln.measure <file.glb>
 """
-import json
-import struct
+import os
 import sys
+
+# The file reader is kiln's own (kiln/glb.py at the repo root), so there is one parser.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+from kiln.glb import GltfError, load  # noqa: E402
 
 
 def read_json_chunk(path):
-    with open(path, "rb") as f:
-        magic, version, _length = struct.unpack("<4sII", f.read(12))
-        if magic != b"glTF":
-            sys.exit(f"{path}: not a .glb file")
-        chunk_length, chunk_type = struct.unpack("<I4s", f.read(8))
-        if chunk_type != b"JSON":
-            sys.exit(f"{path}: first chunk is not JSON")
-        return version, json.loads(f.read(chunk_length))
+    try:
+        model = load(path)
+    except (GltfError, OSError) as error:
+        sys.exit(str(error))
+    return model.version, model.json
 
 
 def main():
