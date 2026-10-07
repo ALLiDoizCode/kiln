@@ -11,6 +11,8 @@ use crate::webp::WebpGlbPlugin;
 
 /// The direction the sunlight travels: down, from the front left of the model.
 pub const SUN_TO: Vec3 = Vec3::new(0.4, -1.0, -0.6);
+/// How strong the sun and the light from all sides are. Set by looking: with Bevy's default
+/// exposure a pale model keeps its shading, and its shaded side can still be read.
 pub const SUN_LUX: f32 = 3000.0;
 pub const AMBIENT: f32 = 600.0;
 pub const BACKGROUND: Color = Color::linear_rgb(0.18, 0.19, 0.21);

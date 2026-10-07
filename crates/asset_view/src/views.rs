@@ -29,7 +29,7 @@ pub const WHOLE_FOV: f32 = 30.0;
 /// picture's height, and nothing of the size can reach the edge.
 pub const AXIS_DISTANCE: f32 = 3.0;
 /// The same for the picture taken from a corner, where the box's diagonal has to fit: a cube
-/// as large as the size is then nine tenths of the picture's height from corner to corner.
+/// as large as the size then takes about 85% of the picture's height.
 pub const CORNER_DISTANCE: f32 = 3.5;
 /// How far the `standing` picture's camera is from the front of the bounding box, in metres.
 pub const STANDING_DISTANCE: f32 = 2.0;
