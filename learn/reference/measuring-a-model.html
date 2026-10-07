@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference: measuring a model</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="reference">
+<main>
+
+<header class="lesson">
+  <div class="kicker">Reference</div>
+  <h1>Measuring a model</h1>
+  <p class="lede">What each number in kiln's measurement report means, and exactly how it is worked out.</p>
+</header>
+
+<h2>Run it</h2>
+<pre><code>python3 -m kiln.measure &lt;file.glb&gt;                 text, for reading
+python3 -m kiln.measure &lt;file.glb&gt; --size 0.8      texel density as if scaled to 0.8 m
+python3 -m kiln.measure &lt;file.glb&gt; --json          JSON, for comparing</code></pre>
+<p>The names in brackets below are the keys in the JSON.</p>
+
+<h2>Counts</h2>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Triangles (<code>totals.triangles</code>)</td><td>What the graphics card draws.</td><td>Index count ÷ 3 for each primitive; vertex count ÷ 3 where a primitive has no index list. Strips and fans are counted as the triangles they draw.</td></tr>
+  <tr><td>Vertices (<code>totals.vertices</code>)</td><td>Rows in the file's vertex tables. This is what the graphics card processes, and it is more than the number of points on the surface: a point is stored again wherever its normal or its UV changes.</td><td>The length of each primitive's position column.</td></tr>
+  <tr><td>Per mesh (<code>meshes</code>)</td><td>The same two counts for each mesh and each primitive in it, as stored.</td><td>A mesh that the scene places twice appears once here with <code>placed: 2</code>, and counts twice in the totals, because it is drawn twice. A mesh no node places is not counted or measured, and a note says so.</td></tr>
+</table>
+
+<h2>Bounding box and size</h2>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Bounding box (<code>bounding_box</code>)</td><td>The smallest box, lined up with the X, Y and Z axes, that holds the whole model. In metres, because glTF's unit is the metre.</td><td>The lowest and highest X, Y and Z over every vertex, after moving each vertex by the transforms of its node and of every node above it. This is the model as the scene places it, not as the raw numbers are stored. glTF's Y axis points up.</td></tr>
+  <tr><td>Size in file (<code>size.in_file</code>)</td><td>The model's largest dimension as the file has it.</td><td>The largest of the box's three dimensions.</td></tr>
+  <tr><td>Scale factor (<code>size.scale_factor</code>)</td><td>What the model must be multiplied by to reach the size given with <code>--size</code>.</td><td>Size given ÷ size in file.</td></tr>
+</table>
+
+<h2>Materials and textures</h2>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Materials (<code>materials</code>)</td><td>Each material in the file and the image in each of its texture slots. Each material on a mesh is a separate draw.</td><td>The slots are named as glTF names them: <code>baseColorTexture</code> (colour), <code>metallicRoughnessTexture</code>, <code>normalTexture</code>, <code>occlusionTexture</code>, <code>emissiveTexture</code>. The number is the image's position in the textures list.</td></tr>
+  <tr><td>Pixel size (<code>textures[].width</code>, <code>height</code>)</td><td>The image's width and height in pixels.</td><td>Read from the image's own header (PNG, JPEG, WebP or KTX2). The image is not decoded.</td></tr>
+  <tr><td>Format (<code>textures[].format</code>)</td><td>How the image is encoded in the file.</td><td>Recognised from the image's first bytes, not from its label.</td></tr>
+  <tr><td>Bytes (<code>textures[].bytes</code>)</td><td>The image's size on disk, as encoded.</td><td>Memory on the graphics card is a different, larger number: width × height × 4 bytes for an uncompressed image, plus a third for mipmaps.</td></tr>
+</table>
+
+<h2>The welded surface</h2>
+<p>The UV numbers need one idea first. A model file stores a point on the surface more than once wherever its normal or UV differs between the triangles round it, so the file's own vertex numbers cannot say which triangles are neighbours. Kiln therefore <strong>welds</strong>: vertices at exactly the same position in the scene are treated as one point. An <strong>edge</strong> is a pair of such points joined by a side of at least one triangle. All of the UV numbers below are counted on this welded surface, over the triangles that have UVs.</p>
+<p>"Exactly the same" means equal stored numbers, with no tolerance. Vertices that an exporter split match exactly; vertices that are merely close do not, and the gap between them shows up as open edges.</p>
+
+<h2>UVs</h2>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Edges (<code>uvs.edges</code>)</td><td>Every edge of the welded surface.</td><td>A closed surface of <em>T</em> triangles has 3<em>T</em> ÷ 2 edges.</td></tr>
+  <tr><td>Seam edges (<code>uvs.seam_edges</code>)</td><td>Edges where the surface is joined but its UVs are cut: the two sides sit in different places on the texture. A seam costs extra vertices and is where a line can show.</td><td>An edge with two or more triangles on it, where those triangles do not all give the same UV to each of its two ends.</td></tr>
+  <tr><td>Seam share (<code>uvs.seam_share</code>)</td><td>How much of the surface's stitching is cut.</td><td>Seam edges ÷ all edges, open edges included in the total.</td></tr>
+  <tr><td>Open edges (<code>uvs.open_edges</code>)</td><td>Edges with a triangle on one side only: the rim of a hole, or of a surface that is not closed.</td><td>Counted on their own and never as seams, since there is nothing on the other side to disagree with.</td></tr>
+  <tr><td>Islands (<code>uvs.islands</code>)</td><td>The separate pieces the surface is cut into on the texture.</td><td>Two triangles are in the same island if they share an edge and agree on the UVs at both of its ends, directly or through a chain of such neighbours. Triangles that meet only at a corner are not joined.</td></tr>
+  <tr><td>Coverage (<code>uvs.coverage</code>)</td><td>The share of the UV square, and so of the texture, that has surface on it. The rest of the texture's pixels are paid for and never seen.</td><td>The UV square is divided into 1,024 × 1,024 cells; a cell counts if its centre is inside at least one UV triangle. Overlapping triangles count once. Parts outside the square (below 0 or above 1) are left out. Accurate to about half a cell along every island border.</td></tr>
+  <tr><td>Area sum (<code>uvs.triangle_area_sum</code>)</td><td>The areas of all UV triangles added up.</td><td>Equal to coverage when nothing overlaps and nothing is outside the square. Clearly larger means triangles share texture space (which is wrong for a baked texture and normal for a tiled one) or lie outside the square.</td></tr>
+  <tr><td>Outside the square (<code>uvs.triangles_outside_square</code>)</td><td>Triangles with a corner whose UV is below 0 or above 1.</td><td>These rely on the texture repeating.</td></tr>
+  <tr><td>Without area (<code>uvs.triangles_without_area</code>)</td><td>Triangles with two corners at the same point.</td><td>They draw nothing, and are left out of the edge and island counts.</td></tr>
+</table>
+
+<h2>Texel density</h2>
+<p>A texel is one pixel of a texture. Texel density is how many of them lie along one metre of the surface: it says how sharp the texture can look, and it only means something once the model's size in metres is known.</p>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Overall (<code>texel_density.pixels_per_metre</code>)</td><td>Texture pixels per metre, over the whole textured surface.</td><td>√(texture pixels on the surface ÷ surface area in square metres). The pixels on the surface are each triangle's UV area × the width × height of its material's base colour texture. The surface area is taken after scaling the model to the size given; with no size given, as stored.</td></tr>
+  <tr><td>Spread (<code>p05</code>, <code>median</code>, <code>p95</code>)</td><td>How uneven the density is. A wide spread means some parts are sharp and others blurred.</td><td>The same formula for each triangle alone. 5% of the surface area has a density below <code>p05</code>, half below <code>median</code>, 95% below <code>p95</code>.</td></tr>
+  <tr><td>Per primitive (<code>by_primitive</code>)</td><td>The overall figure for each primitive that has UVs and a base colour texture.</td><td>The texture named is the one whose pixel size was used.</td></tr>
+</table>
+<p>Only the base colour texture's size is used. A primitive with no UVs or no base colour texture has no texel density and is left out. A texture that is not square uses width × height, so the figure is an average of the two directions.</p>
+
+<h2>Khronos glTF Validator</h2>
+<table>
+  <tr><th>Number</th><th>What it is</th></tr>
+  <tr><td>Errors</td><td>The file breaks the glTF format; a loader may refuse it or show it wrongly.</td></tr>
+  <tr><td>Warnings</td><td>Allowed by the format but probably a mistake.</td></tr>
+  <tr><td>Infos, hints</td><td>Remarks, such as data that is stored and never used.</td></tr>
+</table>
+<p>The validator checks that a file is legal glTF. It says nothing about whether the model is good. It is installed by <code>tools/install_tools.sh</code>; the report says so if it is missing.</p>
+
+<h2>What is not measured</h2>
+<table>
+  <tr><th>Case</th><th>What happens</th></tr>
+  <tr><td>Mesh data compressed with Draco or meshopt</td><td>The command stops with a message naming the compression.</td></tr>
+  <tr><td><code>KHR_texture_transform</code> on a material</td><td>Ignored, with a note: figures are for the UVs as stored.</td></tr>
+  <tr><td>A second UV set</td><td>Only the first set (<code>TEXCOORD_0</code>) is measured, with a note if a material reads another.</td></tr>
+  <tr><td>Points and lines</td><td>Add no triangles, with a note.</td></tr>
+</table>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li><a href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html">glTF 2.0 Specification</a>, sections 3.5 (nodes and transforms), 3.6 (accessors), 3.7 (meshes) and 4 (the binary file).</li>
+  <li><a href="https://github.com/KhronosGroup/glTF-Validator">Khronos glTF Validator</a>.</li>
+  <li>The definitions of seam, island and coverage on this page are kiln's own, chosen so that they can be counted from a model file; they were checked against Blender's island finder on the two specimens.</li>
+</ol>
+
+<nav class="course">
+  <a href="mesh-anatomy.html">Reference: mesh anatomy</a>
+</nav>
+
+</main>
+</body>
+</html>
