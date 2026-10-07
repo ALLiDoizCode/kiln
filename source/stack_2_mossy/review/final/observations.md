@@ -1,7 +1,0 @@
-# stack_2_mossy, final: observations
-
-Read from the material tiles of `sheet.png` (front, right, back, top, three-quarter, scale) and the standard view in `benchmarks/out/covers_mossy.png`. The clay and Bevy tiles of the sheet were not read one by one; the mesh is `stack_2`'s byte for byte (L2c). The review aids were not made; no second reader. Not approved.
-
-1. **Where the moss is**: the lowest stone is wholly olive (it is 0.33 m tall, the reach of the wash) and reads as a green mound, not as stone with moss on it; the two top stones are thickly flecked; the two middle stones show flecks only along their upper rims.
-2. **Amounts**: 0.45 of the asset's pixels in the standard view are green, the most of the eight. Load test: growth on 1.00 of the surface below 0.13 m; 0.23 of the faces not near level above 0.53 m (none clear of an edge or a join; at most 0.60); 0.52 of the level faces there are (none clear of an edge or a join; 0.12 to 0.82 allowed); 0.42 of exposed edges in the top fifth; patches 0.50 darker, measured between neighbouring samples; 2.09 patch edges per 0.08 m.
-3. **Differences from the brief**: the brief puts the wash 'on the lowest stone' and it is the whole of it. Every level face of the stack is within a patch of an edge, so growth on level faces and growth along edges lie on the same surface and it carries about 0.5, twice the 0.25 a level face is asked. Whether a stack should ask for only one of the two is the owner's to say.

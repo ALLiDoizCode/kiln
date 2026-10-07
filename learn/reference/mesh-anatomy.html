@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference: mesh anatomy</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="reference">
+<main>
+
+<header class="lesson">
+  <div class="kicker">Reference</div>
+  <h1>Mesh anatomy</h1>
+  <p class="lede">What a model file holds, as glTF stores it and Bevy loads it.</p>
+</header>
+
+<h2>Structure</h2>
+<pre><code>mesh
+└─ primitive            one or more; one per material
+   ├─ vertex table      rows = vertices, columns = attributes
+   ├─ index list        three integers per triangle, each a row number
+   └─ material          exactly one</code></pre>
+
+<h2>Attributes</h2>
+<table>
+  <tr><th>glTF</th><th>Bevy constant</th><th>Also called</th><th>Type</th><th>Holds</th><th>If missing</th></tr>
+  <tr><td><code>POSITION</code></td><td><code>ATTRIBUTE_POSITION</code></td><td>vertex position</td><td>vec3</td><td>Location in metres</td><td>No shape</td></tr>
+  <tr><td><code>NORMAL</code></td><td><code>ATTRIBUTE_NORMAL</code></td><td>normal</td><td>vec3</td><td>Unit direction the surface faces; drives lighting</td><td>Engine must compute flat normals: faceted look</td></tr>
+  <tr><td><code>TEXCOORD_0</code></td><td><code>ATTRIBUTE_UV_0</code></td><td>UV</td><td>vec2</td><td>Point on the texture image for this vertex</td><td>Textures cannot be placed</td></tr>
+  <tr><td><code>TANGENT</code></td><td><code>ATTRIBUTE_TANGENT</code></td><td>tangent</td><td>vec4</td><td>Needed for normal maps (later lesson)</td><td>Engine should compute them (MikkTSpace)</td></tr>
+  <tr><td><code>COLOR_0</code></td><td><code>ATTRIBUTE_COLOR</code></td><td>vertex colour</td><td>vec3/4</td><td>A colour per vertex, multiplied into the surface</td><td>None used</td></tr>
+</table>
+
+<h2>Rules of thumb</h2>
+<table>
+  <tr><th>Fact</th><th>Consequence</th></tr>
+  <tr><td>A vertex is a whole row of attributes</td><td>Same position with a different normal or UV is a second vertex</td></tr>
+  <tr><td>A sharp edge needs two normals along it</td><td>Hard edges add vertices; a hard-edged cube has 24, not 8</td></tr>
+  <tr><td>A cut in the UV layout needs two UVs along it</td><td>UV cuts add vertices</td></tr>
+  <tr><td>A closed, fully shared surface of <em>T</em> triangles has <em>T</em>/2 + 2 vertices</td><td>Vertices far above that mean many splits</td></tr>
+  <tr><td>A primitive has one material</td><td>Each extra material is another primitive, drawn separately</td></tr>
+</table>
+
+<h2>Inspect a file</h2>
+<pre><code>python3 learn/assets/glb_inspect.py &lt;file.glb&gt;</code></pre>
+<p>Prints each primitive's attributes, vertex count, triangle count and material.</p>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li><a href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html">glTF 2.0 Specification</a>, sections 3.4 and 3.7.2.</li>
+  <li><a href="https://docs.rs/bevy/0.19.1/bevy/mesh/struct.Mesh.html">Bevy 0.19.1 <code>Mesh</code></a>.</li>
+  <li><a href="https://github.com/KhronosGroup/3DC-Asset-Creation/blob/main/asset-creation-guidelines/RealtimeAssetCreationGuidelines.md">Khronos Asset Creation Guidelines 2.0</a>.</li>
+</ol>
+
+<nav class="course">
+  <a href="../lessons/0001-what-a-mesh-is.html">Lesson 1: What a mesh is</a>
+</nav>
+
+</main>
+</body>
+</html>

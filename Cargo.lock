@@ -228,15 +228,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "asset_smoke"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "asset_view"
 version = "0.1.0"
 dependencies = [

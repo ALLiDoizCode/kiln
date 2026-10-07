@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1: What a mesh is</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main>
+
+<header class="lesson">
+  <div class="kicker">Lesson 1 · about 15 minutes</div>
+  <h1>What a mesh is</h1>
+  <p class="lede">Every asset your pipeline will ever produce, whether Tripo generated it or a script built it, reaches Bevy as the same small data structure. Learn to read it and you can inspect anything.</p>
+</header>
+
+<p><strong>The win:</strong> by the end you will run one command on a model file and say what every line of the output means.</p>
+
+<h2>A mesh is a table and a list</h2>
+
+<p>The file Bevy loads is glTF (a <code>.glb</code> is the same thing packed into one binary file). Inside it, a <em>mesh</em> is a list of <em>primitives</em>, and a primitive is three things:<sup><a href="#s1">1</a></sup></p>
+
+<ol>
+  <li>A <strong>vertex table</strong>. Each row is one vertex. Each column is an <em>attribute</em>.</li>
+  <li>An <strong>index list</strong>. Integers, read three at a time. Each triple names three rows of the table, and those three vertices are one triangle.</li>
+  <li>A reference to <strong>one material</strong>, which says how the surface responds to light.</li>
+</ol>
+
+<figure>
+  <svg viewBox="0 0 560 190" role="img" aria-label="Four vertices forming two triangles, with the index list 0 1 2, 0 2 3">
+    <g fill="none" stroke="currentColor" stroke-width="1.5">
+      <polygon points="40,150 180,150 180,40" />
+      <polygon points="40,150 180,40 40,40" />
+    </g>
+    <g fill="currentColor" font-family="ui-monospace, monospace" font-size="14">
+      <circle cx="40" cy="150" r="4"/><text x="18" y="170">0</text>
+      <circle cx="180" cy="150" r="4"/><text x="188" y="170">1</text>
+      <circle cx="180" cy="40" r="4"/><text x="188" y="34">2</text>
+      <circle cx="40" cy="40" r="4"/><text x="18" y="34">3</text>
+      <text x="270" y="45">vertex table      4 rows</text>
+      <text x="270" y="70">  0  (0, 0, 0)</text>
+      <text x="270" y="90">  1  (1, 0, 0)</text>
+      <text x="270" y="110">  2  (1, 1, 0)</text>
+      <text x="270" y="130">  3  (0, 1, 0)</text>
+      <text x="270" y="165">index list   0 1 2   0 2 3</text>
+    </g>
+  </svg>
+  <figcaption>A square is two triangles. Four vertices are stored once and used six times.</figcaption>
+</figure>
+
+<p>That is the whole shape of it. A game model with a million triangles is this same structure with a longer table.</p>
+
+<h2>Three columns matter first</h2>
+
+<table>
+  <tr><th>glTF name</th><th>Artists call it</th><th>Type</th><th>What it holds</th></tr>
+  <tr><td><code>POSITION</code></td><td>vertex position</td><td>3 floats</td><td>Where the vertex is, in metres.<sup><a href="#s2">2</a></sup></td></tr>
+  <tr><td><code>NORMAL</code></td><td>normal</td><td>3 floats</td><td>A unit vector: the direction the surface faces at this vertex. Lighting is computed from it.<sup><a href="#s3">3</a></sup></td></tr>
+  <tr><td><code>TEXCOORD_0</code></td><td>UV</td><td>2 floats</td><td>A point on a 2D image. It says which part of a texture lands on this vertex.<sup><a href="#s4">4</a></sup></td></tr>
+</table>
+
+<p>Position gives the silhouette. The normal gives the shading. The UV gives the paint. Bevy's own documentation says a mesh needs normals and UVs to render correctly with its standard material.<sup><a href="#s3">3</a></sup></p>
+
+<h2>The consequence that surprises programmers</h2>
+
+<p>A vertex is a <em>whole row</em>, not a point in space. If two triangles meet at the same position but need a different normal or a different UV there, that is two rows. The Khronos guidelines put it this way: vertices are split on export if they contain more than one of each type of mesh data.<sup><a href="#s4">4</a></sup></p>
+
+<div class="predict">
+  <p><strong>Predict before you read on.</strong> A cube has 8 corners. Each face must be lit as a flat face, so each face needs its own normal. How many rows does the vertex table have?</p>
+  <details>
+    <summary>Answer</summary>
+    <p>24. Every corner touches three faces, and each face wants a different normal there, so each corner is stored three times: 8 × 3, or equally 6 faces × 4 corners. A sharp edge always costs vertices. A smooth surface shares them.</p>
+  </details>
+</div>
+
+<p>This is why "how many triangles" and "how many vertices" are different questions, and why an asset's cost depends on its edges and its UV layout as well as its shape.</p>
+
+<h2>Do it: read two real files</h2>
+
+<p>Two models kept from the first kiln attempt are enough. From the repository root:</p>
+
+<pre><code>python3 learn/assets/glb_inspect.py learn/specimens/crate.glb
+python3 learn/assets/glb_inspect.py learn/specimens/boulder_1.glb</code></pre>
+
+<div class="predict">
+  <p><strong>Before you run them, write down three guesses.</strong></p>
+  <ol>
+    <li>The crate is drawn in two flat colours. How many primitives will it have?</li>
+    <li>The boulder has a painted texture. Which of the two files will have a <code>TEXCOORD_0</code> column?</li>
+    <li>Which will have more vertices than triangles: the hard-edged crate or the rounded boulder?</li>
+  </ol>
+  <details>
+    <summary>What you should see, and why</summary>
+    <ol>
+      <li>Two primitives. A primitive has exactly one material, so two materials force two primitives. In Bevy each primitive arrives as its own mesh with its own material.<sup><a href="#s5">5</a></sup></li>
+      <li>Only the boulder. The crate has no texture, so nothing needs to say where on an image a vertex sits.</li>
+      <li>The crate: 144 vertices for 96 triangles in its frame. The boulder has 115 vertices for 136 triangles. A closed, fully shared surface of 136 triangles would need about 70; the rest are splits, from sharp edges or from the cuts in its UV layout. The file does not say which, and a later lesson shows how to find out.</li>
+    </ol>
+  </details>
+</div>
+
+<h2>Why this is the first thing to know</h2>
+
+<p>Tripo's API documents a <code>face_limit</code> option of up to 2,000,000 faces, and a <code>quad</code> option that forces the output format to FBX.<sup><a href="#s6">6</a></sup> Until today those were words. Now the first is a row count you can compare with a budget, and a generated file is something you can open and measure before you trust it. Every later topic in this course (UV layout, normal maps, baking, levels of detail) is an operation on this table.</p>
+
+<div class="note">
+  <p><strong>Read next:</strong> the <a href="https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_009_Meshes.html">Meshes page of the Khronos glTF Tutorial</a>. It is short, written by the people who own the format, and shows the same structure as raw JSON.</p>
+</div>
+
+<h2>Check yourself</h2>
+
+<p>Answer from memory, without scrolling up. The first click counts.</p>
+
+<section class="quiz" data-lesson="0001">
+  <div class="q">
+    <p>1. A hard-edged cube with no texture is exported. How many vertices does the file hold?</p>
+    <div class="options">
+      <button class="option">Eight, one per corner</button>
+      <button class="option">Twelve, one per edge</button>
+      <button class="option" data-correct>Twenty-four, four per face</button>
+      <button class="option">Thirty-six, three per triangle</button>
+    </div>
+    <p class="why">Each corner needs three different normals, one per face it touches, and a row holds one normal. Thirty-six would be the count with no index list at all.</p>
+  </div>
+  <div class="q">
+    <p>2. A file has positions and UVs but no normals. What does the glTF spec require of the engine?</p>
+    <div class="options">
+      <button class="option">Refuse to load it</button>
+      <button class="option" data-correct>Compute flat normals itself</button>
+      <button class="option">Draw it entirely unlit</button>
+      <button class="option">Copy normals from UVs</button>
+    </div>
+    <p class="why">The spec says that when normals are not specified, client implementations must calculate flat normals. The asset loads, and every triangle looks faceted: a defect no error message reports.</p>
+  </div>
+  <div class="q">
+    <p>3. One mesh uses three materials. How many primitives does it have?</p>
+    <div class="options">
+      <button class="option">One, holding three materials</button>
+      <button class="option" data-correct>Three, one per material</button>
+      <button class="option">Nine, three per material</button>
+      <button class="option">None, materials hold geometry</button>
+    </div>
+    <p class="why">A primitive refers to a single material. More materials means more primitives, each drawn separately.</p>
+  </div>
+  <div class="q">
+    <p>4. Two vertices share a position and a normal, yet are separate rows. What differs?</p>
+    <div class="options">
+      <button class="option" data-correct>Their UV coordinates differ</button>
+      <button class="option">Their triangle indices differ</button>
+      <button class="option">Their material colours differ</button>
+      <button class="option">Their file offsets differ</button>
+    </div>
+    <p class="why">A row is the whole set of attributes. Where a texture layout is cut, the same point on the model sits at two places on the image, so it needs two rows.</p>
+  </div>
+  <div class="result"></div>
+</section>
+
+<div class="note">
+  <p><strong>Ask your teacher.</strong> Anything unclear, or anything you want pushed further (why triangles and not quads, what a normal map has to do with normals, what the index list buys), ask in the Claude Code session. That is what it is for.</p>
+</div>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li id="s1">Khronos Group, <a href="https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_009_Meshes.html">glTF Tutorial: Meshes</a>: a mesh is an array of primitives; a primitive has an attributes dictionary, indices and a material.</li>
+  <li id="s2">Khronos Group, <a href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html">glTF 2.0 Specification</a>, section 3.4 (units are metres) and section 3.7.2 (attribute table; flat normals when normals are missing).</li>
+  <li id="s3">Bevy 0.19.1, <a href="https://docs.rs/bevy/0.19.1/bevy/mesh/struct.Mesh.html"><code>Mesh</code> documentation</a>: what a mesh needs to render with <code>StandardMaterial</code>.</li>
+  <li id="s4">Khronos 3D Commerce group, <a href="https://github.com/KhronosGroup/3DC-Asset-Creation/blob/main/asset-creation-guidelines/RealtimeAssetCreationGuidelines.md">Asset Creation Guidelines 2.0</a>: UV coordinates; vertex splitting on export.</li>
+  <li id="s5">Bevy 0.19.1, <a href="https://docs.rs/bevy_gltf/0.19.1/bevy_gltf/"><code>bevy_gltf</code> documentation</a>: a glTF primitive is a mesh and an optional material.</li>
+  <li id="s6">Tripo, <a href="https://developers.tripo3d.com/en/models/v3-1">API documentation, model v3.1</a>. A vendor page.</li>
+</ol>
+
+<nav class="course">
+  <a href="../reference/mesh-anatomy.html">Reference: mesh anatomy</a>
+  <a href="../MISSION.md">Mission</a>
+  <a href="../RESOURCES.md">Resources</a>
+</nav>
+
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,35 +1,21 @@
 # kiln
 
-Assets for Bevy, built as code by headless Blender and gated by scripts. Read `CONTEXT.md` for vocabulary and `docs/adr/` for the decisions (units, axes, facing, format) before touching an asset.
+A 3D asset pipeline for games on Bevy, with Blender as the authoring tool. The repo was reset to a clean start on 2026-10-07: the pipeline is to be designed as its owner learns the domain (`learn/`), and nothing about its stages, checks or conventions is decided yet.
+
+The first attempt is at the git tag `first-attempt`. It was built without domain knowledge; do not restore code, decisions or vocabulary from it unless the user asks.
+
+## What is here
+
+- `learn/` — the owner's course on 3D asset pipelines: `MISSION.md`, `RESOURCES.md`, lessons, reference pages and learning records. `learn/specimens/` holds two models from the first attempt, kept only as files to inspect.
+- `crates/asset_view` — a Bevy window that shows a `.glb` with hot reload. It still takes the first attempt's manifest file as its second argument.
+- `tools/install_tools.sh` — installs the pinned Blender and glTF validator into `.tools/`.
+- `tools/bl <script.py> [args]` — runs a script in the pinned Blender, headless and with factory settings.
+- `benchmarks/` — third-party asset packs for comparison; ignored by git, never committed or shipped.
 
 ## Commands
 
-- `tools/install_tools.sh` — install the pinned Blender and glTF validator into `.tools/`.
-- `tools/gate.sh <asset>` — build the asset and run every gate, stopping at the first failure.
-- `python tools/baseline.py approve <asset> [phase]` — record the current contact sheet as approved. Run it only when the user has looked at the sheet and said so in this conversation; a rebuilt sheet that drifts from it then fails the gate.
-- `cargo run -p asset_view -- assets/models/<asset>.glb assets/models/<asset>.manifest.json` — open the asset in a Bevy window with hot reload. With `--screenshot <out.png>` it saves one view and exits 0, or saves nothing and exits 1 when the asset is not in the picture; `--close`, `--back`, `--stand <metres>` (a player's eye that far from the asset) and `--pitch <degrees>` (with `--stand`: how far above level to look) choose the view. Its light (a sun of 8000 lux and ambient 900) is a stand-in until `pit` settles the game's; `--shade <report.json>` measures the sides it leaves in shade, and gate L4d holds a rock's to `[shade] min_luminance`, which is measured under that light and must be measured again if it changes.
-- `python tools/review_aids.py views <image...>` / `blind <a> <b> <out>` — value map and squint view of a render, and a blind side-by-side of two renders; aids for review, not gates.
-- `tools/variants_sheet.sh <out.png> <benchmark.gltf> <benchmark.manifest.json> <asset...>` — variants beside a benchmark under Bevy from five views, the last from below. `KILN_SHEET_VIEWS` (views separated by semicolons) replaces them, for a rock too low to be seen from below.
-- `tools/candidates_sheet.sh <out.png> <asset> <first> <last>` — the asset drawn from a run of seeds, painted, one Bevy tile each on one sheet (`KILN_SHEET_VIEW` picks the view). When a decision is about how a shape looks, show the user a dozen of these to choose from, not one; an aid, not a gate. It bakes on the graphics card when there is one (`KILN_BAKE=gpu`: about ten times quicker, but a few texels differ from run to run, so `tools/gate.sh` ignores the variable and bakes on the CPU); `KILN_BAKE=cpu` turns that off.
-- `tools/worktree.sh <name>` — a working copy at `../kiln-<name>` on branch `<name>` for work done in parallel, with the links git does not carry and a copy of `target/` so its first build takes seconds. At most four agents build at once on this machine.
-- `tools/bl tools/try_seeds.py <asset> <first> <last>` — build an asset from a run of seeds and say which pass gate L1; an aid for a family's brief, not a gate.
-- `tests/run.sh` — prove the gates themselves can fail, after changing anything in `tools/`, `crates/` or `tests/`. While iterating run the affected part: `tests/run.sh --changed` (what the files changed since the last commit affect), `tests/run.sh rock`, `tests/run.sh L4 rock` (an asset, a gate, or both), `tests/run.sh --only <regex>` (case names and check ids). Before reporting done run it with no selection: only a last line reading `ran ALL <n> cases` is a full run; `PARTIAL RUN` is not. `--help` lists the rest. The cases are the lines of `tests/cases.sh`.
-- `tools/bl <script.py> [args]` — the only way to run Blender here. Never call the binary directly.
-
-## Rules
-
-- An asset is `source/<asset>/{brief.md, spec.json, build.py}`. `out/` and `assets/models/*.glb` are outputs; never edit them by hand.
-- A rock of several pieces is closed pieces that overlap, left separate in one mesh; its spec says so with `overlap` and its generator builds with `tools/stone.py` (ADR 13). No boolean union.
-- A build script gives each material one flat colour. Painted shading is asked for in the spec (`painted_shading`) and added by `tools/paint.py` during the build (ADR 10); a build script never unwraps or bakes.
-- Expected values (bounds, budgets) go in `spec.json` from the brief, never copied from what the build produced.
-- A tree's spec names a `species` (a recipe in `source/tree/species/`), a `growth_stage` and a `season`; a season of another asset names it as `palette_of` and must build the same mesh. Gate the base before its seasons.
-- A cover (moss) is a palette variant too: `<base>_mossy` names its base as `palette_of` and its `cover`, and differs from the base's spec only in the growth keys of `painted_shading`, each reasoned in the family brief's Covers. Gate the base before its cover.
-- Variants drawn by one generator are separate assets (`source/tree_1`, ...) whose specs name a `family`: the folder holding the generator and the brief they share (`source/tree`). A family folder is not an asset and has no spec.
-- Every asset is for the game described in `docs/adr/0007-game-target-and-metrics.md`; questions about how the game works belong in the `pit` repo (ADR 8).
-- A gate passing means the asset is well-formed, not that it is good. After the gates pass, read `source/<asset>/review/<phase>/sheet.png` and describe what it shows as measurements before calling anything done.
-- A new check is not finished until a case in `tests/` shows it failing on a broken input.
-- In Blender scripts prefer the data API (`bpy.data`, `bmesh`) over `bpy.ops`; operators report failure by return value, so check it and raise.
-- Project standards live in `conventions.toml`; add a value there only when a script reads it.
+- `cargo run -p asset_view -- <asset.glb> <manifest.json>` — open an asset in the viewer.
+- `python3 learn/assets/glb_inspect.py <asset.glb>` — print what a model file holds.
 
 ## Agent skills
 
@@ -43,4 +29,4 @@ The five default triage labels, unchanged. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` at the repo root holds the glossary; `docs/adr/` is created there when the first decision is recorded. See `docs/agents/domain.md`.

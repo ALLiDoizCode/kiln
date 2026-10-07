@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Installs the pinned external tools into .tools/ (no root needed).
-# Versions here are the pins; conventions.toml [toolchain] records the same numbers
-# and tools/lint_spec.py fails if they drift.
+# Versions here are the pins.
 set -euo pipefail
 
 BLENDER_VERSION=5.2.2
