@@ -3,8 +3,10 @@
 //!
 //! Usage: asset_view <asset.glb>
 
+mod webp;
+
 use bevy::{
-    asset::UnapprovedPathMode, camera::primitives::Aabb, prelude::*, world_serialization::WorldAsset,
+    asset::UnapprovedPathMode, camera::primitives::Aabb, gltf::GltfPlugin, pbr::PbrPlugin, prelude::*, world_serialization::WorldAsset,
 };
 
 const FOV: f32 = std::f32::consts::FRAC_PI_4;
@@ -38,6 +40,9 @@ fn main() -> AppExit {
     App::new()
         .add_plugins(
             DefaultPlugins
+                .build()
+                .disable::<GltfPlugin>()
+                .add_before::<PbrPlugin>(webp::WebpGlbPlugin)
                 .set(AssetPlugin {
                     file_path: glb.parent().unwrap().to_string_lossy().into_owned(),
                     unapproved_path_mode: UnapprovedPathMode::Deny,

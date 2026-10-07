@@ -7,7 +7,7 @@ The first attempt is at the git tag `first-attempt`. It was built without domain
 ## What is here
 
 - `learn/` — the owner's course on 3D asset pipelines: `MISSION.md`, `RESOURCES.md`, lessons, reference pages and learning records. `learn/specimens/` holds two models from the first attempt, kept only as files to inspect.
-- `crates/asset_view` — a Bevy window that shows a `.glb` on a ground plane under a slow turntable, framed by its bounding box, with hot reload. JPEG and PNG textures show; a glTF that uses `EXT_texture_webp` does not load (Bevy 0.19.1 cannot read the extension).
+- `crates/asset_view` — a Bevy window that shows a `.glb` on a ground plane under a slow turntable, framed by its bounding box, with hot reload. PNG, JPEG and WebP textures show, including WebP given through `EXT_texture_webp` (which Bevy cannot read itself: `src/webp.rs` rewrites the file's JSON as it loads).
 - `tools/install_tools.sh` — installs the pinned Blender and glTF validator into `.tools/`.
 - `tools/bl <script.py> [args]` — runs a script in the pinned Blender, headless and with factory settings.
 - `benchmarks/` — third-party asset packs for comparison; ignored by git, never committed or shipped.
@@ -15,6 +15,7 @@ The first attempt is at the git tag `first-attempt`. It was built without domain
 ## Commands
 
 - `cargo run -p asset_view -- <asset.glb>` — open an asset in the viewer.
+- `cargo test -p asset_view` — run the viewer crate's unit tests (the WebP rewrite).
 - `python3 learn/assets/glb_inspect.py <asset.glb>` — print what a model file holds.
 
 ## Agent skills
