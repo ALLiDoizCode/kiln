@@ -1,0 +1,31 @@
+learn/research/tripo-api-trial/models/orb_p2_tri_req20000.glb
+  510,152 bytes, glTF 2.0, written by Tripo
+  extensions used: KHR_materials_volume, FB_ngon_encoding
+
+COUNTS
+  triangles        20,389   what the graphics card draws
+  vertices         11,011   rows stored in the file; a point on the surface is stored again wherever its normal or UV changes
+  mesh 0 "meshes[0]": 20,389 triangles, 11,011 vertices
+    primitive 0: 20,389 triangles, 11,011 vertices, material "material", indexed, no UVs
+
+BOUNDING BOX   the smallest upright box that holds the model as the scene places it, in metres
+  x     -0.3083 to 0.3083     = 0.6167 m
+  y           0 to 0.9829     = 0.9829 m
+  z     -0.4998 to 0.4998     = 0.9995 m
+  size in file  0.9995 m   the largest of the three dimensions
+  size given    0.8 m   so the model must be scaled by 0.8004
+
+MATERIALS   1; each one is a separate draw
+  0  "material"  no textures
+
+TEXTURES   0 image(s) stored in the file
+
+UVS   how the surface is laid flat on the texture
+  none: no triangle has UVs, so no texture can be placed on this model
+
+TEXEL DENSITY   base colour texture pixels per metre of surface
+  none: no triangle has both UVs and a base colour texture of known size
+
+KHRONOS GLTF VALIDATOR   whether the file obeys the glTF format
+  0 errors, 0 warnings, 1 infos, 0 hints   (validator 2.0.0-dev.3.10)
+  info: Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.  [UNSUPPORTED_EXTENSION at /extensionsUsed/1]

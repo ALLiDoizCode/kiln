@@ -1,0 +1,94 @@
+{
+  "file": {
+    "path": "learn/research/tripo-api-trial/models/orb_p1_tri_req20000.glb",
+    "bytes": 452404,
+    "gltf_version": "2.0",
+    "generator": "Tripo",
+    "extensions_used": [
+      "KHR_materials_volume",
+      "FB_ngon_encoding"
+    ]
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 18438,
+    "vertices": 9584,
+    "materials": 1,
+    "textures": 0
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 18438,
+      "vertices": 9584,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "material",
+          "triangles": 18438,
+          "vertices": 9584,
+          "indexed": true,
+          "has_uvs": false,
+          "attributes": [
+            "NORMAL",
+            "POSITION"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.3369140625,
+      0.0,
+      -0.4990234375
+    ],
+    "max": [
+      0.3369140625,
+      0.939453125,
+      0.4990234375
+    ],
+    "dimensions": [
+      0.673828125,
+      0.939453125,
+      0.998046875
+    ],
+    "largest_dimension": 0.998046875
+  },
+  "size": {
+    "in_file": 0.998046875,
+    "given": 0.8,
+    "scale_factor": 0.8015655577299413
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "material",
+      "textures": {}
+    }
+  ],
+  "textures": [],
+  "uvs": null,
+  "texel_density": null,
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 0,
+    "infos": 1,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "info",
+        "code": "UNSUPPORTED_EXTENSION",
+        "message": "Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.",
+        "pointer": "/extensionsUsed/1"
+      }
+    ]
+  },
+  "notes": []
+}

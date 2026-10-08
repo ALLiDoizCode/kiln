@@ -1,0 +1,213 @@
+{
+  "file": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "tripo_node_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 1951822,
+      "flat_faces": 0,
+      "as_imported": {
+        "vertices": 975885,
+        "edges": 2927733,
+        "faces": 1951822,
+        "triangles": 1951822,
+        "face_sides": {
+          "3": 1951822,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 19,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          1951822
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      },
+      "welded": {
+        "vertices": 975882,
+        "edges": 2927732,
+        "faces": 1951822,
+        "triangles": 1951822,
+        "face_sides": {
+          "3": 1951822,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 1,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 18,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          1951822
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 975885,
+    "edges": 2927733,
+    "faces": 1951822,
+    "triangles": 1951822,
+    "face_sides": {
+      "3": 1951822,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 19,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      1951822
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "welded": {
+    "vertices": 975882,
+    "edges": 2927732,
+    "faces": 1951822,
+    "triangles": 1951822,
+    "face_sides": {
+      "3": 1951822,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 1,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 18,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      1951822
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.377457,
+      -0.489655,
+      0.0
+    ],
+    "max": [
+      0.377457,
+      0.489655,
+      0.980804
+    ],
+    "dimensions": [
+      0.754913,
+      0.979309,
+      0.980804
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.377457,
+      0.0,
+      -0.489655
+    ],
+    "max": [
+      0.377457,
+      0.980804,
+      0.489655
+    ],
+    "dimensions": [
+      0.754913,
+      0.980804,
+      0.979309
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.490402
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "images": [
+    {
+      "name": "orb_h31_default_basecolor.jpg",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "orb_h31_default_normal.png",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "orb_h31_default_rm.jpg",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

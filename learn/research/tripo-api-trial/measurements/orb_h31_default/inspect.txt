@@ -1,0 +1,11 @@
+learn/research/tripo-api-trial/models/orb_h31_default.glb  (glTF 2, generator: Tripo)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 1034900
+    NORMAL      VEC3  x 1034900
+    TEXCOORD_0  VEC2  x 1034900
+    indices     5855466  = 1951822 triangles
+    material    "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

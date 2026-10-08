@@ -38,7 +38,7 @@ The earlier notes define mesh, triangle, quad, UV, UV island, PBR, base colour, 
 
 ## Summary
 
-**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9.
+**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9, and a second run from a harder picture is in section 10.
 
 ### What was run, and what it cost
 
@@ -444,6 +444,46 @@ Which P2.0 file answers which requested count is matched by nearness; the web ap
 - Which way Tripo faces a model.
 - Texturing the Smart UV model, P1.0 textured, or P2.0 quads.
 - Whether Tripo's terms allow an assistant to drive the web app: the terms page refused the request (HTTP 403) and was not read. The run was a handful of generations at a person's pace in the owner's own account.
+
+## 10. A harder picture: a creature, 2026-10-08
+
+The owner supplied a harder reference picture: a drawn, spiky, four-legged creature seen from the front three-quarter, 500 by 500 pixels, on a plain background (`images/orb_piercer_square.webp`). It is someone else's artwork, used for a private test only: the picture is not in git and nothing made from it can go into a game. At 500 pixels it is under the 1024 that Tripo's Help Center recommends.
+
+Same route and same limits as section 9: the web app, Privacy set to Private, one generation per setting. The balance went from 2,845 to 2,715: 130 credits.
+
+| Model file | Web app setting | Credits |
+|---|---|---|
+| `orb_h31_default` | HD Model, H3.1, all defaults | 55 |
+| `orb_p2_tri_req2000`, `req5000`, `req10000`, `req20000` | Smart Mesh, P2.0, Triangle, four counts in one generation | 0 (the second and last free trial; the button then showed 100) |
+| `orb_p2_tri_req20000_textured` | the Texture step on the 20,000 model | 20 |
+| `orb_p1_tri_req20000` | Smart Mesh, P1.0, Triangle, 20,000 | 35 |
+| `orb_p1_tri_req20000_textured` | the Texture step on it | 20 |
+
+### What came back
+
+| Model | Triangles | File | UVs and textures | Open edges | Non-manifold edges | Pieces | Validator errors |
+|---|---|---|---|---|---|---|---|
+| H3.1 default | 1,951,822 | 65.8 MB | 1,067 islands; base colour, metallic-roughness and normal, each 4096 | 0 | 1 | 1 | 0 |
+| P2.0, asked 2,000 | 1,522 | 46 KB | none | 719 | 46 | 25 | 0 |
+| P2.0, asked 5,000 | 3,734 | 113 KB | none | 1,808 | 105 | 95 | 0 |
+| P2.0, asked 10,000 | 8,032 | 229 KB | none | 2,536 | 12 | 223 | 0 |
+| P2.0, asked 20,000 | 20,389 | 510 KB | none | 1,169 | 12 | 236 | 0 |
+| the same, textured | 20,389 | 4.4 MB | 4,208 islands; base colour only, 4096 | 1,169 | 12 | 236 | 2 |
+| P1.0, asked 20,000 | 18,438 | 452 KB | none | 157 | 20 | 157 | 0 |
+| the same, textured | 18,438 | 4.3 MB | 4,893 islands; base colour only, 4096; 41.5% of the UV square used | 157 | 20 | 157 | 2 |
+
+### What it shows
+
+- **All three models made a recognisable creature from one drawing,** with the back and far side invented. Each generation is a different shape: the three differ in body length (0.62 to 0.79 of the length across), tail and face. Looked at in the review pictures, H3.1 is the closest to the drawing; P1.0 is the cleanest low-poly shape but has the fewest spikes; P2.0 has the most spikes and a less well-formed face.
+- **The low-poly models are many loose pieces, not one surface.** The P2.0 model at 20,000 is 236 separate pieces with 1,169 open edges: each spike is its own open shell stuck into the body. P1.0 is 157 pieces with 157 open edges. H3.1 is one closed piece. On the crate the same models had 4 to 28 pieces, so the piece count follows the subject. A check that fails on open edges or loose pieces would fail every low-poly model here, and for a spiky or furry subject that may be how the model is meant to be built.
+- **Counts were less exact than on the crate.** P2.0 gave 1,522, 3,734, 8,032 and 20,389 for 2,000, 5,000, 10,000 and 20,000: under by 20 to 25% at the three lower counts and 2% over at the top, which is over the placeholder budget of 20,000 by 389. P1.0 gave 18,438.
+- **The texture step again returns base colour only,** on thousands of small UV islands (4,208 and 4,893). On this subject it looks acceptable in the review pictures, where on the crate it looked blurred; flat-coloured drawn fur hides what a flat wooden panel shows.
+- **They all face the same way.** In every model the tail end is at negative z and the face at positive z, which is glTF's forward. The models stand on y = 0, centred, with the longest dimension about 1 m (`scripts/facing.py`).
+- **H3.1 is again far over budget** at 1.95 million triangles and 66 MB, and again the cleanest mesh with all three maps.
+
+### What it does not show
+
+One picture, one generation per setting. Nothing here says how often a generation fails, how much the shape varies between tries, or whether a sharper or larger picture does better. The 8,032 model and the textured P2.0 model each had to be exported twice; the first export produced no file, and the cause was not found.
 
 ## What could not be done or verified
 
