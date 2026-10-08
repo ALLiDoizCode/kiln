@@ -38,6 +38,8 @@ The earlier notes define mesh, triangle, quad, UV, UV island, PBR, base colour, 
 
 ## Summary
 
+**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9.
+
 ### What was run, and what it cost
 
 - **Phase B, the paid run, did not happen.** `tripo balance` returned `{"balance":0,"frozen":0}` before the preparation and again after it. **Credits spent: 0. Balance before: 0. Balance after: 0.**
@@ -383,6 +385,65 @@ scripts/run_all.sh
 - To make the reference images again: `tools/bl learn/research/tripo-api-trial/scripts/render_reference.py learn/specimens/crate.glb learn/research/tripo-api-trial/images 2048`. It does not give the same bytes twice: two renders of the front picture on this machine had the same size and different checksums (probably the date Blender writes into a PNG; the pixels were not compared). The checksums in `images/SHA256SUMS` are of the files kept here, which are the ones to upload.
 - To prove the defect counter again: `tools/bl .../scripts/make_broken_fixture.py /tmp/broken.glb`, then `tools/bl .../scripts/mesh_defects.py /tmp/broken.glb`, and compare with the numbers in the fixture's first comment.
 - Result links expire within minutes by Tripo's documentation. The CLI downloads at once; do not use `--no-download`.
+
+## 9. The web app run, 2026-10-08
+
+The API wallet stayed at 0 credits, so the owner upgraded to Tripo Studio's Pro plan and the generations were made in the web app (studio.tripo3d.ai), driven through the owner's signed-in browser. This is a different route from sections 2 to 8: same models, but the web app's settings and defaults, no seeds, and no request records. It shows what Tripo's models return; it does not show that the API returns the same.
+
+Every result is one generation from one easy picture (a render of the repo's own crate). These are observations, not rates.
+
+### What was run, and what it cost
+
+All from `images/crate_three_quarter.png` unless noted, with Privacy set to Private. The balance went from 3,010 to 2,845: 165 credits.
+
+| Model file | Web app setting | Credits |
+|---|---|---|
+| `crate_h31_default` | HD Model, H3.1, all defaults | 55 |
+| `crate_p2_tri_req2000`, `req5000`, `req10000`, `req20000` | Smart Mesh, P2.0, Triangle, four polygon counts in one generation | 0 (a free trial; 100 struck through) |
+| `crate_p2_tri_req20000_textured` | the Texture step on the 20,000 model | 20 |
+| `crate_p2_tri_req20000_smartuv` | Smart UV on the same model | 0 (a free trial; 20 struck through) |
+| `crate_p1_tri_req20000` | Smart Mesh, P1.0, Triangle, 20,000 | 35 |
+| `crate_front_h31_default` | HD Model, H3.1, defaults, from `images/crate_front.png` | 55 |
+
+The web app's H3.1 defaults, read from its settings panel: Ultra Mesh Quality on, texture on at 4K, PBR on, Remove Lighting off, Triangle, polycount 2,000,000. P2.0 takes 500 to 50,000 triangles or 500 to 25,000 quads; P1.0 takes 500 to 20,000 triangles only.
+
+### What came back
+
+Defect counts are after welding vertices by position (`scripts/mesh_defects.py`). The measurements are in `measurements/<name>/`; the model files are in `models/`, not in git, with checksums in `measurements/SHA256SUMS`.
+
+| Model | Triangles | File | UVs and textures | Open edges | Non-manifold edges | Zero-area faces | Pieces | Validator errors |
+|---|---|---|---|---|---|---|---|---|
+| H3.1 default | 1,801,451 | 56.8 MB | 190 islands; base colour, metallic-roughness and normal, each 4096 | 2 | 1 | 21 | 1 | 0 |
+| H3.1 default, front picture | 1,931,520 | 59.1 MB | 84 islands; the same three maps | 0 | 0 | 0 | 1 | 0 |
+| P2.0, asked 2,000 | 2,225 | 55 KB | none | 1 | 6 | 0 | 7 | 0 |
+| P2.0, asked 5,000 | 5,854 | 142 KB | none | 0 | 0 | 7 | 9 | 0 |
+| P2.0, asked 10,000 | 9,794 | 237 KB | none | 17 | 18 | 3 | 29 | 0 |
+| P2.0, asked 20,000 | 19,958 | 481 KB | none | 97 | 87 | 58 | 28 | 4 |
+| the same, textured | 19,958 | 3.0 MB | 3,105 islands; base colour only, 4096 | 97 | 87 | 58 | 28 | 2 |
+| the same, Smart UV | 19,958 | 615 KB | 220 islands; no texture | 97 | 87 | 58 | 28 | 1 |
+| P1.0, asked 20,000 | 19,796 | 476 KB | none | 18 | 1 | 0 | 4 | 0 |
+
+Which P2.0 file answers which requested count is matched by nearness; the web app does not label them.
+
+### What it shows
+
+- **The count asked for is roughly the count returned.** P2.0 gave 2,225, 5,854, 9,794 and 19,958 for 2,000, 5,000, 10,000 and 20,000: within 2% at the two higher counts, 11% and 17% over at the two lower. P1.0 gave 19,796 for 20,000. Both 20,000 models pass the pit profile's placeholder `triangle_budget` of 20,000.
+- **P2.0 spends most of its triangles where they do nothing.** In the 20,000 model, 18.5% of the triangles hold 99% of the surface and 72.7% are under a hundredth of the mean area; the large flat faces of the crate are two triangles each. P1.0 at the same count is more even: 55.7% hold 99% and 3.6% are tiny. So for this crate the higher counts bought slivers, and more defects with them.
+- **P2.0 and P1.0 return shape only.** No UVs and no texture until the Texture step, which is a second charge. This agrees with the videos.
+- **The P2.0 texture is the weak part.** It comes as base colour alone (no normal or roughness map), on 3,105 UV islands, and in the review picture it is blurred with light and dark gradients painted in. H3.1's own texture on its 1.8-million-triangle model is clean and has all three maps.
+- **Smart UV does what the video says, at a cost.** The same mesh goes from 3,105 islands to 220, and the vertices stored drop from 22,499 to 11,684. But it removes the texture, so the model must be textured again (20 more credits), and the UV square is less full (60.7% against 72.4%).
+- **H3.1 on defaults is far over budget:** 1.8 million triangles and 57 MB, about 90 times the placeholder budget. It would need the reduce stage. Its mesh is nearly clean.
+- **A strict front picture lost the depth.** From `crate_front.png` Tripo made a slab 0.98 by 0.98 by 0.46 m and named it "brown square picture frame". The three-quarter picture gave a cube. For this object the videos' strict-front advice made things worse; it may hold for characters.
+- **Size and position as delivered:** the largest dimension is about 1 m, the model stands on y = 0 and is centred in x and z. A crate cannot show which way a model faces.
+- **Not every file is valid glTF.** Three of the P2.0 files fail the validator (zero-length normals, wrong accessor minimums). The H3.1 and P1.0 files pass.
+
+### What it does not show
+
+- Anything through the API: seeds, repeatability, `delight`, the newer texture model, request records.
+- A harder object, a second picture of the same object, or a second run of any setting.
+- Which way Tripo faces a model.
+- Texturing the Smart UV model, P1.0 textured, or P2.0 quads.
+- Whether Tripo's terms allow an assistant to drive the web app: the terms page refused the request (HTTP 403) and was not read. The run was a handful of generations at a person's pace in the owner's own account.
 
 ## What could not be done or verified
 

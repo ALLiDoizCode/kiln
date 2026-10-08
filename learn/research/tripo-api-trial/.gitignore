@@ -1,0 +1,9 @@
+# The review and wireframe pictures of each model are large and can be made again with
+# scripts/measure_model.sh; only the ones worth showing are kept in git.
+measurements/**/*.png
+!measurements/crate_h31_default/review/three_quarter.png
+!measurements/crate_p2_tri_req20000_textured/review/three_quarter.png
+!measurements/crate_p2_tri_req20000/wire/crate_p2_tri_req20000_wire_three_quarter.png
+!measurements/crate_p1_tri_req20000/wire/crate_p1_tri_req20000_wire_three_quarter.png
+# A reference picture that is someone else's artwork: used for a private test, never committed.
+images/orb_piercer_square.webp

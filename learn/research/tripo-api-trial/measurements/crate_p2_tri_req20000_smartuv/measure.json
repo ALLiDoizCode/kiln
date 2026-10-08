@@ -1,0 +1,119 @@
+{
+  "file": {
+    "path": "learn/research/tripo-api-trial/models/crate_p2_tri_req20000_smartuv.glb",
+    "bytes": 614928,
+    "gltf_version": "2.0",
+    "generator": "Tripo",
+    "extensions_used": [
+      "KHR_materials_volume",
+      "FB_ngon_encoding"
+    ]
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 19958,
+    "vertices": 11684,
+    "materials": 1,
+    "textures": 0
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "Mesh_0",
+      "placed": 1,
+      "triangles": 19958,
+      "vertices": 11684,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "Material_tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09",
+          "triangles": 19958,
+          "vertices": 11684,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "NORMAL",
+            "POSITION",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.49975594878196716,
+      0.0,
+      -0.49975594878196716
+    ],
+    "max": [
+      0.49975594878196716,
+      0.9995118379592896,
+      0.49975594878196716
+    ],
+    "dimensions": [
+      0.9995118975639343,
+      0.9995118379592896,
+      0.9995118975639343
+    ],
+    "largest_dimension": 0.9995118975639343
+  },
+  "size": {
+    "in_file": 0.9995118975639343,
+    "given": 0.8,
+    "scale_factor": 0.8003906726371185
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "Material_tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09",
+      "textures": {}
+    }
+  ],
+  "textures": [],
+  "uvs": {
+    "triangles": 19958,
+    "islands": 220,
+    "edges": 29930,
+    "seam_edges": 1418,
+    "open_edges": 97,
+    "seam_share": 0.04737721349816238,
+    "coverage": 0.6071310043334961,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.6073036344117312,
+    "triangles_outside_square": 0,
+    "triangles_without_area": 0
+  },
+  "texel_density": null,
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 1,
+    "warnings": 0,
+    "infos": 2,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "info",
+        "code": "UNSUPPORTED_EXTENSION",
+        "message": "Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.",
+        "pointer": "/extensionsUsed/1"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      },
+      {
+        "severity": "error",
+        "code": "ACCESSOR_MIN_MISMATCH",
+        "message": "Declared minimum value for this component (0.0) does not match actual minimum (0.08624911308288574).",
+        "pointer": "/accessors/2/min/1"
+      }
+    ]
+  },
+  "notes": []
+}

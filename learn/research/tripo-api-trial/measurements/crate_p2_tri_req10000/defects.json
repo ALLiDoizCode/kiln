@@ -1,0 +1,256 @@
+{
+  "file": "learn/research/tripo-api-trial/models/crate_p2_tri_req10000.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "tripo_node_49f0a4f0-7c1c-405a-9d5c-e7faf631ace8",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "material"
+      ],
+      "uv_layers": [],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 9685,
+      "flat_faces": 109,
+      "as_imported": {
+        "vertices": 4949,
+        "edges": 14683,
+        "faces": 9794,
+        "triangles": 9794,
+        "face_sides": {
+          "3": 9794,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 17,
+        "non_manifold_edges": 18,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 21,
+        "degenerate_faces": 3,
+        "zero_length_edges": 0,
+        "boundary_loops": 5,
+        "pieces": 29,
+        "piece_triangles_largest_first": [
+          4458,
+          628,
+          425,
+          423,
+          422,
+          316,
+          316,
+          224,
+          224,
+          220,
+          218,
+          216,
+          216,
+          216,
+          214,
+          184,
+          108,
+          90,
+          90,
+          76
+        ],
+        "small_pieces": 12,
+        "small_piece_triangles": 766
+      },
+      "welded": {
+        "vertices": 4949,
+        "edges": 14683,
+        "faces": 9794,
+        "triangles": 9794,
+        "face_sides": {
+          "3": 9794,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 17,
+        "non_manifold_edges": 18,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 21,
+        "degenerate_faces": 3,
+        "zero_length_edges": 0,
+        "boundary_loops": 5,
+        "pieces": 29,
+        "piece_triangles_largest_first": [
+          4458,
+          628,
+          425,
+          423,
+          422,
+          316,
+          316,
+          224,
+          224,
+          220,
+          218,
+          216,
+          216,
+          216,
+          214,
+          184,
+          108,
+          90,
+          90,
+          76
+        ],
+        "small_pieces": 12,
+        "small_piece_triangles": 766
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 4949,
+    "edges": 14683,
+    "faces": 9794,
+    "triangles": 9794,
+    "face_sides": {
+      "3": 9794,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 17,
+    "non_manifold_edges": 18,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 21,
+    "degenerate_faces": 3,
+    "zero_length_edges": 0,
+    "boundary_loops": 5,
+    "pieces": 29,
+    "piece_triangles_largest_first": [
+      4458,
+      628,
+      425,
+      423,
+      422,
+      316,
+      316,
+      224,
+      224,
+      220,
+      218,
+      216,
+      216,
+      216,
+      214,
+      184,
+      108,
+      90,
+      90,
+      76
+    ],
+    "small_pieces": 12,
+    "small_piece_triangles": 766
+  },
+  "welded": {
+    "vertices": 4949,
+    "edges": 14683,
+    "faces": 9794,
+    "triangles": 9794,
+    "face_sides": {
+      "3": 9794,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 17,
+    "non_manifold_edges": 18,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 21,
+    "degenerate_faces": 3,
+    "zero_length_edges": 0,
+    "boundary_loops": 5,
+    "pieces": 29,
+    "piece_triangles_largest_first": [
+      4458,
+      628,
+      425,
+      423,
+      422,
+      316,
+      316,
+      224,
+      224,
+      220,
+      218,
+      216,
+      216,
+      216,
+      214,
+      184,
+      108,
+      90,
+      90,
+      76
+    ],
+    "small_pieces": 12,
+    "small_piece_triangles": 766
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.499756,
+      -0.499756,
+      0.0
+    ],
+    "max": [
+      0.499756,
+      0.499756,
+      0.999512
+    ],
+    "dimensions": [
+      0.999512,
+      0.999512,
+      0.999512
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.499756,
+      0.0,
+      -0.499756
+    ],
+    "max": [
+      0.499756,
+      0.999512,
+      0.499756
+    ],
+    "dimensions": [
+      0.999512,
+      0.999512,
+      0.999512
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.499756
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "material"
+  ],
+  "images": []
+}

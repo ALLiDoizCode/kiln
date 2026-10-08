@@ -1,0 +1,94 @@
+{
+  "file": {
+    "path": "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+    "bytes": 476416,
+    "gltf_version": "2.0",
+    "generator": "Tripo",
+    "extensions_used": [
+      "KHR_materials_volume",
+      "FB_ngon_encoding"
+    ]
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 19796,
+    "vertices": 9904,
+    "materials": 1,
+    "textures": 0
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 19796,
+      "vertices": 9904,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "material",
+          "triangles": 19796,
+          "vertices": 9904,
+          "indexed": true,
+          "has_uvs": false,
+          "attributes": [
+            "NORMAL",
+            "POSITION"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.49902352690696716,
+      0.0,
+      -0.49902352690696716
+    ],
+    "max": [
+      0.49902352690696716,
+      0.9980469942092896,
+      0.49902352690696716
+    ],
+    "dimensions": [
+      0.9980470538139343,
+      0.9980469942092896,
+      0.9980470538139343
+    ],
+    "largest_dimension": 0.9980470538139343
+  },
+  "size": {
+    "in_file": 0.9980470538139343,
+    "given": 0.8,
+    "scale_factor": 0.8015654141183847
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "material",
+      "textures": {}
+    }
+  ],
+  "textures": [],
+  "uvs": null,
+  "texel_density": null,
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 0,
+    "infos": 1,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "info",
+        "code": "UNSUPPORTED_EXTENSION",
+        "message": "Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.",
+        "pointer": "/extensionsUsed/1"
+      }
+    ]
+  },
+  "notes": []
+}

@@ -1,0 +1,213 @@
+{
+  "file": "learn/research/tripo-api-trial/models/crate_front_h31_default.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "tripo_node_f6e4d839-520d-4fd6-8e4a-82ff2b2db9c3",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "tripo_material_f6e4d839-520d-4fd6-8e4a-82ff2b2db9c3"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 658151,
+      "flat_faces": 1273369,
+      "as_imported": {
+        "vertices": 965762,
+        "edges": 2897280,
+        "faces": 1931520,
+        "triangles": 1931520,
+        "face_sides": {
+          "3": 1931520,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 22,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          1931520
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      },
+      "welded": {
+        "vertices": 965762,
+        "edges": 2897280,
+        "faces": 1931520,
+        "triangles": 1931520,
+        "face_sides": {
+          "3": 1931520,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 22,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          1931520
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 965762,
+    "edges": 2897280,
+    "faces": 1931520,
+    "triangles": 1931520,
+    "face_sides": {
+      "3": 1931520,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 22,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      1931520
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "welded": {
+    "vertices": 965762,
+    "edges": 2897280,
+    "faces": 1931520,
+    "triangles": 1931520,
+    "face_sides": {
+      "3": 1931520,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 22,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      1931520
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.490326,
+      -0.23056,
+      0.0
+    ],
+    "max": [
+      0.490326,
+      0.23056,
+      0.979034
+    ],
+    "dimensions": [
+      0.980652,
+      0.461121,
+      0.979034
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.490326,
+      0.0,
+      -0.23056
+    ],
+    "max": [
+      0.490326,
+      0.979034,
+      0.23056
+    ],
+    "dimensions": [
+      0.980652,
+      0.979034,
+      0.461121
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.489517
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "tripo_material_f6e4d839-520d-4fd6-8e4a-82ff2b2db9c3"
+  ],
+  "images": [
+    {
+      "name": "crate_front_h31_default_basecolor.jpg",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "crate_front_h31_default_normal.png",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "crate_front_h31_default_rm.jpg",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

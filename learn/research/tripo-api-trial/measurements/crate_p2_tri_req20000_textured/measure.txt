@@ -1,0 +1,42 @@
+learn/research/tripo-api-trial/models/crate_p2_tri_req20000_textured.glb
+  2,966,532 bytes, glTF 2.0, written by Tripo
+  extensions used: KHR_materials_volume, FB_ngon_encoding
+
+COUNTS
+  triangles        19,958   what the graphics card draws
+  vertices         22,499   rows stored in the file; a point on the surface is stored again wherever its normal or UV changes
+  mesh 0 "meshes[0]": 19,958 triangles, 22,499 vertices
+    primitive 0: 19,958 triangles, 22,499 vertices, material "tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09_material", indexed, has UVs
+
+BOUNDING BOX   the smallest upright box that holds the model as the scene places it, in metres
+  x     -0.4998 to 0.4998     = 0.9995 m
+  y           0 to 0.9995     = 0.9995 m
+  z     -0.4998 to 0.4998     = 0.9995 m
+  size in file  0.9995 m   the largest of the three dimensions
+  size given    0.8 m   so the model must be scaled by 0.8004
+
+MATERIALS   1; each one is a separate draw
+  0  "tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09_material"  baseColorTexture = texture 0
+
+TEXTURES   1 image(s) stored in the file
+  0  "crate_p2_tri_req20000_textured_basecolor.jpg"  4096 x 4096 pixels, jpeg, 2,005,285 bytes
+       used as baseColorTexture of tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09_material
+
+UVS   how the surface is laid flat on the texture
+  islands          3,105   separate pieces the surface is cut into
+  seam edges       9,637   of 29,930 edges = 32.2%; an edge where the surface is joined but the UVs are cut
+  open edges          97   edges with a triangle on one side only: holes or rims in the surface, not seams
+  coverage         72.4%   share of the UV square under at least one triangle; the rest of the texture is unused
+  area sum         73.0%   UV triangle areas added up; more than coverage means triangles overlap or lie outside the square
+
+TEXEL DENSITY   base colour texture pixels per metre of surface
+  at size 0.8 m
+  overall      1379.9 px/m   over the whole textured surface
+  spread       1298.2 to 1427.7 px/m   the middle 90% of the surface; median 1415.7
+  mesh 0 primitive 0: 1379.9 px/m from texture 0 (4096 x 4096)
+
+KHRONOS GLTF VALIDATOR   whether the file obeys the glTF format
+  2 errors, 0 warnings, 1 infos, 0 hints   (validator 2.0.0-dev.3.10)
+  info: Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.  [UNSUPPORTED_EXTENSION at /extensionsUsed/1]
+  error: Declared minimum value for this component (0.0) does not match actual minimum (0.000732421875).  [ACCESSOR_MIN_MISMATCH at /accessors/2/min/0]
+  error: Declared minimum value for this component (0.0) does not match actual minimum (0.000732421875).  [ACCESSOR_MIN_MISMATCH at /accessors/2/min/1]

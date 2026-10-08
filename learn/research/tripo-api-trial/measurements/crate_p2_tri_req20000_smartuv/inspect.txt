@@ -1,0 +1,11 @@
+learn/research/tripo-api-trial/models/crate_p2_tri_req20000_smartuv.glb  (glTF 2, generator: Tripo)
+
+mesh "Mesh_0"
+  primitive 0
+    POSITION    VEC3  x 11684
+    NORMAL      VEC3  x 11684
+    TEXCOORD_0  VEC2  x 11684
+    indices     59874  = 19958 triangles
+    material    "Material_tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09"  textures: none
+
+1 mesh(es), 1 material(s), 0 image(s)

@@ -1,0 +1,11 @@
+learn/research/tripo-api-trial/models/crate_front_h31_default.glb  (glTF 2, generator: Tripo)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 982134
+    NORMAL      VEC3  x 982134
+    TEXCOORD_0  VEC2  x 982134
+    indices     5794560  = 1931520 triangles
+    material    "tripo_material_f6e4d839-520d-4fd6-8e4a-82ff2b2db9c3"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

@@ -1,0 +1,10 @@
+15:21:51 | INFO: Data are loaded, start creating Blender stuff
+15:21:51 | INFO: Blender create Mesh node meshes[0]
+15:21:54 | INFO: glTF import finished in 3.54s
+learn/research/tripo-api-trial/scripts/render_untextured.py:30: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  clay.use_nodes = True
+learn/research/tripo-api-trial/scripts/render_untextured.py:68: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+WIRE learn/research/tripo-api-trial/measurements/crate_h31_default/wire/crate_h31_default_wire_three_quarter.png
+WIRE learn/research/tripo-api-trial/measurements/crate_h31_default/wire/crate_h31_default_wire_back.png
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

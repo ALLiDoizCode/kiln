@@ -1,0 +1,204 @@
+{
+  "file": "learn/research/tripo-api-trial/models/crate_p2_tri_req2000.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "tripo_node_ae45d091-4322-4706-91f7-592596c5f4c4",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "material"
+      ],
+      "uv_layers": [],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 2225,
+      "flat_faces": 0,
+      "as_imported": {
+        "vertices": 1119,
+        "edges": 3335,
+        "faces": 2225,
+        "triangles": 2225,
+        "face_sides": {
+          "3": 2225,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 1,
+        "non_manifold_edges": 6,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 1,
+        "pieces": 7,
+        "piece_triangles_largest_first": [
+          920,
+          702,
+          401,
+          116,
+          32,
+          32,
+          22
+        ],
+        "small_pieces": 1,
+        "small_piece_triangles": 22
+      },
+      "welded": {
+        "vertices": 1119,
+        "edges": 3335,
+        "faces": 2225,
+        "triangles": 2225,
+        "face_sides": {
+          "3": 2225,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 1,
+        "non_manifold_edges": 6,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 1,
+        "pieces": 7,
+        "piece_triangles_largest_first": [
+          920,
+          702,
+          401,
+          116,
+          32,
+          32,
+          22
+        ],
+        "small_pieces": 1,
+        "small_piece_triangles": 22
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 1119,
+    "edges": 3335,
+    "faces": 2225,
+    "triangles": 2225,
+    "face_sides": {
+      "3": 2225,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 1,
+    "non_manifold_edges": 6,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 1,
+    "pieces": 7,
+    "piece_triangles_largest_first": [
+      920,
+      702,
+      401,
+      116,
+      32,
+      32,
+      22
+    ],
+    "small_pieces": 1,
+    "small_piece_triangles": 22
+  },
+  "welded": {
+    "vertices": 1119,
+    "edges": 3335,
+    "faces": 2225,
+    "triangles": 2225,
+    "face_sides": {
+      "3": 2225,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 1,
+    "non_manifold_edges": 6,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 1,
+    "pieces": 7,
+    "piece_triangles_largest_first": [
+      920,
+      702,
+      401,
+      116,
+      32,
+      32,
+      22
+    ],
+    "small_pieces": 1,
+    "small_piece_triangles": 22
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.477295,
+      -0.499756,
+      0.0
+    ],
+    "max": [
+      0.477295,
+      0.499756,
+      0.958496
+    ],
+    "dimensions": [
+      0.95459,
+      0.999512,
+      0.958496
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.477295,
+      0.0,
+      -0.499756
+    ],
+    "max": [
+      0.477295,
+      0.958496,
+      0.499756
+    ],
+    "dimensions": [
+      0.95459,
+      0.958496,
+      0.999512
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.479248
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "material"
+  ],
+  "images": []
+}
