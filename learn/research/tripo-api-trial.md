@@ -38,7 +38,7 @@ The earlier notes define mesh, triangle, quad, UV, UV island, PBR, base colour, 
 
 ## Summary
 
-**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9, and a second run from a harder picture is in section 10.
+**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9, a second run from a harder picture is in section 10, and H3.1 asked for 20,000 triangles is in section 11.
 
 ### What was run, and what it cost
 
@@ -484,6 +484,38 @@ Same route and same limits as section 9: the web app, Privacy set to Private, on
 ### What it does not show
 
 One picture, one generation per setting. Nothing here says how often a generation fails, how much the shape varies between tries, or whether a sharper or larger picture does better. The 8,032 model and the textured P2.0 model each had to be exported twice; the first export produced no file, and the cause was not found.
+
+## 11. H3.1 asked for 20,000 triangles, 2026-10-08
+
+Sections 9 and 10 ran H3.1 only at the web app's default polycount of 2,000,000. This run sets its polycount to 20,000, the pit profile's placeholder `triangle_budget`, and leaves every other default alone (Ultra Mesh Quality on, texture on at 4K, PBR on, Remove Lighting off, Triangle). One generation from each picture, Privacy set to Private. The price did not change: 55 credits each, 110 in all, and the balance went from 2,715 to 2,605.
+
+### What came back
+
+| | Crate, H3.1 at 20,000 | Creature, H3.1 at 20,000 | For comparison: creature, P1.0 textured | Creature, P2.0 textured |
+|---|---|---|---|---|
+| Triangles | 17,080 | 19,007 | 18,438 | 20,389 |
+| File | 6.2 MB | 9.9 MB | 4.3 MB | 4.4 MB |
+| Maps, each 4096 | base colour, metallic-roughness, normal | base colour, metallic-roughness, normal | base colour only | base colour only |
+| UV islands | 73 | 718 | 4,893 | 4,208 |
+| UV square used | 62.3% | 49.9% | 41.5% | 39.7% |
+| Open edges | 8 | 2 | 157 | 1,169 |
+| Non-manifold edges | 4 | 2 | 20 | 12 |
+| Pieces | 1 | 1 | 157 | 236 |
+| Validator errors | 0 | 0 | 2 | 2 |
+| Credits | 55 | 55 | 35 + 20 | 100 + 20 |
+
+### What it shows
+
+- **One step gives a textured model inside the budget.** Both files are under 20,000 triangles, are a single piece, carry all three maps, and pass the glTF validator. This is the only Tripo setting tried that does all four.
+- **The count is a ceiling, not a target.** Asked for 20,000, it gave 17,080 and 19,007: 15% and 5% under.
+- **The creature loses little.** In the review pictures the 19,007-triangle creature is hard to tell from the 1.95-million-triangle one of section 10, at the distance those pictures are taken from. The spikes are part of the one surface, not loose shells as in P1.0 and P2.0.
+- **The crate shows the cost.** Its edges are slightly wavy and the texture is smudged along them, where the 1.8-million-triangle crate of section 9 had straight edges and a clean texture. The wireframe shows why: the triangles are spread evenly over the whole surface, flat panels included, instead of being kept for the edges. A hard-edged, flat-sided object is the worst case for this, and a person modelling a crate would use a few dozen triangles.
+- **A few defects remain** (8 and 2 open edges, 4 and 2 non-manifold edges), far fewer than in the low-poly models.
+- **It costs no more than the alternatives:** 55 credits, against 55 for P1.0 with texture and 120 for P2.0 with texture.
+
+### What it does not show
+
+Two generations. The same limits as sections 9 and 10 apply: no seeds, nothing through the API, no second try of either picture. Lower counts (5,000, 2,000) were not tried, nor were quads or the 2K texture setting. Whether Blender can make a better 20,000-triangle model from the dense H3.1 file than Tripo does here is the subject of `blender-stages-trial.md`.
 
 ## What could not be done or verified
 

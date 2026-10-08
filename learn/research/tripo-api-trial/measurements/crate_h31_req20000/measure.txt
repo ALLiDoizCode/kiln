@@ -1,0 +1,45 @@
+learn/research/tripo-api-trial/models/crate_h31_req20000.glb
+  6,197,224 bytes, glTF 2.0, written by Tripo
+  extensions used: KHR_materials_volume, FB_ngon_encoding
+
+COUNTS
+  triangles        17,080   what the graphics card draws
+  vertices         10,219   rows stored in the file; a point on the surface is stored again wherever its normal or UV changes
+  mesh 0 "meshes[0]": 17,080 triangles, 10,219 vertices
+    primitive 0: 17,080 triangles, 10,219 vertices, material "tripo_material_ede48c01-cd1f-4b49-b024-408f36fa9901", indexed, has UVs
+
+BOUNDING BOX   the smallest upright box that holds the model as the scene places it, in metres
+  x     -0.4893 to 0.4893     = 0.9787 m
+  y           0 to 0.9428     = 0.9428 m
+  z     -0.4837 to 0.4837     = 0.9674 m
+  size in file  0.9787 m   the largest of the three dimensions
+  size given    0.8 m   so the model must be scaled by 0.8174
+
+MATERIALS   1; each one is a separate draw
+  0  "tripo_material_ede48c01-cd1f-4b49-b024-408f36fa9901"  baseColorTexture = texture 0, metallicRoughnessTexture = texture 1, normalTexture = texture 2
+
+TEXTURES   3 image(s) stored in the file
+  0  "crate_h31_req20000_basecolor.jpg"  4096 x 4096 pixels, jpeg, 1,362,886 bytes
+       used as baseColorTexture of tripo_material_ede48c01-cd1f-4b49-b024-408f36fa9901
+  1  "crate_h31_req20000_rm.jpg"  4096 x 4096 pixels, jpeg, 1,105,365 bytes
+       used as metallicRoughnessTexture of tripo_material_ede48c01-cd1f-4b49-b024-408f36fa9901
+  2  "crate_h31_req20000_normal.png"  4096 x 4096 pixels, png, 3,195,016 bytes
+       used as normalTexture of tripo_material_ede48c01-cd1f-4b49-b024-408f36fa9901
+
+UVS   how the surface is laid flat on the texture
+  islands             73   separate pieces the surface is cut into
+  seam edges       1,603   of 25,622 edges = 6.3%; an edge where the surface is joined but the UVs are cut
+  open edges           8   edges with a triangle on one side only: holes or rims in the surface, not seams
+  coverage         62.3%   share of the UV square under at least one triangle; the rest of the texture is unused
+  area sum         62.2%   UV triangle areas added up; more than coverage means triangles overlap or lie outside the square
+
+TEXEL DENSITY   base colour texture pixels per metre of surface
+  at size 0.8 m
+  overall      1544.1 px/m   over the whole textured surface
+  spread       1213.1 to 1861.2 px/m   the middle 90% of the surface; median 1530.8
+  mesh 0 primitive 0: 1544.1 px/m from texture 0 (4096 x 4096)
+
+KHRONOS GLTF VALIDATOR   whether the file obeys the glTF format
+  0 errors, 1 warnings, 1 infos, 0 hints   (validator 2.0.0-dev.3.10)
+  info: Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.  [UNSUPPORTED_EXTENSION at /extensionsUsed/1]
+  warning: Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.  [MESH_PRIMITIVE_GENERATED_TANGENT_SPACE at /meshes/0/primitives/0/material]
