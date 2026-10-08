@@ -38,7 +38,7 @@ The earlier notes define mesh, triangle, quad, UV, UV island, PBR, base colour, 
 
 ## Summary
 
-**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9, a second run from a harder picture is in section 10, and H3.1 asked for 20,000 triangles is in section 11.
+**Added later on 2026-10-08:** the API trial below still has not run, but seven generations were made in Tripo's web app on a Pro plan and measured with the same scripts. Those results are in section 9, a second run from a harder picture is in section 10, H3.1 asked for 20,000 triangles is in section 11, and a spiked state, a skeleton and smooth bodies for the creature are in section 12.
 
 ### What was run, and what it cost
 
@@ -516,6 +516,41 @@ Sections 9 and 10 ran H3.1 only at the web app's default polycount of 2,000,000.
 ### What it does not show
 
 Two generations. The same limits as sections 9 and 10 apply: no seeds, nothing through the API, no second try of either picture. Lower counts (5,000, 2,000) were not tried, nor were quads or the 2K texture setting. Whether Blender can make a better 20,000-triangle model from the dense H3.1 file than Tripo does here is the subject of `blender-stages-trial.md`.
+
+## 12. The creature again: a spiked state, a skeleton, and smooth bodies, 2026-10-08
+
+Three further web app runs on the creature, made while looking ahead at animation and fur (`fur-animation-trial.md`). Same route and limits as sections 9 to 11. The balance went from 2,605 to 2,420: 185 credits.
+
+| Model file | What was done | Credits |
+|---|---|---|
+| `orb_spiked_h31_req20000` | H3.1 at 20,000 from a greyscale drawing of the creature with its spikes raised (`images/orb_spiked_860.webp`, 860 by 860) | 55 |
+| `orb_h31_req20000_rigged_walk`, `orb_h31_req20000_walk2`, `orb_h31_req20000_walk2_fbx/` | Auto Rig, type "Other", on the calm model of section 11, then the "Walk" preset, exported as GLB twice and as FBX | 20 (the preset was free) |
+| `images/orb_smooth_lowpoly_render.png`, `images/orb_smooth_flat_drawing.png` | Tripo's image tool (model "Nano Banana"), given the calm drawing and a prompt asking for the same creature with no spikes, smooth simplified shapes and flat colour areas; four pictures, two kept | 0 (4 of 100 free images) |
+| `orb_smooth_lowpoly_h31_req5000` | H3.1 at 5,000 from the first of those pictures | 55 |
+| `orb_smooth_midpoly_h31_req10000` | H3.1 at 10,000 from the second | 55 |
+
+### What came back
+
+| Model | Triangles | File | UV islands | Open edges | Non-manifold edges | Pieces | Validator errors |
+|---|---|---|---|---|---|---|---|
+| Spiked, H3.1 at 20,000 | 19,188 | 10.4 MB | 2,299 | 19 | 21 | 1 | 0 |
+| Smooth, H3.1 at 5,000 | 4,793 | 5.3 MB | 43 | 1 | 2 | 1 | 0 |
+| Smooth, H3.1 at 10,000 | 9,608 | 5.9 MB | 68 | 0 | 0 | 1 | 0 |
+
+All three carry base colour, metallic-roughness and normal maps at 4096.
+
+### What it shows
+
+- **The spiked model is a different animal.** It is recognisably the same design with long spikes, but 19% wider than the calm model (0.872 against 0.735), posed head down as drawn, grey because the drawing is grey, and a separate mesh. Two generations cannot be blended into each other.
+- **Tripo rigged a four-legged creature in one step, and the result did not survive export.** In the web viewer the skeleton has bones down each leg, along the spine and up the tail, and the walk preset visibly moved the creature. Neither GLB export nor the FBX export contains an animation. The two GLB files have skins of 11 and 9 joints; the FBX has 27 bones but only 7 weighted groups. `fur-animation-trial.md` looks at the weights: in the GLB files every vertex is bound to one bone, and in the FBX bending a leg bone moves nothing.
+- **A picture redrawn without spikes gives a much cleaner model.** The two smooth bodies are one piece with 0 to 1 open edges and 43 to 68 UV islands, against 718 islands for the calm creature of section 11. The 10,000 one has no defects at all. Asking for 5,000 and 10,000 gave 4,793 and 9,608.
+- **The image step cost nothing and did what was asked** in two of four pictures; the other two were a second faceted render and a drawing that kept rough fur edges.
+
+### What went wrong on the way
+
+- The web app remembered FBX as the export format after the rig test, so the two smooth models first came down as FBX archives (kept in `models/fbx/`) and were exported again as GLB.
+- The first rigged GLB export produced no file, as two exports did in section 10.
+- The page moved to its Rigging panel by itself once, after a generation was started; nothing was charged there.
 
 ## What could not be done or verified
 

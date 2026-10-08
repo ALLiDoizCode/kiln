@@ -1,7 +1,4 @@
-# Model files made on free credits are measurement specimens only: never committed.
+# Model files, and the textures unpacked beside them, are measurement specimens only: never committed.
 # Their SHA-256 checksums are in ../measurements/.
-*.glb
-*.gltf
-*.fbx
-*.bin
-*.zip
+*
+!.gitignore

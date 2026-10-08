@@ -1,0 +1,16 @@
+# Scratch project of learn/research/rust-fur-crates.md. Only `cargo check` is run here:
+# it answers "do these crates compile against Bevy 0.19.1 with kiln's features", nothing more.
+# Not part of the kiln workspace (the empty [workspace] table keeps it out).
+[package]
+name = "rust_fur_crates_scratch"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+# The same pin and features as crates/asset_view, minus the texture formats.
+bevy = { version = "=0.19.1", default-features = false, features = ["3d"] }
+bevy_vrm1 = "=0.10.0"
+bevy_eidolon = "=0.5.0"

@@ -1,0 +1,11 @@
+learn/research/tripo-api-trial/models/orb_smooth_lowpoly_h31_req5000.glb  (glTF 2, generator: Tripo)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 3124
+    NORMAL      VEC3  x 3124
+    TEXCOORD_0  VEC2  x 3124
+    indices     14379  = 4793 triangles
+    material    "tripo_material_5992d157-7dda-49cf-8b77-97f3cc45d0df"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

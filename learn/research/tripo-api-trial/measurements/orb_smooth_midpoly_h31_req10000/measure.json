@@ -1,0 +1,173 @@
+{
+  "file": {
+    "path": "learn/research/tripo-api-trial/models/orb_smooth_midpoly_h31_req10000.glb",
+    "bytes": 5904264,
+    "gltf_version": "2.0",
+    "generator": "Tripo",
+    "extensions_used": [
+      "KHR_materials_volume",
+      "FB_ngon_encoding"
+    ]
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 9608,
+    "vertices": 6010,
+    "materials": 1,
+    "textures": 3
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 9608,
+      "vertices": 6010,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "tripo_material_3ff2eb21-179f-46f4-aef2-b96eb58bf1db",
+          "triangles": 9608,
+          "vertices": 6010,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "NORMAL",
+            "POSITION",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.33380126953125,
+      0.0,
+      -0.4830169677734375
+    ],
+    "max": [
+      0.33380126953125,
+      0.97882080078125,
+      0.4830169677734375
+    ],
+    "dimensions": [
+      0.6676025390625,
+      0.97882080078125,
+      0.966033935546875
+    ],
+    "largest_dimension": 0.97882080078125
+  },
+  "size": {
+    "in_file": 0.97882080078125,
+    "given": 0.8,
+    "scale_factor": 0.817309970692773
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "tripo_material_3ff2eb21-179f-46f4-aef2-b96eb58bf1db",
+      "textures": {
+        "baseColorTexture": 0,
+        "metallicRoughnessTexture": 1,
+        "normalTexture": 2
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "orb_smooth_midpoly_h31_req10000_basecolor.jpg",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 1400636,
+      "used_as": [
+        "baseColorTexture of tripo_material_3ff2eb21-179f-46f4-aef2-b96eb58bf1db"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "orb_smooth_midpoly_h31_req10000_rm.jpg",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 1229035,
+      "used_as": [
+        "metallicRoughnessTexture of tripo_material_3ff2eb21-179f-46f4-aef2-b96eb58bf1db"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "orb_smooth_midpoly_h31_req10000_normal.png",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 2964872,
+      "used_as": [
+        "normalTexture of tripo_material_3ff2eb21-179f-46f4-aef2-b96eb58bf1db"
+      ]
+    }
+  ],
+  "uvs": {
+    "triangles": 9608,
+    "islands": 68,
+    "edges": 14412,
+    "seam_edges": 1138,
+    "open_edges": 0,
+    "seam_share": 0.07896197613100195,
+    "coverage": 0.6140060424804688,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.6137247681617737,
+    "triangles_outside_square": 0,
+    "triangles_without_area": 0
+  },
+  "texel_density": {
+    "size": 0.8,
+    "pixels_per_metre": 2608.9503449999825,
+    "p05": 1609.8237564539197,
+    "median": 2496.1025174845927,
+    "p95": 3718.8298787736217,
+    "surface_area": 1.5127317408291245,
+    "by_primitive": [
+      {
+        "node": 0,
+        "mesh": 0,
+        "primitive": 0,
+        "material": 0,
+        "texture": 0,
+        "texture_pixels": [
+          4096,
+          4096
+        ],
+        "surface_area": 1.5127317408291245,
+        "pixels_per_metre": 2608.9503449999825
+      }
+    ]
+  },
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 1,
+    "infos": 1,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "info",
+        "code": "UNSUPPORTED_EXTENSION",
+        "message": "Cannot validate an extension as it is not supported by the validator: 'FB_ngon_encoding'.",
+        "pointer": "/extensionsUsed/1"
+      },
+      {
+        "severity": "warning",
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "pointer": "/meshes/0/primitives/0/material"
+      }
+    ]
+  },
+  "notes": []
+}

@@ -6,7 +6,10 @@ measurements/**/*.png
 !measurements/crate_p2_tri_req20000/wire/crate_p2_tri_req20000_wire_three_quarter.png
 !measurements/crate_p1_tri_req20000/wire/crate_p1_tri_req20000_wire_three_quarter.png
 # A reference picture that is someone else's artwork: used for a private test, never committed.
-images/orb_piercer_square.webp
+images/orb_*
 # Pictures of models made from that artwork are not committed either.
 measurements/orb_*/review/
 measurements/orb_*/wire/
+# The same for the creature models made by the Blender stages trial (../blender-stages-trial.md).
+measurements/stages_orb_*/review/
+measurements/stages_orb_*/wire/
