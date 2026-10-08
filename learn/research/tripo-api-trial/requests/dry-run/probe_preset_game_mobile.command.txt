@@ -1,0 +1,2 @@
+tripo make images/crate_three_quarter.png --for game-mobile --dry-run --json
+exit 0

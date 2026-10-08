@@ -1,0 +1,51 @@
+learn/research/local-generator-trial/models/crate_r2_lowpoly.glb
+  17,845,696 bytes, glTF 2.0, written by Khronos glTF Blender I/O v5.2.40
+
+COUNTS
+  triangles        19,996   what the graphics card draws
+  vertices         13,956   rows stored in the file; a point on the surface is stored again wherever its normal or UV changes
+  mesh 0 "Mesh_0.001": 19,996 triangles, 13,956 vertices
+    primitive 0: 19,996 triangles, 13,956 vertices, material "BakeLow_Export_Mat", indexed, has UVs
+
+BOUNDING BOX   the smallest upright box that holds the model as the scene places it, in metres
+  x      -0.502 to 0.502      = 1.004 m
+  y      -0.502 to 0.502      = 1.004 m
+  z      -0.502 to 0.502      = 1.004 m
+  size in file  1.004 m   the largest of the three dimensions
+  size given    0.8 m   so the model must be scaled by 0.7969
+
+MATERIALS   1; each one is a separate draw
+  0  "BakeLow_Export_Mat"  baseColorTexture = texture 2, metallicRoughnessTexture = texture 3, normalTexture = texture 1, emissiveTexture = texture 0
+
+TEXTURES   4 image(s) stored in the file
+  0  "BakeLow_emission"  4096 x 4096 pixels, png, 304,633 bytes
+       used as emissiveTexture of BakeLow_Export_Mat
+  1  "BakeLow_normal"  4096 x 4096 pixels, png, 11,116,541 bytes
+       used as normalTexture of BakeLow_Export_Mat
+  2  "BakeLow_basecolor"  4096 x 4096 pixels, png, 3,657,544 bytes
+       used as baseColorTexture of BakeLow_Export_Mat
+  3  "BakeLow_metallic-BakeLow_roughness"  4096 x 4096 pixels, png, 848,617 bytes
+       used as metallicRoughnessTexture of BakeLow_Export_Mat
+
+UVS   how the surface is laid flat on the texture
+  islands            116   separate pieces the surface is cut into
+  seam edges       3,245   of 29,994 edges = 10.8%; an edge where the surface is joined but the UVs are cut
+  open edges           0   edges with a triangle on one side only: holes or rims in the surface, not seams
+  coverage         51.6%   share of the UV square under at least one triangle; the rest of the texture is unused
+  area sum         51.5%   UV triangle areas added up; more than coverage means triangles overlap or lie outside the square
+
+TEXEL DENSITY   base colour texture pixels per metre of surface
+  at size 0.8 m
+  overall      1069.8 px/m   over the whole textured surface
+  spread       1074.0 to 1075.9 px/m   the middle 90% of the surface; median 1074.6
+  mesh 0 primitive 0: 1069.8 px/m from texture 2 (4096 x 4096)
+
+KHRONOS GLTF VALIDATOR   whether the file obeys the glTF format
+  0 errors, 0 warnings, 7 infos, 0 hints   (validator 2.0.0-dev.3.10)
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/0]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/1]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/2]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/3]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/4]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/5]
+  info: This object may be unused.  [UNUSED_OBJECT at /accessors/6]

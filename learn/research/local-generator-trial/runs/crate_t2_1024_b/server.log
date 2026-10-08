@@ -1,0 +1,117 @@
+[INFO] got prompt
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_shape_vae_bf16.safetensors']
+[INFO] VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/background_removal/birefnet.safetensors']
+[INFO] Requested to load BiRefNet
+[INFO] Model BiRefNet prepared for dynamic VRAM loading. 419MB Staged. 0 patches attached. Force pre-loaded 268 weights: 4216 KB.
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[INFO] Requested to load DINOv3ViTModel
+[INFO] Model DINOv3ViTModel prepared for dynamic VRAM loading. 579MB Staged. 0 patches attached. Force pre-loaded 146 weights: 584 KB.
+[INFO] Found quantization metadata version 1
+[INFO] Detected mixed precision quantization
+[INFO] Using mixed precision operations
+[INFO] Native ops: int8_tensorwise, convrot_w4a4, w6a8_int8, asym_w4a8_int8 , emulated ops: mxfp8, float8_e4m3fn, float8_e5m2, nvfp4
+[INFO] model weight dtype torch.bfloat16, manual cast: torch.bfloat16
+[INFO] model_type FLOW
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/diffusion_models/trellis_2_int8_convrot.safetensors']
+[INFO] Requested to load Trellis2
+[INFO] Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+[INFO] Requested to load ShapeVae
+[INFO] Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[INFO] Requested to load Trellis2
+[INFO] Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+[INFO] Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[INFO] 0 models unloaded.
+[INFO] Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+[INFO] 0 models unloaded.
+[INFO] Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=39 euler=78
+[LODsmith] OUTPUT CHECK watertight=False winding_consistent=True bodies=39 euler=68
+[INFO] Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_texture_vae_bf16.safetensors']
+[INFO] VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[INFO] Requested to load Trellis2
+[INFO] Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+[INFO] Requested to load TextureVae
+[INFO] 0 models unloaded.
+[INFO] Model TextureVae prepared for dynamic VRAM loading. 137MB Staged. 0 patches attached. Force pre-loaded 154 weights: 785704 KB.
+unwrap: ortho checks: 0chart [00:00, ?chart/s]                                              unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/71642 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 35821/71642 [00:00<00:00, 41575.39chart/s]unwrap: pack:  56%|█████▌    | 40173/71642 [00:04<00:04, 6363.
+[WARNING] [WTiVo Fast Merge] Native C++ DLL not found; using Python fallback (slow / mostly single-core). Run build_windows.bat to enable the multithreaded native path.
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 initial_render_topology=False vertices=20,216 faces=18,551 render_bad_edges=18837 render_bad_fans=0
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 has render-vertex attribute seams; TEXTURE_SAFE mode will preserve them and only weld POSITION for the geometry test.
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=1 distance=0.0001 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->18,444 render_bad_edges=18830 render_bad_fans=0 geometric_bad_edges=951 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=2 distance=0.0002 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->17,688 render_bad_edges=18790 render_bad_fans=0 geometric_bad_edges=1336 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=3 distance=0.0003 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->16,716 render_bad_edges=18740 render_bad_fans=0 geometric_bad_edges=1815 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=4 distance=0.0004 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->15,876 render_bad_edges=18630 render_bad_fans=0 geometric_bad_edges=2151 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=5 distance=0.0005 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14,976 render_bad_edges=18378 render_bad_fans=0 geometric_bad_edges=2364 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=6 distance=0.0006 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14,156 render_bad_edges=18110 render_bad_fans=0 geometric_bad_edges=2578 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=7 distance=0.0007 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->13,378 render_bad_edges=17764 render_bad_fans=0 geometric_bad_edges=2685 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=8 distance=0.0008 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->12,545 render_bad_edges=17391 render_bad_fans=0 geometric_bad_edges=2742 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=9 distance=0.0009 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->11,684 render_bad_edges=16872 render_bad_fans=0 geometric_bad_edges=2670 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=10 distance=0.001 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->10,880 render_bad_edges=16262 render_bad_fans=0 geometric_bad_edges=2596 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=11 distance=0.0011 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->9,996 render_bad_edges=15528 render_bad_fans=0 geometric_bad_edges=2447 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=12 distance=0.0012 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->9,180 render_bad_edges=14838 render_bad_fans=0 geometric_bad_edges=2277 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=13 distance=0.0013 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->8,467 render_bad_edges=14101 render_bad_fans=0 geometric_bad_edges=2127 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=14 distance=0.0014 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->7,767 render_bad_edges=13327 render_bad_fans=0 geometric_bad_edges=1953 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=15 distance=0.0015 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->7,141 render_bad_edges=12625 render_bad_fans=0 geometric_bad_edges=1822 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=16 distance=0.0016 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->6,454 render_bad_edges=11740 render_bad_fans=0 geometric_bad_edges=1640 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=17 distance=0.0017 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->5,775 render_bad_edges=10859 render_bad_fans=0 geometric_bad_edges=1456 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=18 distance=0.0018 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->5,188 render_bad_edges=10044 render_bad_fans=0 geometric_bad_edges=1303 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=19 distance=0.0019 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->4,598 render_bad_edges=9144 render_bad_fans=0 geometric_bad_edges=1126 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=20 distance=0.002 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->3,917 render_bad_edges=7975 render_bad_fans=0 geometric_bad_edges=948 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=21 distance=0.0021 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->3,364 render_bad_edges=6982 render_bad_fans=0 geometric_bad_edges=781 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=22 distance=0.0022 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,972 render_bad_edges=6280 render_bad_fans=0 geometric_bad_edges=686 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=23 distance=0.0023 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,559 render_bad_edges=5541 render_bad_fans=0 geometric_bad_edges=576 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=24 distance=0.0024 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,307 render_bad_edges=5089 render_bad_fans=0 geometric_bad_edges=503 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=25 distance=0.0025 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,005 render_bad_edges=4505 render_bad_fans=0 geometric_bad_edges=430 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=26 distance=0.0026 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,776 render_bad_edges=4046 render_bad_fans=0 geometric_bad_edges=379 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=27 distance=0.0027 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,545 render_bad_edges=3575 render_bad_fans=0 geometric_bad_edges=323 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=28 distance=0.0028 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,368 render_bad_edges=3178 render_bad_fans=0 geometric_bad_edges=262 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=29 distance=0.0029 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,197 render_bad_edges=2835 render_bad_fans=0 geometric_bad_edges=219 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=30 distance=0.003 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,009 render_bad_edges=2437 render_bad_fans=0 geometric_bad_edges=176 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=31 distance=0.0031 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->875 render_bad_edges=2139 render_bad_fans=0 geometric_bad_edges=151 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=32 distance=0.0032 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->756 render_bad_edges=1866 render_bad_fans=0 geometric_bad_edges=124 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=33 distance=0.0033 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->678 render_bad_edges=1682 render_bad_fans=0 geometric_bad_edges=112 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=34 distance=0.0034 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->582 render_bad_edges=1446 render_bad_fans=0 geometric_bad_edges=96 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=35 distance=0.0035 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->513 render_bad_edges=1315 render_bad_fans=0 geometric_bad_edges=77 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=36 distance=0.0036 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->465 render_bad_edges=1199 render_bad_fans=0 geometric_bad_edges=69 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=37 distance=0.0037 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->406 render_bad_edges=1058 render_bad_fans=0 geometric_bad_edges=53 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=38 distance=0.0038 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->350 render_bad_edges=920 render_bad_fans=0 geometric_bad_edges=47 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=39 distance=0.0039 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->323 render_bad_edges=847 render_bad_fans=0 geometric_bad_edges=43 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=40 distance=0.004 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->290 render_bad_edges=772 render_bad_fans=0 geometric_bad_edges=37 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=41 distance=0.0041 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->254 render_bad_edges=684 render_bad_fans=0 geometric_bad_edges=32 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=42 distance=0.0042 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->212 render_bad_edges=566 render_bad_fans=0 geometric_bad_edges=30 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=43 distance=0.0043 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->198 render_bad_edges=526 render_bad_fans=0 geometric_bad_edges=30 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=44 distance=0.0044 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->180 render_bad_edges=482 render_bad_fans=0 geometric_bad_edges=27 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=45 distance=0.0045 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->161 render_bad_edges=433 render_bad_fans=0 geometric_bad_edges=23 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=46 distance=0.0046 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->141 render_bad_edges=377 render_bad_fans=0 geometric_bad_edges=22 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=47 distance=0.0047 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->127 render_bad_edges=339 render_bad_fans=0 geometric_bad_edges=20 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=48 distance=0.0048 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->111 render_bad_edges=299 render_bad_fans=0 geometric_bad_edges=19 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=49 distance=0.0049 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->105 render_bad_edges=281 render_bad_fans=0 geometric_bad_edges=19 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=50 distance=0.005 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->97 render_bad_edges=263 render_bad_fans=0 geometric_bad_edges=18 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=51 distance=0.0051 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->95 render_bad_edges=257 render_bad_fans=0 geometric_bad_edges=18 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=52 distance=0.0052 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->87 render_bad_edges=237 render_bad_fans=0 geometric_bad_edges=17 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=53 distance=0.0053 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->84 render_bad_edges=228 render_bad_fans=0 geometric_bad_edges=14 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=54 distance=0.0054 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->83 render_bad_edges=225 render_bad_fans=0 geometric_bad_edges=11 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=55 distance=0.0055 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->76 render_bad_edges=204 render_bad_fans=0 geometric_bad_edges=8 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=56 distance=0.0056 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->74 render_bad_edges=200 render_bad_fans=0 geometric_bad_edges=8 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=57 distance=0.0057 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->67 render_bad_edges=179 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=58 distance=0.0058 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->57 render_bad_edges=151 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=59 distance=0.0059 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->55 render_bad_edges=145 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=60 distance=0.006 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->51 render_bad_edges=135 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=61 distance=0.0061 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->43 render_bad_edges=119 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=62 distance=0.0062 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->35 render_bad_edges=97 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=63 distance=0.0063 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->35 render_bad_edges=97 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=64 distance=0.0064 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->31 render_bad_edges=85 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=65 distance=0.0065 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->28 render_bad_edges=76 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=66 distance=0.0066 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->26 render_bad_edges=70 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=67 distance=0.0067 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->24 render_bad_edges=64 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=68 distance=0.0068 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->20 render_bad_edges=58 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=69 distance=0.0069 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->18 render_bad_edges=52 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=70 distance=0.007 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=71 distance=0.0071 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=72 distance=0.0072 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[INFO] [WTiVo Fast Merge] mesh=0 primitive=0 try=73 distance=0.0073 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->10 render_bad_edges=30 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=0 render_topology=False geometric_watertight=True
+[INFO] [WTiVo Fast Merge] topology policy=TEXTURE_SAFE | TEXTURE_SAFE preserves render seams; STRICT_BLENDER uses merged indexed vertices.
+[INFO] [WTiVo Fast Merge] SUCCESS | vertices 20,216->20,216 | faces 18,551->10 | merged=0 | final_distance=0.0073 | native_attempts=0 | python_attempts=73 | 28.735s
+[INFO] Prompt executed in 378.35 seconds

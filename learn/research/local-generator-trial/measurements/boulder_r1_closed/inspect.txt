@@ -1,0 +1,9 @@
+learn/research/local-generator-trial/models/boulder_r1_closed.glb  (glTF 2, generator: ComfyUI)
+
+mesh ""
+  primitive 0
+    POSITION    VEC3  x 1659361
+    indices     9949536  = 3316512 triangles
+    material    ""  textures: none
+
+1 mesh(es), 1 material(s), 0 image(s)

@@ -1,0 +1,171 @@
+{
+ "prompt": "crate_t2_1024_remesh20k.prompt.json",
+ "result": {
+  "status": "error",
+  "node": "241",
+  "node_type": "RemeshMesh",
+  "message": "Allocation on device 0 would exceed allowed memory. (out of memory)\nCurrently allocated     : 7.47 GiB\nRequested               : 1.61 GiB\nDevice limit            : 9.62 GiB\nFree (according to CUDA): 152.94 MiB\nPyTorch limit (set by user-supplied memory fraction)\n                        : 17179869184.00 GiB\nThis error means you ran out of memory on your GPU.\n\nTIPS: If the workflow worked before you might have accidentally set the batch_size to a large number.",
+  "type": "torch.OutOfMemoryError",
+  "traceback": [
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 548, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 353, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 327, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 315, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py\", line 2219, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2479, in execute\n    result = _process_mesh_batch(mesh, _fn)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2233, in _process_mesh_batch\n    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2211, in process_single\n    v, f, c = per_item_fn(v, f, c)\n              ^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2461, in _fn\n    rv, rf, rc = remesh_narrow_band_dc(\n                 ^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py\", line 1001, in remesh_narrow_band_dc\n    corner_keys = (corners[:, 0] * R1 + corners[:, 1]) * R1 + corners[:, 2]\n                   ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~\n"
+  ]
+ },
+ "total_seconds": 10.79,
+ "seconds_per_node": {
+  "401 raw: save": 0.81,
+  "241 SUBSTITUTE for WTiVo: RemeshMesh": 9.95
+ },
+ "cached": [
+  "cached:122,193,192,312,15,299,40,117,118,87,199,125,108,3,119,91,279,126,18,94,23,92,98,12,93,400"
+ ],
+ "baseline_gpu_used_mib": 1200,
+ "peak_gpu_used_mib": 5027,
+ "peak_gpu_process_mib": 4262,
+ "peak_rss_mib": 12190,
+ "min_ram_available_mib": 11692,
+ "samples": [
+  [
+   0.1,
+   1200,
+   422,
+   6653,
+   17177
+  ],
+  [
+   0.6,
+   1199,
+   422,
+   7688,
+   16134
+  ],
+  [
+   1.1,
+   2354,
+   1574,
+   6093,
+   17733
+  ],
+  [
+   1.7,
+   2353,
+   1574,
+   6207,
+   17615
+  ],
+  [
+   2.2,
+   2353,
+   1574,
+   6190,
+   17541
+  ],
+  [
+   2.8,
+   2766,
+   1990,
+   6303,
+   17483
+  ],
+  [
+   3.3,
+   2766,
+   1990,
+   7025,
+   16869
+  ],
+  [
+   3.9,
+   4228,
+   3462,
+   7112,
+   16794
+  ],
+  [
+   4.5,
+   4228,
+   3462,
+   8139,
+   15689
+  ],
+  [
+   5.0,
+   4228,
+   3462,
+   8773,
+   15073
+  ],
+  [
+   5.6,
+   4228,
+   3462,
+   9435,
+   14425
+  ],
+  [
+   6.2,
+   4228,
+   3462,
+   9985,
+   14071
+  ],
+  [
+   6.8,
+   4228,
+   3462,
+   10499,
+   13522
+  ],
+  [
+   7.4,
+   4228,
+   3462,
+   11010,
+   13024
+  ],
+  [
+   8.0,
+   4228,
+   3462,
+   11470,
+   12447
+  ],
+  [
+   8.6,
+   4228,
+   3462,
+   11904,
+   11952
+  ],
+  [
+   9.1,
+   4228,
+   3462,
+   12190,
+   11692
+  ],
+  [
+   9.7,
+   5027,
+   4262,
+   10846,
+   12994
+  ],
+  [
+   10.2,
+   5027,
+   4262,
+   10846,
+   12948
+  ]
+ ]
+}

@@ -1,0 +1,17 @@
+# Blender 5.2.2, Commit date: 2026-09-14 15:14, Hash d13f752e3b9c
+
+# backtrace
+.tools/blender/blender() [0x10e512d]
+.tools/blender/blender() [0x78ecde]
+/usr/lib/libc.so.6(+0x9d7fc) [0x75953769d7fc]
+/usr/lib/libc.so.6(pthread_once+0x19) [0x75953769d879]
+.tools/blender/blender() [0x78eb9f]
+/usr/lib/libc.so.6(+0x3e6f0) [0x75953763e6f0]
+.tools/blender/blender() [0x110f0a3]
+.tools/blender/blender() [0x10e8070]
+.tools/blender-5.2.2-linux-x64/lib/libtbb.so.12(+0x3370a) [0x75955220770a]
+.tools/blender-5.2.2-linux-x64/lib/libtbb.so.12(+0x2658c) [0x7595521fa58c]
+/usr/lib/libc.so.6(+0x980a2) [0x7595376980a2]
+/usr/lib/libc.so.6(+0x12080c) [0x75953772080c]
+
+# Python backtrace

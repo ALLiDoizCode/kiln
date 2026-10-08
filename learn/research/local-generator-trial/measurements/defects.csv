@@ -1,0 +1,15 @@
+model,script,triangles,vertices_stored,vertices_welded,boundary_edges_welded,non_manifold_edges_welded,pieces,small_pieces,degenerate_faces,flipped_edges,bbox_xyz_gltf,lowest_y
+boulder_r1_closed,dense_defects.py,3316512,1659361,1659360,2686,155,2,0,2,310,1.002x0.567x0.877,-0.283565
+boulder_r1_highpoly,dense_defects.py,43849,30276,21229,320,2513,2,0,0,5871,1.001x0.566x0.876,-0.283183
+boulder_r1_lowpoly,mesh_defects.py,20000,11512,10002,0,0,1,0,0,0,1.001x0.566x0.875,-0.282996
+boulder_r1_raw,dense_defects.py,11437876,5717386,5717386,36648,37842,5,3,0,2581101,0.999x0.563x0.873,-0.281693
+crate_c_lowpoly_4k,mesh_defects.py,4000,2888,2000,0,0,1,0,0,0,1.004x1.004x1.004,-0.501945
+crate_noclose_lowpoly_after_fastmerge,dense_defects.py,10,20216,96,0,0,5,0,0,0,0.998x0.998x0.998,-0.499077
+crate_px_closed,dense_defects.py,2120244,1060000,1059996,0,124,1,0,0,248,0.873x0.887x0.979,-0.3983
+crate_px_highpoly,dense_defects.py,993490,542702,496747,0,0,1,0,0,0,0.873x0.887x0.979,-0.3983
+crate_px_lowpoly,mesh_defects.py,20000,12807,10002,0,0,1,0,0,0,0.872x0.886x0.979,-0.39811
+crate_px_raw,dense_defects.py,8611542,4296388,4296388,38304,61375,1,0,0,2610650,0.870x0.884x0.975,-0.397011
+crate_r2_closed,dense_defects.py,6251612,3125806,3125806,0,0,1,0,0,0,1.004x1.004x1.004,-0.501959
+crate_r2_highpoly,dense_defects.py,999996,814597,499998,0,0,1,0,0,0,1.004x1.004x1.004,-0.501959
+crate_r2_lowpoly,mesh_defects.py,19996,13041,9998,0,0,1,0,0,0,1.004x1.004x1.004,-0.501957
+crate_r2_raw,dense_defects.py,14916218,7464611,7464611,12316,0,3,0,0,22306,1.000x1.000x1.000,-0.5

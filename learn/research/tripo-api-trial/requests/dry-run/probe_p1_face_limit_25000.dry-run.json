@@ -1,0 +1,1 @@
+{"dry_run":true,"valid":false,"input":"images/crate_three_quarter.png","steps":[],"pending_uploads":["images/crate_three_quarter.png"],"deliverables":[],"candidates":1,"warnings":[],"errors":["P1 face_limit must be within 50–20000 (got 25000); use tripo-v3.1 for higher budgets"],"cost_notes":[]}

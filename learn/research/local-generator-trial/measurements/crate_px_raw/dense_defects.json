@@ -1,0 +1,72 @@
+{
+ "file": "models/crate_px_raw.glb",
+ "generator": "ComfyUI",
+ "primitives": [
+  {
+   "attributes": [
+    "COLOR_0",
+    "POSITION"
+   ],
+   "bounding_box_gltf_yup": {
+    "min": [
+     -0.424639,
+     -0.397011,
+     -0.483483
+    ],
+    "max": [
+     0.445076,
+     0.487146,
+     0.492006
+    ],
+    "dimensions": [
+     0.869715,
+     0.884157,
+     0.975489
+    ]
+   },
+   "as_stored": {
+    "vertices": 4296388,
+    "vertices_used": 4295841,
+    "triangles": 8611542,
+    "edges": 12904954,
+    "boundary_edges": 38304,
+    "non_manifold_edges": 61375,
+    "loose_vertices": 547,
+    "edges_used_twice_the_same_way": 2610650,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+     8611542
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0,
+    "surface_area": 2.7171699780745837,
+    "smallest_face_area": 1.751589161518038e-11,
+    "median_face_area": 3.2370395547865733e-07
+   },
+   "welded": {
+    "vertices": 4296388,
+    "vertices_used": 4295841,
+    "triangles": 8611542,
+    "edges": 12904954,
+    "boundary_edges": 38304,
+    "non_manifold_edges": 61375,
+    "loose_vertices": 547,
+    "edges_used_twice_the_same_way": 2610650,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+     8611542
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0,
+    "surface_area": 2.7171699780745837,
+    "smallest_face_area": 1.751589161518038e-11,
+    "median_face_area": 3.2370395547865733e-07
+   },
+   "faces_lost_to_welding": 0
+  }
+ ]
+}

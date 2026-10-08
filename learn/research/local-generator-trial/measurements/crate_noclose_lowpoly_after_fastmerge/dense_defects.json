@@ -1,0 +1,89 @@
+{
+ "file": "models/crate_noclose_lowpoly_after_fastmerge.glb",
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "primitives": [
+  {
+   "attributes": [
+    "COLOR_0",
+    "COLOR_1",
+    "NORMAL",
+    "POSITION",
+    "TANGENT",
+    "TEXCOORD_0"
+   ],
+   "bounding_box_gltf_yup": {
+    "min": [
+     -0.499082,
+     -0.499077,
+     -0.499056
+    ],
+    "max": [
+     0.499067,
+     0.499096,
+     0.499102
+    ],
+    "dimensions": [
+     0.998149,
+     0.998173,
+     0.998158
+    ]
+   },
+   "as_stored": {
+    "vertices": 20216,
+    "vertices_used": 30,
+    "triangles": 10,
+    "edges": 30,
+    "boundary_edges": 30,
+    "non_manifold_edges": 0,
+    "loose_vertices": 20186,
+    "edges_used_twice_the_same_way": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 10,
+    "piece_triangles_largest_first": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0,
+    "surface_area": 1.674192877579941e-05,
+    "smallest_face_area": 6.240391426209317e-09,
+    "median_face_area": 1.292144732925068e-07
+   },
+   "welded": {
+    "vertices": 96,
+    "vertices_used": 15,
+    "triangles": 10,
+    "edges": 15,
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "loose_vertices": 81,
+    "edges_used_twice_the_same_way": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 5,
+    "piece_triangles_largest_first": [
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0,
+    "surface_area": 1.674192877579941e-05,
+    "smallest_face_area": 6.240391426209317e-09,
+    "median_face_area": 1.292144732925068e-07
+   },
+   "faces_lost_to_welding": 0
+  }
+ ]
+}

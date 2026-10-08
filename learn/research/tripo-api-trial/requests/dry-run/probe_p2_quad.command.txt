@@ -1,0 +1,2 @@
+tripo make images/crate_three_quarter.png --model tripo-p2 -p face_limit=10000 -p quad=true --seed 1 --dry-run --json
+exit 0

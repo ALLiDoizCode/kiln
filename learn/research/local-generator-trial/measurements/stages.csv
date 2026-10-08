@@ -1,0 +1,274 @@
+run,node,seconds,peak_gpu_process_mib,peak_gpu_card_mib,peak_rss_mib
+crate_t2_1536_attempt1,117 shape VAE,0.32,216,1212,1268
+crate_t2_1536_attempt1,87 EmptyTrellis2LatentStructure,0.01,,,
+crate_t2_1536_attempt1,122 LoadImage,0.07,268,1280,1892
+crate_t2_1536_attempt1,193 LoadBackgroundRemovalModel,0.03,268,1280,1892
+crate_t2_1536_attempt1,192 RemoveBackground,1.23,1952,3574,2727
+crate_t2_1536_attempt1,312 ImageCropToMask,0.15,1952,3574,2727
+crate_t2_1536_attempt1,15 CLIPVisionLoader,0.02,1952,3574,2727
+crate_t2_1536_attempt1,299 Trellis2Conditioning,1.71,1952,3574,4022
+crate_t2_1536_attempt1,40 UNETLoader,0.41,1728,2918,4030
+crate_t2_1536_attempt1,199 CFGOverride,0.01,1376,2568,4030
+crate_t2_1536_attempt1,125 RescaleCFG,0.0,1376,2568,4030
+crate_t2_1536_attempt1,108 ModelSamplingSD3,0.0,1376,2568,4030
+crate_t2_1536_attempt1,3 1 structure sampler,7.04,3480,4855,5754
+crate_t2_1536_attempt1,119 1 structure decode,0.61,3672,4882,6514
+crate_t2_1536_attempt1,91 Trellis2ShapeStage,0.03,3672,4882,6514
+crate_t2_1536_attempt1,279 CFGOverride,0.0,3672,4882,6514
+crate_t2_1536_attempt1,126 RescaleCFG,0.0,3672,4882,6514
+crate_t2_1536_attempt1,18 2 shape sampler (512),22.33,6394,7686,8094
+crate_t2_1536_attempt1,94 3 upsample stage,1.95,7584,8815,8584
+crate_t2_1536_attempt1,23 3 shape sampler (upsampled),418.57,8416,9665,9922
+crate_t2_1536_attempt1,92 3 shape decode,7.12,7936,9089,9923
+crate_t2_1536_attempt1,TOTAL (error),461.63,8416,9665,9923
+crate_t2_1536_attempt2,92 3 shape decode,6.41,8576,9151,4293
+crate_t2_1536_attempt2,TOTAL (error),6.42,8576,9151,4293
+crate_t2_1024_a,94 3 upsample stage,1.23,3392,4550,4245
+crate_t2_1024_a,23 3 shape sampler (upsampled),94.29,4864,6151,5544
+crate_t2_1024_a,92 3 shape decode,3.95,7488,8648,6651
+crate_t2_1024_a,118 texture VAE,0.36,2816,3976,6651
+crate_t2_1024_a,98 Trellis2TextureStage,0.0,2816,3976,6651
+crate_t2_1024_a,12 4 texture sampler,47.39,6304,7465,7132
+crate_t2_1024_a,93 4 texture decode,4.3,7584,9545,8074
+crate_t2_1024_a,400 raw: vertex colours,2.73,7104,8265,8926
+crate_t2_1024_a,401 raw: save,2.07,2496,3657,9875
+crate_t2_1024_a,TOTAL (ok),156.33,7584,9545,9875
+crate_t2_1024_b,117 shape VAE,0.33,216,1325,1169
+crate_t2_1024_b,87 EmptyTrellis2LatentStructure,0.0,,,
+crate_t2_1024_b,122 LoadImage,0.07,438,1547,2036
+crate_t2_1024_b,193 LoadBackgroundRemovalModel,0.03,438,1547,2036
+crate_t2_1024_b,192 RemoveBackground,0.87,2014,3123,2621
+crate_t2_1024_b,312 ImageCropToMask,0.13,2014,3123,3031
+crate_t2_1024_b,15 CLIPVisionLoader,0.02,1312,2357,3031
+crate_t2_1024_b,299 Trellis2Conditioning,1.29,1728,2839,3992
+crate_t2_1024_b,40 UNETLoader,0.34,1728,2839,4028
+crate_t2_1024_b,199 CFGOverride,0.02,1376,2487,4028
+crate_t2_1024_b,125 RescaleCFG,0.0,1376,2487,4028
+crate_t2_1024_b,108 ModelSamplingSD3,0.0,1376,2487,4028
+crate_t2_1024_b,3 1 structure sampler,4.92,3480,4610,6052
+crate_t2_1024_b,119 1 structure decode,0.29,3224,4288,6052
+crate_t2_1024_b,91 Trellis2ShapeStage,0.02,3224,4288,6052
+crate_t2_1024_b,279 CFGOverride,0.01,3224,4288,6052
+crate_t2_1024_b,126 RescaleCFG,0.0,3224,4288,6052
+crate_t2_1024_b,18 2 shape sampler (512),14.95,6426,7563,8064
+crate_t2_1024_b,94 3 upsample stage,1.31,7616,8162,8519
+crate_t2_1024_b,23 3 shape sampler (upsampled),91.05,8064,9181,9889
+crate_t2_1024_b,92 3 shape decode,4.17,7200,8319,10001
+crate_t2_1024_b,328 LODTailor dense (Blender),74.11,6720,7839,16303
+crate_t2_1024_b,335 LODTailor low-poly (Blender),2.37,2016,3192,10529
+crate_t2_1024_b,118 texture VAE,0.37,2016,3191,10991
+crate_t2_1024_b,98 Trellis2TextureStage,0.04,2016,3191,10991
+crate_t2_1024_b,12 4 texture sampler,52.33,5472,6718,11659
+crate_t2_1024_b,93 4 texture decode,4.6,8576,9762,12929
+crate_t2_1024_b,400 raw: vertex colours,3.17,2528,3714,13236
+crate_t2_1024_b,401 raw: save,2.55,2528,3714,14200
+crate_t2_1024_b,330 dense: unwrap,32.13,2948,4134,13176
+crate_t2_1024_b,331 dense: bake from generation,9.41,5028,6208,12877
+crate_t2_1024_b,332 dense: apply textures,0.1,420,1598,6496
+crate_t2_1024_b,333 dense: to GLB,0.68,420,1598,6496
+crate_t2_1024_b,334 dense: save,0.0,420,1598,6312
+crate_t2_1024_b,336 low: vertex colours,1.63,420,1598,6685
+crate_t2_1024_b,337 low: unwrap,1.47,678,1856,6685
+crate_t2_1024_b,338 low: smooth normals,0.02,678,1856,6312
+crate_t2_1024_b,339 low: to GLB,0.23,678,1856,6312
+crate_t2_1024_b,340 free memory before baking,0.0,678,1856,6312
+crate_t2_1024_b,341 Bake Forger (Blender),44.56,2384,3567,11114
+crate_t2_1024_b,342 Fast Merge (TEXTURE_SAFE),28.74,422,1647,6344
+crate_t2_1024_b,343 low: save,0.3,,,
+crate_t2_1024_b,TOTAL (ok),378.65,8576,9762,16303
+crate_t2_1024_c,326 free VRAM before closing (as the video does before WTiVo),0.0,422,1289,2443
+crate_t2_1024_c,241 SUBSTITUTE for WTiVo: RemeshMesh,5.87,8262,9129,4546
+crate_t2_1024_c,328 LODTailor dense (Blender),51.51,5990,7433,9297
+crate_t2_1024_c,335 LODTailor low-poly (Blender),100.17,422,1299,14246
+crate_t2_1024_c,402 closed: save,0.25,422,1153,4981
+crate_t2_1024_c,330 dense: unwrap,31.68,1158,1935,3646
+crate_t2_1024_c,329 ADDED: free VRAM before the bake from generation,0.0,1158,1900,3034
+crate_t2_1024_c,331 dense: bake from generation,12.4,6950,7713,3986
+crate_t2_1024_c,332 dense: apply textures,0.14,6950,7713,3599
+crate_t2_1024_c,333 dense: to GLB,1.14,6950,7713,3691
+crate_t2_1024_c,334 dense: save,0.01,422,1180,3590
+crate_t2_1024_c,336 low: vertex colours,1.6,422,1180,3958
+crate_t2_1024_c,337 low: unwrap,0.54,774,1533,3958
+crate_t2_1024_c,338 low: smooth normals,0.02,774,1533,3570
+crate_t2_1024_c,339 low: to GLB,0.24,774,1533,3570
+crate_t2_1024_c,340 free memory before baking,0.0,774,1533,3570
+crate_t2_1024_c,341 Bake Forger (Blender),42.83,2484,3220,9082
+crate_t2_1024_c,342 Fast Merge (TEXTURE_SAFE),0.27,422,1153,6409
+crate_t2_1024_c,343 low: save,0.48,422,1153,3570
+crate_t2_1024_c,TOTAL (ok),249.4,8262,9129,14246
+crate_t2_1024_c4k,326 free VRAM before closing (as the video does before WTiVo),0.0,422,1292,2698
+crate_t2_1024_c4k,241 SUBSTITUTE for WTiVo: RemeshMesh,5.79,8262,9134,4804
+crate_t2_1024_c4k,328 LODTailor dense (Blender),51.28,2278,3758,9511
+crate_t2_1024_c4k,335 LODTailor low-poly (Blender),99.96,422,1451,14154
+crate_t2_1024_c4k,402 closed: save,0.26,422,1351,4695
+crate_t2_1024_c4k,330 dense: unwrap,30.71,1158,2097,4695
+crate_t2_1024_c4k,329 ADDED: free VRAM before the bake from generation,0.0,422,1361,2617
+crate_t2_1024_c4k,331 dense: bake from generation,12.41,6822,7783,3718
+crate_t2_1024_c4k,332 dense: apply textures,0.13,6822,7761,3364
+crate_t2_1024_c4k,333 dense: to GLB,1.12,6822,7761,3364
+crate_t2_1024_c4k,334 dense: save,0.01,422,1361,3321
+crate_t2_1024_c4k,336 low: vertex colours,1.59,422,1361,3675
+crate_t2_1024_c4k,337 low: unwrap,0.25,710,1649,3675
+crate_t2_1024_c4k,338 low: smooth normals,0.01,710,1649,3363
+crate_t2_1024_c4k,339 low: to GLB,0.23,710,1649,3363
+crate_t2_1024_c4k,340 free memory before baking,0.0,710,1649,3363
+crate_t2_1024_c4k,341 Bake Forger (Blender),41.8,2484,3419,8878
+crate_t2_1024_c4k,342 Fast Merge (TEXTURE_SAFE),0.07,422,1352,6200
+crate_t2_1024_c4k,343 low: save,0.23,422,1352,6200
+crate_t2_1024_c4k,TOTAL (ok),246.12,8262,9134,14154
+crate_r2,117 shape VAE,0.33,216,1150,1051
+crate_r2,87 EmptyTrellis2LatentStructure,0.0,,,
+crate_r2,122 LoadImage,0.07,268,1202,1863
+crate_r2,193 LoadBackgroundRemovalModel,0.03,268,1202,1863
+crate_r2,192 RemoveBackground,1.1,1950,2884,2746
+crate_r2,312 ImageCropToMask,0.14,768,1724,2746
+crate_r2,15 CLIPVisionLoader,0.02,768,1724,2746
+crate_r2,299 Trellis2Conditioning,1.34,1696,2632,3986
+crate_r2,40 UNETLoader,0.36,1376,2312,3986
+crate_r2,199 CFGOverride,0.02,1376,2312,3986
+crate_r2,125 RescaleCFG,0.0,1376,2312,3986
+crate_r2,108 ModelSamplingSD3,0.0,1376,2312,3986
+crate_r2,3 1 structure sampler,4.83,3480,4418,5720
+crate_r2,119 1 structure decode,0.63,4024,4964,6815
+crate_r2,91 Trellis2ShapeStage,0.03,4024,4964,6815
+crate_r2,279 CFGOverride,0.0,4024,4964,6815
+crate_r2,126 RescaleCFG,0.0,4024,4964,6815
+crate_r2,18 2 shape sampler (512),14.81,6426,7378,8045
+crate_r2,94 3 upsample stage,1.26,7232,8174,8524
+crate_r2,23 3 shape sampler (upsampled),92.07,8224,9183,9814
+crate_r2,92 3 shape decode,4.1,7488,8335,10345
+crate_r2,326 free VRAM before closing (as the video does before WTiVo),0.44,6976,7844,10345
+crate_r2,241 SUBSTITUTE for WTiVo: RemeshMesh,5.91,8256,9229,6108
+crate_r2,328 LODTailor dense (Blender),53.9,418,1463,11174
+crate_r2,335 LODTailor low-poly (Blender),103.63,418,1479,15797
+crate_r2,402 closed: save,0.26,418,1303,6667
+crate_r2,118 texture VAE,0.33,418,1303,5600
+crate_r2,98 Trellis2TextureStage,0.03,418,1303,5600
+crate_r2,12 4 texture sampler,48.93,3938,4860,6011
+crate_r2,93 4 texture decode,4.32,7426,8117,7172
+crate_r2,400 raw: vertex colours,2.28,6434,7765,7858
+crate_r2,401 raw: save,0.8,2754,3445,8838
+crate_r2,330 dense: unwrap,31.77,1922,3253,6408
+crate_r2,329 ADDED: free VRAM before the bake from generation,0.01,420,1110,6401
+crate_r2,331 dense: bake from generation,12.73,7014,7704,7447
+crate_r2,332 dense: apply textures,0.13,1062,2360,6722
+crate_r2,333 dense: to GLB,1.17,1062,2360,7106
+crate_r2,334 dense: save,0.01,422,1116,7106
+crate_r2,336 low: vertex colours,1.64,422,1116,7526
+crate_r2,337 low: unwrap,0.55,550,1244,7526
+crate_r2,338 low: smooth normals,0.02,422,1116,7161
+crate_r2,339 low: to GLB,0.22,422,1116,7161
+crate_r2,340 free memory before baking,0.0,422,1116,7161
+crate_r2,341 Bake Forger (Blender),47.55,2482,3182,12622
+crate_r2,342 Fast Merge (TEXTURE_SAFE),0.28,422,1116,6925
+crate_r2,343 low: save,0.48,422,1116,6925
+crate_r2,TOTAL (ok),438.56,8256,9229,15797
+boulder_r1,122 LoadImage,0.09,422,1116,6925
+boulder_r1,192 RemoveBackground,0.67,2086,2780,6925
+boulder_r1,312 ImageCropToMask,0.13,2086,2780,6047
+boulder_r1,299 Trellis2Conditioning,1.29,1830,2524,7007
+boulder_r1,3 1 structure sampler,4.83,3590,4284,8323
+boulder_r1,119 1 structure decode,0.27,4614,5112,8722
+boulder_r1,91 Trellis2ShapeStage,0.0,4614,5112,8722
+boulder_r1,18 2 shape sampler (512),9.0,6022,6714,9900
+boulder_r1,94 3 upsample stage,0.93,7398,8090,10034
+boulder_r1,23 3 shape sampler (upsampled),59.71,9062,9754,11352
+boulder_r1,92 3 shape decode,3.3,7334,8028,11353
+boulder_r1,326 free VRAM before closing (as the video does before WTiVo),0.51,7334,8028,11353
+boulder_r1,241 SUBSTITUTE for WTiVo: RemeshMesh,5.85,5382,6072,7019
+boulder_r1,328 LODTailor dense (Blender),103.51,5382,6072,9362
+boulder_r1,335 LODTailor low-poly (Blender),23.21,454,1135,9615
+boulder_r1,402 closed: save,0.15,454,1135,5685
+boulder_r1,98 Trellis2TextureStage,0.02,454,1135,5685
+boulder_r1,12 4 texture sampler,31.37,3494,4282,7109
+boulder_r1,93 4 texture decode,3.0,6694,7434,7301
+boulder_r1,400 raw: vertex colours,1.74,6694,7434,8730
+boulder_r1,401 raw: save,0.61,2758,3484,8730
+boulder_r1,330 dense: unwrap,3.13,742,1461,6177
+boulder_r1,329 ADDED: free VRAM before the bake from generation,0.01,,,
+boulder_r1,331 dense: bake from generation,10.46,3622,4366,7308
+boulder_r1,332 dense: apply textures,0.1,2726,4045,6497
+boulder_r1,333 dense: to GLB,1.28,2726,4045,7077
+boulder_r1,334 dense: save,0.01,454,1194,7077
+boulder_r1,336 low: vertex colours,1.28,454,1198,7145
+boulder_r1,337 low: unwrap,0.34,454,1200,7145
+boulder_r1,338 low: smooth normals,0.02,454,1200,6881
+boulder_r1,339 low: to GLB,0.21,454,1200,6881
+boulder_r1,340 free memory before baking,0.01,454,1200,6881
+boulder_r1,341 Bake Forger (Blender),42.13,2420,3148,11896
+boulder_r1,342 Fast Merge (TEXTURE_SAFE),0.29,454,1193,9340
+boulder_r1,343 low: save,0.21,,,
+boulder_r1,TOTAL (ok),309.7,9062,9754,11896
+crate_px,122 LoadImage,0.11,454,1191,6913
+crate_px,192 RemoveBackground,0.61,2118,2855,6913
+crate_px,312 ImageCropToMask,0.13,2118,2855,6820
+crate_px,55 LoadMoGeModel,0.28,2118,2855,6820
+crate_px,56 MoGeInference,0.54,2888,3625,6987
+crate_px,242 MoGeGeometryToFOV,0.0,2888,3625,6987
+crate_px,298 Pixal3DConditioning,15.8,5652,6391,11491
+crate_px,319 UNETLoader,0.19,5652,6376,11515
+crate_px,199 CFGOverride,0.01,2260,2984,11515
+crate_px,125 RescaleCFG,0.01,2260,2984,11515
+crate_px,108 ModelSamplingSD3,0.0,2260,2984,11515
+crate_px,3 1 structure sampler,4.87,4372,5346,12920
+crate_px,119 1 structure decode,0.33,4308,4936,12920
+crate_px,91 Trellis2ShapeStage,0.05,4308,4936,12920
+crate_px,279 CFGOverride,0.0,4308,4936,12920
+crate_px,126 RescaleCFG,0.01,4308,4936,12920
+crate_px,18 2 shape sampler (512),8.04,6932,7678,14426
+crate_px,94 3 upsample stage,0.86,7412,8062,14562
+crate_px,23 3 shape sampler (upsampled),33.15,8660,9406,15957
+crate_px,92 3 shape decode,2.56,8084,8823,15957
+crate_px,326 free VRAM before closing (as the video does before WTiVo),0.69,7700,8439,15957
+crate_px,241 SUBSTITUTE for WTiVo: RemeshMesh,3.81,4116,3554,10168
+crate_px,328 LODTailor dense (Blender),36.5,756,1653,11850
+crate_px,335 LODTailor low-poly (Blender),45.47,756,1955,14880
+crate_px,402 closed: save,0.09,756,1955,11975
+crate_px,98 Trellis2TextureStage,0.27,1268,2568,11975
+crate_px,12 4 texture sampler,17.58,3668,4395,10973
+crate_px,93 4 texture decode,2.41,6420,7117,11057
+crate_px,400 raw: vertex colours,1.28,6420,7117,11779
+crate_px,401 raw: save,0.72,3316,4013,11779
+crate_px,330 dense: unwrap,6.04,3316,4013,11774
+crate_px,329 ADDED: free VRAM before the bake from generation,0.01,1460,2157,10038
+crate_px,331 dense: bake from generation,8.98,2676,3378,10931
+crate_px,332 dense: apply textures,0.13,2676,3378,10614
+crate_px,333 dense: to GLB,1.08,2676,3378,10742
+crate_px,334 dense: save,0.01,884,1588,10742
+crate_px,336 low: vertex colours,0.93,884,1593,10883
+crate_px,337 low: unwrap,0.42,1140,1849,10883
+crate_px,338 low: smooth normals,0.02,1140,1849,10743
+crate_px,339 low: to GLB,0.22,1140,1849,10743
+crate_px,340 free memory before baking,0.01,1140,1849,10743
+crate_px,341 Bake Forger (Blender),55.82,2934,4153,16110
+crate_px,342 Fast Merge (TEXTURE_SAFE),0.31,884,1596,12077
+crate_px,343 low: save,0.22,,,
+crate_px,TOTAL (ok),250.6,8660,9406,16110
+crate_reserve4,117 shape VAE,0.31,216,917,1305
+crate_reserve4,87 EmptyTrellis2LatentStructure,0.0,,,
+crate_reserve4,122 LoadImage,0.07,470,1139,2041
+crate_reserve4,193 LoadBackgroundRemovalModel,0.03,470,1139,2041
+crate_reserve4,192 RemoveBackground,0.88,2014,2715,2597
+crate_reserve4,312 ImageCropToMask,0.13,2014,2715,2597
+crate_reserve4,15 CLIPVisionLoader,0.02,,,
+crate_reserve4,299 Trellis2Conditioning,1.25,1504,2399,3973
+crate_reserve4,40 UNETLoader,0.34,1376,2399,3973
+crate_reserve4,199 CFGOverride,0.01,,,
+crate_reserve4,125 RescaleCFG,0.0,,,
+crate_reserve4,108 ModelSamplingSD3,0.0,,,
+crate_reserve4,3 1 structure sampler,5.03,2968,3678,5708
+crate_reserve4,119 1 structure decode,0.28,3512,4193,6786
+crate_reserve4,91 Trellis2ShapeStage,0.01,3512,4193,6786
+crate_reserve4,279 CFGOverride,0.01,3512,4193,6786
+crate_reserve4,126 RescaleCFG,0.0,3512,4193,6786
+crate_reserve4,18 2 shape sampler (512),15.47,5050,6247,8105
+crate_reserve4,94 3 upsample stage,1.28,5920,6863,8587
+crate_reserve4,23 3 shape sampler (upsampled),92.76,6752,7697,9875
+crate_reserve4,92 3 shape decode,4.11,6848,7755,11305
+crate_reserve4,118 texture VAE,0.35,1856,2777,11305
+crate_reserve4,98 Trellis2TextureStage,0.01,1856,2777,11305
+crate_reserve4,12 4 texture sampler,49.99,4960,5891,11454
+crate_reserve4,93 4 texture decode,4.29,6688,7475,12415
+crate_reserve4,400 raw: vertex colours,2.94,6528,7332,13254
+crate_reserve4,401 raw: save,2.44,1888,2689,14291
+crate_reserve4,TOTAL (ok),182.03,6848,7755,14291

@@ -1,0 +1,226 @@
+{
+  "file": "learn/research/local-generator-trial/models/crate_c_lowpoly_4k.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "BakeLow",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "Mesh_0.001",
+      "materials": [
+        "BakeLow_Export_Mat"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [
+        "Color",
+        "Color.001"
+      ],
+      "has_custom_normals": true,
+      "smooth_faces": 4000,
+      "flat_faces": 0,
+      "as_imported": {
+        "vertices": 2888,
+        "edges": 7118,
+        "faces": 4000,
+        "triangles": 4000,
+        "face_sides": {
+          "3": 4000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 2236,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 25,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          4000
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      },
+      "welded": {
+        "vertices": 2000,
+        "edges": 6000,
+        "faces": 4000,
+        "triangles": 4000,
+        "face_sides": {
+          "3": 4000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          4000
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 2888,
+    "edges": 7118,
+    "faces": 4000,
+    "triangles": 4000,
+    "face_sides": {
+      "3": 4000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 2236,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 25,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      4000
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "welded": {
+    "vertices": 2000,
+    "edges": 6000,
+    "faces": 4000,
+    "triangles": 4000,
+    "face_sides": {
+      "3": 4000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      4000
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.50195,
+      -0.501955,
+      -0.501945
+    ],
+    "max": [
+      0.501951,
+      0.501953,
+      0.501961
+    ],
+    "dimensions": [
+      1.003901,
+      1.003908,
+      1.003906
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.50195,
+      -0.501945,
+      -0.501953
+    ],
+    "max": [
+      0.501951,
+      0.501961,
+      0.501955
+    ],
+    "dimensions": [
+      1.003901,
+      1.003906,
+      1.003908
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    -1e-06,
+    8e-06
+  ],
+  "lowest_point_blender_z": -0.501945,
+  "materials": [
+    "BakeLow_Export_Mat"
+  ],
+  "images": [
+    {
+      "name": "BakeLow_basecolor",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "BakeLow_emission",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "BakeLow_metallic-BakeLow_roughness",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "BakeLow_normal",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

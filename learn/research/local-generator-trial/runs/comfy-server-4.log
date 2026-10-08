@@ -1,0 +1,94 @@
+[32m[INFO][0m setup plugin alembic.autogenerate.schemas
+[32m[INFO][0m setup plugin alembic.autogenerate.tables
+[32m[INFO][0m setup plugin alembic.autogenerate.types
+[32m[INFO][0m setup plugin alembic.autogenerate.constraints
+[32m[INFO][0m setup plugin alembic.autogenerate.defaults
+[32m[INFO][0m setup plugin alembic.autogenerate.comments
+[32m[INFO][0m setup plugin alembic.ext.checkconstraint_byname
+[1m[33m[WARNING][0m --disable-api-nodes is deprecated and will be removed in a future version. It currently behaves like --offline. Use --offline to keep the frontend offline, or --disable-partner-nodes to only disable partner nodes.
+[32m[INFO][0m Setting output directory to: .tools/local-gen/out
+[32m[INFO][0m Setting input directory to: .tools/local-gen/input
+[32m[INFO][0m Setting user directory to: .tools/local-gen/user
+[32m[INFO][0m Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'convrot_w4a4_linear', 'dequantize_convrot_w4a4_weight', 'dequantize_int8_convrot_weight', 'dequantize_int8_convrot_weight_dtype', 'dequantize_int8_embedding', 'dequantize_int8_simple', 'dequantize_int8_simple_dtype', 'dequantize_mxfp8', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'dequantize_w4a8_int8_weight', 'fp16_conv3d', 'fp16_conv3d_out', 'fp16_linear', 'gemv_awq_w4a16', 'group_norm_silu_pad3d', 'group_norm_silu_pad3d_out', 'int8_linear', 'na3d', 'prepare_int4_weight_for_int8_linear', 'quantize_and_rotate_rowwise', 'quantize_convrot_w4a4_weight', 'quantize_int8_convrot_weight', 'quantize_int8_rowwise', 'quantize_int8_tensorwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'quantize_svdquant_w4a4', 'quantize_w4a8_int8_weight', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'rotate_int8_convrot_weight', 'scaled_mm_mxfp8', 'scaled_mm_nvfp4', 'scaled_mm_svdquant_w4a4', 'sol_attn', 'stochastic_rounding_fp8', 'w4a8_int8_linear']}
+[32m[INFO][0m Found comfy_kitchen backend cuda: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'convrot_w4a4_linear', 'dequantize_convrot_w4a4_weight', 'dequantize_int8_convrot_weight', 'dequantize_int8_convrot_weight_dtype', 'dequantize_int8_simple', 'dequantize_int8_simple_dtype', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'dequantize_w4a8_int8_weight', 'fp16_conv3d', 'fp16_conv3d_out', 'fp16_linear', 'gemv_awq_w4a16', 'group_norm_silu_pad3d', 'group_norm_silu_pad3d_out', 'int8_linear', 'na3d', 'prepare_int4_weight_for_int8_linear', 'quantize_and_rotate_rowwise', 'quantize_convrot_w4a4_weight', 'quantize_int8_convrot_weight', 'quantize_int8_rowwise', 'quantize_int8_tensorwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'quantize_svdquant_w4a4', 'quantize_w4a8_int8_weight', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'rotate_int8_convrot_weight', 'scaled_mm_nvfp4', 'scaled_mm_svdquant_w4a4', 'sol_attn', 'stochastic_rounding_fp8', 'w4a8_int8_linear']}
+[32m[INFO][0m Found comfy_kitchen backend hip: {'available': False, 'disabled': False, 'unavailable_reason': 'PyTorch ROCm/HIP runtime not available', 'capabilities': []}
+[32m[INFO][0m Found comfy_kitchen backend triton: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'int8_linear', 'na3d', 'quantize_and_rotate_rowwise', 'quantize_int8_rowwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'w4a8_int8_linear']}
+[32m[INFO][0m Found comfy_kitchen backend ascend: {'available': False, 'disabled': False, 'unavailable_reason': "torch-npu is not installed: No module named 'torch_npu'", 'capabilities': []}
+[32m[INFO][0m Checkpoint files will always be loaded safely.
+[32m[INFO][0m Total VRAM 9852 MB, total RAM 32031 MB
+[32m[INFO][0m pytorch version: 2.14.1+cu130
+[32m[INFO][0m Set vram state to: NORMAL_VRAM
+[32m[INFO][0m Device: cuda:0 NVIDIA GeForce RTX 3080 : cudaMallocAsync
+[32m[INFO][0m Using async weight offloading with 2 streams
+[32m[INFO][0m Enabled pinned memory 27934
+[32m[INFO][0m Using pytorch attention
+[32m[INFO][0m aimdo: /project/src/control.c:283:INFO:comfy-aimdo inited for GPU: NVIDIA GeForce RTX 3080 (VRAM: 9851 MB)
+[32m[INFO][0m DynamicVRAM support detected and enabled
+[32m[INFO][0m Python version: 3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]
+[32m[INFO][0m ComfyUI version: 0.39.0
+[32m[INFO][0m comfy-aimdo version: 0.5.6
+[32m[INFO][0m comfy-kitchen version: 0.2.37
+[32m[INFO][0m Setting temp directory to: .tools/local-gen/tmp/temp
+[32m[INFO][0m comfyui-frontend-package version: 1.55.14
+[32m[INFO][0m comfyui-workflow-templates version: 0.11.78
+[32m[INFO][0m comfyui-embedded-docs version: 0.5.13
+[32m[INFO][0m comfy-kitchen version: 0.2.37
+[32m[INFO][0m comfy-aimdo version: 0.5.6
+[32m[INFO][0m [Prompt Server] web root: .tools/local-gen/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+[32m[INFO][0m Asset seeder disabled
+.tools/local-gen/venv/lib/python3.12/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+[32m[INFO][0m No OpenGL_accelerate module loaded: No module named 'OpenGL_accelerate'
+[32m[INFO][0m 
+Import times for custom nodes:
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/websocket_image_save.py
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/ComfyUI-Memory-Cleaner
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-Bake-Forger
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-The-Mesh-Trimmer-ComfyuiNode
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/WTiVo-FastMergeByDistance
+[32m[INFO][0m 
+[32m[INFO][0m Using RAM pressure cache.
+[32m[INFO][0m Starting server
+
+[32m[INFO][0m To see the GUI go to: http://127.0.0.1:8189
+[32m[INFO][0m got prompt
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_shape_vae_bf16.safetensors']
+[32m[INFO][0m VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/background_removal/birefnet.safetensors']
+[32m[INFO][0m Requested to load BiRefNet
+[32m[INFO][0m Model BiRefNet prepared for dynamic VRAM loading. 419MB Staged. 0 patches attached. Force pre-loaded 268 weights: 4216 KB.
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[32m[INFO][0m Requested to load DINOv3ViTModel
+[32m[INFO][0m Model DINOv3ViTModel prepared for dynamic VRAM loading. 579MB Staged. 0 patches attached. Force pre-loaded 146 weights: 584 KB.
+[32m[INFO][0m Found quantization metadata version 1
+[32m[INFO][0m Detected mixed precision quantization
+[32m[INFO][0m Using mixed precision operations
+[32m[INFO][0m Native ops: convrot_w4a4, int8_tensorwise, w6a8_int8, asym_w4a8_int8 , emulated ops: float8_e4m3fn, mxfp8, nvfp4, float8_e5m2
+[32m[INFO][0m model weight dtype torch.bfloat16, manual cast: torch.bfloat16
+[32m[INFO][0m model_type FLOW
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/diffusion_models/trellis_2_int8_convrot.safetensors']
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:01<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:01<00:12,  1.14s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:00<00:12,  1.14s/it]                                    17%|█▋        | 2/12 [00:00<00:01,  8.07it/s] 25%|██▌       | 3/12 [00:00<00:03,  2.75it/s] 33%|███▎      | 4/12 [00:00<00:03,  2.64it/s] 42%|████▏     | 5/12 [00:01<00:02,  2.68it/s] 50%|█████     | 6/12 [00:01<00:02,  2.69it/s] 58%|█████▊    | 7/12 [00:02<00:01,  2.54it/s] 67%|██████▋   | 8/12 [00:02<00:01,  2.58it/s] 75%|███████▌  | 9/12 [00:02<00:01,  2.64it/s] 83%|████████▎ | 10/12 [00:03<00:00,  2.85it/s] 92%|█████████▏| 11/12 [00:03<00:00,  4.65it/s]100%|██████████| 12/12 [00:03<00:00,  4.68it/s]100%|██████████| 12/12 [00:03<00:00,  3.27it/s]
+[32m[INFO][0m Requested to load ShapeVae
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/20 [00:00<?, ?it/s]  0%|          | 0/20 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/20 [00:01<?, ?it/s,  Model Initialization complete!  ]  5%|▌         | 1/20 [00:01<00:24,  1.30s/it,  Model Initialization complete!  ]  5%|▌         | 1/20 [00:01<00:24,  1.30s/it]                                    10%|█         | 2/20 [00:01<00:17,  1.01it/s] 15%|█▌        | 3/20 [00:02<00:14,  1.13it/s] 20%|██        | 4/20 [00:03<00:12,  1.26it/s] 25%|██▌       | 5/20 [00:04<00:12,  1.24it/s] 30%|███       | 6/20 [00:05<00:12,  1.16it/s] 35%|███▌      | 7/20 [00:06<00:10,  1.20it/s] 40%|████      | 8/20 [00:07<00:10,  1.14it/s] 45%|████▌     | 9/20 [00:07<00:08,  1.23it/s] 50%|█████     | 10/20 [00:08<00:08,  1.21it/s] 55%|█████▌    | 11/20 [00:09<00:07,  1.25it/s] 60%|██████    | 12/20 [00:10<00:06,  1.23it/s] 65%|██████▌   | 13/20 [00:11<00:05,  1.21it/s] 70%|███████   | 14/20 [00:11<00:05,  1.16it/s] 75%|███████▌  | 15/20 [00:12<00:04,  1.15it/s] 80%|████████  | 16/20 [00:13<00:01,  2.46it/s] 85%|████████▌ | 17/20 [00:13<00:01,  2.31it/s] 90%|█████████ | 18/20 [00:14<00:00,  2.20it/s] 95%|█████████▌| 19/20 [00:14<00:00,  2.32it/s]100%|██████████| 20/20 [00:14<00:00,  2.46it/s]100%|██████████| 20/20 [00:14<00:00,  1.34it/s]
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:08<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:08<01:29,  8.10s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:16<01:29,  8.10s/it]                                    17%|█▋        | 2/12 [00:16<01:20,  8.02s/it] 25%|██▌       | 3/12 [00:23<01:11,  7.89s/it] 33%|███▎      | 4/12 [00:31<01:04,  8.07s/it] 42%|████▏     | 5/12 [00:40<00:56,  8.06s/it] 50%|█████     | 6/12 [00:47<00:47,  7.92s/it] 58%|█████▊    | 7/12 [00:56<00:40,  8.06s/it] 67%|██████▋   | 8/12 [01:04<00:32,  8.15s/it] 75%|███████▌  | 9/12 [01:11<00:23,  7.79s/it] 83%|████████▎ | 10/12 [01:19<00:15,  7.87s/it] 92%|█████████▏| 11/12 [01:28<00:08,  8.32s/it]100%|██████████| 12/12 [01:32<00:00,  4.28s/it]100%|██████████| 12/12 [01:32<00:00,  7.70s/it]
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_texture_vae_bf16.safetensors']
+[32m[INFO][0m VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:04<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:04<00:44,  4.06s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:08<00:44,  4.06s/it]                                    17%|█▋        | 2/12 [00:08<00:41,  4.11s/it] 25%|██▌       | 3/12 [00:12<00:36,  4.11s/it] 33%|███▎      | 4/12 [00:16<00:32,  4.11s/it] 42%|████▏     | 5/12 [00:20<00:30,  4.29s/it] 50%|█████     | 6/12 [00:25<00:25,  4.31s/it] 58%|█████▊    | 7/12 [00:29<00:20,  4.05s/it] 67%|██████▋   | 8/12 [00:33<00:17,  4.29s/it] 75%|███████▌  | 9/12 [00:37<00:12,  4.10s/it] 83%|████████▎ | 10/12 [00:41<00:08,  4.12s/it] 92%|█████████▏| 11/12 [00:45<00:04,  4.18s/it]100%|██████████| 12/12 [00:49<00:00,  4.07s/it]100%|██████████| 12/12 [00:49<00:00,  4.15s/it]
+[32m[INFO][0m Requested to load TextureVae
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model TextureVae prepared for dynamic VRAM loading. 137MB Staged. 0 patches attached. Force pre-loaded 154 weights: 785704 KB.
+[32m[INFO][0m [32mPrompt executed in 181.78 seconds[0m

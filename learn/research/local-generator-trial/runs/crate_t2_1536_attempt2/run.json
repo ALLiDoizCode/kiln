@@ -1,0 +1,133 @@
+{
+ "prompt": "crate_t2_1536_raw.prompt.json",
+ "result": {
+  "status": "error",
+  "node": "92",
+  "node_type": "VaeDecodeShapeTrellis",
+  "message": "Allocation on device 0 would exceed allowed memory. (out of memory)\nCurrently allocated     : 7.26 GiB\nRequested               : 1001.00 MiB\nDevice limit            : 9.62 GiB\nFree (according to CUDA): 125.00 MiB\nPyTorch limit (set by user-supplied memory fraction)\n                        : 17179869184.00 GiB\nThis error means you ran out of memory on your GPU.\n\nTIPS: If the workflow worked before you might have accidentally set the batch_size to a large number.",
+  "type": "torch.OutOfMemoryError",
+  "traceback": [
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 548, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 353, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 327, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 315, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py\", line 2219, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_trellis2.py\", line 169, in execute\n    mesh_i, subs_i = trellis_vae.decode_shape_slat(sample_i.to(vae.vae_dtype), resolution)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ldm/trellis2/vae.py\", line 1085, in decode_shape_slat\n    return self.shape_dec(slat, return_subs=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1783, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1794, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ldm/trellis2/vae.py\", line 861, in forward\n    decoded = super().forward(x, **kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ldm/trellis2/vae.py\", line 809, in forward\n    h = block(h)\n        ^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1783, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1794, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ldm/trellis2/vae.py\", line 95, in forward\n    return self._forward(x)\n           ^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ldm/trellis2/vae.py\", line 90, in _forward\n    h = h.replace(self.mlp(h.feats))\n                  ^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1783, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1794, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/container.py\", line 259, in forward\n    input = module(input)\n            ^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1783, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/nn/modules/module.py\", line 1794, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ops.py\", line 593, in forward\n    return self.forward_comfy_cast_weights(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy/ops.py\", line 588, in forward_comfy_cast_weights\n    return torch.nn.functional.linear(input, weight, bias)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+  ]
+ },
+ "total_seconds": 6.42,
+ "seconds_per_node": {
+  "92 3 shape decode": 6.41
+ },
+ "cached": [
+  "cached:122,193,192,312,15,299,40,117,87,199,125,108,3,119,91,279,126,18,94,23"
+ ],
+ "baseline_gpu_used_mib": 1565,
+ "peak_gpu_used_mib": 9151,
+ "peak_gpu_process_mib": 8576,
+ "peak_rss_mib": 4293,
+ "min_ram_available_mib": 18768,
+ "samples": [
+  [
+   0.1,
+   1565,
+   576,
+   4179,
+   18844
+  ],
+  [
+   0.6,
+   4381,
+   3232,
+   4165,
+   18908
+  ],
+  [
+   1.1,
+   5086,
+   3936,
+   4197,
+   18877
+  ],
+  [
+   1.7,
+   5086,
+   3936,
+   4197,
+   18884
+  ],
+  [
+   2.2,
+   5086,
+   3936,
+   4213,
+   18879
+  ],
+  [
+   2.7,
+   5086,
+   3936,
+   4229,
+   18868
+  ],
+  [
+   3.2,
+   5085,
+   3936,
+   4229,
+   18861
+  ],
+  [
+   3.8,
+   6780,
+   5632,
+   4229,
+   18852
+  ],
+  [
+   4.3,
+   6780,
+   5632,
+   4229,
+   18857
+  ],
+  [
+   4.9,
+   7296,
+   6144,
+   4229,
+   18855
+  ],
+  [
+   5.4,
+   7295,
+   6144,
+   4229,
+   18836
+  ],
+  [
+   5.9,
+   9151,
+   8576,
+   4293,
+   18768
+  ]
+ ]
+}

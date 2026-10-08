@@ -1,0 +1,264 @@
+{
+  "file": "learn/research/local-generator-trial/models/crate_r2_lowpoly.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "BakeLow",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "Mesh_0.001",
+      "materials": [
+        "BakeLow_Export_Mat"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [
+        "Color",
+        "Color.001"
+      ],
+      "has_custom_normals": true,
+      "smooth_faces": 19424,
+      "flat_faces": 572,
+      "as_imported": {
+        "vertices": 13041,
+        "edges": 33640,
+        "faces": 19996,
+        "triangles": 19996,
+        "face_sides": {
+          "3": 19996,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 7292,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 221,
+        "pieces": 64,
+        "piece_triangles_largest_first": [
+          19884,
+          18,
+          8,
+          7,
+          5,
+          4,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "small_pieces": 63,
+        "small_piece_triangles": 112
+      },
+      "welded": {
+        "vertices": 9998,
+        "edges": 29994,
+        "faces": 19996,
+        "triangles": 19996,
+        "face_sides": {
+          "3": 19996,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          19996
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 13041,
+    "edges": 33640,
+    "faces": 19996,
+    "triangles": 19996,
+    "face_sides": {
+      "3": 19996,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 7292,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 221,
+    "pieces": 64,
+    "piece_triangles_largest_first": [
+      19884,
+      18,
+      8,
+      7,
+      5,
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "small_pieces": 63,
+    "small_piece_triangles": 112
+  },
+  "welded": {
+    "vertices": 9998,
+    "edges": 29994,
+    "faces": 19996,
+    "triangles": 19996,
+    "face_sides": {
+      "3": 19996,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      19996
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.50196,
+      -0.501959,
+      -0.501957
+    ],
+    "max": [
+      0.501962,
+      0.501959,
+      0.501961
+    ],
+    "dimensions": [
+      1.003922,
+      1.003919,
+      1.003918
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.50196,
+      -0.501957,
+      -0.501959
+    ],
+    "max": [
+      0.501962,
+      0.501961,
+      0.501959
+    ],
+    "dimensions": [
+      1.003922,
+      1.003918,
+      1.003919
+    ]
+  },
+  "bounding_box_centre_blender": [
+    1e-06,
+    -0.0,
+    2e-06
+  ],
+  "lowest_point_blender_z": -0.501957,
+  "materials": [
+    "BakeLow_Export_Mat"
+  ],
+  "images": [
+    {
+      "name": "BakeLow_basecolor",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "BakeLow_emission",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "BakeLow_metallic-BakeLow_roughness",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "BakeLow_normal",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

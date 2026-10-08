@@ -1,0 +1,826 @@
+{
+ "122": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "boulder_1_three_quarter.png"
+  },
+  "_meta": {
+   "title": "LoadImage"
+  }
+ },
+ "193": {
+  "class_type": "LoadBackgroundRemovalModel",
+  "inputs": {
+   "bg_removal_name": "birefnet.safetensors"
+  },
+  "_meta": {
+   "title": "LoadBackgroundRemovalModel"
+  }
+ },
+ "192": {
+  "class_type": "RemoveBackground",
+  "inputs": {
+   "bg_removal_model": [
+    "193",
+    0
+   ],
+   "image": [
+    "122",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "RemoveBackground"
+  }
+ },
+ "312": {
+  "class_type": "ImageCropToMask",
+  "inputs": {
+   "images": [
+    "122",
+    0
+   ],
+   "masks": [
+    "192",
+    0
+   ],
+   "width": 1024,
+   "height": 1024,
+   "pad_factor": 1.1,
+   "grow_mask": 0,
+   "background": "#000000"
+  },
+  "_meta": {
+   "title": "ImageCropToMask"
+  }
+ },
+ "15": {
+  "class_type": "CLIPVisionLoader",
+  "inputs": {
+   "clip_name": "dino_v3_L_naf_fp32.safetensors"
+  },
+  "_meta": {
+   "title": "CLIPVisionLoader"
+  }
+ },
+ "299": {
+  "class_type": "Trellis2Conditioning",
+  "inputs": {
+   "clip_vision_model": [
+    "15",
+    0
+   ],
+   "image": [
+    "312",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "Trellis2Conditioning"
+  }
+ },
+ "40": {
+  "class_type": "UNETLoader",
+  "inputs": {
+   "unet_name": "trellis_2_int8_convrot.safetensors",
+   "weight_dtype": "default"
+  },
+  "_meta": {
+   "title": "UNETLoader"
+  }
+ },
+ "117": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "trellis_2_shape_vae_bf16.safetensors"
+  },
+  "_meta": {
+   "title": "shape VAE"
+  }
+ },
+ "118": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "trellis_2_texture_vae_bf16.safetensors"
+  },
+  "_meta": {
+   "title": "texture VAE"
+  }
+ },
+ "87": {
+  "class_type": "EmptyTrellis2LatentStructure",
+  "inputs": {
+   "batch_size": 1
+  },
+  "_meta": {
+   "title": "EmptyTrellis2LatentStructure"
+  }
+ },
+ "199": {
+  "class_type": "CFGOverride",
+  "inputs": {
+   "model": [
+    "40",
+    0
+   ],
+   "cfg": 1,
+   "start_percent": 0.667,
+   "end_percent": 1
+  },
+  "_meta": {
+   "title": "CFGOverride"
+  }
+ },
+ "125": {
+  "class_type": "RescaleCFG",
+  "inputs": {
+   "model": [
+    "199",
+    0
+   ],
+   "multiplier": 0.7
+  },
+  "_meta": {
+   "title": "RescaleCFG"
+  }
+ },
+ "108": {
+  "class_type": "ModelSamplingSD3",
+  "inputs": {
+   "model": [
+    "125",
+    0
+   ],
+   "shift": 5
+  },
+  "_meta": {
+   "title": "ModelSamplingSD3"
+  }
+ },
+ "3": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "108",
+    0
+   ],
+   "seed": 56,
+   "steps": 12,
+   "cfg": 7.5,
+   "sampler_name": "euler",
+   "scheduler": "normal",
+   "positive": [
+    "299",
+    0
+   ],
+   "negative": [
+    "299",
+    1
+   ],
+   "latent_image": [
+    "87",
+    0
+   ],
+   "denoise": 1
+  },
+  "_meta": {
+   "title": "1 structure sampler"
+  }
+ },
+ "119": {
+  "class_type": "VaeDecodeStructureTrellis2",
+  "inputs": {
+   "samples": [
+    "3",
+    0
+   ],
+   "vae": [
+    "117",
+    0
+   ],
+   "resolution": "32"
+  },
+  "_meta": {
+   "title": "1 structure decode"
+  }
+ },
+ "91": {
+  "class_type": "Trellis2ShapeStage",
+  "inputs": {
+   "positive": [
+    "299",
+    0
+   ],
+   "negative": [
+    "299",
+    1
+   ],
+   "voxel": [
+    "119",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "Trellis2ShapeStage"
+  }
+ },
+ "279": {
+  "class_type": "CFGOverride",
+  "inputs": {
+   "model": [
+    "40",
+    0
+   ],
+   "cfg": 1,
+   "start_percent": 0.769,
+   "end_percent": 1
+  },
+  "_meta": {
+   "title": "CFGOverride"
+  }
+ },
+ "126": {
+  "class_type": "RescaleCFG",
+  "inputs": {
+   "model": [
+    "279",
+    0
+   ],
+   "multiplier": 0.5
+  },
+  "_meta": {
+   "title": "RescaleCFG"
+  }
+ },
+ "18": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "126",
+    0
+   ],
+   "seed": 42,
+   "steps": 20,
+   "cfg": 7.5,
+   "sampler_name": "euler",
+   "scheduler": "normal",
+   "positive": [
+    "91",
+    0
+   ],
+   "negative": [
+    "91",
+    1
+   ],
+   "latent_image": [
+    "91",
+    2
+   ],
+   "denoise": 1
+  },
+  "_meta": {
+   "title": "2 shape sampler (512)"
+  }
+ },
+ "94": {
+  "class_type": "Trellis2UpsampleStage",
+  "inputs": {
+   "positive": [
+    "91",
+    0
+   ],
+   "negative": [
+    "91",
+    1
+   ],
+   "shape_latent": [
+    "18",
+    0
+   ],
+   "vae": [
+    "117",
+    0
+   ],
+   "target_resolution": 1024
+  },
+  "_meta": {
+   "title": "3 upsample stage"
+  }
+ },
+ "23": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "126",
+    0
+   ],
+   "seed": 42,
+   "steps": 12,
+   "cfg": 7.5,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "positive": [
+    "94",
+    0
+   ],
+   "negative": [
+    "94",
+    1
+   ],
+   "latent_image": [
+    "94",
+    2
+   ],
+   "denoise": 1
+  },
+  "_meta": {
+   "title": "3 shape sampler (upsampled)"
+  }
+ },
+ "92": {
+  "class_type": "VaeDecodeShapeTrellis",
+  "inputs": {
+   "samples": [
+    "23",
+    0
+   ],
+   "vae": [
+    "117",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "3 shape decode"
+  }
+ },
+ "98": {
+  "class_type": "Trellis2TextureStage",
+  "inputs": {
+   "positive": [
+    "94",
+    0
+   ],
+   "negative": [
+    "94",
+    1
+   ],
+   "shape_latent": [
+    "23",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "Trellis2TextureStage"
+  }
+ },
+ "12": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "40",
+    0
+   ],
+   "seed": 43,
+   "steps": 12,
+   "cfg": 1,
+   "sampler_name": "euler",
+   "scheduler": "normal",
+   "positive": [
+    "98",
+    0
+   ],
+   "negative": [
+    "98",
+    1
+   ],
+   "latent_image": [
+    "98",
+    2
+   ],
+   "denoise": 1
+  },
+  "_meta": {
+   "title": "4 texture sampler"
+  }
+ },
+ "93": {
+  "class_type": "VaeDecodeTextureTrellis",
+  "inputs": {
+   "samples": [
+    "12",
+    0
+   ],
+   "vae": [
+    "118",
+    0
+   ],
+   "shape_subdivides": [
+    "92",
+    1
+   ]
+  },
+  "_meta": {
+   "title": "4 texture decode"
+  }
+ },
+ "400": {
+  "class_type": "PaintMesh",
+  "inputs": {
+   "mesh": [
+    "92",
+    0
+   ],
+   "voxel_colors": [
+    "93",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "raw: vertex colours"
+  }
+ },
+ "401": {
+  "class_type": "SaveGLB",
+  "inputs": {
+   "mesh": [
+    "400",
+    0
+   ],
+   "filename_prefix": "3d/boulder_r1_raw"
+  },
+  "_meta": {
+   "title": "raw: save"
+  }
+ },
+ "326": {
+  "class_type": "MemoryCleaner",
+  "inputs": {
+   "input_1": [
+    "92",
+    0
+   ],
+   "enabled": true,
+   "always_run": true,
+   "clean_vram": true,
+   "clean_ram": true
+  },
+  "_meta": {
+   "title": "free VRAM before closing (as the video does before WTiVo)"
+  }
+ },
+ "241": {
+  "class_type": "RemeshMesh",
+  "inputs": {
+   "mesh": [
+    "326",
+    0
+   ],
+   "resolution": 512,
+   "sign_mode": "udf",
+   "sign_mode.qef": false,
+   "sign_mode.drop_inverted_components": true,
+   "sign_mode.drop_enclosed_components": true,
+   "band": 1.0,
+   "project_back": 0.0,
+   "fix_poles": false,
+   "smooth_iters": 0,
+   "drop_small_components": 0.01,
+   "precluster_max_verts": 20000000
+  },
+  "_meta": {
+   "title": "SUBSTITUTE for WTiVo: RemeshMesh"
+  }
+ },
+ "402": {
+  "class_type": "SaveGLB",
+  "inputs": {
+   "mesh": [
+    "241",
+    0
+   ],
+   "filename_prefix": "3d/boulder_r1_closed"
+  },
+  "_meta": {
+   "title": "closed: save"
+  }
+ },
+ "328": {
+  "class_type": "LODTailorTheMeshTrimmer",
+  "inputs": {
+   "mesh": [
+    "241",
+    0
+   ],
+   "blender_path": ".tools/local-gen/blender-factory",
+   "target_tris": 1000000,
+   "passes": 100,
+   "tolerance": 1.05,
+   "intermediate_ratio": 0.5,
+   "last_ratio": 0.25,
+   "final_ratio": 0.2,
+   "triangulate": true,
+   "symmetry": false,
+   "voxel_rebuild": false,
+   "relative_voxel_size": 0.001,
+   "minimum_voxel_size": 1e-06,
+   "seal_distance": 0.0001,
+   "seal_max_steps": 100,
+   "seal_keep_trying": true,
+   "timeout_seconds": 1800
+  },
+  "_meta": {
+   "title": "LODTailor dense (Blender)"
+  }
+ },
+ "330": {
+  "class_type": "UnwrapMesh",
+  "inputs": {
+   "mesh": [
+    "328",
+    0
+   ],
+   "segmenter": "pec",
+   "resolution": 1536,
+   "padding": 1,
+   "weld_distance": 0.0002
+  },
+  "_meta": {
+   "title": "dense: unwrap"
+  }
+ },
+ "329": {
+  "class_type": "MemoryCleaner",
+  "inputs": {
+   "input_1": [
+    "330",
+    0
+   ],
+   "enabled": true,
+   "always_run": true,
+   "clean_vram": true,
+   "clean_ram": true
+  },
+  "_meta": {
+   "title": "ADDED: free VRAM before the bake from generation"
+  }
+ },
+ "331": {
+  "class_type": "BakeTextureFromVoxel",
+  "inputs": {
+   "mesh": [
+    "329",
+    0
+   ],
+   "voxel_colors": [
+    "93",
+    0
+   ],
+   "texture_size": 4096,
+   "reference_mesh": [
+    "328",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "dense: bake from generation"
+  }
+ },
+ "332": {
+  "class_type": "ApplyTextureToMesh",
+  "inputs": {
+   "mesh": [
+    "330",
+    0
+   ],
+   "base_color": [
+    "331",
+    0
+   ],
+   "metallic": [
+    "331",
+    1
+   ],
+   "roughness": [
+    "331",
+    2
+   ]
+  },
+  "_meta": {
+   "title": "dense: apply textures"
+  }
+ },
+ "333": {
+  "class_type": "MeshToFile3D",
+  "inputs": {
+   "mesh": [
+    "332",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "dense: to GLB"
+  }
+ },
+ "334": {
+  "class_type": "SaveGLB",
+  "inputs": {
+   "mesh": [
+    "333",
+    0
+   ],
+   "filename_prefix": "3d/boulder_r1_highpoly"
+  },
+  "_meta": {
+   "title": "dense: save"
+  }
+ },
+ "335": {
+  "class_type": "LODTailorTheMeshTrimmer",
+  "inputs": {
+   "mesh": [
+    "328",
+    0
+   ],
+   "blender_path": ".tools/local-gen/blender-factory",
+   "target_tris": 20000,
+   "passes": 3,
+   "tolerance": 1.05,
+   "intermediate_ratio": 0.5,
+   "last_ratio": 0.25,
+   "final_ratio": 0.2,
+   "triangulate": true,
+   "symmetry": false,
+   "voxel_rebuild": true,
+   "relative_voxel_size": 0.0015,
+   "minimum_voxel_size": 1e-06,
+   "seal_distance": 0.0001,
+   "seal_max_steps": 100,
+   "seal_keep_trying": true,
+   "timeout_seconds": 1800
+  },
+  "_meta": {
+   "title": "LODTailor low-poly (Blender)"
+  }
+ },
+ "336": {
+  "class_type": "PaintMesh",
+  "inputs": {
+   "mesh": [
+    "335",
+    0
+   ],
+   "voxel_colors": [
+    "93",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "low: vertex colours"
+  }
+ },
+ "337": {
+  "class_type": "UnwrapMesh",
+  "inputs": {
+   "mesh": [
+    "336",
+    0
+   ],
+   "segmenter": "pec",
+   "resolution": 1536,
+   "padding": 2,
+   "weld_distance": 0.0002
+  },
+  "_meta": {
+   "title": "low: unwrap"
+  }
+ },
+ "338": {
+  "class_type": "MeshSmoothNormals",
+  "inputs": {
+   "mesh": [
+    "337",
+    0
+   ],
+   "crease_angle": 180
+  },
+  "_meta": {
+   "title": "low: smooth normals"
+  }
+ },
+ "339": {
+  "class_type": "MeshToFile3D",
+  "inputs": {
+   "mesh": [
+    "338",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "low: to GLB"
+  }
+ },
+ "340": {
+  "class_type": "MemoryCleaner",
+  "inputs": {
+   "input_1": [
+    "339",
+    0
+   ],
+   "input_2": [
+    "333",
+    0
+   ],
+   "enabled": true,
+   "always_run": true,
+   "clean_vram": true,
+   "clean_ram": true
+  },
+  "_meta": {
+   "title": "free memory before baking"
+  }
+ },
+ "341": {
+  "class_type": "LODTailorBakeForger",
+  "inputs": {
+   "high_poly": [
+    "340",
+    1
+   ],
+   "low_poly": [
+    "340",
+    0
+   ],
+   "blender_path": ".tools/local-gen/blender-factory",
+   "prefer_gpu_baking": true,
+   "hybrid_cpu_gpu_baking": true,
+   "bake_sample_count": 1,
+   "bake_normal_detail": true,
+   "normal_map_resolution": 4096,
+   "copy_base_color_texture": true,
+   "base_color_resolution": 4096,
+   "bake_roughness_texture": true,
+   "roughness_resolution": 4096,
+   "bake_metallic_texture": true,
+   "metallic_resolution": 4096,
+   "bake_emission_texture": true,
+   "emission_resolution": 4096,
+   "bake_ao_texture": true,
+   "ao_resolution": 4096,
+   "brighter": false,
+   "auto_bake_margin": true,
+   "bake_margin_pixels": 16,
+   "bake_margin_minimum_pixels": 16,
+   "bake_margin_resolution_divisor": 256,
+   "fallback_bake_mode": "AUTO",
+   "coverage_probe_sample_count": 4096,
+   "extended_ray_sample_ratio": 0.005,
+   "fallback_minimum_recoverable_samples": 8,
+   "tight_cage_extrusion_factor": 0.0019,
+   "tight_max_ray_distance_factor": 0.029,
+   "far_cage_extrusion_factor": 0.02,
+   "far_max_ray_distance_factor": 0.092,
+   "coverage_alpha_threshold": 0.5,
+   "normal_length_tolerance": 0.35,
+   "neutral_normal_color": "0.5,0.5,1.0,1.0",
+   "material_base_color": "0.8,0.8,0.8,1.0",
+   "material_roughness": 0.9,
+   "material_metallic": 0.0,
+   "material_specular_level": 0.5,
+   "load_output_images": false
+  },
+  "_meta": {
+   "title": "Bake Forger (Blender)"
+  }
+ },
+ "342": {
+  "class_type": "WTiVoFastMergeByDistance",
+  "inputs": {
+   "model": [
+    "341",
+    0
+   ],
+   "merge_distance": 0.0001,
+   "centroid_merge": false,
+   "remove_degenerate": true,
+   "topology_mode": "TEXTURE_SAFE",
+   "adaptive_retry_step": true,
+   "max_attempts": 100
+  },
+  "_meta": {
+   "title": "Fast Merge (TEXTURE_SAFE)"
+  }
+ },
+ "343": {
+  "class_type": "SaveGLB",
+  "inputs": {
+   "mesh": [
+    "342",
+    0
+   ],
+   "filename_prefix": "3d/boulder_r1_lowpoly"
+  },
+  "_meta": {
+   "title": "low: save"
+  }
+ }
+}

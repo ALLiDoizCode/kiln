@@ -1,0 +1,9 @@
+# The review and wireframe pictures of each model are large and can be made again with
+# scripts/; only the ones the write-up shows are kept in git.
+measurements/**/*.png
+!measurements/boulder_r1_lowpoly/review/closest.png
+!measurements/boulder_r1_lowpoly/review/three_quarter.png
+!measurements/crate_px_lowpoly/review/three_quarter.png
+!measurements/crate_r2_lowpoly/review/closest.png
+!measurements/crate_r2_lowpoly/review/three_quarter.png
+!measurements/crate_r2_lowpoly/wire/crate_r2_lowpoly_wire_three_quarter.png

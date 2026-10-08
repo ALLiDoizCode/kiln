@@ -1,0 +1,2 @@
+tripo make images/crate_front.png --model tripo-v3.1 -p texture=true -p pbr=true -p texture_quality=standard -p texture_seed=1 --seed 1 --dry-run --json
+exit 0

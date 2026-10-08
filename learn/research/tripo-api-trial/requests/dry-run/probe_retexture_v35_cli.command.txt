@@ -1,0 +1,2 @@
+tripo make task_00000000-0000-0000-0000-000000000000 --then texture:model=v3.5-20260815,delight=true --dry-run --json
+exit 2

@@ -1,0 +1,93 @@
+{
+ "file": "models/boulder_r1_highpoly.glb",
+ "generator": "ComfyUI",
+ "primitives": [
+  {
+   "attributes": [
+    "COLOR_0",
+    "POSITION",
+    "TEXCOORD_0"
+   ],
+   "bounding_box_gltf_yup": {
+    "min": [
+     -0.500512,
+     -0.283183,
+     -0.438008
+    ],
+    "max": [
+     0.500376,
+     0.282962,
+     0.437586
+    ],
+    "dimensions": [
+     1.000888,
+     0.566145,
+     0.875594
+    ]
+   },
+   "as_stored": {
+    "vertices": 30276,
+    "vertices_used": 30276,
+    "triangles": 43849,
+    "edges": 72474,
+    "boundary_edges": 13403,
+    "non_manifold_edges": 2,
+    "loose_vertices": 0,
+    "edges_used_twice_the_same_way": 1589,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 1830,
+    "piece_triangles_largest_first": [
+     6872,
+     4858,
+     3590,
+     2759,
+     2221,
+     1857,
+     1802,
+     1643,
+     1285,
+     1276,
+     1272,
+     1016,
+     956,
+     938,
+     883,
+     865,
+     816,
+     505,
+     502,
+     431
+    ],
+    "small_pieces": 1811,
+    "small_piece_triangles": 7933,
+    "surface_area": 4.072232500631019,
+    "smallest_face_area": 2.0533398564071523e-07,
+    "median_face_area": 8.938540177506532e-05
+   },
+   "welded": {
+    "vertices": 21229,
+    "vertices_used": 21229,
+    "triangles": 43849,
+    "edges": 64572,
+    "boundary_edges": 320,
+    "non_manifold_edges": 2513,
+    "loose_vertices": 0,
+    "edges_used_twice_the_same_way": 5871,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "pieces": 2,
+    "piece_triangles_largest_first": [
+     22993,
+     20856
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0,
+    "surface_area": 4.072232500631019,
+    "smallest_face_area": 2.0533398564071523e-07,
+    "median_face_area": 8.938540177506532e-05
+   },
+   "faces_lost_to_welding": 0
+  }
+ ]
+}

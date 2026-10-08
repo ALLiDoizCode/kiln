@@ -1,0 +1,2 @@
+tripo make task_00000000-0000-0000-0000-000000000000 --then decimate:20000 --dry-run --json
+exit 0

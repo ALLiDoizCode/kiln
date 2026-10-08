@@ -1,0 +1,52 @@
+{
+ "prompt": "boulder_r1.prompt.json",
+ "result": {
+  "status": "ok"
+ },
+ "total_seconds": 309.7,
+ "seconds_per_node": {
+  "122 LoadImage": 0.09,
+  "192 RemoveBackground": 0.67,
+  "312 ImageCropToMask": 0.13,
+  "299 Trellis2Conditioning": 1.29,
+  "3 1 structure sampler": 4.83,
+  "119 1 structure decode": 0.27,
+  "91 Trellis2ShapeStage": 0.0,
+  "18 2 shape sampler (512)": 9.0,
+  "94 3 upsample stage": 0.93,
+  "23 3 shape sampler (upsampled)": 59.71,
+  "92 3 shape decode": 3.3,
+  "326 free VRAM before closing (as the video does before WTiVo)": 0.51,
+  "241 SUBSTITUTE for WTiVo: RemeshMesh": 5.85,
+  "328 LODTailor dense (Blender)": 103.51,
+  "335 LODTailor low-poly (Blender)": 23.21,
+  "402 closed: save": 0.15,
+  "98 Trellis2TextureStage": 0.02,
+  "12 4 texture sampler": 31.37,
+  "93 4 texture decode": 3.0,
+  "400 raw: vertex colours": 1.74,
+  "401 raw: save": 0.61,
+  "330 dense: unwrap": 3.13,
+  "329 ADDED: free VRAM before the bake from generation": 0.01,
+  "331 dense: bake from generation": 10.46,
+  "332 dense: apply textures": 0.1,
+  "333 dense: to GLB": 1.28,
+  "334 dense: save": 0.01,
+  "336 low: vertex colours": 1.28,
+  "337 low: unwrap": 0.34,
+  "338 low: smooth normals": 0.02,
+  "339 low: to GLB": 0.21,
+  "340 free memory before baking": 0.01,
+  "341 Bake Forger (Blender)": 42.13,
+  "342 Fast Merge (TEXTURE_SAFE)": 0.29,
+  "343 low: save": 0.21
+ },
+ "cached": [
+  "cached:193,15,40,117,118,87,199,125,108,279,126"
+ ],
+ "baseline_gpu_used_mib": 1116,
+ "peak_gpu_used_mib": 9754,
+ "peak_gpu_process_mib": 9062,
+ "peak_rss_mib": 11896,
+ "min_ram_available_mib": 12139
+}

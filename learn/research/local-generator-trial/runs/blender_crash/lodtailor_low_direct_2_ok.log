@@ -1,0 +1,26 @@
+13:30:26 | INFO: Data are loaded, start creating Blender stuff
+13:30:26 | INFO: Blender create Mesh node 0
+13:30:28 | INFO: glTF import finished in 2.26s
+[FastDecimator] Start: 6,251,612 faces
+[FastDecimator]  -> Seal[input] pre-weld: boundary=0 nonmanifold=0
+[FastDecimator]  -> Seal[input] already watertight+manifold
+[FastDecimator]  -> Voxel: 5,310,754 faces
+[FastDecimator]  -> Triangulate: 10,621,508 faces
+[FastDecimator]  -> Guard: 200,000 faces
+[FastDecimator]  -> Pass1: 100,000 faces
+[FastDecimator]  -> Pass2: 25,000 faces
+[FastDecimator]  -> Pass3: 20,000 faces
+[FastDecimator]  -> Merge[output] pre: boundary=0 nonmanifold=0 keep_trying=True
+[FastDecimator]  -> Merge[output] already watertight
+[FastDecimator] FINAL: 20,000 faces | boundary=0 nonmanifold=0 | watertight=YES
+[FastDecimator] Finished in 103.41 seconds
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+13:32:11 | INFO: Starting glTF 2.0 export
+13:32:11 | INFO: Extracting primitive: Mesh_0
+13:32:11 | INFO: Primitives created: 1
+13:32:11 | INFO: Finished glTF 2.0 export in 0.026781320571899414 s
+
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+
+Blender quit

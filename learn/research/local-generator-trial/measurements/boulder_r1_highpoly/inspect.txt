@@ -1,0 +1,11 @@
+learn/research/local-generator-trial/models/boulder_r1_highpoly.glb  (glTF 2, generator: ComfyUI)
+
+mesh ""
+  primitive 0
+    POSITION    VEC3  x 30276
+    TEXCOORD_0  VEC2  x 30276
+    COLOR_0     VEC3  x 30276
+    indices     131547  = 43849 triangles
+    material    ""  textures: baseColorTexture, metallicRoughnessTexture
+
+1 mesh(es), 1 material(s), 2 image(s)

@@ -1,0 +1,1262 @@
+[32m[INFO][0m setup plugin alembic.autogenerate.schemas
+[32m[INFO][0m setup plugin alembic.autogenerate.tables
+[32m[INFO][0m setup plugin alembic.autogenerate.types
+[32m[INFO][0m setup plugin alembic.autogenerate.constraints
+[32m[INFO][0m setup plugin alembic.autogenerate.defaults
+[32m[INFO][0m setup plugin alembic.autogenerate.comments
+[32m[INFO][0m setup plugin alembic.ext.checkconstraint_byname
+[1m[33m[WARNING][0m --disable-api-nodes is deprecated and will be removed in a future version. It currently behaves like --offline. Use --offline to keep the frontend offline, or --disable-partner-nodes to only disable partner nodes.
+[32m[INFO][0m Setting output directory to: .tools/local-gen/out
+[32m[INFO][0m Setting input directory to: .tools/local-gen/input
+[32m[INFO][0m Setting user directory to: .tools/local-gen/user
+[32m[INFO][0m Found comfy_kitchen backend triton: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'int8_linear', 'na3d', 'quantize_and_rotate_rowwise', 'quantize_int8_rowwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'w4a8_int8_linear']}
+[32m[INFO][0m Found comfy_kitchen backend hip: {'available': False, 'disabled': False, 'unavailable_reason': 'PyTorch ROCm/HIP runtime not available', 'capabilities': []}
+[32m[INFO][0m Found comfy_kitchen backend ascend: {'available': False, 'disabled': False, 'unavailable_reason': "torch-npu is not installed: No module named 'torch_npu'", 'capabilities': []}
+[32m[INFO][0m Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'convrot_w4a4_linear', 'dequantize_convrot_w4a4_weight', 'dequantize_int8_convrot_weight', 'dequantize_int8_convrot_weight_dtype', 'dequantize_int8_embedding', 'dequantize_int8_simple', 'dequantize_int8_simple_dtype', 'dequantize_mxfp8', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'dequantize_w4a8_int8_weight', 'fp16_conv3d', 'fp16_conv3d_out', 'fp16_linear', 'gemv_awq_w4a16', 'group_norm_silu_pad3d', 'group_norm_silu_pad3d_out', 'int8_linear', 'na3d', 'prepare_int4_weight_for_int8_linear', 'quantize_and_rotate_rowwise', 'quantize_convrot_w4a4_weight', 'quantize_int8_convrot_weight', 'quantize_int8_rowwise', 'quantize_int8_tensorwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'quantize_svdquant_w4a4', 'quantize_w4a8_int8_weight', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'rotate_int8_convrot_weight', 'scaled_mm_mxfp8', 'scaled_mm_nvfp4', 'scaled_mm_svdquant_w4a4', 'sol_attn', 'stochastic_rounding_fp8', 'w4a8_int8_linear']}
+[32m[INFO][0m Found comfy_kitchen backend cuda: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['adaln', 'apply_rope', 'apply_rope1', 'apply_rope1_', 'apply_rope_', 'apply_rope_split_half', 'apply_rope_split_half1', 'apply_rope_split_half1_', 'apply_rope_split_half_', 'convrot_w4a4_linear', 'dequantize_convrot_w4a4_weight', 'dequantize_int8_convrot_weight', 'dequantize_int8_convrot_weight_dtype', 'dequantize_int8_simple', 'dequantize_int8_simple_dtype', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'dequantize_w4a8_int8_weight', 'fp16_conv3d', 'fp16_conv3d_out', 'fp16_linear', 'gemv_awq_w4a16', 'group_norm_silu_pad3d', 'group_norm_silu_pad3d_out', 'int8_linear', 'na3d', 'prepare_int4_weight_for_int8_linear', 'quantize_and_rotate_rowwise', 'quantize_convrot_w4a4_weight', 'quantize_int8_convrot_weight', 'quantize_int8_rowwise', 'quantize_int8_tensorwise', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'quantize_svdquant_w4a4', 'quantize_w4a8_int8_weight', 'rms_adaln', 'rms_rope', 'rms_rope1', 'rms_rope1_', 'rms_rope_', 'rms_rope_split_half', 'rms_rope_split_half1', 'rms_rope_split_half1_', 'rms_rope_split_half_', 'rotate_int8_convrot_weight', 'scaled_mm_nvfp4', 'scaled_mm_svdquant_w4a4', 'sol_attn', 'stochastic_rounding_fp8', 'w4a8_int8_linear']}
+[32m[INFO][0m Checkpoint files will always be loaded safely.
+[32m[INFO][0m Total VRAM 9852 MB, total RAM 32031 MB
+[32m[INFO][0m pytorch version: 2.14.1+cu130
+[32m[INFO][0m Set vram state to: NORMAL_VRAM
+[32m[INFO][0m Device: cuda:0 NVIDIA GeForce RTX 3080 : cudaMallocAsync
+[32m[INFO][0m Using async weight offloading with 2 streams
+[32m[INFO][0m Enabled pinned memory 27934
+[32m[INFO][0m Using pytorch attention
+[32m[INFO][0m aimdo: /project/src/control.c:283:INFO:comfy-aimdo inited for GPU: NVIDIA GeForce RTX 3080 (VRAM: 9851 MB)
+[32m[INFO][0m DynamicVRAM support detected and enabled
+[32m[INFO][0m Python version: 3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]
+[32m[INFO][0m ComfyUI version: 0.39.0
+[32m[INFO][0m comfy-aimdo version: 0.5.6
+[32m[INFO][0m comfy-kitchen version: 0.2.37
+[32m[INFO][0m Setting temp directory to: .tools/local-gen/tmp/temp
+[32m[INFO][0m comfyui-frontend-package version: 1.55.14
+[32m[INFO][0m comfyui-workflow-templates version: 0.11.78
+[32m[INFO][0m comfyui-embedded-docs version: 0.5.13
+[32m[INFO][0m comfy-kitchen version: 0.2.37
+[32m[INFO][0m comfy-aimdo version: 0.5.6
+[32m[INFO][0m [Prompt Server] web root: .tools/local-gen/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+[32m[INFO][0m Asset seeder disabled
+.tools/local-gen/venv/lib/python3.12/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+[32m[INFO][0m No OpenGL_accelerate module loaded: No module named 'OpenGL_accelerate'
+[32m[INFO][0m 
+Import times for custom nodes:
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/websocket_image_save.py
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/ComfyUI-Memory-Cleaner
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-Bake-Forger
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-The-Mesh-Trimmer-ComfyuiNode
+[32m[INFO][0m    0.0 seconds: .tools/local-gen/src/ComfyUI/custom_nodes/WTiVo-FastMergeByDistance
+[32m[INFO][0m 
+[32m[INFO][0m Using RAM pressure cache.
+[32m[INFO][0m Starting server
+
+[32m[INFO][0m To see the GUI go to: http://127.0.0.1:8189
+[32m[INFO][0m got prompt
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_shape_vae_bf16.safetensors']
+[32m[INFO][0m VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/background_removal/birefnet.safetensors']
+[32m[INFO][0m Requested to load BiRefNet
+[32m[INFO][0m Model BiRefNet prepared for dynamic VRAM loading. 419MB Staged. 0 patches attached. Force pre-loaded 268 weights: 4216 KB.
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/clip_vision/dino_v3_L_naf_fp32.safetensors']
+[32m[INFO][0m Requested to load DINOv3ViTModel
+[32m[INFO][0m Model DINOv3ViTModel prepared for dynamic VRAM loading. 579MB Staged. 0 patches attached. Force pre-loaded 146 weights: 584 KB.
+[32m[INFO][0m Found quantization metadata version 1
+[32m[INFO][0m Detected mixed precision quantization
+[32m[INFO][0m Using mixed precision operations
+[32m[INFO][0m Native ops: int8_tensorwise, convrot_w4a4, w6a8_int8, asym_w4a8_int8 , emulated ops: mxfp8, float8_e4m3fn, float8_e5m2, nvfp4
+[32m[INFO][0m model weight dtype torch.bfloat16, manual cast: torch.bfloat16
+[32m[INFO][0m model_type FLOW
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/diffusion_models/trellis_2_int8_convrot.safetensors']
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:01<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:01<00:13,  1.20s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:00<00:13,  1.20s/it]                                    17%|█▋        | 2/12 [00:00<00:01,  8.05it/s] 25%|██▌       | 3/12 [00:00<00:03,  2.71it/s] 33%|███▎      | 4/12 [00:00<00:02,  2.75it/s] 42%|████▏     | 5/12 [00:01<00:02,  2.74it/s] 50%|█████     | 6/12 [00:01<00:02,  2.65it/s] 58%|█████▊    | 7/12 [00:02<00:01,  2.73it/s] 67%|██████▋   | 8/12 [00:02<00:01,  2.69it/s] 75%|███████▌  | 9/12 [00:02<00:01,  2.64it/s] 83%|████████▎ | 10/12 [00:03<00:00,  3.20it/s] 92%|█████████▏| 11/12 [00:03<00:00,  5.29it/s]100%|██████████| 12/12 [00:03<00:00,  5.27it/s]100%|██████████| 12/12 [00:03<00:00,  3.40it/s]
+[32m[INFO][0m Requested to load ShapeVae
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/20 [00:00<?, ?it/s]  0%|          | 0/20 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/20 [00:01<?, ?it/s,  Model Initialization complete!  ]  5%|▌         | 1/20 [00:01<00:20,  1.06s/it,  Model Initialization complete!  ]  5%|▌         | 1/20 [00:01<00:20,  1.06s/it]                                    10%|█         | 2/20 [00:01<00:15,  1.13it/s] 15%|█▌        | 3/20 [00:02<00:13,  1.24it/s] 20%|██        | 4/20 [00:03<00:12,  1.25it/s] 25%|██▌       | 5/20 [00:04<00:12,  1.20it/s] 30%|███       | 6/20 [00:05<00:12,  1.13it/s] 35%|███▌      | 7/20 [00:05<00:10,  1.19it/s] 40%|████      | 8/20 [00:06<00:09,  1.22it/s] 45%|████▌     | 9/20 [00:07<00:09,  1.20it/s] 50%|█████     | 10/20 [00:08<00:08,  1.20it/s] 55%|█████▌    | 11/20 [00:09<00:07,  1.25it/s] 60%|██████    | 12/20 [00:10<00:06,  1.25it/s] 65%|██████▌   | 13/20 [00:10<00:05,  1.24it/s] 70%|███████   | 14/20 [00:11<00:05,  1.12it/s] 75%|███████▌  | 15/20 [00:12<00:04,  1.24it/s] 80%|████████  | 16/20 [00:12<00:01,  2.44it/s] 85%|████████▌ | 17/20 [00:13<00:01,  2.40it/s] 90%|█████████ | 18/20 [00:13<00:00,  2.43it/s] 95%|█████████▌| 19/20 [00:14<00:00,  2.44it/s]100%|██████████| 20/20 [00:14<00:00,  2.40it/s]100%|██████████| 20/20 [00:14<00:00,  1.37it/s]
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:07<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:07<01:27,  7.92s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:15<01:27,  7.92s/it]                                    17%|█▋        | 2/12 [00:15<01:19,  7.97s/it] 25%|██▌       | 3/12 [00:23<01:12,  8.03s/it] 33%|███▎      | 4/12 [00:31<01:03,  7.89s/it] 42%|████▏     | 5/12 [00:39<00:54,  7.80s/it] 50%|█████     | 6/12 [00:47<00:46,  7.78s/it] 58%|█████▊    | 7/12 [00:55<00:38,  7.78s/it] 67%|██████▋   | 8/12 [01:03<00:31,  7.89s/it] 75%|███████▌  | 9/12 [01:10<00:23,  7.84s/it] 83%|████████▎ | 10/12 [01:18<00:15,  7.86s/it] 92%|█████████▏| 11/12 [01:26<00:07,  7.88s/it]100%|██████████| 12/12 [01:30<00:00,  3.96s/it]100%|██████████| 12/12 [01:30<00:00,  7.55s/it]
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model ShapeVae prepared for dynamic VRAM loading. 277MB Staged. 0 patches attached. Force pre-loaded 196 weights: 785738 KB.
+[LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=39 euler=78
+[LODsmith] OUTPUT CHECK watertight=False winding_consistent=True bodies=39 euler=68
+[32m[INFO][0m Model storage policy: fast_disk=False paths=['.tools/local-gen/src/ComfyUI/models/vae/trellis_2_texture_vae_bf16.safetensors']
+[32m[INFO][0m VAE load device: cuda:0, offload device: cpu, dtype: torch.float16
+[32m[INFO][0m Requested to load Trellis2
+[32m[INFO][0m Model Trellis2 prepared for dynamic VRAM loading. 5004MB Staged. 0 patches attached. Force pre-loaded 720 weights: 6259 KB.
+  0%|          | 0/12 [00:00<?, ?it/s]  0%|          | 0/12 [00:00<?, ?it/s,   Model Initializing ...  ]  0%|          | 0/12 [00:04<?, ?it/s,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:04<00:47,  4.32s/it,  Model Initialization complete!  ]  8%|▊         | 1/12 [00:08<00:47,  4.32s/it]                                    17%|█▋        | 2/12 [00:08<00:43,  4.39s/it] 25%|██▌       | 3/12 [00:13<00:40,  4.45s/it] 33%|███▎      | 4/12 [00:17<00:35,  4.41s/it] 42%|████▏     | 5/12 [00:21<00:30,  4.33s/it] 50%|█████     | 6/12 [00:26<00:25,  4.31s/it] 58%|█████▊    | 7/12 [00:30<00:21,  4.33s/it] 67%|██████▋   | 8/12 [00:34<00:17,  4.32s/it] 75%|███████▌  | 9/12 [00:39<00:12,  4.32s/it] 83%|████████▎ | 10/12 [00:43<00:08,  4.31s/it] 92%|█████████▏| 11/12 [00:47<00:04,  4.31s/it]100%|██████████| 12/12 [00:52<00:00,  4.30s/it]100%|██████████| 12/12 [00:52<00:00,  4.35s/it]
+[32m[INFO][0m Requested to load TextureVae
+[32m[INFO][0m 0 models unloaded.
+[32m[INFO][0m Model TextureVae prepared for dynamic VRAM loading. 137MB Staged. 0 patches attached. Force pre-loaded 154 weights: 785704 KB.
+unwrap: ortho checks: 0chart [00:00, ?chart/s]                                              unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/71642 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 35821/71642 [00:00<00:00, 41575.39chart/s]unwrap: pack:  56%|█████▌    | 40173/71642 [00:04<00:04, 6363.22chart/s] unwrap: pack:  59%|█████▊    | 41965/71642 [00:06<00:06, 4637.72chart/s]unwrap: pack:  60%|██████    | 42989/71642 [00:07<00:07, 3921.61chart/s]unwrap: pack:  61%|██████    | 43757/71642 [00:08<00:08, 3426.25chart/s]unwrap: pack:  62%|██████▏   | 44269/71642 [00:08<00:08, 3094.56chart/s]unwrap: pack:  63%|██████▎   | 44781/71642 [00:08<00:09, 2730.59chart/s]unwrap: pack:  63%|██████▎   | 45293/71642 [00:09<00:10, 2459.82chart/s]unwrap: pack:  64%|██████▎   | 45549/71642 [00:09<00:11, 2314.58chart/s]unwrap: pack:  64%|██████▍   | 45805/71642 [00:09<00:12, 2145.41chart/s]unwrap: pack:  64%|██████▍   | 46061/71642 [00:09<00:12, 1993.21chart/s]unwrap: pack:  65%|██████▍   | 46317/71642 [00:10<00:13, 1846.86chart/s]unwrap: pack:  65%|██████▌   | 46573/71642 [00:10<00:14, 1696.34chart/s]unwrap: pack:  65%|██████▌   | 46829/71642 [00:10<00:16, 1530.26chart/s]unwrap: pack:  66%|██████▌   | 47085/71642 [00:10<00:17, 1425.42chart/s]unwrap: pack:  66%|██████▌   | 47341/71642 [00:11<00:18, 1335.54chart/s]unwrap: pack:  66%|██████▋   | 47597/71642 [00:11<00:18, 1289.28chart/s]unwrap: pack:  67%|██████▋   | 47853/71642 [00:11<00:18, 1273.82chart/s]unwrap: pack:  67%|██████▋   | 48109/71642 [00:11<00:18, 1248.51chart/s]unwrap: pack:  68%|██████▊   | 48365/71642 [00:11<00:18, 1232.60chart/s]unwrap: pack:  68%|██████▊   | 48621/71642 [00:12<00:19, 1188.57chart/s]unwrap: pack:  68%|██████▊   | 48877/71642 [00:12<00:19, 1154.51chart/s]unwrap: pack:  69%|██████▊   | 49133/71642 [00:12<00:19, 1146.75chart/s]unwrap: pack:  69%|██████▉   | 49389/71642 [00:12<00:19, 1119.99chart/s]unwrap: pack:  69%|██████▉   | 49645/71642 [00:13<00:19, 1105.39chart/s]unwrap: pack:  70%|██████▉   | 49901/71642 [00:13<00:19, 1132.06chart/s]unwrap: pack:  70%|███████   | 50157/71642 [00:13<00:19, 1118.12chart/s]unwrap: pack:  70%|███████   | 50413/71642 [00:13<00:18, 1158.13chart/s]unwrap: pack:  71%|███████   | 50669/71642 [00:13<00:18, 1138.17chart/s]unwrap: pack:  71%|███████   | 50925/71642 [00:14<00:18, 1116.24chart/s]unwrap: pack:  71%|███████▏  | 51181/71642 [00:14<00:18, 1107.00chart/s]unwrap: pack:  72%|███████▏  | 51437/71642 [00:14<00:17, 1124.03chart/s]unwrap: pack:  72%|███████▏  | 51693/71642 [00:14<00:18, 1098.49chart/s]unwrap: pack:  73%|███████▎  | 51949/71642 [00:15<00:18, 1078.14chart/s]unwrap: pack:  73%|███████▎  | 52205/71642 [00:15<00:18, 1079.42chart/s]unwrap: pack:  73%|███████▎  | 52461/71642 [00:15<00:18, 1055.13chart/s]unwrap: pack:  74%|███████▎  | 52717/71642 [00:15<00:17, 1075.39chart/s]unwrap: pack:  74%|███████▍  | 52973/71642 [00:16<00:17, 1047.55chart/s]unwrap: pack:  74%|███████▍  | 53229/71642 [00:16<00:17, 1054.14chart/s]unwrap: pack:  75%|███████▍  | 53485/71642 [00:16<00:17, 1057.94chart/s]unwrap: pack:  75%|███████▌  | 53741/71642 [00:16<00:17, 1051.18chart/s]unwrap: pack:  75%|███████▌  | 53997/71642 [00:17<00:16, 1065.21chart/s]unwrap: pack:  76%|███████▌  | 54253/71642 [00:17<00:16, 1071.87chart/s]unwrap: pack:  76%|███████▌  | 54509/71642 [00:17<00:16, 1047.80chart/s]unwrap: pack:  76%|███████▋  | 54765/71642 [00:17<00:15, 1068.86chart/s]unwrap: pack:  77%|███████▋  | 55021/71642 [00:18<00:15, 1091.88chart/s]unwrap: pack:  77%|███████▋  | 55277/71642 [00:18<00:14, 1120.11chart/s]unwrap: pack:  78%|███████▊  | 55533/71642 [00:18<00:14, 1090.82chart/s]unwrap: pack:  78%|███████▊  | 55789/71642 [00:18<00:14, 1115.35chart/s]unwrap: pack:  78%|███████▊  | 56045/71642 [00:18<00:14, 1106.77chart/s]unwrap: pack:  79%|███████▊  | 56301/71642 [00:19<00:14, 1091.93chart/s]unwrap: pack:  79%|███████▉  | 56557/71642 [00:19<00:14, 1073.59chart/s]unwrap: pack:  79%|███████▉  | 56813/71642 [00:19<00:13, 1083.20chart/s]unwrap: pack:  80%|███████▉  | 57069/71642 [00:19<00:13, 1073.98chart/s]unwrap: pack:  80%|████████  | 57325/71642 [00:20<00:12, 1135.40chart/s]unwrap: pack:  80%|████████  | 57581/71642 [00:20<00:12, 1171.27chart/s]unwrap: pack:  81%|████████  | 57837/71642 [00:20<00:11, 1185.68chart/s]unwrap: pack:  81%|████████  | 58093/71642 [00:20<00:11, 1216.31chart/s]unwrap: pack:  81%|████████▏ | 58349/71642 [00:20<00:10, 1238.21chart/s]unwrap: pack:  82%|████████▏ | 58605/71642 [00:21<00:10, 1241.74chart/s]unwrap: pack:  82%|████████▏ | 58861/71642 [00:21<00:10, 1258.17chart/s]unwrap: pack:  83%|████████▎ | 59117/71642 [00:21<00:09, 1259.33chart/s]unwrap: pack:  83%|████████▎ | 59373/71642 [00:21<00:09, 1284.05chart/s]unwrap: pack:  83%|████████▎ | 59629/71642 [00:21<00:09, 1301.09chart/s]unwrap: pack:  84%|████████▎ | 59885/71642 [00:22<00:08, 1327.80chart/s]unwrap: pack:  84%|████████▍ | 60141/71642 [00:22<00:08, 1336.02chart/s]unwrap: pack:  84%|████████▍ | 60397/71642 [00:22<00:08, 1345.35chart/s]unwrap: pack:  85%|████████▍ | 60653/71642 [00:22<00:08, 1332.91chart/s]unwrap: pack:  85%|████████▌ | 60909/71642 [00:22<00:08, 1333.41chart/s]unwrap: pack:  85%|████████▌ | 61165/71642 [00:23<00:07, 1333.00chart/s]unwrap: pack:  86%|████████▌ | 61421/71642 [00:23<00:07, 1334.70chart/s]unwrap: pack:  86%|████████▌ | 61677/71642 [00:23<00:07, 1345.28chart/s]unwrap: pack:  86%|████████▋ | 61933/71642 [00:23<00:07, 1298.84chart/s]unwrap: pack:  87%|████████▋ | 62189/71642 [00:23<00:07, 1251.44chart/s]unwrap: pack:  87%|████████▋ | 62445/71642 [00:24<00:07, 1218.67chart/s]unwrap: pack:  88%|████████▊ | 62701/71642 [00:24<00:07, 1182.28chart/s]unwrap: pack:  88%|████████▊ | 62957/71642 [00:24<00:07, 1209.88chart/s]unwrap: pack:  88%|████████▊ | 63213/71642 [00:24<00:06, 1208.71chart/s]unwrap: pack:  89%|████████▊ | 63469/71642 [00:24<00:06, 1231.63chart/s]unwrap: pack:  89%|████████▉ | 63725/71642 [00:25<00:06, 1259.47chart/s]unwrap: pack:  89%|████████▉ | 63981/71642 [00:25<00:05, 1278.66chart/s]unwrap: pack:  90%|████████▉ | 64237/71642 [00:25<00:05, 1280.64chart/s]unwrap: pack:  90%|█████████ | 64493/71642 [00:25<00:05, 1284.61chart/s]unwrap: pack:  90%|█████████ | 64749/71642 [00:25<00:05, 1287.06chart/s]unwrap: pack:  91%|█████████ | 65005/71642 [00:26<00:05, 1286.23chart/s]unwrap: pack:  91%|█████████ | 65261/71642 [00:26<00:04, 1278.01chart/s]unwrap: pack:  91%|█████████▏| 65517/71642 [00:26<00:04, 1253.34chart/s]unwrap: pack:  92%|█████████▏| 65773/71642 [00:26<00:04, 1252.40chart/s]unwrap: pack:  92%|█████████▏| 66029/71642 [00:26<00:04, 1209.85chart/s]unwrap: pack:  93%|█████████▎| 66285/71642 [00:27<00:04, 1209.15chart/s]unwrap: pack:  93%|█████████▎| 66541/71642 [00:27<00:04, 1205.61chart/s]unwrap: pack:  93%|█████████▎| 66797/71642 [00:27<00:03, 1214.26chart/s]unwrap: pack:  94%|█████████▎| 67053/71642 [00:27<00:03, 1196.82chart/s]unwrap: pack:  94%|█████████▍| 67309/71642 [00:28<00:03, 1210.66chart/s]unwrap: pack:  94%|█████████▍| 67565/71642 [00:28<00:03, 1178.59chart/s]unwrap: pack:  95%|█████████▍| 67821/71642 [00:28<00:03, 1180.98chart/s]unwrap: pack:  95%|█████████▌| 68077/71642 [00:28<00:03, 1184.60chart/s]unwrap: pack:  95%|█████████▌| 68333/71642 [00:28<00:02, 1176.85chart/s]unwrap: pack:  96%|█████████▌| 68589/71642 [00:29<00:02, 1186.81chart/s]unwrap: pack:  96%|█████████▌| 68845/71642 [00:29<00:02, 1192.29chart/s]unwrap: pack:  96%|█████████▋| 69101/71642 [00:29<00:02, 1184.82chart/s]unwrap: pack:  97%|█████████▋| 69357/71642 [00:29<00:01, 1170.43chart/s]unwrap: pack:  97%|█████████▋| 69613/71642 [00:30<00:01, 1163.31chart/s]unwrap: pack:  98%|█████████▊| 69869/71642 [00:30<00:01, 1166.46chart/s]unwrap: pack:  98%|█████████▊| 70125/71642 [00:30<00:01, 1128.83chart/s]unwrap: pack:  98%|█████████▊| 70381/71642 [00:30<00:01, 1133.06chart/s]unwrap: pack:  99%|█████████▊| 70637/71642 [00:30<00:00, 1110.16chart/s]unwrap: pack:  99%|█████████▉| 70893/71642 [00:31<00:00, 1109.83chart/s]unwrap: pack:  99%|█████████▉| 71149/71642 [00:31<00:00, 1088.37chart/s]unwrap: pack: 100%|█████████▉| 71405/71642 [00:31<00:00, 1085.05chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 71816 faces -> 35821 charts, atlas 1457x1458, 32.1s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:03<00:12,  3.15s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:03<00:04,  1.58s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:06<00:04,  1.58s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:06<00:04,  2.34s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:07<00:04,  2.34s/it, sample]      Bake texture:  80%|████████  | 4/5 [00:07<00:01,  1.64s/it, sample]Bake texture:  80%|████████  | 4/5 [00:08<00:01,  1.64s/it, finalize]Bake texture: 100%|██████████| 5/5 [00:08<00:00,  1.67s/it, finalize]                                                                     unwrap: ortho checks:   0%|          | 0/245 [00:00<?, ?chart/s]                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/2252 [00:00<?, ?chart/s]unwrap: pack:  61%|██████▏   | 1382/2252 [00:00<00:00, 4421.12chart/s]unwrap: pack:  84%|████████▍ | 1894/2252 [00:00<00:00, 1976.95chart/s]unwrap: pack:  95%|█████████▌| 2150/2252 [00:01<00:00, 1655.81chart/s]                                                                      [32m[INFO][0m [uv_unwrap] 18772 faces -> 1126 charts, atlas 584x586, 1.5s
+[1m[33m[WARNING][0m [WTiVo Fast Merge] Native C++ DLL not found; using Python fallback (slow / mostly single-core). Run build_windows.bat to enable the multithreaded native path.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 initial_render_topology=False vertices=20,216 faces=18,551 render_bad_edges=18837 render_bad_fans=0
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 has render-vertex attribute seams; TEXTURE_SAFE mode will preserve them and only weld POSITION for the geometry test.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=1 distance=0.0001 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->18,444 render_bad_edges=18830 render_bad_fans=0 geometric_bad_edges=951 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=2 distance=0.0002 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->17,688 render_bad_edges=18790 render_bad_fans=0 geometric_bad_edges=1336 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=3 distance=0.0003 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->16,716 render_bad_edges=18740 render_bad_fans=0 geometric_bad_edges=1815 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=4 distance=0.0004 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->15,876 render_bad_edges=18630 render_bad_fans=0 geometric_bad_edges=2151 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=5 distance=0.0005 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14,976 render_bad_edges=18378 render_bad_fans=0 geometric_bad_edges=2364 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=6 distance=0.0006 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14,156 render_bad_edges=18110 render_bad_fans=0 geometric_bad_edges=2578 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=7 distance=0.0007 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->13,378 render_bad_edges=17764 render_bad_fans=0 geometric_bad_edges=2685 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=8 distance=0.0008 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->12,545 render_bad_edges=17391 render_bad_fans=0 geometric_bad_edges=2742 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=9 distance=0.0009 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->11,684 render_bad_edges=16872 render_bad_fans=0 geometric_bad_edges=2670 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=10 distance=0.001 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->10,880 render_bad_edges=16262 render_bad_fans=0 geometric_bad_edges=2596 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=11 distance=0.0011 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->9,996 render_bad_edges=15528 render_bad_fans=0 geometric_bad_edges=2447 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=12 distance=0.0012 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->9,180 render_bad_edges=14838 render_bad_fans=0 geometric_bad_edges=2277 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=13 distance=0.0013 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->8,467 render_bad_edges=14101 render_bad_fans=0 geometric_bad_edges=2127 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=14 distance=0.0014 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->7,767 render_bad_edges=13327 render_bad_fans=0 geometric_bad_edges=1953 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=15 distance=0.0015 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->7,141 render_bad_edges=12625 render_bad_fans=0 geometric_bad_edges=1822 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=16 distance=0.0016 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->6,454 render_bad_edges=11740 render_bad_fans=0 geometric_bad_edges=1640 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=17 distance=0.0017 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->5,775 render_bad_edges=10859 render_bad_fans=0 geometric_bad_edges=1456 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=18 distance=0.0018 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->5,188 render_bad_edges=10044 render_bad_fans=0 geometric_bad_edges=1303 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=19 distance=0.0019 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->4,598 render_bad_edges=9144 render_bad_fans=0 geometric_bad_edges=1126 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=20 distance=0.002 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->3,917 render_bad_edges=7975 render_bad_fans=0 geometric_bad_edges=948 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=21 distance=0.0021 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->3,364 render_bad_edges=6982 render_bad_fans=0 geometric_bad_edges=781 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=22 distance=0.0022 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,972 render_bad_edges=6280 render_bad_fans=0 geometric_bad_edges=686 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=23 distance=0.0023 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,559 render_bad_edges=5541 render_bad_fans=0 geometric_bad_edges=576 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=24 distance=0.0024 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,307 render_bad_edges=5089 render_bad_fans=0 geometric_bad_edges=503 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=25 distance=0.0025 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->2,005 render_bad_edges=4505 render_bad_fans=0 geometric_bad_edges=430 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=26 distance=0.0026 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,776 render_bad_edges=4046 render_bad_fans=0 geometric_bad_edges=379 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=27 distance=0.0027 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,545 render_bad_edges=3575 render_bad_fans=0 geometric_bad_edges=323 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=28 distance=0.0028 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,368 render_bad_edges=3178 render_bad_fans=0 geometric_bad_edges=262 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=29 distance=0.0029 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,197 render_bad_edges=2835 render_bad_fans=0 geometric_bad_edges=219 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=30 distance=0.003 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->1,009 render_bad_edges=2437 render_bad_fans=0 geometric_bad_edges=176 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=31 distance=0.0031 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->875 render_bad_edges=2139 render_bad_fans=0 geometric_bad_edges=151 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=32 distance=0.0032 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->756 render_bad_edges=1866 render_bad_fans=0 geometric_bad_edges=124 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=33 distance=0.0033 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->678 render_bad_edges=1682 render_bad_fans=0 geometric_bad_edges=112 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=34 distance=0.0034 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->582 render_bad_edges=1446 render_bad_fans=0 geometric_bad_edges=96 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=35 distance=0.0035 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->513 render_bad_edges=1315 render_bad_fans=0 geometric_bad_edges=77 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=36 distance=0.0036 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->465 render_bad_edges=1199 render_bad_fans=0 geometric_bad_edges=69 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=37 distance=0.0037 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->406 render_bad_edges=1058 render_bad_fans=0 geometric_bad_edges=53 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=38 distance=0.0038 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->350 render_bad_edges=920 render_bad_fans=0 geometric_bad_edges=47 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=39 distance=0.0039 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->323 render_bad_edges=847 render_bad_fans=0 geometric_bad_edges=43 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=40 distance=0.004 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->290 render_bad_edges=772 render_bad_fans=0 geometric_bad_edges=37 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=41 distance=0.0041 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->254 render_bad_edges=684 render_bad_fans=0 geometric_bad_edges=32 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=42 distance=0.0042 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->212 render_bad_edges=566 render_bad_fans=0 geometric_bad_edges=30 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=43 distance=0.0043 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->198 render_bad_edges=526 render_bad_fans=0 geometric_bad_edges=30 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=44 distance=0.0044 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->180 render_bad_edges=482 render_bad_fans=0 geometric_bad_edges=27 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=45 distance=0.0045 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->161 render_bad_edges=433 render_bad_fans=0 geometric_bad_edges=23 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=46 distance=0.0046 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->141 render_bad_edges=377 render_bad_fans=0 geometric_bad_edges=22 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=47 distance=0.0047 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->127 render_bad_edges=339 render_bad_fans=0 geometric_bad_edges=20 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=48 distance=0.0048 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->111 render_bad_edges=299 render_bad_fans=0 geometric_bad_edges=19 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=49 distance=0.0049 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->105 render_bad_edges=281 render_bad_fans=0 geometric_bad_edges=19 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=50 distance=0.005 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->97 render_bad_edges=263 render_bad_fans=0 geometric_bad_edges=18 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=51 distance=0.0051 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->95 render_bad_edges=257 render_bad_fans=0 geometric_bad_edges=18 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=52 distance=0.0052 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->87 render_bad_edges=237 render_bad_fans=0 geometric_bad_edges=17 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=53 distance=0.0053 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->84 render_bad_edges=228 render_bad_fans=0 geometric_bad_edges=14 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=54 distance=0.0054 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->83 render_bad_edges=225 render_bad_fans=0 geometric_bad_edges=11 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=55 distance=0.0055 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->76 render_bad_edges=204 render_bad_fans=0 geometric_bad_edges=8 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=56 distance=0.0056 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->74 render_bad_edges=200 render_bad_fans=0 geometric_bad_edges=8 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=57 distance=0.0057 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->67 render_bad_edges=179 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=58 distance=0.0058 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->57 render_bad_edges=151 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=59 distance=0.0059 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->55 render_bad_edges=145 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=60 distance=0.006 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->51 render_bad_edges=135 render_bad_fans=0 geometric_bad_edges=5 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=61 distance=0.0061 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->43 render_bad_edges=119 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=62 distance=0.0062 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->35 render_bad_edges=97 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=63 distance=0.0063 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->35 render_bad_edges=97 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=64 distance=0.0064 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->31 render_bad_edges=85 render_bad_fans=0 geometric_bad_edges=4 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=65 distance=0.0065 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->28 render_bad_edges=76 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=66 distance=0.0066 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->26 render_bad_edges=70 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=67 distance=0.0067 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->24 render_bad_edges=64 render_bad_fans=0 geometric_bad_edges=1 geometric_bad_fans=0 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=68 distance=0.0068 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->20 render_bad_edges=58 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=69 distance=0.0069 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->18 render_bad_edges=52 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=70 distance=0.007 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=71 distance=0.0071 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=72 distance=0.0072 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->14 render_bad_edges=42 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=1 render_topology=False geometric_watertight=False
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=73 distance=0.0073 mode=TEXTURE_SAFE vertices=20,216->20,216 faces=18,551->10 render_bad_edges=30 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=0 render_topology=False geometric_watertight=True
+[32m[INFO][0m [WTiVo Fast Merge] topology policy=TEXTURE_SAFE | TEXTURE_SAFE preserves render seams; STRICT_BLENDER uses merged indexed vertices.
+[32m[INFO][0m [WTiVo Fast Merge] SUCCESS | vertices 20,216->20,216 | faces 18,551->10 | merged=0 | final_distance=0.0073 | native_attempts=0 | python_attempts=73 | 28.735s
+[32m[INFO][0m [32mPrompt executed in 378.35 seconds[0m
+[32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/9 [00:00<?, ?it/s]Remesh DC:  11%|█         | 1/9 [00:01<00:11,  1.45s/it]Remesh DC:  33%|███▎      | 3/9 [00:01<00:02,  2.30it/s]Remesh DC:  44%|████▍     | 4/9 [00:01<00:01,  2.66it/s]Remesh DC:  56%|█████▌    | 5/9 [00:02<00:02,  1.72it/s]Remesh DC:  67%|██████▋   | 6/9 [00:09<00:07,  2.55s/it][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.47 GiB
+Requested               : 1.61 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 152.94 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2479, in execute
+    result = _process_mesh_batch(mesh, _fn)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2233, in _process_mesh_batch
+    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2211, in process_single
+    v, f, c = per_item_fn(v, f, c)
+              ^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2461, in _fn
+    rv, rf, rc = remesh_narrow_band_dc(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py", line 1001, in remesh_narrow_band_dc
+    corner_keys = (corners[:, 0] * R1 + corners[:, 1]) * R1 + corners[:, 2]
+                   ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.47 GiB
+Requested               : 1.61 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 152.94 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |   6003 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |   6003 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |   6176 MiB |   8608 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 10.58 seconds[0m
+                                                        [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/9 [00:00<?, ?it/s]Remesh DC:  11%|█         | 1/9 [00:01<00:10,  1.35s/it]Remesh DC:  33%|███▎      | 3/9 [00:01<00:02,  2.56it/s]Remesh DC:  56%|█████▌    | 5/9 [00:02<00:01,  2.55it/s]Remesh DC:  67%|██████▋   | 6/9 [00:05<00:03,  1.17s/it][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.10 GiB
+Requested               : 1.84 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 125.25 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2479, in execute
+    result = _process_mesh_batch(mesh, _fn)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2233, in _process_mesh_batch
+    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2211, in process_single
+    v, f, c = per_item_fn(v, f, c)
+              ^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2461, in _fn
+    rv, rf, rc = remesh_narrow_band_dc(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py", line 1002, in remesh_narrow_band_dc
+    unique_corner_keys, corner_inv = torch.unique(corner_keys, return_inverse=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 635, in fn
+    return if_true(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 637, in fn
+    return if_false(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 1118, in _return_inverse
+    output, inverse_indices, _ = _unique_impl(
+                                 ^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 973, in _unique_impl
+    output, inverse_indices, counts = torch._unique2(
+                                      ^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.10 GiB
+Requested               : 1.84 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 125.25 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |   4489 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |   4489 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |   4704 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 5.72 seconds[0m
+                                                        [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/9 [00:00<?, ?it/s]Remesh DC:  11%|█         | 1/9 [00:01<00:10,  1.36s/it]Remesh DC:  33%|███▎      | 3/9 [00:01<00:02,  2.55it/s]Remesh DC:  56%|█████▌    | 5/9 [00:02<00:01,  2.62it/s]Remesh DC:  67%|██████▋   | 6/9 [00:05<00:03,  1.16s/it][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.10 GiB
+Requested               : 1.84 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 124.94 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2479, in execute
+    result = _process_mesh_batch(mesh, _fn)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2233, in _process_mesh_batch
+    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2211, in process_single
+    v, f, c = per_item_fn(v, f, c)
+              ^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2461, in _fn
+    rv, rf, rc = remesh_narrow_band_dc(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py", line 1002, in remesh_narrow_band_dc
+    unique_corner_keys, corner_inv = torch.unique(corner_keys, return_inverse=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 635, in fn
+    return if_true(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 637, in fn
+    return if_false(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 1118, in _return_inverse
+    output, inverse_indices, _ = _unique_impl(
+                                 ^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 973, in _unique_impl
+    output, inverse_indices, counts = torch._unique2(
+                                      ^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 7.10 GiB
+Requested               : 1.84 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 124.94 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |   4489 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |   4489 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |   4704 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 5.91 seconds[0m
+                                                        [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/9 [00:00<?, ?it/s]Remesh DC:  33%|███▎      | 3/9 [00:00<00:00, 26.85it/s]Remesh DC:  67%|██████▋   | 6/9 [00:03<00:02,  1.49it/s][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 6.66 GiB
+Requested               : 1.83 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 125.25 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2479, in execute
+    result = _process_mesh_batch(mesh, _fn)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2233, in _process_mesh_batch
+    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2211, in process_single
+    v, f, c = per_item_fn(v, f, c)
+              ^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2461, in _fn
+    rv, rf, rc = remesh_narrow_band_dc(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py", line 1002, in remesh_narrow_band_dc
+    unique_corner_keys, corner_inv = torch.unique(corner_keys, return_inverse=True)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 635, in fn
+    return if_true(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py", line 637, in fn
+    return if_false(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 1118, in _return_inverse
+    output, inverse_indices, _ = _unique_impl(
+                                 ^^^^^^^^^^^^^
+  File ".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py", line 973, in _unique_impl
+    output, inverse_indices, counts = torch._unique2(
+                                      ^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 6.66 GiB
+Requested               : 1.83 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 125.25 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |   4054 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |   4054 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |   4224 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 3.91 seconds[0m
+                                                        [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:10,  1.44s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.33it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.57it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.25it/s]Remesh DC:  75%|███████▌  | 6/8 [00:05<00:02,  1.02s/it]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.45it/s]                                                        [1m[31m[ERROR][0m !!! Exception during processing !!! LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-The-Mesh-Trimmer-ComfyuiNode/__init__.py", line 1017, in run
+    raise RuntimeError(
+RuntimeError: LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+
+[32m[INFO][0m [32mPrompt executed in 137.96 seconds[0m
+[32m[INFO][0m got prompt
+[LODsmith Decimator] Blender failed.
+13:16:59 | INFO: Data are loaded, start creating Blender stuff
+13:16:59 | INFO: Blender create Mesh node geometry_0
+13:17:01 | INFO: glTF import finished in 2.43s
+[FastDecimator] Start: 6,251,612 faces
+[FastDecimator]  -> Seal[input] pre-weld: boundary=0 nonmanifold=0
+[FastDecimator]  -> Seal[input] already watertight+manifold
+[FastDecimator]  -> Voxel: 11,951,778 faces
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+Writing: .tools/local-gen/tmp/blender.crash.txt
+
+
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:10,  1.47s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.26it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.50it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.27it/s]Remesh DC:  75%|███████▌  | 6/8 [00:05<00:02,  1.02s/it]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.44it/s]                                                        [32m[INFO][0m [32mPrompt executed in 6.51 seconds[0m
+[32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.42s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.37it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.64it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.31it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.01it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.48it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/18795 [00:00<?, ?chart/s]unwrap: ortho checks:   0%|          | 65/18795 [00:00<00:30, 609.01chart/s]unwrap: ortho checks:   1%|▏         | 252/18795 [00:00<00:13, 1330.15chart/s]unwrap: ortho checks:   3%|▎         | 549/18795 [00:00<00:08, 2064.70chart/s]unwrap: ortho checks:   4%|▍         | 758/18795 [00:00<00:14, 1282.95chart/s]unwrap: ortho checks:   6%|▌         | 1061/18795 [00:00<00:10, 1731.08chart/s]unwrap: ortho checks:   8%|▊         | 1578/18795 [00:00<00:06, 2653.28chart/s]unwrap: ortho checks:  13%|█▎        | 2507/18795 [00:00<00:03, 4468.72chart/s]unwrap: ortho checks:  18%|█▊        | 3471/18795 [00:00<00:02, 5929.37chart/s]unwrap: ortho checks:  22%|██▏       | 4126/18795 [00:01<00:03, 4138.13chart/s]unwrap: ortho checks:  25%|██▍       | 4653/18795 [00:01<00:04, 3043.64chart/s]unwrap: ortho checks:  27%|██▋       | 5072/18795 [00:01<00:04, 2760.13chart/s]unwrap: ortho checks:  30%|██▉       | 5548/18795 [00:01<00:04, 3114.79chart/s]unwrap: ortho checks:  34%|███▎      | 6320/18795 [00:01<00:03, 4024.10chart/s]unwrap: ortho checks:  36%|███▋      | 6821/18795 [00:02<00:03, 3646.28chart/s]unwrap: ortho checks:  39%|███▉      | 7415/18795 [00:02<00:02, 4139.32chart/s]unwrap: ortho checks:  43%|████▎     | 8158/18795 [00:02<00:02, 4875.61chart/s]unwrap: ortho checks:  46%|████▋     | 8714/18795 [00:02<00:03, 3082.13chart/s]unwrap: ortho checks:  49%|████▊     | 9150/18795 [00:03<00:06, 1554.13chart/s]unwrap: ortho checks:  50%|█████     | 9473/18795 [00:03<00:06, 1493.31chart/s]unwrap: ortho checks:  53%|█████▎    | 9899/18795 [00:03<00:04, 1815.15chart/s]unwrap: ortho checks:  55%|█████▍    | 10255/18795 [00:03<00:04, 1941.79chart/s]unwrap: ortho checks:  58%|█████▊    | 10878/18795 [00:03<00:03, 2631.57chart/s]unwrap: ortho checks:  63%|██████▎   | 11902/18795 [00:04<00:01, 4052.62chart/s]unwrap: ortho checks:  68%|██████▊   | 12705/18795 [00:04<00:01, 4873.49chart/s]unwrap: ortho checks:  72%|███████▏  | 13444/18795 [00:04<00:00, 5453.24chart/s]unwrap: ortho checks:  76%|███████▋  | 14333/18795 [00:04<00:00, 6212.23chart/s]unwrap: ortho checks:  80%|████████  | 15056/18795 [00:04<00:01, 3424.44chart/s]unwrap: ortho checks:  83%|████████▎ | 15611/18795 [00:04<00:00, 3524.16chart/s]unwrap: ortho checks:  86%|████████▌ | 16116/18795 [00:05<00:01, 2433.48chart/s]unwrap: ortho checks:  92%|█████████▏| 17240/18795 [00:05<00:00, 3672.75chart/s]unwrap: ortho checks:  95%|█████████▍| 17850/18795 [00:05<00:00, 3843.26chart/s]unwrap: ortho checks:  98%|█████████▊| 18411/18795 [00:05<00:00, 3836.51chart/s]                                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/37590 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 18795/37590 [00:00<00:00, 26620.74chart/s]unwrap: pack:  57%|█████▋    | 21611/37590 [00:03<00:03, 5161.56chart/s] unwrap: pack:  61%|██████    | 22891/37590 [00:04<00:03, 3828.37chart/s]unwrap: pack:  63%|██████▎   | 23659/37590 [00:05<00:04, 3239.40chart/s]unwrap: pack:  64%|██████▍   | 24171/37590 [00:05<00:04, 2842.52chart/s]unwrap: pack:  66%|██████▌   | 24683/37590 [00:05<00:05, 2493.85chart/s]unwrap: pack:  67%|██████▋   | 25195/37590 [00:06<00:05, 2171.84chart/s]unwrap: pack:  68%|██████▊   | 25451/37590 [00:06<00:06, 2020.00chart/s]unwrap: pack:  68%|██████▊   | 25707/37590 [00:06<00:06, 1853.81chart/s]unwrap: pack:  69%|██████▉   | 25963/37590 [00:07<00:06, 1664.94chart/s]unwrap: pack:  70%|██████▉   | 26219/37590 [00:07<00:07, 1556.42chart/s]unwrap: pack:  70%|███████   | 26475/37590 [00:07<00:07, 1434.86chart/s]unwrap: pack:  71%|███████   | 26731/37590 [00:07<00:08, 1348.00chart/s]unwrap: pack:  72%|███████▏  | 26987/37590 [00:08<00:08, 1267.07chart/s]unwrap: pack:  72%|███████▏  | 27243/37590 [00:08<00:08, 1185.44chart/s]unwrap: pack:  73%|███████▎  | 27499/37590 [00:08<00:08, 1134.36chart/s]unwrap: pack:  74%|███████▍  | 27755/37590 [00:08<00:08, 1111.67chart/s]unwrap: pack:  75%|███████▍  | 28011/37590 [00:09<00:08, 1116.05chart/s]unwrap: pack:  75%|███████▌  | 28267/37590 [00:09<00:08, 1080.89chart/s]unwrap: pack:  76%|███████▌  | 28523/37590 [00:09<00:08, 1127.59chart/s]unwrap: pack:  77%|███████▋  | 28779/37590 [00:09<00:08, 1071.11chart/s]unwrap: pack:  77%|███████▋  | 29035/37590 [00:10<00:08, 1037.58chart/s]unwrap: pack:  78%|███████▊  | 29291/37590 [00:10<00:08, 1011.62chart/s]unwrap: pack:  79%|███████▊  | 29547/37590 [00:10<00:08, 972.39chart/s] unwrap: pack:  79%|███████▉  | 29803/37590 [00:10<00:08, 947.53chart/s]unwrap: pack:  80%|███████▉  | 30059/37590 [00:11<00:08, 933.94chart/s]unwrap: pack:  81%|████████  | 30315/37590 [00:11<00:07, 922.00chart/s]unwrap: pack:  81%|████████▏ | 30571/37590 [00:11<00:07, 924.90chart/s]unwrap: pack:  82%|████████▏ | 30827/37590 [00:12<00:07, 930.58chart/s]unwrap: pack:  83%|████████▎ | 31083/37590 [00:12<00:07, 929.38chart/s]unwrap: pack:  83%|████████▎ | 31339/37590 [00:12<00:06, 940.90chart/s]unwrap: pack:  84%|████████▍ | 31595/37590 [00:12<00:06, 941.41chart/s]unwrap: pack:  85%|████████▍ | 31851/37590 [00:13<00:06, 942.80chart/s]unwrap: pack:  85%|████████▌ | 32107/37590 [00:13<00:05, 1033.88chart/s]unwrap: pack:  86%|████████▌ | 32363/37590 [00:13<00:05, 1031.43chart/s]unwrap: pack:  87%|████████▋ | 32619/37590 [00:13<00:04, 1003.97chart/s]unwrap: pack:  87%|████████▋ | 32875/37590 [00:14<00:04, 986.81chart/s] unwrap: pack:  88%|████████▊ | 33131/37590 [00:14<00:04, 979.55chart/s]unwrap: pack:  89%|████████▉ | 33387/37590 [00:14<00:03, 1110.20chart/s]unwrap: pack:  89%|████████▉ | 33643/37590 [00:14<00:03, 1208.08chart/s]unwrap: pack:  90%|█████████ | 33899/37590 [00:14<00:02, 1296.21chart/s]unwrap: pack:  91%|█████████ | 34155/37590 [00:15<00:02, 1376.02chart/s]unwrap: pack:  92%|█████████▏| 34411/37590 [00:15<00:02, 1438.32chart/s]unwrap: pack:  92%|█████████▏| 34667/37590 [00:15<00:01, 1477.22chart/s]unwrap: pack:  93%|█████████▎| 34923/37590 [00:15<00:01, 1489.64chart/s]unwrap: pack:  94%|█████████▎| 35179/37590 [00:15<00:01, 1494.53chart/s]unwrap: pack:  94%|█████████▍| 35435/37590 [00:15<00:01, 1492.67chart/s]unwrap: pack:  95%|█████████▍| 35691/37590 [00:16<00:01, 1488.73chart/s]unwrap: pack:  96%|█████████▌| 35947/37590 [00:16<00:01, 1494.02chart/s]unwrap: pack:  96%|█████████▋| 36203/37590 [00:16<00:00, 1498.66chart/s]unwrap: pack:  97%|█████████▋| 36459/37590 [00:16<00:00, 1510.36chart/s]unwrap: pack:  98%|█████████▊| 36715/37590 [00:16<00:00, 1520.30chart/s]unwrap: pack:  98%|█████████▊| 36971/37590 [00:16<00:00, 1526.33chart/s]unwrap: pack:  99%|█████████▉| 37227/37590 [00:17<00:00, 1528.42chart/s]unwrap: pack: 100%|█████████▉| 37483/37590 [00:17<00:00, 1533.24chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 6251612 faces -> 18795 charts, atlas 1221x1222, 75.7s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:00<00:00,  4.86it/s, uvs][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 5.18 GiB
+Requested               : 4.30 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 124.50 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1454, in execute
+    _bv, _bf, _bu, bt, bmr = bake_texture_from_voxel_fn(
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1329, in bake_texture_from_voxel_fn
+    position_map, mask = _bake_position_map(new_verts, new_faces, new_uvs, texture_size)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 229, in _bake_position_map
+    face_idx, bary, mask = _rasterize_uv_barycentric(faces_np, uvs_np, texture_size)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 192, in _rasterize_uv_barycentric
+    b0 = ((sy1 - sy2) * (xx - sx2) + (sx2 - sx1) * (yy - sy2)) / sden
+          ~~~~~~~~~~~~^~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 5.18 GiB
+Requested               : 4.30 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 124.50 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |    900 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |    900 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |    992 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 196.41 seconds[0m
+                                                                [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.42s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.37it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.63it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.31it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:02,  1.02s/it]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.45it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/18795 [00:00<?, ?chart/s]unwrap: ortho checks:   0%|          | 64/18795 [00:00<00:29, 628.53chart/s]unwrap: ortho checks:   1%|          | 127/18795 [00:00<00:32, 567.26chart/s]unwrap: ortho checks:   3%|▎         | 526/18795 [00:00<00:09, 2019.53chart/s]unwrap: ortho checks:   4%|▍         | 736/18795 [00:00<00:15, 1201.92chart/s]unwrap: ortho checks:   5%|▌         | 978/18795 [00:00<00:11, 1487.69chart/s]unwrap: ortho checks:   6%|▌         | 1164/18795 [00:00<00:11, 1536.35chart/s]unwrap: ortho checks:  12%|█▏        | 2179/18795 [00:00<00:04, 3739.58chart/s]unwrap: ortho checks:  14%|█▍        | 2617/18795 [00:01<00:04, 3813.00chart/s]unwrap: ortho checks:  20%|█▉        | 3683/18795 [00:01<00:02, 5679.86chart/s]unwrap: ortho checks:  23%|██▎       | 4309/18795 [00:01<00:04, 2955.40chart/s]unwrap: ortho checks:  25%|██▌       | 4785/18795 [00:01<00:04, 3050.58chart/s]unwrap: ortho checks:  28%|██▊       | 5219/18795 [00:01<00:05, 2544.91chart/s]unwrap: ortho checks:  32%|███▏      | 5983/18795 [00:02<00:03, 3391.39chart/s]unwrap: ortho checks:  34%|███▍      | 6455/18795 [00:02<00:03, 3316.65chart/s]unwrap: ortho checks:  38%|███▊      | 7075/18795 [00:02<00:03, 3896.14chart/s]unwrap: ortho checks:  40%|████      | 7558/18795 [00:02<00:02, 4007.91chart/s]unwrap: ortho checks:  43%|████▎     | 8161/18795 [00:02<00:02, 4455.39chart/s]unwrap: ortho checks:  46%|████▌     | 8665/18795 [00:02<00:03, 2988.03chart/s]unwrap: ortho checks:  48%|████▊     | 9066/18795 [00:03<00:06, 1418.21chart/s]unwrap: ortho checks:  50%|████▉     | 9363/18795 [00:03<00:07, 1235.45chart/s]unwrap: ortho checks:  52%|█████▏    | 9715/18795 [00:04<00:06, 1471.32chart/s]unwrap: ortho checks:  54%|█████▍    | 10198/18795 [00:04<00:04, 1912.43chart/s]unwrap: ortho checks:  56%|█████▌    | 10526/18795 [00:04<00:04, 2047.86chart/s]unwrap: ortho checks:  59%|█████▉    | 11177/18795 [00:04<00:02, 2845.17chart/s]unwrap: ortho checks:  64%|██████▎   | 11950/18795 [00:04<00:01, 3831.32chart/s]unwrap: ortho checks:  68%|██████▊   | 12826/18795 [00:04<00:01, 4902.83chart/s]unwrap: ortho checks:  72%|███████▏  | 13559/18795 [00:04<00:00, 5487.56chart/s]unwrap: ortho checks:  76%|███████▋  | 14333/18795 [00:04<00:00, 6021.30chart/s]unwrap: ortho checks:  80%|███████▉  | 15015/18795 [00:05<00:01, 2936.96chart/s]unwrap: ortho checks:  83%|████████▎ | 15532/18795 [00:05<00:01, 3035.01chart/s]unwrap: ortho checks:  85%|████████▌ | 15996/18795 [00:05<00:01, 2088.07chart/s]unwrap: ortho checks:  91%|█████████ | 17037/18795 [00:06<00:00, 3181.93chart/s]unwrap: ortho checks:  94%|█████████▎| 17598/18795 [00:06<00:00, 3378.76chart/s]unwrap: ortho checks:  96%|█████████▋| 18116/18795 [00:06<00:00, 3605.35chart/s]unwrap: ortho checks:  99%|█████████▉| 18615/18795 [00:06<00:00, 3815.34chart/s]                                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/37590 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 18795/37590 [00:00<00:00, 26946.52chart/s]unwrap: pack:  57%|█████▋    | 21611/37590 [00:03<00:03, 4766.69chart/s] unwrap: pack:  61%|██████    | 22891/37590 [00:04<00:04, 3536.38chart/s]unwrap: pack:  63%|██████▎   | 23659/37590 [00:05<00:04, 2970.34chart/s]unwrap: pack:  64%|██████▍   | 24171/37590 [00:05<00:05, 2592.84chart/s]unwrap: pack:  66%|██████▌   | 24683/37590 [00:06<00:05, 2267.16chart/s]unwrap: pack:  66%|██████▋   | 24939/37590 [00:06<00:05, 2112.88chart/s]unwrap: pack:  67%|██████▋   | 25195/37590 [00:07<00:06, 1928.23chart/s]unwrap: pack:  68%|██████▊   | 25451/37590 [00:07<00:06, 1754.22chart/s]unwrap: pack:  68%|██████▊   | 25707/37590 [00:07<00:07, 1571.96chart/s]unwrap: pack:  69%|██████▉   | 25963/37590 [00:07<00:08, 1387.60chart/s]unwrap: pack:  70%|██████▉   | 26219/37590 [00:08<00:08, 1304.40chart/s]unwrap: pack:  70%|███████   | 26475/37590 [00:08<00:09, 1214.89chart/s]unwrap: pack:  71%|███████   | 26731/37590 [00:08<00:09, 1146.90chart/s]unwrap: pack:  72%|███████▏  | 26987/37590 [00:08<00:09, 1078.95chart/s]unwrap: pack:  72%|███████▏  | 27243/37590 [00:09<00:10, 1011.86chart/s]unwrap: pack:  73%|███████▎  | 27499/37590 [00:09<00:10, 979.03chart/s] unwrap: pack:  74%|███████▍  | 27755/37590 [00:09<00:10, 970.70chart/s]unwrap: pack:  75%|███████▍  | 28011/37590 [00:10<00:09, 982.75chart/s]unwrap: pack:  75%|███████▌  | 28267/37590 [00:10<00:09, 959.88chart/s]unwrap: pack:  76%|███████▌  | 28523/37590 [00:10<00:09, 998.07chart/s]unwrap: pack:  77%|███████▋  | 28779/37590 [00:10<00:09, 951.84chart/s]unwrap: pack:  77%|███████▋  | 29035/37590 [00:11<00:09, 930.88chart/s]unwrap: pack:  78%|███████▊  | 29291/37590 [00:11<00:08, 922.19chart/s]unwrap: pack:  79%|███████▊  | 29547/37590 [00:11<00:08, 903.18chart/s]unwrap: pack:  79%|███████▉  | 29803/37590 [00:11<00:08, 887.79chart/s]unwrap: pack:  80%|███████▉  | 30059/37590 [00:12<00:08, 888.52chart/s]unwrap: pack:  81%|████████  | 30315/37590 [00:12<00:08, 880.36chart/s]unwrap: pack:  81%|████████▏ | 30571/37590 [00:12<00:07, 882.96chart/s]unwrap: pack:  82%|████████▏ | 30827/37590 [00:13<00:07, 869.75chart/s]unwrap: pack:  83%|████████▎ | 31083/37590 [00:13<00:07, 860.95chart/s]unwrap: pack:  83%|████████▎ | 31339/37590 [00:13<00:07, 860.13chart/s]unwrap: pack:  84%|████████▍ | 31595/37590 [00:14<00:06, 862.48chart/s]unwrap: pack:  85%|████████▍ | 31851/37590 [00:14<00:06, 852.70chart/s]unwrap: pack:  85%|████████▌ | 32107/37590 [00:14<00:05, 916.73chart/s]unwrap: pack:  86%|████████▌ | 32363/37590 [00:14<00:05, 904.79chart/s]unwrap: pack:  87%|████████▋ | 32619/37590 [00:15<00:05, 875.62chart/s]unwrap: pack:  87%|████████▋ | 32875/37590 [00:15<00:05, 857.94chart/s]unwrap: pack:  88%|████████▊ | 33131/37590 [00:15<00:05, 851.20chart/s]unwrap: pack:  89%|████████▉ | 33387/37590 [00:16<00:04, 966.37chart/s]unwrap: pack:  89%|████████▉ | 33643/37590 [00:16<00:03, 1074.92chart/s]unwrap: pack:  90%|█████████ | 33899/37590 [00:16<00:03, 1158.50chart/s]unwrap: pack:  91%|█████████ | 34155/37590 [00:16<00:02, 1226.98chart/s]unwrap: pack:  92%|█████████▏| 34411/37590 [00:16<00:02, 1287.10chart/s]unwrap: pack:  92%|█████████▏| 34667/37590 [00:16<00:02, 1329.65chart/s]unwrap: pack:  93%|█████████▎| 34923/37590 [00:17<00:01, 1370.33chart/s]unwrap: pack:  94%|█████████▎| 35179/37590 [00:17<00:01, 1386.46chart/s]unwrap: pack:  94%|█████████▍| 35435/37590 [00:17<00:01, 1401.29chart/s]unwrap: pack:  95%|█████████▍| 35691/37590 [00:17<00:01, 1420.37chart/s]unwrap: pack:  96%|█████████▌| 35947/37590 [00:17<00:01, 1431.05chart/s]unwrap: pack:  96%|█████████▋| 36203/37590 [00:17<00:00, 1446.67chart/s]unwrap: pack:  97%|█████████▋| 36459/37590 [00:18<00:00, 1447.52chart/s]unwrap: pack:  98%|█████████▊| 36715/37590 [00:18<00:00, 1449.04chart/s]unwrap: pack:  98%|█████████▊| 36971/37590 [00:18<00:00, 1444.49chart/s]unwrap: pack:  99%|█████████▉| 37227/37590 [00:18<00:00, 1448.06chart/s]unwrap: pack: 100%|█████████▉| 37483/37590 [00:18<00:00, 1456.29chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 6251612 faces -> 18795 charts, atlas 1221x1222, 81.6s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:00<00:00,  4.98it/s, uvs][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 5.18 GiB
+Requested               : 4.30 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 100.88 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1454, in execute
+    _bv, _bf, _bu, bt, bmr = bake_texture_from_voxel_fn(
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1329, in bake_texture_from_voxel_fn
+    position_map, mask = _bake_position_map(new_verts, new_faces, new_uvs, texture_size)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 229, in _bake_position_map
+    face_idx, bary, mask = _rasterize_uv_barycentric(faces_np, uvs_np, texture_size)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 192, in _rasterize_uv_barycentric
+    b0 = ((sy1 - sy2) * (xx - sx2) + (sx2 - sx1) * (yy - sy2)) / sden
+          ~~~~~~~~~~~~^~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 5.18 GiB
+Requested               : 4.30 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 100.88 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      |    900 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         |    900 MiB |   7651 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |    992 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 200.68 seconds[0m
+                                                                [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:10,  1.45s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.30it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.59it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.25it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.01it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.48it/s]                                                        [1m[31m[ERROR][0m !!! Exception during processing !!! LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-The-Mesh-Trimmer-ComfyuiNode/__init__.py", line 1017, in run
+    raise RuntimeError(
+RuntimeError: LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+
+[32m[INFO][0m [32mPrompt executed in 100.32 seconds[0m
+[32m[INFO][0m got prompt
+[LODsmith Decimator] Blender failed.
+13:27:59 | INFO: Data are loaded, start creating Blender stuff
+13:27:59 | INFO: Blender create Mesh node geometry_0
+13:28:02 | INFO: glTF import finished in 2.27s
+[FastDecimator] Start: 6,251,612 faces
+[FastDecimator]  -> Seal[input] pre-weld: boundary=0 nonmanifold=0
+[FastDecimator]  -> Seal[input] already watertight+manifold
+[FastDecimator]  -> Voxel: 5,310,754 faces
+[FastDecimator]  -> Triangulate: 10,621,508 faces
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+Writing: .tools/local-gen/tmp/blender.crash.txt
+
+
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.41s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.38it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.67it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.32it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.04it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.51it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/18795 [00:00<?, ?chart/s]unwrap: ortho checks:   0%|          | 65/18795 [00:00<00:28, 649.98chart/s]unwrap: ortho checks:   1%|▏         | 256/18795 [00:00<00:13, 1390.41chart/s]unwrap: ortho checks:   3%|▎         | 549/18795 [00:00<00:08, 2068.20chart/s]unwrap: ortho checks:   4%|▍         | 755/18795 [00:00<00:14, 1243.40chart/s]unwrap: ortho checks:   6%|▌         | 1080/18795 [00:00<00:10, 1732.69chart/s]unwrap: ortho checks:   9%|▉         | 1663/18795 [00:00<00:06, 2809.93chart/s]unwrap: ortho checks:  13%|█▎        | 2509/18795 [00:00<00:03, 4322.25chart/s]unwrap: ortho checks:  19%|█▊        | 3507/18795 [00:00<00:02, 5867.50chart/s]unwrap: ortho checks:  22%|██▏       | 4158/18795 [00:01<00:03, 3831.69chart/s]unwrap: ortho checks:  25%|██▍       | 4672/18795 [00:01<00:04, 3090.61chart/s]unwrap: ortho checks:  27%|██▋       | 5089/18795 [00:01<00:04, 2829.66chart/s]unwrap: ortho checks:  30%|██▉       | 5556/18795 [00:01<00:04, 3162.16chart/s]unwrap: ortho checks:  34%|███▎      | 6320/18795 [00:01<00:03, 4084.10chart/s]unwrap: ortho checks:  36%|███▋      | 6823/18795 [00:02<00:03, 3643.29chart/s]unwrap: ortho checks:  40%|███▉      | 7445/18795 [00:02<00:02, 4199.09chart/s]unwrap: ortho checks:  43%|████▎     | 8158/18795 [00:02<00:02, 4879.73chart/s]unwrap: ortho checks:  46%|████▋     | 8715/18795 [00:02<00:03, 3033.77chart/s]unwrap: ortho checks:  49%|████▊     | 9151/18795 [00:03<00:06, 1527.11chart/s]unwrap: ortho checks:  50%|█████     | 9474/18795 [00:03<00:06, 1466.78chart/s]unwrap: ortho checks:  53%|█████▎    | 9899/18795 [00:03<00:04, 1783.24chart/s]unwrap: ortho checks:  55%|█████▍    | 10255/18795 [00:03<00:04, 1927.29chart/s]unwrap: ortho checks:  58%|█████▊    | 10883/18795 [00:04<00:03, 2624.17chart/s]unwrap: ortho checks:  63%|██████▎   | 11907/18795 [00:04<00:01, 4041.65chart/s]unwrap: ortho checks:  67%|██████▋   | 12655/18795 [00:04<00:01, 4763.49chart/s]unwrap: ortho checks:  71%|███████   | 13361/18795 [00:04<00:01, 5293.40chart/s]unwrap: ortho checks:  76%|███████▋  | 14333/18795 [00:04<00:00, 6311.03chart/s]unwrap: ortho checks:  80%|████████  | 15069/18795 [00:04<00:01, 3526.16chart/s]unwrap: ortho checks:  83%|████████▎ | 15635/18795 [00:04<00:00, 3674.01chart/s]unwrap: ortho checks:  86%|████████▌ | 16158/18795 [00:05<00:01, 2511.93chart/s]unwrap: ortho checks:  92%|█████████▏| 17375/18795 [00:05<00:00, 3885.48chart/s]unwrap: ortho checks:  96%|█████████▌| 18023/18795 [00:05<00:00, 3996.95chart/s]unwrap: ortho checks:  99%|█████████▉| 18608/18795 [00:05<00:00, 4030.97chart/s]                                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/37590 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 18795/37590 [00:00<00:00, 27774.26chart/s]unwrap: pack:  57%|█████▋    | 21611/37590 [00:03<00:03, 5293.90chart/s] unwrap: pack:  61%|██████    | 22891/37590 [00:04<00:03, 3892.54chart/s]unwrap: pack:  63%|██████▎   | 23659/37590 [00:04<00:04, 3282.82chart/s]unwrap: pack:  64%|██████▍   | 24171/37590 [00:05<00:04, 2864.32chart/s]unwrap: pack:  66%|██████▌   | 24683/37590 [00:05<00:05, 2506.95chart/s]unwrap: pack:  67%|██████▋   | 25195/37590 [00:06<00:05, 2140.87chart/s]unwrap: pack:  68%|██████▊   | 25451/37590 [00:06<00:06, 1972.74chart/s]unwrap: pack:  68%|██████▊   | 25707/37590 [00:06<00:06, 1790.83chart/s]unwrap: pack:  69%|██████▉   | 25963/37590 [00:07<00:07, 1600.88chart/s]unwrap: pack:  70%|██████▉   | 26219/37590 [00:07<00:07, 1490.79chart/s]unwrap: pack:  70%|███████   | 26475/37590 [00:07<00:08, 1388.81chart/s]unwrap: pack:  71%|███████   | 26731/37590 [00:07<00:08, 1308.47chart/s]unwrap: pack:  72%|███████▏  | 26987/37590 [00:08<00:08, 1221.11chart/s]unwrap: pack:  72%|███████▏  | 27243/37590 [00:08<00:09, 1147.87chart/s]unwrap: pack:  73%|███████▎  | 27499/37590 [00:08<00:09, 1110.15chart/s]unwrap: pack:  74%|███████▍  | 27755/37590 [00:08<00:09, 1081.51chart/s]unwrap: pack:  75%|███████▍  | 28011/37590 [00:09<00:08, 1075.58chart/s]unwrap: pack:  75%|███████▌  | 28267/37590 [00:09<00:09, 1031.12chart/s]unwrap: pack:  76%|███████▌  | 28523/37590 [00:09<00:08, 1074.68chart/s]unwrap: pack:  77%|███████▋  | 28779/37590 [00:09<00:08, 1018.64chart/s]unwrap: pack:  77%|███████▋  | 29035/37590 [00:10<00:08, 1003.99chart/s]unwrap: pack:  78%|███████▊  | 29291/37590 [00:10<00:08, 997.34chart/s] unwrap: pack:  79%|███████▊  | 29547/37590 [00:10<00:08, 982.84chart/s]unwrap: pack:  79%|███████▉  | 29803/37590 [00:11<00:08, 971.20chart/s]unwrap: pack:  80%|███████▉  | 30059/37590 [00:11<00:07, 966.93chart/s]unwrap: pack:  81%|████████  | 30315/37590 [00:11<00:07, 959.98chart/s]unwrap: pack:  81%|████████▏ | 30571/37590 [00:11<00:07, 957.41chart/s]unwrap: pack:  82%|████████▏ | 30827/37590 [00:12<00:07, 953.10chart/s]unwrap: pack:  83%|████████▎ | 31083/37590 [00:12<00:06, 948.97chart/s]unwrap: pack:  83%|████████▎ | 31339/37590 [00:12<00:06, 937.18chart/s]unwrap: pack:  84%|████████▍ | 31595/37590 [00:12<00:06, 923.52chart/s]unwrap: pack:  85%|████████▍ | 31851/37590 [00:13<00:06, 911.75chart/s]unwrap: pack:  85%|████████▌ | 32107/37590 [00:13<00:05, 993.48chart/s]unwrap: pack:  86%|████████▌ | 32363/37590 [00:13<00:05, 982.89chart/s]unwrap: pack:  87%|████████▋ | 32619/37590 [00:13<00:05, 953.18chart/s]unwrap: pack:  87%|████████▋ | 32875/37590 [00:14<00:05, 931.63chart/s]unwrap: pack:  88%|████████▊ | 33131/37590 [00:14<00:04, 926.78chart/s]unwrap: pack:  89%|████████▉ | 33387/37590 [00:14<00:04, 1045.21chart/s]unwrap: pack:  89%|████████▉ | 33643/37590 [00:14<00:03, 1150.54chart/s]unwrap: pack:  90%|█████████ | 33899/37590 [00:15<00:02, 1238.67chart/s]unwrap: pack:  91%|█████████ | 34155/37590 [00:15<00:02, 1305.75chart/s]unwrap: pack:  92%|█████████▏| 34411/37590 [00:15<00:02, 1360.29chart/s]unwrap: pack:  92%|█████████▏| 34667/37590 [00:15<00:02, 1400.89chart/s]unwrap: pack:  93%|█████████▎| 34923/37590 [00:15<00:01, 1431.00chart/s]unwrap: pack:  94%|█████████▎| 35179/37590 [00:15<00:01, 1448.37chart/s]unwrap: pack:  94%|█████████▍| 35435/37590 [00:16<00:01, 1465.32chart/s]unwrap: pack:  95%|█████████▍| 35691/37590 [00:16<00:01, 1481.60chart/s]unwrap: pack:  96%|█████████▌| 35947/37590 [00:16<00:01, 1489.05chart/s]unwrap: pack:  96%|█████████▋| 36203/37590 [00:16<00:00, 1498.68chart/s]unwrap: pack:  97%|█████████▋| 36459/37590 [00:16<00:00, 1505.94chart/s]unwrap: pack:  98%|█████████▊| 36715/37590 [00:16<00:00, 1506.27chart/s]unwrap: pack:  98%|█████████▊| 36971/37590 [00:17<00:00, 1509.90chart/s]unwrap: pack:  99%|█████████▉| 37227/37590 [00:17<00:00, 1512.01chart/s]unwrap: pack: 100%|█████████▉| 37483/37590 [00:17<00:00, 1507.87chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 6251612 faces -> 18795 charts, atlas 1221x1222, 76.3s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:00<00:00,  5.02it/s, uvs][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 101.06 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1454, in execute
+    _bv, _bf, _bu, bt, bmr = bake_texture_from_voxel_fn(
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1329, in bake_texture_from_voxel_fn
+    position_map, mask = _bake_position_map(new_verts, new_faces, new_uvs, texture_size)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 229, in _bake_position_map
+    face_idx, bary, mask = _rasterize_uv_barycentric(faces_np, uvs_np, texture_size)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 192, in _rasterize_uv_barycentric
+    b0 = ((sy1 - sy2) * (xx - sx2) + (sx2 - sx1) * (yy - sy2)) / sden
+          ~~~~~~~~~~~~^~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 101.06 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |    768 MiB |   8640 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 190.53 seconds[0m
+                                                                [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.40s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.40it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.69it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.35it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.05it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.53it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/18795 [00:00<?, ?chart/s]unwrap: ortho checks:   0%|          | 66/18795 [00:00<00:33, 554.20chart/s]unwrap: ortho checks:   2%|▏         | 442/18795 [00:00<00:07, 2302.34chart/s]unwrap: ortho checks:   4%|▎         | 686/18795 [00:00<00:13, 1305.20chart/s]unwrap: ortho checks:   5%|▍         | 858/18795 [00:00<00:12, 1390.85chart/s]unwrap: ortho checks:   6%|▌         | 1120/18795 [00:00<00:10, 1710.38chart/s]unwrap: ortho checks:  11%|█▏        | 2133/18795 [00:00<00:04, 4009.60chart/s]unwrap: ortho checks:  14%|█▍        | 2607/18795 [00:00<00:03, 4145.82chart/s]unwrap: ortho checks:  20%|██        | 3794/18795 [00:01<00:02, 6317.07chart/s]unwrap: ortho checks:  24%|██▍       | 4486/18795 [00:01<00:04, 3104.30chart/s]unwrap: ortho checks:  27%|██▋       | 5007/18795 [00:01<00:04, 3038.97chart/s]unwrap: ortho checks:  29%|██▉       | 5456/18795 [00:01<00:04, 3145.76chart/s]unwrap: ortho checks:  33%|███▎      | 6273/18795 [00:01<00:03, 4098.60chart/s]unwrap: ortho checks:  36%|███▋      | 6814/18795 [00:02<00:03, 3706.32chart/s]unwrap: ortho checks:  40%|███▉      | 7433/18795 [00:02<00:02, 4214.57chart/s]unwrap: ortho checks:  43%|████▎     | 8158/18795 [00:02<00:02, 4900.01chart/s]unwrap: ortho checks:  46%|████▋     | 8734/18795 [00:02<00:03, 2829.05chart/s]unwrap: ortho checks:  49%|████▉     | 9177/18795 [00:03<00:06, 1496.97chart/s]unwrap: ortho checks:  51%|█████     | 9505/18795 [00:03<00:05, 1564.51chart/s]unwrap: ortho checks:  53%|█████▎    | 9901/18795 [00:03<00:04, 1845.88chart/s]unwrap: ortho checks:  55%|█████▍    | 10255/18795 [00:03<00:04, 1986.15chart/s]unwrap: ortho checks:  58%|█████▊    | 10845/18795 [00:03<00:03, 2627.97chart/s]unwrap: ortho checks:  63%|██████▎   | 11866/18795 [00:04<00:01, 4067.18chart/s]unwrap: ortho checks:  68%|██████▊   | 12705/18795 [00:04<00:01, 4952.89chart/s]unwrap: ortho checks:  72%|███████▏  | 13456/18795 [00:04<00:00, 5546.79chart/s]unwrap: ortho checks:  76%|███████▋  | 14337/18795 [00:04<00:00, 6261.90chart/s]unwrap: ortho checks:  80%|████████  | 15061/18795 [00:04<00:01, 3420.65chart/s]unwrap: ortho checks:  83%|████████▎ | 15616/18795 [00:04<00:00, 3552.00chart/s]unwrap: ortho checks:  86%|████████▌ | 16126/18795 [00:05<00:01, 2441.12chart/s]unwrap: ortho checks:  92%|█████████▏| 17270/18795 [00:05<00:00, 3707.55chart/s]unwrap: ortho checks:  95%|█████████▌| 17889/18795 [00:05<00:00, 3852.10chart/s]unwrap: ortho checks:  98%|█████████▊| 18453/18795 [00:05<00:00, 3805.82chart/s]                                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/37590 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 18795/37590 [00:00<00:00, 27707.54chart/s]unwrap: pack:  57%|█████▋    | 21611/37590 [00:03<00:03, 5068.40chart/s] unwrap: pack:  61%|██████    | 22891/37590 [00:04<00:03, 3755.91chart/s]unwrap: pack:  63%|██████▎   | 23659/37590 [00:05<00:04, 3136.12chart/s]unwrap: pack:  64%|██████▍   | 24171/37590 [00:05<00:04, 2730.81chart/s]unwrap: pack:  66%|██████▌   | 24683/37590 [00:06<00:05, 2399.41chart/s]unwrap: pack:  67%|██████▋   | 25195/37590 [00:06<00:05, 2081.83chart/s]unwrap: pack:  68%|██████▊   | 25451/37590 [00:06<00:06, 1928.57chart/s]unwrap: pack:  68%|██████▊   | 25707/37590 [00:07<00:06, 1760.63chart/s]unwrap: pack:  69%|██████▉   | 25963/37590 [00:07<00:07, 1573.91chart/s]unwrap: pack:  70%|██████▉   | 26219/37590 [00:07<00:07, 1464.88chart/s]unwrap: pack:  70%|███████   | 26475/37590 [00:07<00:08, 1347.78chart/s]unwrap: pack:  71%|███████   | 26731/37590 [00:08<00:08, 1260.95chart/s]unwrap: pack:  72%|███████▏  | 26987/37590 [00:08<00:08, 1185.21chart/s]unwrap: pack:  72%|███████▏  | 27243/37590 [00:08<00:09, 1105.68chart/s]unwrap: pack:  73%|███████▎  | 27499/37590 [00:08<00:09, 1062.91chart/s]unwrap: pack:  74%|███████▍  | 27755/37590 [00:09<00:09, 1040.16chart/s]unwrap: pack:  75%|███████▍  | 28011/37590 [00:09<00:09, 1047.00chart/s]unwrap: pack:  75%|███████▌  | 28267/37590 [00:09<00:09, 1016.62chart/s]unwrap: pack:  76%|███████▌  | 28523/37590 [00:09<00:08, 1064.80chart/s]unwrap: pack:  77%|███████▋  | 28779/37590 [00:10<00:08, 1013.59chart/s]unwrap: pack:  77%|███████▋  | 29035/37590 [00:10<00:08, 987.80chart/s] unwrap: pack:  78%|███████▊  | 29291/37590 [00:10<00:08, 976.83chart/s]unwrap: pack:  79%|███████▊  | 29547/37590 [00:11<00:08, 956.71chart/s]unwrap: pack:  79%|███████▉  | 29803/37590 [00:11<00:08, 941.43chart/s]unwrap: pack:  80%|███████▉  | 30059/37590 [00:11<00:08, 935.65chart/s]unwrap: pack:  81%|████████  | 30315/37590 [00:11<00:07, 942.21chart/s]unwrap: pack:  81%|████████▏ | 30571/37590 [00:12<00:07, 940.57chart/s]unwrap: pack:  82%|████████▏ | 30827/37590 [00:12<00:07, 940.49chart/s]unwrap: pack:  83%|████████▎ | 31083/37590 [00:12<00:06, 932.78chart/s]unwrap: pack:  83%|████████▎ | 31339/37590 [00:13<00:06, 927.25chart/s]unwrap: pack:  84%|████████▍ | 31595/37590 [00:13<00:06, 928.56chart/s]unwrap: pack:  85%|████████▍ | 31851/37590 [00:13<00:06, 917.32chart/s]unwrap: pack:  85%|████████▌ | 32107/37590 [00:13<00:05, 1013.86chart/s]unwrap: pack:  86%|████████▌ | 32363/37590 [00:14<00:05, 1016.68chart/s]unwrap: pack:  87%|████████▋ | 32619/37590 [00:14<00:04, 995.46chart/s] unwrap: pack:  87%|████████▋ | 32875/37590 [00:14<00:04, 965.10chart/s]unwrap: pack:  88%|████████▊ | 33131/37590 [00:14<00:04, 969.12chart/s]unwrap: pack:  89%|████████▉ | 33387/37590 [00:14<00:03, 1102.18chart/s]unwrap: pack:  89%|████████▉ | 33643/37590 [00:15<00:03, 1221.15chart/s]unwrap: pack:  90%|█████████ | 33899/37590 [00:15<00:02, 1319.88chart/s]unwrap: pack:  91%|█████████ | 34155/37590 [00:15<00:02, 1399.55chart/s]unwrap: pack:  92%|█████████▏| 34411/37590 [00:15<00:02, 1446.18chart/s]unwrap: pack:  92%|█████████▏| 34667/37590 [00:15<00:01, 1472.69chart/s]unwrap: pack:  93%|█████████▎| 34923/37590 [00:15<00:01, 1505.54chart/s]unwrap: pack:  94%|█████████▎| 35179/37590 [00:16<00:01, 1530.32chart/s]unwrap: pack:  94%|█████████▍| 35435/37590 [00:16<00:01, 1555.91chart/s]unwrap: pack:  95%|█████████▍| 35691/37590 [00:16<00:01, 1567.41chart/s]unwrap: pack:  96%|█████████▌| 35947/37590 [00:16<00:01, 1553.12chart/s]unwrap: pack:  96%|█████████▋| 36203/37590 [00:16<00:00, 1546.33chart/s]unwrap: pack:  97%|█████████▋| 36459/37590 [00:16<00:00, 1544.34chart/s]unwrap: pack:  98%|█████████▊| 36715/37590 [00:17<00:00, 1537.48chart/s]unwrap: pack:  98%|█████████▊| 36971/37590 [00:17<00:00, 1534.71chart/s]unwrap: pack:  99%|█████████▉| 37227/37590 [00:17<00:00, 1535.65chart/s]unwrap: pack: 100%|█████████▉| 37483/37590 [00:17<00:00, 1537.00chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 6251612 faces -> 18795 charts, atlas 1221x1222, 76.6s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:00<00:00,  5.05it/s, uvs][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 107.75 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1454, in execute
+    _bv, _bf, _bu, bt, bmr = bake_texture_from_voxel_fn(
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1329, in bake_texture_from_voxel_fn
+    position_map, mask = _bake_position_map(new_verts, new_faces, new_uvs, texture_size)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 229, in _bake_position_map
+    face_idx, bary, mask = _rasterize_uv_barycentric(faces_np, uvs_np, texture_size)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 192, in _rasterize_uv_barycentric
+    b0 = ((sy1 - sy2) * (xx - sx2) + (sx2 - sx1) * (yy - sy2)) / sden
+          ~~~~~~~~~~~~^~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 107.75 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |    768 MiB |   8672 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 190.66 seconds[0m
+                                                                [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.39s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.39it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.68it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.32it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.04it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.52it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/18795 [00:00<?, ?chart/s]unwrap: ortho checks:   0%|          | 66/18795 [00:00<00:33, 555.96chart/s]unwrap: ortho checks:   2%|▏         | 451/18795 [00:00<00:07, 2354.94chart/s]unwrap: ortho checks:   4%|▎         | 701/18795 [00:00<00:14, 1270.57chart/s]unwrap: ortho checks:   5%|▌         | 956/18795 [00:00<00:11, 1575.69chart/s]unwrap: ortho checks:   6%|▌         | 1159/18795 [00:00<00:10, 1653.93chart/s]unwrap: ortho checks:  12%|█▏        | 2182/18795 [00:00<00:04, 3924.20chart/s]unwrap: ortho checks:  14%|█▍        | 2668/18795 [00:00<00:03, 4180.64chart/s]unwrap: ortho checks:  20%|██        | 3795/18795 [00:01<00:02, 6148.94chart/s]unwrap: ortho checks:  24%|██▍       | 4474/18795 [00:01<00:04, 3025.05chart/s]unwrap: ortho checks:  27%|██▋       | 4985/18795 [00:01<00:04, 2961.15chart/s]unwrap: ortho checks:  29%|██▉       | 5424/18795 [00:01<00:04, 3065.50chart/s]unwrap: ortho checks:  33%|███▎      | 6246/18795 [00:01<00:03, 4038.72chart/s]unwrap: ortho checks:  36%|███▌      | 6782/18795 [00:02<00:03, 3591.87chart/s]unwrap: ortho checks:  39%|███▉      | 7399/18795 [00:02<00:02, 4110.98chart/s]unwrap: ortho checks:  43%|████▎     | 8157/18795 [00:02<00:02, 4877.92chart/s]unwrap: ortho checks:  46%|████▋     | 8737/18795 [00:02<00:04, 2487.01chart/s]unwrap: ortho checks:  49%|████▉     | 9175/18795 [00:03<00:06, 1552.30chart/s]unwrap: ortho checks:  51%|█████     | 9502/18795 [00:03<00:05, 1584.26chart/s]unwrap: ortho checks:  53%|█████▎    | 9899/18795 [00:03<00:04, 1866.47chart/s]unwrap: ortho checks:  55%|█████▍    | 10255/18795 [00:03<00:04, 1994.46chart/s]unwrap: ortho checks:  58%|█████▊    | 10871/18795 [00:04<00:02, 2677.69chart/s]unwrap: ortho checks:  63%|██████▎   | 11827/18795 [00:04<00:01, 3984.44chart/s]unwrap: ortho checks:  67%|██████▋   | 12606/18795 [00:04<00:01, 4776.59chart/s]unwrap: ortho checks:  71%|███████   | 13339/18795 [00:04<00:01, 5369.50chart/s]unwrap: ortho checks:  76%|███████▋  | 14333/18795 [00:04<00:00, 6402.54chart/s]unwrap: ortho checks:  80%|████████  | 15071/18795 [00:04<00:01, 3518.45chart/s]unwrap: ortho checks:  83%|████████▎ | 15638/18795 [00:05<00:00, 3667.10chart/s]unwrap: ortho checks:  86%|████████▌ | 16162/18795 [00:05<00:01, 2505.07chart/s]unwrap: ortho checks:  92%|█████████▏| 17355/18795 [00:05<00:00, 3835.35chart/s]unwrap: ortho checks:  96%|█████████▌| 17996/18795 [00:05<00:00, 3961.14chart/s]unwrap: ortho checks:  99%|█████████▉| 18577/18795 [00:05<00:00, 3912.93chart/s]                                                                                unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/37590 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 18795/37590 [00:00<00:00, 27756.72chart/s]unwrap: pack:  57%|█████▋    | 21611/37590 [00:03<00:03, 5204.66chart/s] unwrap: pack:  61%|██████    | 22891/37590 [00:04<00:03, 3885.43chart/s]unwrap: pack:  63%|██████▎   | 23659/37590 [00:05<00:04, 3252.78chart/s]unwrap: pack:  64%|██████▍   | 24171/37590 [00:05<00:04, 2852.46chart/s]unwrap: pack:  66%|██████▌   | 24683/37590 [00:05<00:05, 2503.93chart/s]unwrap: pack:  67%|██████▋   | 25195/37590 [00:06<00:05, 2177.82chart/s]unwrap: pack:  68%|██████▊   | 25451/37590 [00:06<00:06, 2022.48chart/s]unwrap: pack:  68%|██████▊   | 25707/37590 [00:06<00:06, 1856.43chart/s]unwrap: pack:  69%|██████▉   | 25963/37590 [00:07<00:06, 1666.22chart/s]unwrap: pack:  70%|██████▉   | 26219/37590 [00:07<00:07, 1558.84chart/s]unwrap: pack:  70%|███████   | 26475/37590 [00:07<00:07, 1415.54chart/s]unwrap: pack:  71%|███████   | 26731/37590 [00:07<00:08, 1313.53chart/s]unwrap: pack:  72%|███████▏  | 26987/37590 [00:08<00:08, 1225.32chart/s]unwrap: pack:  72%|███████▏  | 27243/37590 [00:08<00:09, 1135.57chart/s]unwrap: pack:  73%|███████▎  | 27499/37590 [00:08<00:09, 1085.47chart/s]unwrap: pack:  74%|███████▍  | 27755/37590 [00:08<00:09, 1076.88chart/s]unwrap: pack:  75%|███████▍  | 28011/37590 [00:09<00:08, 1095.88chart/s]unwrap: pack:  75%|███████▌  | 28267/37590 [00:09<00:08, 1061.30chart/s]unwrap: pack:  76%|███████▌  | 28523/37590 [00:09<00:08, 1099.37chart/s]unwrap: pack:  77%|███████▋  | 28779/37590 [00:09<00:08, 1035.55chart/s]unwrap: pack:  77%|███████▋  | 29035/37590 [00:10<00:08, 1001.06chart/s]unwrap: pack:  78%|███████▊  | 29291/37590 [00:10<00:08, 990.99chart/s] unwrap: pack:  79%|███████▊  | 29547/37590 [00:10<00:08, 982.79chart/s]unwrap: pack:  79%|███████▉  | 29803/37590 [00:10<00:07, 975.10chart/s]unwrap: pack:  80%|███████▉  | 30059/37590 [00:11<00:07, 973.94chart/s]unwrap: pack:  81%|████████  | 30315/37590 [00:11<00:07, 968.61chart/s]unwrap: pack:  81%|████████▏ | 30571/37590 [00:11<00:07, 968.06chart/s]unwrap: pack:  82%|████████▏ | 30827/37590 [00:12<00:07, 964.37chart/s]unwrap: pack:  83%|████████▎ | 31083/37590 [00:12<00:06, 962.82chart/s]unwrap: pack:  83%|████████▎ | 31339/37590 [00:12<00:06, 967.20chart/s]unwrap: pack:  84%|████████▍ | 31595/37590 [00:12<00:06, 965.89chart/s]unwrap: pack:  85%|████████▍ | 31851/37590 [00:13<00:05, 957.27chart/s]unwrap: pack:  85%|████████▌ | 32107/37590 [00:13<00:05, 1038.03chart/s]unwrap: pack:  86%|████████▌ | 32363/37590 [00:13<00:05, 1017.19chart/s]unwrap: pack:  87%|████████▋ | 32619/37590 [00:13<00:05, 985.97chart/s] unwrap: pack:  87%|████████▋ | 32875/37590 [00:14<00:04, 965.82chart/s]unwrap: pack:  88%|████████▊ | 33131/37590 [00:14<00:04, 973.60chart/s]unwrap: pack:  89%|████████▉ | 33387/37590 [00:14<00:03, 1107.60chart/s]unwrap: pack:  89%|████████▉ | 33643/37590 [00:14<00:03, 1223.84chart/s]unwrap: pack:  90%|█████████ | 33899/37590 [00:14<00:02, 1323.56chart/s]unwrap: pack:  91%|█████████ | 34155/37590 [00:14<00:02, 1403.36chart/s]unwrap: pack:  92%|█████████▏| 34411/37590 [00:15<00:02, 1461.44chart/s]unwrap: pack:  92%|█████████▏| 34667/37590 [00:15<00:01, 1507.25chart/s]unwrap: pack:  93%|█████████▎| 34923/37590 [00:15<00:01, 1542.06chart/s]unwrap: pack:  94%|█████████▎| 35179/37590 [00:15<00:01, 1563.85chart/s]unwrap: pack:  94%|█████████▍| 35435/37590 [00:15<00:01, 1583.85chart/s]unwrap: pack:  95%|█████████▍| 35691/37590 [00:15<00:01, 1598.31chart/s]unwrap: pack:  96%|█████████▌| 35947/37590 [00:16<00:01, 1608.25chart/s]unwrap: pack:  96%|█████████▋| 36203/37590 [00:16<00:00, 1610.52chart/s]unwrap: pack:  97%|█████████▋| 36459/37590 [00:16<00:00, 1616.90chart/s]unwrap: pack:  98%|█████████▊| 36715/37590 [00:16<00:00, 1620.69chart/s]unwrap: pack:  98%|█████████▊| 36971/37590 [00:16<00:00, 1620.12chart/s]unwrap: pack:  99%|█████████▉| 37227/37590 [00:16<00:00, 1624.69chart/s]unwrap: pack: 100%|█████████▉| 37483/37590 [00:17<00:00, 1626.66chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 6251612 faces -> 18795 charts, atlas 1221x1222, 97.6s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:00<00:00,  5.02it/s, uvs][1m[31m[ERROR][0m !!! Exception during processing !!! Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 108.00 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1454, in execute
+    _bv, _bf, _bu, bt, bmr = bake_texture_from_voxel_fn(
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 1329, in bake_texture_from_voxel_fn
+    position_map, mask = _bake_position_map(new_verts, new_faces, new_uvs, texture_size)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 229, in _bake_position_map
+    face_idx, bary, mask = _rasterize_uv_barycentric(faces_np, uvs_np, texture_size)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 192, in _rasterize_uv_barycentric
+    b0 = ((sy1 - sy2) * (xx - sx2) + (sx2 - sx1) * (yy - sy2)) / sden
+          ~~~~~~~~~~~~^~~~~~~~~~~~
+torch.OutOfMemoryError: Allocation on device 0 would exceed allowed memory. (out of memory)
+Currently allocated     : 8.32 GiB
+Requested               : 7.67 GiB
+Device limit            : 9.62 GiB
+Free (according to CUDA): 108.00 MiB
+PyTorch limit (set by user-supplied memory fraction)
+                        : 17179869184.00 GiB
+
+[32m[INFO][0m Memory summary:
+|===========================================================================|
+|                  PyTorch CUDA memory summary, device ID 0                 |
+|---------------------------------------------------------------------------|
+|            CUDA OOMs: 0            |        cudaMalloc retries: 0         |
+|===========================================================================|
+|        Metric         | Cur Usage  | Peak Usage | Tot Alloc  | Tot Freed  |
+|---------------------------------------------------------------------------|
+| Allocated memory      | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Active memory         | 672293 KiB |   8515 MiB |      0 B   |      0 B   |
+|       from large pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 KiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Requested memory      |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| GPU reserved memory   |    768 MiB |   8672 MiB |      0 B   |      0 B   |
+|       from large pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|       from small pool |      0 MiB |      0 MiB |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Non-releasable memory |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from large pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|       from small pool |      0 B   |      0 B   |      0 B   |      0 B   |
+|---------------------------------------------------------------------------|
+| Allocations           |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Active allocs         |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| GPU reserved segments |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Non-releasable allocs |       0    |       0    |       0    |       0    |
+|       from large pool |       0    |       0    |       0    |       0    |
+|       from small pool |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize allocations  |       0    |       0    |       0    |       0    |
+|---------------------------------------------------------------------------|
+| Oversize GPU segments |       0    |       0    |       0    |       0    |
+|===========================================================================|
+
+[1m[31m[ERROR][0m Got an OOM, unloading all loaded models.
+[32m[INFO][0m [32mPrompt executed in 211.86 seconds[0m
+                                                                [32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.38s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.43it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.72it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.36it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.04it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.53it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+[1m[31m[ERROR][0m !!! Exception during processing !!! LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/custom_nodes/LODTailor-The-Mesh-Trimmer-ComfyuiNode/__init__.py", line 1017, in run
+    raise RuntimeError(
+RuntimeError: LODsmith decimation failed. Check the ComfyUI console for the Blender log.
+
+[32m[INFO][0m [32mPrompt executed in 72.73 seconds[0m
+[32m[INFO][0m got prompt
+[LODsmith Decimator] Blender failed.
+13:43:37 | INFO: Data are loaded, start creating Blender stuff
+13:43:37 | INFO: Blender create Mesh node geometry_0
+13:43:37 | INFO: glTF import finished in 0.40s
+[FastDecimator] Start: 1,000,000 faces
+[FastDecimator]  -> Seal[input] pre-weld: boundary=0 nonmanifold=0
+[FastDecimator]  -> Seal[input] already watertight+manifold
+[FastDecimator]  -> Voxel: 5,310,756 faces
+[FastDecimator]  -> Triangulate: 10,621,512 faces
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
+Writing: .tools/local-gen/tmp/blender.crash.txt
+
+
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.39s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.41it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.67it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.24it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.00it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.48it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+[LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/21430 [00:00<?, ?chart/s]unwrap: ortho checks:   9%|▉         | 1898/21430 [00:00<00:01, 18977.48chart/s]unwrap: ortho checks:  18%|█▊        | 3808/21430 [00:00<00:00, 19048.49chart/s]unwrap: ortho checks:  27%|██▋       | 5713/21430 [00:00<00:00, 18582.62chart/s]unwrap: ortho checks:  37%|███▋      | 7865/21430 [00:00<00:00, 19723.36chart/s]unwrap: ortho checks:  46%|████▌     | 9840/21430 [00:00<00:00, 16037.07chart/s]unwrap: ortho checks:  58%|█████▊    | 12489/21430 [00:00<00:00, 19100.52chart/s]unwrap: ortho checks:  71%|███████   | 15199/21430 [00:00<00:00, 21460.19chart/s]unwrap: ortho checks:  81%|████████▏ | 17445/21430 [00:00<00:00, 20168.36chart/s]unwrap: ortho checks:  91%|█████████ | 19541/21430 [00:01<00:00, 17223.21chart/s]                                                                                 unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/42860 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 21430/42860 [00:00<00:00, 51800.90chart/s]unwrap: pack:  63%|██████▎   | 26806/42860 [00:06<00:04, 3423.94chart/s] unwrap: pack:  68%|██████▊   | 29110/42860 [00:08<00:05, 2605.24chart/s]unwrap: pack:  71%|███████   | 30390/42860 [00:09<00:05, 2272.65chart/s]unwrap: pack:  73%|███████▎  | 31414/42860 [00:10<00:05, 2040.66chart/s]unwrap: pack:  75%|███████▌  | 32182/42860 [00:11<00:05, 1854.28chart/s]unwrap: pack:  76%|███████▋  | 32694/42860 [00:11<00:05, 1752.06chart/s]unwrap: pack:  77%|███████▋  | 33206/42860 [00:12<00:05, 1635.48chart/s]unwrap: pack:  78%|███████▊  | 33462/42860 [00:12<00:05, 1570.25chart/s]unwrap: pack:  79%|███████▊  | 33718/42860 [00:12<00:06, 1488.18chart/s]unwrap: pack:  79%|███████▉  | 33974/42860 [00:12<00:06, 1396.44chart/s]unwrap: pack:  80%|███████▉  | 34230/42860 [00:13<00:06, 1332.68chart/s]unwrap: pack:  80%|████████  | 34486/42860 [00:13<00:06, 1272.58chart/s]unwrap: pack:  81%|████████  | 34742/42860 [00:13<00:06, 1219.99chart/s]unwrap: pack:  82%|████████▏ | 34998/42860 [00:13<00:06, 1153.24chart/s]unwrap: pack:  82%|████████▏ | 35254/42860 [00:14<00:06, 1103.94chart/s]unwrap: pack:  83%|████████▎ | 35510/42860 [00:14<00:06, 1055.05chart/s]unwrap: pack:  83%|████████▎ | 35766/42860 [00:14<00:06, 1031.75chart/s]unwrap: pack:  84%|████████▍ | 36022/42860 [00:14<00:06, 1033.13chart/s]unwrap: pack:  85%|████████▍ | 36278/42860 [00:15<00:06, 1035.63chart/s]unwrap: pack:  85%|████████▌ | 36534/42860 [00:15<00:06, 1048.37chart/s]unwrap: pack:  86%|████████▌ | 36790/42860 [00:15<00:06, 1002.87chart/s]unwrap: pack:  86%|████████▋ | 37046/42860 [00:15<00:05, 1031.63chart/s]unwrap: pack:  87%|████████▋ | 37302/42860 [00:16<00:05, 992.20chart/s] unwrap: pack:  88%|████████▊ | 37558/42860 [00:16<00:05, 1026.08chart/s]unwrap: pack:  88%|████████▊ | 37814/42860 [00:16<00:05, 983.66chart/s] unwrap: pack:  89%|████████▉ | 38070/42860 [00:17<00:04, 962.66chart/s]unwrap: pack:  89%|████████▉ | 38326/42860 [00:17<00:04, 962.95chart/s]unwrap: pack:  90%|█████████ | 38582/42860 [00:17<00:04, 978.27chart/s]unwrap: pack:  91%|█████████ | 38838/42860 [00:17<00:04, 970.11chart/s]unwrap: pack:  91%|█████████ | 39094/42860 [00:18<00:03, 949.42chart/s]unwrap: pack:  92%|█████████▏| 39350/42860 [00:18<00:03, 970.37chart/s]unwrap: pack:  92%|█████████▏| 39606/42860 [00:18<00:03, 959.09chart/s]unwrap: pack:  93%|█████████▎| 39862/42860 [00:18<00:03, 958.56chart/s]unwrap: pack:  94%|█████████▎| 40118/42860 [00:19<00:02, 936.87chart/s]unwrap: pack:  94%|█████████▍| 40374/42860 [00:19<00:02, 885.25chart/s]unwrap: pack:  95%|█████████▍| 40630/42860 [00:19<00:02, 914.57chart/s]unwrap: pack:  95%|█████████▌| 40886/42860 [00:20<00:02, 903.54chart/s]unwrap: pack:  96%|█████████▌| 41142/42860 [00:20<00:01, 895.01chart/s]unwrap: pack:  97%|█████████▋| 41398/42860 [00:20<00:01, 889.42chart/s]unwrap: pack:  97%|█████████▋| 41654/42860 [00:20<00:01, 884.10chart/s]unwrap: pack:  98%|█████████▊| 41910/42860 [00:21<00:01, 876.03chart/s]unwrap: pack:  98%|█████████▊| 42166/42860 [00:21<00:00, 862.45chart/s]unwrap: pack:  99%|█████████▉| 42422/42860 [00:21<00:00, 852.65chart/s]unwrap: pack: 100%|█████████▉| 42678/42860 [00:22<00:00, 952.92chart/s]                                                                       [32m[INFO][0m [uv_unwrap] 999996 faces -> 21430 charts, atlas 1705x1706, 31.4s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:03<00:14,  3.59s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:03<00:05,  1.79s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:04<00:05,  1.79s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:04<00:03,  1.55s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:10<00:03,  1.55s/it, sample]      Bake texture:  80%|████████  | 4/5 [00:10<00:03,  3.08s/it, sample]Bake texture:  80%|████████  | 4/5 [00:12<00:03,  3.08s/it, finalize]Bake texture: 100%|██████████| 5/5 [00:12<00:00,  2.60s/it, finalize]                                                                     unwrap: ortho checks:   0%|          | 0/77 [00:00<?, ?chart/s]                                                               unwrap: LSCM (large charts):   0%|          | 0/2 [00:00<?, ?chart/s]                                                                     unwrap: pack:   0%|          | 0/232 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 116/232 [00:00<00:00, 1117.33chart/s]                                                                    [32m[INFO][0m [uv_unwrap] 19996 faces -> 116 charts, atlas 1547x1680, 0.5s
+[1m[33m[WARNING][0m [WTiVo Fast Merge] Native C++ DLL not found; using Python fallback (slow / mostly single-core). Run build_windows.bat to enable the multithreaded native path.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 initial_render_topology=False vertices=13,955 faces=19,996 render_bad_edges=7772 render_bad_fans=0
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 has render-vertex attribute seams; TEXTURE_SAFE mode will preserve them and only weld POSITION for the geometry test.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=1 distance=0.0001 mode=TEXTURE_SAFE vertices=13,955->13,955 faces=19,996->19,996 render_bad_edges=7772 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=0 render_topology=False geometric_watertight=True
+[32m[INFO][0m [WTiVo Fast Merge] topology policy=TEXTURE_SAFE | TEXTURE_SAFE preserves render seams; STRICT_BLENDER uses merged indexed vertices.
+[32m[INFO][0m [WTiVo Fast Merge] SUCCESS | vertices 13,955->13,955 | faces 19,996->19,996 | merged=0 | final_distance=0.0001 | native_attempts=0 | python_attempts=1 | 0.270s
+[32m[INFO][0m [32mPrompt executed in 248.92 seconds[0m
+[32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.39s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.42it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.71it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.36it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.06it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.54it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+[LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+[1m[31m[ERROR][0m !!! Exception during processing !!! index 536897894 is out of bounds for axis 0 with size 500000
+[1m[31m[ERROR][0m Traceback (most recent call last):
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 548, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 353, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 327, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File ".tools/local-gen/src/ComfyUI/execution.py", line 315, in process_inputs
+    result = f(**inputs)
+             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py", line 149, in wrapped_func
+    return method(locked_class, **inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py", line 2219, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2774, in execute
+    vmapping, indices, uvs = _uv_unwrap(
+                             ^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2553, in _uv_unwrap
+    v_in, f_in, welded_to_orig = _uv_weld_vertices(v_in, f_in, weld_distance)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py", line 2541, in _uv_weld_vertices
+    f_new = torch.from_numpy(inv[f_np]).to(f.dtype).to(f.device)
+                             ~~~^^^^^^
+IndexError: index 536897894 is out of bounds for axis 0 with size 500000
+
+[32m[INFO][0m [32mPrompt executed in 158.18 seconds[0m
+[32m[INFO][0m got prompt
+Remesh DC:   0%|          | 0/8 [00:00<?, ?it/s]Remesh DC:  12%|█▎        | 1/8 [00:01<00:09,  1.40s/it]Remesh DC:  38%|███▊      | 3/8 [00:01<00:02,  2.39it/s]Remesh DC:  50%|█████     | 4/8 [00:01<00:01,  2.63it/s]Remesh DC:  62%|██████▎   | 5/8 [00:03<00:02,  1.31it/s]Remesh DC:  75%|███████▌  | 6/8 [00:04<00:01,  1.01it/s]Remesh DC: 100%|██████████| 8/8 [00:05<00:00,  1.48it/s]                                                        [LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+[LODsmith] OUTPUT CHECK watertight=True winding_consistent=True bodies=1 euler=0
+unwrap: ortho checks:   0%|          | 0/21432 [00:00<?, ?chart/s]unwrap: ortho checks:   9%|▉         | 1914/21432 [00:00<00:01, 19137.42chart/s]unwrap: ortho checks:  18%|█▊        | 3828/21432 [00:00<00:00, 19031.36chart/s]unwrap: ortho checks:  27%|██▋       | 5732/21432 [00:00<00:00, 18781.55chart/s]unwrap: ortho checks:  37%|███▋      | 7891/21432 [00:00<00:00, 19876.27chart/s]unwrap: ortho checks:  46%|████▌     | 9880/21432 [00:00<00:00, 16472.93chart/s]unwrap: ortho checks:  59%|█████▊    | 12557/21432 [00:00<00:00, 19538.49chart/s]unwrap: ortho checks:  71%|███████▏  | 15283/21432 [00:00<00:00, 21841.37chart/s]unwrap: ortho checks:  82%|████████▏ | 17554/21432 [00:00<00:00, 20439.35chart/s]unwrap: ortho checks:  92%|█████████▏| 19671/21432 [00:01<00:00, 17609.07chart/s]                                                                                 unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/42864 [00:00<?, ?chart/s]unwrap: pack:  50%|█████     | 21432/42864 [00:00<00:00, 52998.77chart/s]unwrap: pack:  63%|██████▎   | 26808/42864 [00:05<00:04, 3610.33chart/s] unwrap: pack:  68%|██████▊   | 29112/42864 [00:07<00:05, 2737.87chart/s]unwrap: pack:  71%|███████   | 30392/42864 [00:09<00:05, 2376.29chart/s]unwrap: pack:  73%|███████▎  | 31416/42864 [00:10<00:05, 2103.92chart/s]unwrap: pack:  75%|███████▌  | 32184/42864 [00:10<00:05, 1911.10chart/s]unwrap: pack:  76%|███████▋  | 32696/42864 [00:11<00:05, 1793.56chart/s]unwrap: pack:  77%|███████▋  | 33208/42864 [00:11<00:05, 1664.18chart/s]unwrap: pack:  78%|███████▊  | 33464/42864 [00:11<00:05, 1611.71chart/s]unwrap: pack:  79%|███████▊  | 33720/42864 [00:12<00:05, 1541.52chart/s]unwrap: pack:  79%|███████▉  | 33976/42864 [00:12<00:06, 1466.95chart/s]unwrap: pack:  80%|███████▉  | 34232/42864 [00:12<00:06, 1382.45chart/s]unwrap: pack:  80%|████████  | 34488/42864 [00:12<00:06, 1303.08chart/s]unwrap: pack:  81%|████████  | 34744/42864 [00:13<00:06, 1256.14chart/s]unwrap: pack:  82%|████████▏ | 35000/42864 [00:13<00:06, 1189.05chart/s]unwrap: pack:  82%|████████▏ | 35256/42864 [00:13<00:06, 1152.60chart/s]unwrap: pack:  83%|████████▎ | 35512/42864 [00:13<00:06, 1120.01chart/s]unwrap: pack:  83%|████████▎ | 35768/42864 [00:14<00:06, 1103.64chart/s]unwrap: pack:  84%|████████▍ | 36024/42864 [00:14<00:06, 1027.71chart/s]unwrap: pack:  85%|████████▍ | 36280/42864 [00:14<00:06, 1054.35chart/s]unwrap: pack:  85%|████████▌ | 36536/42864 [00:14<00:06, 1030.20chart/s]unwrap: pack:  86%|████████▌ | 36792/42864 [00:15<00:05, 1014.77chart/s]unwrap: pack:  86%|████████▋ | 37048/42864 [00:15<00:05, 1017.58chart/s]unwrap: pack:  87%|████████▋ | 37304/42864 [00:15<00:05, 986.83chart/s] unwrap: pack:  88%|████████▊ | 37560/42864 [00:15<00:05, 982.63chart/s]unwrap: pack:  88%|████████▊ | 37816/42864 [00:16<00:05, 954.68chart/s]unwrap: pack:  89%|████████▉ | 38072/42864 [00:16<00:05, 953.13chart/s]unwrap: pack:  89%|████████▉ | 38328/42864 [00:16<00:04, 950.03chart/s]unwrap: pack:  90%|█████████ | 38584/42864 [00:17<00:04, 942.90chart/s]unwrap: pack:  91%|█████████ | 38840/42864 [00:17<00:04, 963.60chart/s]unwrap: pack:  91%|█████████ | 39096/42864 [00:17<00:03, 959.67chart/s]unwrap: pack:  92%|█████████▏| 39352/42864 [00:17<00:03, 943.93chart/s]unwrap: pack:  92%|█████████▏| 39608/42864 [00:18<00:03, 936.75chart/s]unwrap: pack:  93%|█████████▎| 39864/42864 [00:18<00:03, 966.23chart/s]unwrap: pack:  94%|█████████▎| 40120/42864 [00:18<00:02, 956.38chart/s]unwrap: pack:  94%|█████████▍| 40376/42864 [00:18<00:02, 930.08chart/s]unwrap: pack:  95%|█████████▍| 40632/42864 [00:19<00:02, 924.79chart/s]unwrap: pack:  95%|█████████▌| 40888/42864 [00:19<00:02, 935.90chart/s]unwrap: pack:  96%|█████████▌| 41144/42864 [00:19<00:01, 914.30chart/s]unwrap: pack:  97%|█████████▋| 41400/42864 [00:20<00:01, 895.48chart/s]unwrap: pack:  97%|█████████▋| 41656/42864 [00:20<00:01, 885.74chart/s]unwrap: pack:  98%|█████████▊| 41912/42864 [00:20<00:01, 889.93chart/s]unwrap: pack:  98%|█████████▊| 42168/42864 [00:20<00:00, 889.22chart/s]unwrap: pack:  99%|█████████▉| 42424/42864 [00:21<00:00, 903.95chart/s]unwrap: pack: 100%|█████████▉| 42680/42864 [00:21<00:00, 1022.93chart/s]                                                                        [32m[INFO][0m [uv_unwrap] 999996 faces -> 21432 charts, atlas 1706x1707, 30.4s
+Bake texture:   0%|          | 0/5 [00:00<?, ?it/s]Bake texture:   0%|          | 0/5 [00:00<?, ?it/s, uvs]Bake texture:  20%|██        | 1/5 [00:03<00:14,  3.73s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:03<00:05,  1.87s/it, rasterize]Bake texture:  40%|████      | 2/5 [00:05<00:05,  1.87s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:05<00:03,  1.62s/it, back-project]Bake texture:  60%|██████    | 3/5 [00:10<00:03,  1.62s/it, sample]      Bake texture:  80%|████████  | 4/5 [00:10<00:03,  3.09s/it, sample]Bake texture:  80%|████████  | 4/5 [00:12<00:03,  3.09s/it, finalize]Bake texture: 100%|██████████| 5/5 [00:12<00:00,  2.57s/it, finalize]                                                                     unwrap: ortho checks:   0%|          | 0/81 [00:00<?, ?chart/s]                                                               unwrap: LSCM (large charts): 0chart [00:00, ?chart/s]                                                     unwrap: pack:   0%|          | 0/246 [00:00<?, ?chart/s]                                                        [32m[INFO][0m [uv_unwrap] 4000 faces -> 123 charts, atlas 1517x1698, 0.2s
+[1m[33m[WARNING][0m [WTiVo Fast Merge] Native C++ DLL not found; using Python fallback (slow / mostly single-core). Run build_windows.bat to enable the multithreaded native path.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 initial_render_topology=False vertices=3,352 faces=4,000 render_bad_edges=2486 render_bad_fans=0
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 has render-vertex attribute seams; TEXTURE_SAFE mode will preserve them and only weld POSITION for the geometry test.
+[32m[INFO][0m [WTiVo Fast Merge] mesh=0 primitive=0 try=1 distance=0.0001 mode=TEXTURE_SAFE vertices=3,352->3,352 faces=4,000->4,000 render_bad_edges=2486 render_bad_fans=0 geometric_bad_edges=0 geometric_bad_fans=0 render_topology=False geometric_watertight=True
+[32m[INFO][0m [WTiVo Fast Merge] topology policy=TEXTURE_SAFE | TEXTURE_SAFE preserves render seams; STRICT_BLENDER uses merged indexed vertices.
+[32m[INFO][0m [WTiVo Fast Merge] SUCCESS | vertices 3,352->3,352 | faces 4,000->4,000 | merged=0 | final_distance=0.0001 | native_attempts=0 | python_attempts=1 | 0.068s
+[32m[INFO][0m [32mPrompt executed in 245.89 seconds[0m

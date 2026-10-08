@@ -1,0 +1,48 @@
+{
+ "a": "models/crate_t2_1024_b_raw.glb",
+ "b": "models/crate_reserve4_raw.glb",
+ "vertices": [
+  7464611,
+  7464611
+ ],
+ "triangles": [
+  14916218,
+  14916218
+ ],
+ "same_positions_bit_for_bit": true,
+ "same_indices_bit_for_bit": true,
+ "bounding_box_a": [
+  [
+   -0.5000100135803223,
+   -0.5,
+   -0.5
+  ],
+  [
+   0.5,
+   0.5,
+   0.5
+  ]
+ ],
+ "bounding_box_b": [
+  [
+   -0.5000100135803223,
+   -0.5,
+   -0.5
+  ],
+  [
+   0.5,
+   0.5,
+   0.5
+  ]
+ ],
+ "nearest_vertex_distance_a_to_b": {
+  "median": 0.0,
+  "p99": 0.0,
+  "max": 0.0
+ },
+ "nearest_vertex_distance_b_to_a": {
+  "median": 0.0,
+  "p99": 0.0,
+  "max": 0.0
+ }
+}

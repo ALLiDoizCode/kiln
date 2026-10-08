@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# The pinned Blender, started the way tools/bl starts it: factory settings, no add-ons, no network,
+# its own empty user folder. The node packs call "blender --background --python x.py -- args".
+# Blender 5.2.2 was seen to die with a segmentation fault now and then in the Decimate modifier on
+# meshes of about ten million triangles; this wrapper runs it again, up to five times, and writes
+# every crash to blender-crashes.log. No core dump is kept (ulimit -c 0).
+LG=.tools/local-gen
+export BLENDER_USER_RESOURCES=$LG/blender-user
+mkdir -p "$BLENDER_USER_RESOURCES"
+ulimit -c 0
+for try in 1 2 3 4 5; do
+  .tools/blender/blender --factory-startup --offline-mode "$@"
+  rc=$?
+  [ $rc -ne 139 ] && [ $rc -ne 134 ] && exit $rc
+  echo "$(date -Is) exit=$rc try=$try args: $*" >> "$LG/blender-crashes.log"
+done
+exit $rc

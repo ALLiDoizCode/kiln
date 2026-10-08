@@ -1,0 +1,8 @@
+13:19:52 | INFO: Data are loaded, start creating Blender stuff
+13:19:52 | INFO: Blender create Mesh node 0
+13:19:54 | INFO: glTF import finished in 2.40s
+[FastDecimator] Start: 6,251,612 faces
+[FastDecimator]  -> Seal[input] pre-weld: boundary=0 nonmanifold=0
+[FastDecimator]  -> Seal[input] already watertight+manifold
+[FastDecimator]  -> Voxel: 11,951,778 faces
+[FastDecimator]  -> Triangulate: 23,903,556 faces

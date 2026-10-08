@@ -1,0 +1,11 @@
+learn/research/local-generator-trial/models/crate_r2_highpoly.glb  (glTF 2, generator: ComfyUI)
+
+mesh ""
+  primitive 0
+    POSITION    VEC3  x 814597
+    TEXCOORD_0  VEC2  x 814597
+    COLOR_0     VEC3  x 814597
+    indices     2999988  = 999996 triangles
+    material    ""  textures: baseColorTexture, metallicRoughnessTexture
+
+1 mesh(es), 1 material(s), 2 image(s)

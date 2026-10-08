@@ -1,0 +1,194 @@
+{
+  "file": "<scratchpad>/tripo-trial/proof/broken.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "broken",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "broken",
+      "materials": [],
+      "uv_layers": [],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 1,
+      "flat_faces": 12,
+      "as_imported": {
+        "vertices": 29,
+        "edges": 34,
+        "faces": 13,
+        "triangles": 13,
+        "face_sides": {
+          "3": 13,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 29,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 1,
+        "zero_length_edges": 0,
+        "boundary_loops": 8,
+        "pieces": 8,
+        "piece_triangles_largest_first": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      },
+      "welded": {
+        "vertices": 15,
+        "edges": 25,
+        "faces": 13,
+        "triangles": 13,
+        "face_sides": {
+          "3": 13,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 12,
+        "non_manifold_edges": 1,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 1,
+        "zero_length_edges": 0,
+        "boundary_loops": 4,
+        "pieces": 3,
+        "piece_triangles_largest_first": [
+          11,
+          1,
+          1
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 29,
+    "edges": 34,
+    "faces": 13,
+    "triangles": 13,
+    "face_sides": {
+      "3": 13,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 29,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 1,
+    "zero_length_edges": 0,
+    "boundary_loops": 8,
+    "pieces": 8,
+    "piece_triangles_largest_first": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "welded": {
+    "vertices": 15,
+    "edges": 25,
+    "faces": 13,
+    "triangles": 13,
+    "face_sides": {
+      "3": 13,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 12,
+    "non_manifold_edges": 1,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 1,
+    "zero_length_edges": 0,
+    "boundary_loops": 4,
+    "pieces": 3,
+    "piece_triangles_largest_first": [
+      11,
+      1,
+      1
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.5,
+      -0.5,
+      -1.0
+    ],
+    "max": [
+      6.0,
+      0.5,
+      0.5
+    ],
+    "dimensions": [
+      6.5,
+      1.0,
+      1.5
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.5,
+      -1.0,
+      -0.5
+    ],
+    "max": [
+      6.0,
+      0.5,
+      0.5
+    ],
+    "dimensions": [
+      6.5,
+      1.5,
+      1.0
+    ]
+  },
+  "bounding_box_centre_blender": [
+    2.75,
+    0.0,
+    -0.25
+  ],
+  "lowest_point_blender_z": -1.0,
+  "materials": [],
+  "images": []
+}

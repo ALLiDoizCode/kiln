@@ -1,0 +1,2 @@
+tripo make images/crate_three_quarter.png --model tripo-p1 -p face_limit=20000 -p texture=true -p pbr=true -p texture_quality=standard -p texture_seed=1 --seed 1 --dry-run --json
+exit 0

@@ -1,0 +1,98 @@
+{
+ "prompt": "crate_t2_1024_remesh20k.prompt.json",
+ "result": {
+  "status": "error",
+  "node": "241",
+  "node_type": "RemeshMesh",
+  "message": "Allocation on device 0 would exceed allowed memory. (out of memory)\nCurrently allocated     : 6.66 GiB\nRequested               : 1.83 GiB\nDevice limit            : 9.62 GiB\nFree (according to CUDA): 125.25 MiB\nPyTorch limit (set by user-supplied memory fraction)\n                        : 17179869184.00 GiB\nThis error means you ran out of memory on your GPU.\n\nTIPS: If the workflow worked before you might have accidentally set the batch_size to a large number.",
+  "type": "torch.OutOfMemoryError",
+  "traceback": [
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 548, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 353, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 327, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n",
+   "  File \".tools/local-gen/src/ComfyUI/execution.py\", line 315, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\n    return method(locked_class, **inputs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_api/latest/_io.py\", line 2219, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2479, in execute\n    result = _process_mesh_batch(mesh, _fn)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2233, in _process_mesh_batch\n    v_i, f_i, c_i = process_single(v_i, f_i, c_i, bar)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2211, in process_single\n    v, f, c = per_item_fn(v, f, c)\n              ^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/nodes_mesh_postprocess.py\", line 2461, in _fn\n    rv, rf, rc = remesh_narrow_band_dc(\n                 ^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/src/ComfyUI/comfy_extras/mesh3d/postprocess/remesh.py\", line 1002, in remesh_narrow_band_dc\n    unique_corner_keys, corner_inv = torch.unique(corner_keys, return_inverse=True)\n                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py\", line 635, in fn\n    return if_true(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/_jit_internal.py\", line 637, in fn\n    return if_false(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py\", line 1118, in _return_inverse\n    output, inverse_indices, _ = _unique_impl(\n                                 ^^^^^^^^^^^^^\n",
+   "  File \".tools/local-gen/venv/lib/python3.12/site-packages/torch/functional.py\", line 973, in _unique_impl\n    output, inverse_indices, counts = torch._unique2(\n                                      ^^^^^^^^^^^^^^^\n"
+  ]
+ },
+ "total_seconds": 4.39,
+ "seconds_per_node": {
+  "326 free VRAM before closing (as the video does before WTiVo)": 0.0,
+  "241 SUBSTITUTE for WTiVo: RemeshMesh": 4.15
+ },
+ "cached": [
+  "cached:122,193,192,312,15,299,40,117,118,87,199,125,108,3,119,91,279,126,18,94,23,92,98,12,93,400,401"
+ ],
+ "baseline_gpu_used_mib": 1183,
+ "peak_gpu_used_mib": 6687,
+ "peak_gpu_process_mib": 5478,
+ "peak_rss_mib": 8739,
+ "min_ram_available_mib": 15201,
+ "samples": [
+  [
+   0.0,
+   1183,
+   422,
+   5471,
+   18452
+  ],
+  [
+   0.6,
+   2271,
+   1510,
+   5693,
+   18243
+  ],
+  [
+   1.1,
+   2399,
+   1638,
+   6307,
+   17565
+  ],
+  [
+   1.7,
+   2399,
+   1638,
+   7111,
+   16809
+  ],
+  [
+   2.3,
+   2399,
+   1638,
+   7935,
+   15991
+  ],
+  [
+   2.8,
+   2399,
+   1638,
+   8739,
+   15201
+  ],
+  [
+   3.4,
+   3103,
+   2342,
+   8137,
+   15754
+  ],
+  [
+   3.9,
+   6687,
+   5478,
+   5471,
+   18441
+  ]
+ ]
+}

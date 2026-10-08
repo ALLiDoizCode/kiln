@@ -1,0 +1,3 @@
+# generated models are large and are not kept in git; SHA-256 of each is in ../models.sha256
+*
+!.gitignore

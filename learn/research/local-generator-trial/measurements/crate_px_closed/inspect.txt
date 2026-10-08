@@ -1,0 +1,9 @@
+learn/research/local-generator-trial/models/crate_px_closed.glb  (glTF 2, generator: ComfyUI)
+
+mesh ""
+  primitive 0
+    POSITION    VEC3  x 1060000
+    indices     6360732  = 2120244 triangles
+    material    ""  textures: none
+
+1 mesh(es), 1 material(s), 0 image(s)

@@ -1,0 +1,215 @@
+{
+  "file": {
+    "path": "learn/research/local-generator-trial/models/crate_px_lowpoly.glb",
+    "bytes": 48506744,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 20000,
+    "vertices": 14654,
+    "materials": 1,
+    "textures": 4
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "Mesh_0.001",
+      "placed": 1,
+      "triangles": 20000,
+      "vertices": 14654,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "BakeLow_Export_Mat",
+          "triangles": 20000,
+          "vertices": 14654,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "COLOR_0",
+            "COLOR_1",
+            "NORMAL",
+            "POSITION",
+            "TANGENT",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.42596980929374695,
+      -0.39810997247695923,
+      -0.4853379428386688
+    ],
+    "max": [
+      0.44638293981552124,
+      0.4882321357727051,
+      0.49333515763282776
+    ],
+    "dimensions": [
+      0.8723527491092682,
+      0.8863421082496643,
+      0.9786731004714966
+    ],
+    "largest_dimension": 0.9786731004714966
+  },
+  "size": {
+    "in_file": 0.9786731004714966,
+    "given": 0.8,
+    "scale_factor": 0.8174333182495596
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "BakeLow_Export_Mat",
+      "textures": {
+        "baseColorTexture": 2,
+        "metallicRoughnessTexture": 3,
+        "normalTexture": 1,
+        "emissiveTexture": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "BakeLow_emission",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 304633,
+      "used_as": [
+        "emissiveTexture of BakeLow_Export_Mat"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "BakeLow_normal",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 39246458,
+      "used_as": [
+        "normalTexture of BakeLow_Export_Mat"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "BakeLow_basecolor",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 4860596,
+      "used_as": [
+        "baseColorTexture of BakeLow_Export_Mat"
+      ]
+    },
+    {
+      "index": 3,
+      "name": "BakeLow_metallic-BakeLow_roughness",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 2092881,
+      "used_as": [
+        "metallicRoughnessTexture of BakeLow_Export_Mat"
+      ]
+    }
+  ],
+  "uvs": {
+    "triangles": 20000,
+    "islands": 99,
+    "edges": 30000,
+    "seam_edges": 4562,
+    "open_edges": 0,
+    "seam_share": 0.15206666666666666,
+    "coverage": 0.5610036849975586,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.5610138896630433,
+    "triangles_outside_square": 0,
+    "triangles_without_area": 0
+  },
+  "texel_density": {
+    "size": 0.8,
+    "pixels_per_metre": 2291.365576047981,
+    "p05": 2304.6935377009054,
+    "median": 2306.7784618341107,
+    "p95": 2309.197502865569,
+    "surface_area": 1.7926881228218081,
+    "by_primitive": [
+      {
+        "node": 0,
+        "mesh": 0,
+        "primitive": 0,
+        "material": 0,
+        "texture": 2,
+        "texture_pixels": [
+          4096,
+          4096
+        ],
+        "surface_area": 1.7926881228218081,
+        "pixels_per_metre": 2291.365576047981
+      }
+    ]
+  },
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 0,
+    "infos": 7,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/0"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/1"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/2"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/3"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/4"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/5"
+      },
+      {
+        "severity": "info",
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "pointer": "/accessors/6"
+      }
+    ]
+  },
+  "notes": []
+}

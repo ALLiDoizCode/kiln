@@ -1,0 +1,14 @@
+learn/research/local-generator-trial/models/crate_px_lowpoly.glb  (glTF 2, generator: Khronos glTF Blender I/O v5.2.40)
+
+mesh "Mesh_0.001"
+  primitive 0
+    POSITION    VEC3  x 14654
+    NORMAL      VEC3  x 14654
+    TEXCOORD_0  VEC2  x 14654
+    TANGENT     VEC4  x 14654
+    COLOR_0     VEC4  x 14654
+    COLOR_1     VEC4  x 14654
+    indices     60000  = 20000 triangles
+    material    "BakeLow_Export_Mat"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture, emissiveTexture
+
+1 mesh(es), 1 material(s), 4 image(s)

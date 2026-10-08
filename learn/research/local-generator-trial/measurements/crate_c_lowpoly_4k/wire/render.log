@@ -1,0 +1,10 @@
+14:17:11 | INFO: Data are loaded, start creating Blender stuff
+14:17:11 | INFO: Blender create Mesh node Mesh_0.001
+14:17:11 | INFO: glTF import finished in 0.02s
+learn/research/local-generator-trial/scripts/render_untextured.py:30: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  clay.use_nodes = True
+learn/research/local-generator-trial/scripts/render_untextured.py:68: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+WIRE learn/research/local-generator-trial/measurements/crate_c_lowpoly_4k/wire/crate_c_lowpoly_4k_wire_three_quarter.png
+WIRE learn/research/local-generator-trial/measurements/crate_c_lowpoly_4k/wire/crate_c_lowpoly_4k_wire_back.png
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)
