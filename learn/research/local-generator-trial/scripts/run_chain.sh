@@ -4,7 +4,7 @@
 # Needs ComfyUI running (start_comfy.sh). Run from learn/research/local-generator-trial/.
 set -u
 name="$1"; image="$2"; gen="$3"; tris="$4"
-LG=.tools/local-gen
+LG="$(git rev-parse --show-toplevel)/.tools/local-gen"
 python3 scripts/make_prompt.py "runs/$name.prompt.json" --image "$image" --name "$name" --generator "$gen" \
   --resolution 1024 --chain video --close remesh --close-resolution 512 --dense-tris 1000000 \
   --target-tris "$tris" --texture 4096 --blender "$LG/blender-factory"

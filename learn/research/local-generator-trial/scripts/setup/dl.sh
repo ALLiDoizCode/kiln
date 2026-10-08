@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Download the model files (Comfy-Org repackagings) with curl; resumable.
 set -u
-M=.tools/local-gen/src/ComfyUI/models
+M="$(git rev-parse --show-toplevel)/.tools/local-gen/src/ComfyUI/models"
 HF=https://huggingface.co
 get(){ mkdir -p "$M/$1"; f="$M/$1/$(basename "$2")"; [ -f "$f" ] || { curl -L --fail --retry 3 -sS -C - -o "$f.part" "$HF/$2" && mv "$f.part" "$f"; }; echo "$(date +%T) $f $(stat -c %s "$f" 2>/dev/null)"; }
 get diffusion_models Comfy-Org/TRELLIS.2/resolve/430a9d09b2416687018c8fe8edced2ad4858a439/diffusion_models/trellis_2_int8_convrot.safetensors
