@@ -1,0 +1,21 @@
+{
+ "name": "rt_crate_p2_tri_req2000_default",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/roundtrip.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req2000.glb",
+  "learn/research/blender-stages-trial/models/rt_crate_p2_tri_req2000_default.glb",
+  "learn/research/blender-stages-trial/runs/rt_crate_p2_tri_req2000_default.facts.json"
+ ],
+ "started": "2026-10-08 16:04:31",
+ "wall_seconds": 0.62,
+ "user_seconds": 0.56,
+ "system_seconds": 0.17,
+ "peak_rss_mb": 373.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18703,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

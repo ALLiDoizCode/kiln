@@ -1,0 +1,18 @@
+17:46:38 | INFO: Data are loaded, start creating Blender stuff
+17:46:38 | INFO: Blender create Mesh node meshes[0]
+17:46:42 | INFO: glTF import finished in 3.75s
+STEP import: 3.81 s
+COLLAPSE ratio 0.011102 -> 19999
+STEP collapse: 24.82 s
+STEP count_after: 0.26 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+17:47:07 | INFO: Starting glTF 2.0 export
+17:47:07 | INFO: Extracting primitive: meshes[0]
+17:47:08 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+17:47:08 | INFO: Primitives created: 1
+17:47:08 | INFO: Finished glTF 2.0 export in 0.3329479694366455 s
+
+STEP export: 0.35 s
+FACTS {"stage": "reduce", "source": "learn/research/blender-stages-trial/models/chain_crate_smart_b_1_repair.glb", "settings": {"method": "collapse", "target": 20000, "steps": 1, "protect_seams": 0.0, "planar_angle": 5.0, "planar_delimit": "UV", "unsubdiv_iterations": 2, "voxel_size": 0.004, "merge_vertices": true, "weld": 0.0, "normals": "keep", "sharp_angle": 30.0, "exact": true, "count_before": false, "quadriflow_seed": 0}, "before_object": {"vertices": 911551, "faces": 1801449, "triangles": 1801449, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1375197, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "passes": [{"ratio": 0.011102173861152883, "triangles": 19999}], "extra_passes": 0, "triangles_reached": 19999, "custom_normals_after_reduce": true, "after_object": {"vertices": 19154, "faces": 19999, "triangles": 19999, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 7398, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "position", "sharp_face"]}, "after": {"vertices": 15983, "edges": 37748, "faces": 19999, "triangles": 19999, "boundary_edges": 10248, "non_manifold_edges": 1, "wire_edges": 2626, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 2116, "pieces": 99, "largest_pieces": [19897, 2, 2, 2, 2, 1, 1, 1]}, "bounds_after": [[-0.49033910036087036, -0.483909010887146, 0.00013674207730218768], [0.4901221692562103, 0.48370736837387085, 0.9291653633117676]], "seconds": {"import": 3.809, "collapse": 24.817, "count_after": 0.26, "export": 0.348}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

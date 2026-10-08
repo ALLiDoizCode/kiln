@@ -1,0 +1,24 @@
+{
+ "name": "scale_crate_dense",
+ "command": [
+  "python3",
+  "-c",
+  "\nimport json, shutil, sys\nsys.path.insert(0, \".\")\nfrom kiln.run import scale_to_size\nfrom kiln.profile import load_profile\nsource, work, size, out, facts = sys.argv[1:6]\nmodel, stage_facts = scale_to_size(source, work, {\"size\": float(size)}, load_profile(\"pit\"))\nshutil.copyfile(model, out)\njson.dump({\"stage\": \"scale_to_size\", \"source\": source, \"settings\": {\"size\": float(size)}, **stage_facts,\n           \"script_result\": json.load(open(work + \"/scale_to_size.json\"))}, open(facts, \"w\"), indent=1)\n",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/work/scale_scale_crate_dense",
+  "0.8",
+  "learn/research/blender-stages-trial/models/scale_crate_dense.glb",
+  "learn/research/blender-stages-trial/runs/scale_crate_dense.facts.json"
+ ],
+ "started": "2026-10-08 18:09:16",
+ "wall_seconds": 7.04,
+ "user_seconds": 9.59,
+ "system_seconds": 1.91,
+ "peak_rss_mb": 1922.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12989,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

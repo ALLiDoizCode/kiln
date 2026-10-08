@@ -1,0 +1,12 @@
+18:15:12 | INFO: Data are loaded, start creating Blender stuff
+18:15:12 | INFO: Blender create Mesh node meshes[0]
+18:15:12 | INFO: glTF import finished in 0.04s
+STEP import_low: 0.12 s
+STEP weld: 0.04 s
+STEP uvs: 0.06 s
+STEP normals: 0.00 s
+18:15:12 | INFO: Data are loaded, start creating Blender stuff
+18:15:12 | INFO: Blender create Mesh node meshes[0]
+18:15:15 | INFO: glTF import finished in 2.54s
+STEP import_high: 2.55 s
+STEP ray_check: 3.02 s

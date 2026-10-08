@@ -1,0 +1,75 @@
+{
+ "file": "../tripo-api-trial/models/orb_h31_req20000_rigged_walk.glb",
+ "bytes": 10219132,
+ "extensions_used": [
+  "KHR_materials_volume",
+  "FB_ngon_encoding"
+ ],
+ "extensions_required": [],
+ "generator": "Tripo",
+ "sha256": "5fd9408143db895916e9a21c0134bd050b0f0648bf6b2db37013633106ae1dd1",
+ "triangles": 19007,
+ "vertices_stored": 14957,
+ "welded_points": 9482,
+ "attributes": [
+  "JOINTS_0",
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0",
+  "WEIGHTS_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 1948,
+ "triangle_areas": {
+  "surface_area": 2.390332874278467,
+  "share_holding_99pc_of_area": 0.919345504287894,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "orb_h31_req20000_rigged_walk_basecolor.jpg",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 2940082,
+   "sha256": "276364a62eb6bcaccdd955f983d7d64c27d91a80a1330629067334c665dc363a"
+  },
+  {
+   "name": "orb_h31_req20000_rigged_walk_rm.jpg",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1564875,
+   "sha256": "86af1e655941bb068a95bdd4d9a289c486cb1f502b28074b8194bfe4135f57df"
+  },
+  {
+   "name": "orb_h31_req20000_rigged_walk_normal.png",
+   "mime": "image/png",
+   "format": "png",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 4643663,
+   "sha256": "eaada555b2bbf7d2fffeb4bedc646b5735a3b2574eda2ac3da9694eabc1c8e1d"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_a8c76b08-baff-4bda-8827-7f442a177c78",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 0,
+   "metallic_roughness_image": 1,
+   "normal_image": 2,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

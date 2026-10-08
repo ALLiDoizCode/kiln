@@ -1,0 +1,55 @@
+== crate 1024 16:35:02
+TIMED bake_crate__1024: 15.2 s, peak 3058 MB, exit 0
+== crate 2048 16:35:18
+TIMED bake_crate__2048: 18.5 s, peak 3588 MB, exit 0
+== crate 4096 16:35:38
+TIMED bake_crate__4096: 31.5 s, peak 5951 MB, exit 0
+== crate 2048_again 16:36:11
+TIMED bake_crate__2048_again: 17.8 s, peak 3640 MB, exit 0
+== crate 2048_cpu 16:36:31
+TIMED bake_crate__2048_cpu: 17.7 s, peak 3569 MB, exit 0
+== crate 2048_cpu_again 16:36:50
+TIMED bake_crate__2048_cpu_again: 17.3 s, peak 3548 MB, exit 0
+== crate 4096_cpu 16:37:09
+TIMED bake_crate__4096_cpu: 31.6 s, peak 5742 MB, exit 0
+== crate 2048_s16 16:37:42
+TIMED bake_crate__2048_s16: 18.0 s, peak 3706 MB, exit 0
+== crate 2048_cage1mm 16:38:01
+TIMED bake_crate__2048_cage1mm: 17.1 s, peak 3708 MB, exit 0
+== crate 2048_cage5mm 16:38:20
+TIMED bake_crate__2048_cage5mm: 17.3 s, peak 3680 MB, exit 0
+== crate 2048_cage50mm 16:38:39
+TIMED bake_crate__2048_cage50mm: 17.2 s, peak 3722 MB, exit 0
+== crate 2048_cage20mm_nolimit 16:38:57
+TIMED bake_crate__2048_cage20mm_nolimit: 17.1 s, peak 3666 MB, exit 0
+== crate 2048_cage0 16:39:16
+TIMED bake_crate__2048_cage0: 18.9 s, peak 3710 MB, exit 0
+== crate 2048_margin0 16:39:36
+TIMED bake_crate__2048_margin0: 18.1 s, peak 3726 MB, exit 0
+== crate 2048_margin2 16:39:56
+TIMED bake_crate__2048_margin2: 18.1 s, peak 3686 MB, exit 0
+== crate 2048_margin32 16:40:15
+TIMED bake_crate__2048_margin32: 19.0 s, peak 3694 MB, exit 0
+== crate 2048_extend 16:40:36
+TIMED bake_crate__2048_extend: 17.6 s, peak 3682 MB, exit 0
+== crate 2048_diffuse 16:40:55
+TIMED bake_crate__2048_diffuse: 18.1 s, peak 3728 MB, exit 0
+== crate 2048_sharp30 16:41:15
+TIMED bake_crate__2048_sharp30: 19.2 s, peak 3683 MB, exit 0
+== crate 2048_png 16:41:36
+TIMED bake_crate__2048_png: 29.2 s, peak 3671 MB, exit 0
+== crate 2048_noweld 16:42:08
+TIMED bake_crate__2048_noweld: 33.7 s, peak 3723 MB, exit 0
+== crate 2048_keepuv 16:42:44
+TIMED bake_crate__2048_keepuv: 25.6 s, peak 3679 MB, exit 0
+== crate 2048_smart30 16:43:12
+TIMED bake_crate__2048_smart30: 25.0 s, peak 3734 MB, exit 0
+== crate 2048_smart66_concave 16:43:39
+TIMED bake_crate__2048_smart66_concave: 21.8 s, peak 3693 MB, exit 0
+== crate 2048_sharp60 16:44:03
+TIMED bake_crate__2048_sharp60: 22.9 s, peak 3719 MB, exit 0
+== crate 5k_2048 16:44:28
+TIMED bake_crate__5k_2048: 22.6 s, peak 3714 MB, exit 0
+== crate 5k_1024 16:44:52
+TIMED bake_crate__5k_1024: 15.6 s, peak 3218 MB, exit 0
+== done 16:45:09

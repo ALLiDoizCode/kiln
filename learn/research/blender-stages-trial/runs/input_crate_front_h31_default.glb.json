@@ -1,0 +1,73 @@
+{
+ "file": "../tripo-api-trial/models/crate_front_h31_default.glb",
+ "bytes": 59130268,
+ "extensions_used": [
+  "KHR_materials_volume",
+  "FB_ngon_encoding"
+ ],
+ "extensions_required": [],
+ "generator": "Tripo",
+ "sha256": "a4503bc568a08ea38f8f4d684c207aa50ddfef47275928b248a2e8551872223e",
+ "triangles": 1931520,
+ "vertices_stored": 982134,
+ "welded_points": 965762,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 32,
+ "triangle_areas": {
+  "surface_area": 4.553839840737829,
+  "share_holding_99pc_of_area": 0.9122991219350564,
+  "share_under_100th_of_mean": 7.714131875414181e-05,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "crate_front_h31_default_basecolor.jpg",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1295921,
+   "sha256": "ecf832e78398b35a0a662ab347bc1842c46fa36e5efa39018e5202f6760ca540"
+  },
+  {
+   "name": "crate_front_h31_default_rm.jpg",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1510365,
+   "sha256": "8dcc4b821a8e3ea08dd5d5dea1dd74e996873476148b11aedf76964143158697"
+  },
+  {
+   "name": "crate_front_h31_default_normal.png",
+   "mime": "image/png",
+   "format": "png",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1715428,
+   "sha256": "e4acb6096b3b7776d09c866271daf221942f00af9e7c747998175b36ea0b9163"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_f6e4d839-520d-4fd6-8e4a-82ff2b2db9c3",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 0,
+   "metallic_roughness_image": 1,
+   "normal_image": 2,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

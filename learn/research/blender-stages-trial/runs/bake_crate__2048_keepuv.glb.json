@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/bake_crate__2048_keepuv.glb",
+ "bytes": 4681492,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "d6aca04b9cda4fff91908f8d8af082579e453b48c30991fbd025d5730ebc4f39",
+ "triangles": 20000,
+ "vertices_stored": 13433,
+ "welded_points": 10002,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 45,
+ "triangle_areas": {
+  "surface_area": 6.523600997313343,
+  "share_holding_99pc_of_area": 0.8427,
+  "share_under_100th_of_mean": 0.02595,
+  "zero_area": 4
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 2878941,
+   "sha256": "c50e1df5bae86bc9a52d3dba8b4e9f51b0cf3f0269bec6a987ab1f4fadc700fa"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 552117,
+   "sha256": "34646d0cd3f768d06652f1f906ae4acd41eed18f7b37d756a014e3ff5c525e61"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 698871,
+   "sha256": "1516ec8f7490a0f1b89f735ac82eacf38bfe35bc4a23ba1f8f3144b8f9b783d9"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

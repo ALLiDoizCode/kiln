@@ -1,0 +1,23 @@
+{
+ "name": "red_orb__collapse20k_clear30",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_clear30.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__collapse20k_clear30.facts.json",
+  "count_before=false",
+  "normals=clear"
+ ],
+ "started": "2026-10-08 17:03:28",
+ "wall_seconds": 39.56,
+ "user_seconds": 39.09,
+ "system_seconds": 3.61,
+ "peak_rss_mb": 2516.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 9735,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

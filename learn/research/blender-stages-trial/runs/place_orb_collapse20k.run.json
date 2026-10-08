@@ -1,0 +1,22 @@
+{
+ "name": "place_orb_collapse20k",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/place.py",
+  "learn/research/blender-stages-trial/models/scale_orb_collapse20k.glb",
+  "learn/research/blender-stages-trial/models/place_orb_collapse20k.glb",
+  "learn/research/blender-stages-trial/runs/place_orb_collapse20k.facts.json",
+  "turn=180"
+ ],
+ "started": "2026-10-08 18:10:27",
+ "wall_seconds": 1.13,
+ "user_seconds": 1.12,
+ "system_seconds": 0.29,
+ "peak_rss_mb": 660.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14716,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

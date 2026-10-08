@@ -1,0 +1,23 @@
+{
+ "name": "uv_crate_5k__keep",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse5k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_5k__keep.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_5k__keep.facts.json",
+  "bake=false",
+  "uv=keep"
+ ],
+ "started": "2026-10-08 16:30:28",
+ "wall_seconds": 1.09,
+ "user_seconds": 1.01,
+ "system_seconds": 0.44,
+ "peak_rss_mb": 607.0,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 17921,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

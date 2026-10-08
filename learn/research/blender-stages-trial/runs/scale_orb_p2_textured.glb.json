@@ -1,0 +1,52 @@
+{
+ "file": "learn/research/blender-stages-trial/models/scale_orb_p2_textured.glb",
+ "bytes": 4318192,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "f0c70dd21d1a70b55fabd0b7e3cbe8c97cb6ee3be022177eaf328697ef3e3651",
+ "triangles": 20389,
+ "vertices_stored": 28213,
+ "welded_points": 11011,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 207,
+ "triangle_areas": {
+  "surface_area": 1.4657766995920272,
+  "share_holding_99pc_of_area": 0.8641424297415273,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "orb_p2_tri_req20000_textured_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 3291521,
+   "sha256": "ea42a15931416be7d9a1309d5055f8bfe66133cd292376539cdfa17a926c89d4"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_node_1b5f2153-d68f-4c6c-ba1d-2c892299d5db_material",
+   "double_sided": true,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": 0,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

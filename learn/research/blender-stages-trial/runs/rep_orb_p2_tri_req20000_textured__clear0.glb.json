@@ -1,0 +1,100 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000_textured__clear0.glb",
+ "bytes": 4318072,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "b4285091cfab7a6540837a970ee8c82150c919c61c683b1410384dc5d52b50a1",
+ "triangles": 20389,
+ "vertices_stored": 28210,
+ "welded_points": 11011,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 208,
+ "triangle_areas": {
+  "surface_area": 2.288039916105351,
+  "share_holding_99pc_of_area": 0.8641424297415273,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "orb_p2_tri_req20000_textured_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 3291521,
+   "sha256": "ea42a15931416be7d9a1309d5055f8bfe66133cd292376539cdfa17a926c89d4"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_node_1b5f2153-d68f-4c6c-ba1d-2c892299d5db_material",
+   "double_sided": true,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": 0,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/orb_p2_tri_req20000_textured.glb",
+  "reference_bytes": 4440736,
+  "reference_vertices_stored": 28210,
+  "reference_triangles": 20389,
+  "reference_welded_points": 11011,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [
+   true
+  ],
+  "reference_images": [
+   {
+    "name": "orb_p2_tri_req20000_textured_basecolor.jpg",
+    "format": "jpeg",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 3291521
+   }
+  ],
+  "reference_materials": [
+   {
+    "name": "tripo_node_1b5f2153-d68f-4c6c-ba1d-2c892299d5db_material",
+    "double_sided": true,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": 0,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 28210,
+   "keys_in_reference": 28210,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 0.4250947779976235,
+   "share_over_1_degree": 0.0
+  }
+ }
+}

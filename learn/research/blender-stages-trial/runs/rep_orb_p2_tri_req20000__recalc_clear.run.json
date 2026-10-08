@@ -1,0 +1,23 @@
+{
+ "name": "rep_orb_p2_tri_req20000__recalc_clear",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p2_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000__recalc_clear.glb",
+  "learn/research/blender-stages-trial/runs/rep_orb_p2_tri_req20000__recalc_clear.facts.json",
+  "recalc_normals=true",
+  "normals=clear"
+ ],
+ "started": "2026-10-08 16:11:52",
+ "wall_seconds": 1.03,
+ "user_seconds": 1.14,
+ "system_seconds": 0.31,
+ "peak_rss_mb": 450.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18759,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,24 @@
+{
+ "name": "uv_orb_5k__smart45_concave",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse5k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_orb_5k__smart45_concave.glb",
+  "learn/research/blender-stages-trial/runs/uv_orb_5k__smart45_concave.facts.json",
+  "bake=false",
+  "angle=45",
+  "pack=concave"
+ ],
+ "started": "2026-10-08 16:59:43",
+ "wall_seconds": 1.69,
+ "user_seconds": 1.75,
+ "system_seconds": 0.32,
+ "peak_rss_mb": 648.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 16221,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

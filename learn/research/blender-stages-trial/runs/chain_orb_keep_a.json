@@ -1,0 +1,48 @@
+{
+ "chain": "chain_orb_keep_a",
+ "wall_seconds_with_measuring": 84.8,
+ "stage_seconds": 77.1,
+ "peak_rss_mb": 4055.8,
+ "stages": [
+  {
+   "stage": "1_repair",
+   "seconds": 25.16,
+   "peak_rss_mb": 3497.5,
+   "exit": 0,
+   "bytes": 65804660,
+   "sha256": "d547cf2a10e93b8e17016d52e43e185ac0a2ecbdf659ed9e2cbeb502ef5d3914"
+  },
+  {
+   "stage": "2_reduce",
+   "seconds": 29.19,
+   "peak_rss_mb": 2670.9,
+   "exit": 0,
+   "bytes": 9972812,
+   "sha256": "32919015f9e329a5caf918a5e3d4cf0136d6c29029a5d5d8acbc15fe3075bb0b"
+  },
+  {
+   "stage": "3_uv_bake",
+   "seconds": 21.22,
+   "peak_rss_mb": 4055.8,
+   "exit": 0,
+   "bytes": 8350064,
+   "sha256": "5043c15f6d5903ee63d114c548ed75f1893e5df14f35b74c26e2b0a61aab6d2f"
+  },
+  {
+   "stage": "4_scale",
+   "seconds": 0.78,
+   "peak_rss_mb": 503.2,
+   "exit": 0,
+   "bytes": 8350064,
+   "sha256": "ffaf65e2a07f6cdd5b1c611bcc8d103c6eebd87dda937240dc8deef10cbccb42"
+  },
+  {
+   "stage": "5_place",
+   "seconds": 0.77,
+   "peak_rss_mb": 505.3,
+   "exit": 0,
+   "bytes": 8350044,
+   "sha256": "55568f5e7c599d926d8e05b06c30ee25adc5be957ce93d381f3521a16e4e743e"
+  }
+ ]
+}

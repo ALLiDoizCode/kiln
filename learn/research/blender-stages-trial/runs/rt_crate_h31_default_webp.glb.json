@@ -1,0 +1,139 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rt_crate_h31_default_webp.glb",
+ "bytes": 51889300,
+ "extensions_used": [
+  "EXT_texture_webp"
+ ],
+ "extensions_required": [
+  "EXT_texture_webp"
+ ],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "23d7674f930470ee5b2e7084d6beb888e32ec14da59b84e0cd050b9208c1a58f",
+ "triangles": 1801451,
+ "vertices_stored": 937286,
+ "welded_points": 900728,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "triangle_areas": {
+  "surface_area": 6.522544506194641,
+  "share_holding_99pc_of_area": 0.9094230151139276,
+  "share_under_100th_of_mean": 0.0011368613412188287,
+  "zero_area": 25
+ },
+ "images": [
+  {
+   "name": "crate_h31_default_normal",
+   "mime": "image/webp",
+   "format": "webp",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 40720,
+   "sha256": "ad60c69c2a47eeea6678289c8c2d3979a5f28b4453d9a86fbedeff8cec91dcee"
+  },
+  {
+   "name": "crate_h31_default_basecolor",
+   "mime": "image/webp",
+   "format": "webp",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 127286,
+   "sha256": "fa8ff6dd8b9deba832ae0140daf3e731de2e5f787ae5483e27ad48d8817fffc9"
+  },
+  {
+   "name": "crate_h31_default_rm",
+   "mime": "image/webp",
+   "format": "webp",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 108710,
+   "sha256": "375c20cc521bfb559461a4a29b46a1fd37f9c7d48ef1c73870dc354db12699a3"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "reference_bytes": 56826900,
+  "reference_vertices_stored": 926464,
+  "reference_triangles": 1801451,
+  "reference_welded_points": 900728,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [
+   "EXT_texture_webp"
+  ],
+  "same_images": [
+   false,
+   false,
+   false
+  ],
+  "reference_images": [
+   {
+    "name": "crate_h31_default_basecolor.jpg",
+    "format": "jpeg",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 1403694
+   },
+   {
+    "name": "crate_h31_default_rm.jpg",
+    "format": "jpeg",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 1073668
+   },
+   {
+    "name": "crate_h31_default_normal.png",
+    "format": "png",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 3083272
+   }
+  ],
+  "reference_materials": [
+   {
+    "name": "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": null,
+    "roughness_factor": null,
+    "base_colour_image": 0,
+    "metallic_roughness_image": 1,
+    "normal_image": 2,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 926464,
+   "keys_in_reference": 926464,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 0.34456805511100086,
+   "share_over_1_degree": 0.0
+  }
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "name": "det_orb_otn_3",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_a_2_reduce.glb",
+  "learn/research/blender-stages-trial/models/det_orb_otn_3.glb",
+  "learn/research/blender-stages-trial/runs/det_orb_otn_3.facts.json",
+  "high=learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "cage=auto",
+  "uv=keep",
+  "pack=concave",
+  "margin_method=ADD",
+  "pack_margin=0.001",
+  "one_thread_normal=true"
+ ],
+ "started": "2026-10-08 17:55:06",
+ "wall_seconds": 26.14,
+ "user_seconds": 64.25,
+ "system_seconds": 5.62,
+ "peak_rss_mb": 4082.0,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12533,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

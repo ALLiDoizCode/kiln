@@ -1,0 +1,251 @@
+{
+  "file": "learn/research/blender-stages-trial/models/chain_crate_keep1t_a_5_place.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "low",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "baked"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 19905,
+      "flat_faces": 94,
+      "as_imported": {
+        "vertices": 10309,
+        "edges": 30254,
+        "faces": 19999,
+        "triangles": 19999,
+        "face_sides": {
+          "3": 19999,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 511,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 118,
+        "pieces": 86,
+        "piece_triangles_largest_first": [
+          19908,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "small_pieces": 85,
+        "small_piece_triangles": 91
+      },
+      "welded": {
+        "vertices": 10002,
+        "edges": 29999,
+        "faces": 19999,
+        "triangles": 19999,
+        "face_sides": {
+          "3": 19999,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 2,
+        "non_manifold_edges": 1,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 1,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          19999
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 10309,
+    "edges": 30254,
+    "faces": 19999,
+    "triangles": 19999,
+    "face_sides": {
+      "3": 19999,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 511,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 118,
+    "pieces": 86,
+    "piece_triangles_largest_first": [
+      19908,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "small_pieces": 85,
+    "small_piece_triangles": 91
+  },
+  "welded": {
+    "vertices": 10002,
+    "edges": 29999,
+    "faces": 19999,
+    "triangles": 19999,
+    "face_sides": {
+      "3": 19999,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 2,
+    "non_manifold_edges": 1,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 1,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      19999
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.4,
+      -0.394545,
+      0.0
+    ],
+    "max": [
+      0.4,
+      0.394545,
+      0.758071
+    ],
+    "dimensions": [
+      0.8,
+      0.789089,
+      0.758071
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.4,
+      0.0,
+      -0.394545
+    ],
+    "max": [
+      0.4,
+      0.758071,
+      0.394545
+    ],
+    "dimensions": [
+      0.8,
+      0.758071,
+      0.789089
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.379036
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "baked"
+  ],
+  "images": [
+    {
+      "name": "basecolor",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "metallic_roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "normal",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

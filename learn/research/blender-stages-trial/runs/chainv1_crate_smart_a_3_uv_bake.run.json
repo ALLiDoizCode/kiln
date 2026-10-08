@@ -1,0 +1,28 @@
+{
+ "name": "chain_crate_smart_a_3_uv_bake",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/chain_crate_smart_a_2_reduce.glb",
+  "learn/research/blender-stages-trial/models/chain_crate_smart_a_3_uv_bake.glb",
+  "learn/research/blender-stages-trial/runs/chain_crate_smart_a_3_uv_bake.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "cage=auto",
+  "uv=smart",
+  "angle=66",
+  "island_margin=0.003"
+ ],
+ "started": "2026-10-08 17:45:39",
+ "wall_seconds": 22.04,
+ "user_seconds": 54.27,
+ "system_seconds": 7.94,
+ "peak_rss_mb": 3740.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 8534,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

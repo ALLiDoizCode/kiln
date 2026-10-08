@@ -1,0 +1,11 @@
+learn/research/blender-stages-trial/models/bake_crate__5k_2048_keeppack.glb  (glTF 2, generator: Khronos glTF Blender I/O v5.2.40)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 4321
+    NORMAL      VEC3  x 4321
+    TEXCOORD_0  VEC2  x 4321
+    indices     15000  = 5000 triangles
+    material    "baked"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

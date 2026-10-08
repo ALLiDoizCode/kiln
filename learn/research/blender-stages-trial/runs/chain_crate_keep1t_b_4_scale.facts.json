@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_3_uv_bake.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.815890499343833,
+ "script_result": {
+  "factor": 0.815890499343833,
+  "largest_dimension_before": 0.9805237352848053,
+  "blender": "5.2.2 LTS"
+ }
+}

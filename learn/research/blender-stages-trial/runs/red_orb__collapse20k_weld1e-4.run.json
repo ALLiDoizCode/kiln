@@ -1,0 +1,23 @@
+{
+ "name": "red_orb__collapse20k_weld1e-4",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_weld1e-4.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__collapse20k_weld1e-4.facts.json",
+  "count_before=false",
+  "weld=1e-4"
+ ],
+ "started": "2026-10-08 17:04:08",
+ "wall_seconds": 36.96,
+ "user_seconds": 39.45,
+ "system_seconds": 2.34,
+ "peak_rss_mb": 2590.9,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 9677,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,44 @@
+{
+ "file": "../tripo-api-trial/models/orb_p2_tri_req10000.glb",
+ "bytes": 229168,
+ "extensions_used": [
+  "KHR_materials_volume",
+  "FB_ngon_encoding"
+ ],
+ "extensions_required": [],
+ "generator": "Tripo",
+ "sha256": "b99936eb37bfb965a802d47e9c3021d7394f2534cd45c3db275c672579a5f93a",
+ "triangles": 8032,
+ "vertices_stored": 5484,
+ "welded_points": 5484,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 176,
+ "triangle_areas": {
+  "surface_area": 2.552442988175568,
+  "share_holding_99pc_of_area": 0.8554531872509961,
+  "share_under_100th_of_mean": 0.00149402390438247,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0.0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

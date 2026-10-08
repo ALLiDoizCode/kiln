@@ -1,0 +1,23 @@
+{
+ "name": "uv_orb_20k__smart66_m03",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_orb_20k__smart66_m03.glb",
+  "learn/research/blender-stages-trial/runs/uv_orb_20k__smart66_m03.facts.json",
+  "bake=false",
+  "island_margin=0.03"
+ ],
+ "started": "2026-10-08 16:59:08",
+ "wall_seconds": 1.38,
+ "user_seconds": 1.4,
+ "system_seconds": 0.55,
+ "peak_rss_mb": 621.0,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14966,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

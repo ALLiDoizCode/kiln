@@ -1,0 +1,22 @@
+{
+ "name": "rep_crate_p1_tri_req20000__holes4",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_p1_tri_req20000__holes4.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_p1_tri_req20000__holes4.facts.json",
+  "fill_holes=4"
+ ],
+ "started": "2026-10-08 16:10:34",
+ "wall_seconds": 0.95,
+ "user_seconds": 1.11,
+ "system_seconds": 0.34,
+ "peak_rss_mb": 435.9,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18882,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

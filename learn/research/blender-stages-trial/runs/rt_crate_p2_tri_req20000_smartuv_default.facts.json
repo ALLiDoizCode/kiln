@@ -1,0 +1,43 @@
+{
+ "stage": "roundtrip",
+ "source": "learn/research/tripo-api-trial/models/crate_p2_tri_req20000_smartuv.glb",
+ "settings": {
+  "merge_vertices": true,
+  "shading": "NORMALS",
+  "image_format": "AUTO",
+  "tangents": false,
+  "clear_custom_normals": false
+ },
+ "objects": [
+  {
+   "vertices": 10144,
+   "faces": 19958,
+   "triangles": 19958,
+   "uv_layers": [
+    "UVMap"
+   ],
+   "has_custom_normals": true,
+   "normals_domain": "CORNER",
+   "smooth_faces": 19863,
+   "sharp_edges": 0,
+   "materials": [
+    "Material_tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09"
+   ],
+   "attributes": [
+    "UVMap",
+    "custom_normal",
+    "material_index",
+    "position",
+    "sharp_edge",
+    "sharp_face"
+   ],
+   "name": "tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09"
+  }
+ ],
+ "images": [],
+ "seconds": {
+  "import": 0.1,
+  "export": 0.047
+ },
+ "blender": "5.2.2 LTS"
+}

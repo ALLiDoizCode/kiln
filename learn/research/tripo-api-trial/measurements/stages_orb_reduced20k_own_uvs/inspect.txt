@@ -1,0 +1,11 @@
+learn/research/blender-stages-trial/models/red_orb__collapse20k_clear30.glb  (glTF 2, generator: Khronos glTF Blender I/O v5.2.40)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 34847
+    NORMAL      VEC3  x 34847
+    TEXCOORD_0  VEC2  x 34847
+    indices     60000  = 20000 triangles
+    material    "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

@@ -1,0 +1,28 @@
+{
+ "name": "tripo_crate_p2_tri_req20000__repaired",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/tripo_crate_p2_tri_req20000__repaired.glb",
+  "learn/research/blender-stages-trial/runs/tripo_crate_p2_tri_req20000__repaired.facts.json",
+  "weld=1e-4",
+  "degenerate=1e-4",
+  "loose=true",
+  "hidden_pieces=true",
+  "recalc_normals=true",
+  "fill_holes=0",
+  "normals=clear"
+ ],
+ "started": "2026-10-08 17:31:37",
+ "wall_seconds": 1.15,
+ "user_seconds": 1.3,
+ "system_seconds": 0.35,
+ "peak_rss_mb": 456.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13977,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

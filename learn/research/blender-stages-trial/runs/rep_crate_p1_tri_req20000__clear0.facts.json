@@ -1,0 +1,130 @@
+{
+ "stage": "repair",
+ "source": "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+ "settings": {
+  "weld": 0.0,
+  "degenerate": 0.0,
+  "loose": false,
+  "small_pieces": 0.0,
+  "small_pieces_by": "area",
+  "recalc_normals": false,
+  "fill_holes": -1,
+  "normals": "clear",
+  "sharp_angle": 0.0,
+  "count_each": true
+ },
+ "before_object": {
+  "vertices": 9904,
+  "faces": 19796,
+  "triangles": 19796,
+  "uv_layers": [],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 19783,
+  "sharp_edges": 0,
+  "materials": [
+   "material"
+  ],
+  "attributes": [
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "bounds_before": [
+  [
+   -0.49902352690696716,
+   -0.49902352690696716,
+   0.0
+  ],
+  [
+   0.49902352690696716,
+   0.49902352690696716,
+   0.9980469942092896
+  ]
+ ],
+ "before": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ]
+ },
+ "surface_area_before": 8.182108449217594,
+ "surface_area_after": 8.182108449217594,
+ "custom_normals_after_edit": true,
+ "steps_done": [],
+ "after_object": {
+  "vertices": 9904,
+  "faces": 19796,
+  "triangles": 19796,
+  "uv_layers": [],
+  "has_custom_normals": false,
+  "normals_domain": "POINT",
+  "smooth_faces": 19796,
+  "sharp_edges": 0,
+  "materials": [
+   "material"
+  ],
+  "attributes": [
+   "position"
+  ]
+ },
+ "after": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.49902352690696716,
+   -0.49902352690696716,
+   0.0
+  ],
+  [
+   0.49902352690696716,
+   0.49902352690696716,
+   0.9980469942092896
+  ]
+ ],
+ "seconds": {
+  "import": 0.099,
+  "count_before": 0.119,
+  "clear_normals": 0.002,
+  "count_after": 0.099,
+  "export": 0.027
+ },
+ "blender": "5.2.2 LTS"
+}

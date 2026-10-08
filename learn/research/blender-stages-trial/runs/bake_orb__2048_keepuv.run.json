@@ -1,0 +1,25 @@
+{
+ "name": "bake_orb__2048_keepuv",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/bake_orb__2048_keepuv.glb",
+  "learn/research/blender-stages-trial/runs/bake_orb__2048_keepuv.facts.json",
+  "high=learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "uv=keep"
+ ],
+ "started": "2026-10-08 17:08:23",
+ "wall_seconds": 23.3,
+ "user_seconds": 59.63,
+ "system_seconds": 6.63,
+ "peak_rss_mb": 3969.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 11806,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

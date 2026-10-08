@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_5_place.glb",
+ "bytes": 4963328,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "a54cabb63ebc68861f0e214051aad6d3d8c7dfab568a05f2486d509a96c19f12",
+ "triangles": 19999,
+ "vertices_stored": 17572,
+ "welded_points": 12349,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 46,
+ "triangle_areas": {
+  "surface_area": 4.339479671949676,
+  "share_holding_99pc_of_area": 0.5571778588929447,
+  "share_under_100th_of_mean": 0.11380569028451423,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 3259330,
+   "sha256": "d0ee02f223272bcb5c0175091c5e8a2e1bfbbc7e4d8e14005e31571f4c163e92"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 475161,
+   "sha256": "124fe6b9cac4a05a8fd5992649753159caa8fa2e983ca573dfd9184243b8201d"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 544856,
+   "sha256": "de00504b6cc85af09da8db56cbc7d9918e7a34782c3fc776f2cf280ba48ecf53"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

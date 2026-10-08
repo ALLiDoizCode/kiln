@@ -1,0 +1,23 @@
+{
+ "name": "rep_crate_h31_default__hidden",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_h31_default__hidden.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_h31_default__hidden.facts.json",
+  "hidden_pieces=true",
+  "count=false"
+ ],
+ "started": "2026-10-08 17:27:33",
+ "wall_seconds": 17.48,
+ "user_seconds": 23.43,
+ "system_seconds": 2.82,
+ "peak_rss_mb": 2786.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 11203,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

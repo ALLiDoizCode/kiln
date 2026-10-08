@@ -1,0 +1,23 @@
+{
+ "name": "uv_crate_20k__smart66_concave",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_20k__smart66_concave.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_20k__smart66_concave.facts.json",
+  "bake=false",
+  "pack=concave"
+ ],
+ "started": "2026-10-08 16:29:46",
+ "wall_seconds": 3.13,
+ "user_seconds": 3.27,
+ "system_seconds": 0.57,
+ "peak_rss_mb": 622.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15928,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

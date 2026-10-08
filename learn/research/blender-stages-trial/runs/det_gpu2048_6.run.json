@@ -1,0 +1,24 @@
+{
+ "name": "det_gpu2048_6",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/det_gpu2048_6.glb",
+  "learn/research/blender-stages-trial/runs/det_gpu2048_6.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=8"
+ ],
+ "started": "2026-10-08 16:51:34",
+ "wall_seconds": 20.18,
+ "user_seconds": 52.09,
+ "system_seconds": 8.01,
+ "peak_rss_mb": 3678.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12022,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

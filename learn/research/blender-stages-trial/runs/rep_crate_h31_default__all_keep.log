@@ -1,0 +1,27 @@
+16:13:23 | INFO: Data are loaded, start creating Blender stuff
+16:13:23 | INFO: Blender create Mesh node meshes[0]
+16:13:26 | INFO: glTF import finished in 3.51s
+STEP import: 3.59 s
+STEP count_before: 14.31 s
+STEP weld: 1.18 s
+STEP count_after_weld: 10.74 s
+STEP degenerate: 1.75 s
+STEP count_after_degenerate: 10.55 s
+STEP loose: 1.33 s
+STEP count_after_loose: 10.59 s
+STEP recalc_normals: 2.17 s
+STEP count_after_recalc_normals: 10.66 s
+STEP fill_holes: 0.87 s
+STEP count_after_fill_holes: 10.26 s
+STEP count_after: 12.27 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:14:53 | INFO: Starting glTF 2.0 export
+16:14:53 | INFO: Extracting primitive: meshes[0]
+16:14:55 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:14:56 | INFO: Primitives created: 1
+16:14:56 | INFO: Finished glTF 2.0 export in 3.4032912254333496 s
+
+STEP export: 3.42 s
+FACTS {"stage": "repair", "source": "learn/research/tripo-api-trial/models/crate_h31_default.glb", "settings": {"weld": 0.0001, "degenerate": 0.0001, "loose": true, "small_pieces": 0.0, "small_pieces_by": "area", "recalc_normals": true, "fill_holes": 0, "normals": "keep", "sharp_angle": 30.0, "count_each": true}, "before_object": {"vertices": 900730, "faces": 1801451, "triangles": 1801451, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1375189, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "bounds_before": [[-0.4902801215648651, -0.4835968017578125, 0.0], [0.4902801215648651, 0.4835968017578125, 0.9291381239891052]], "before": {"vertices": 900728, "edges": 2702177, "faces": 1801451, "triangles": 1801451, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 18, "degenerate_faces": 21, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1801451]}, "surface_area_before": 6.5225444339657175, "after_weld": {"vertices": 900415, "edges": 2701237, "faces": 1800824, "triangles": 1800824, "boundary_edges": 4, "non_manifold_edges": 2, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 18, "degenerate_faces": 13, "zero_length_edges": 0, "boundary_loops": 2, "pieces": 1, "largest_pieces": [1800824], "vertices_joined": 315}, "after_degenerate": {"vertices": 900292, "edges": 2696450, "faces": 1796160, "triangles": 1800579, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 18, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1800579], "faces_removed": 4664, "vertices_removed": 123}, "after_loose": {"vertices": 900292, "edges": 2696450, "faces": 1796160, "triangles": 1800579, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 18, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1800579], "wire_edges_removed": 0, "vertices_removed": 0}, "after_recalc_normals": {"vertices": 900292, "edges": 2696450, "faces": 1796160, "triangles": 1800579, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1800579], "faces_turned": 10}, "after_fill_holes": {"vertices": 900292, "edges": 2696450, "faces": 1796160, "triangles": 1800579, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1800579], "holes_filled": 0, "sides_of_largest": [], "faces_added": 0}, "surface_area_after": 6.522439973517233, "custom_normals_after_edit": true, "steps_done": ["weld", "degenerate", "loose", "recalc_normals", "fill_holes"], "after_object": {"vertices": 900292, "faces": 1796160, "triangles": 1800579, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1369901, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "position", "sharp_face"]}, "after": {"vertices": 900292, "edges": 2696450, "faces": 1796160, "triangles": 1800579, "boundary_edges": 2, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 1, "pieces": 1, "largest_pieces": [1800579]}, "bounds_after": [[-0.4902801215648651, -0.4835968017578125, 0.0], [0.4902801215648651, 0.4835968017578125, 0.9291381239891052]], "seconds": {"import": 3.591, "count_before": 14.309, "weld": 1.176, "count_after_weld": 10.743, "degenerate": 1.745, "count_after_degenerate": 10.546, "loose": 1.333, "count_after_loose": 10.588, "recalc_normals": 2.168, "count_after_recalc_normals": 10.665, "fill_holes": 0.874, "count_after_fill_holes": 10.264, "count_after": 12.27, "export": 3.425}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

@@ -1,0 +1,55 @@
+== orb 1024 16:59:51
+TIMED bake_orb__1024: 17.0 s, peak 3492 MB, exit 0
+== orb 2048 17:00:09
+TIMED bake_orb__2048: 20.7 s, peak 3998 MB, exit 0
+== orb 4096 17:00:32
+TIMED bake_orb__4096: 38.4 s, peak 6316 MB, exit 0
+== orb 2048_again 17:01:12
+TIMED bake_orb__2048_again: 21.5 s, peak 3926 MB, exit 0
+== orb 2048_cpu 17:01:35
+TIMED bake_orb__2048_cpu: 20.3 s, peak 3877 MB, exit 0
+== orb 2048_cpu_again 17:01:57
+TIMED bake_orb__2048_cpu_again: 19.6 s, peak 3860 MB, exit 0
+== orb 4096_cpu 17:02:18
+TIMED bake_orb__4096_cpu: 37.1 s, peak 6207 MB, exit 0
+== orb 2048_s16 17:02:56
+TIMED bake_orb__2048_s16: 20.8 s, peak 3938 MB, exit 0
+== orb 2048_cage1mm 17:03:19
+TIMED bake_orb__2048_cage1mm: 21.6 s, peak 3992 MB, exit 0
+== orb 2048_cage5mm 17:03:42
+TIMED bake_orb__2048_cage5mm: 21.8 s, peak 4043 MB, exit 0
+== orb 2048_cage50mm 17:04:05
+TIMED bake_orb__2048_cage50mm: 20.4 s, peak 3963 MB, exit 0
+== orb 2048_cage20mm_nolimit 17:04:27
+TIMED bake_orb__2048_cage20mm_nolimit: 19.6 s, peak 3990 MB, exit 0
+== orb 2048_cage0 17:04:48
+TIMED bake_orb__2048_cage0: 21.2 s, peak 3980 MB, exit 0
+== orb 2048_margin0 17:05:11
+TIMED bake_orb__2048_margin0: 18.0 s, peak 4031 MB, exit 0
+== orb 2048_margin2 17:05:32
+TIMED bake_orb__2048_margin2: 20.6 s, peak 3967 MB, exit 0
+== orb 2048_margin32 17:05:54
+TIMED bake_orb__2048_margin32: 24.5 s, peak 4018 MB, exit 0
+== orb 2048_extend 17:06:20
+TIMED bake_orb__2048_extend: 19.3 s, peak 4009 MB, exit 0
+== orb 2048_diffuse 17:06:42
+TIMED bake_orb__2048_diffuse: 22.8 s, peak 3879 MB, exit 0
+== orb 2048_sharp30 17:07:07
+TIMED bake_orb__2048_sharp30: 23.3 s, peak 4028 MB, exit 0
+== orb 2048_png 17:07:32
+TIMED bake_orb__2048_png: 23.3 s, peak 3936 MB, exit 0
+== orb 2048_noweld 17:07:57
+TIMED bake_orb__2048_noweld: 23.9 s, peak 4044 MB, exit 0
+== orb 2048_keepuv 17:08:23
+TIMED bake_orb__2048_keepuv: 23.3 s, peak 3970 MB, exit 0
+== orb 2048_smart30 17:08:48
+TIMED bake_orb__2048_smart30: 21.6 s, peak 3994 MB, exit 0
+== orb 2048_smart66_concave 17:09:11
+TIMED bake_orb__2048_smart66_concave: 19.6 s, peak 4051 MB, exit 0
+== orb 2048_sharp60 17:09:32
+TIMED bake_orb__2048_sharp60: 21.1 s, peak 3964 MB, exit 0
+== orb 5k_2048 17:09:54
+TIMED bake_orb__5k_2048: 20.7 s, peak 4007 MB, exit 0
+== orb 5k_1024 17:10:16
+TIMED bake_orb__5k_1024: 16.6 s, peak 3526 MB, exit 0
+== done 17:10:34

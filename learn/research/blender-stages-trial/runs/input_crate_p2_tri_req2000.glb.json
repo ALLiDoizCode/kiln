@@ -1,0 +1,44 @@
+{
+ "file": "../tripo-api-trial/models/crate_p2_tri_req2000.glb",
+ "bytes": 54804,
+ "extensions_used": [
+  "KHR_materials_volume",
+  "FB_ngon_encoding"
+ ],
+ "extensions_required": [],
+ "generator": "Tripo",
+ "sha256": "352d3883038a3437e933d2b4635472463e532e5818ec715576b5967080c37c18",
+ "triangles": 2225,
+ "vertices_stored": 1119,
+ "welded_points": 1119,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 6,
+ "triangle_areas": {
+  "surface_area": 15.957258615256855,
+  "share_holding_99pc_of_area": 0.08853932584269662,
+  "share_under_100th_of_mean": 0.5231460674157303,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0.0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

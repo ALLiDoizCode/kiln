@@ -1,0 +1,23 @@
+{
+ "name": "rep_orb_p1_tri_req20000_textured__pieces_tri1pc",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p1_tri_req20000_textured.glb",
+  "learn/research/blender-stages-trial/models/rep_orb_p1_tri_req20000_textured__pieces_tri1pc.glb",
+  "learn/research/blender-stages-trial/runs/rep_orb_p1_tri_req20000_textured__pieces_tri1pc.facts.json",
+  "small_pieces=0.01",
+  "small_pieces_by=triangles"
+ ],
+ "started": "2026-10-08 16:12:38",
+ "wall_seconds": 1.01,
+ "user_seconds": 1.07,
+ "system_seconds": 0.31,
+ "peak_rss_mb": 505.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18895,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,23 @@
+{
+ "name": "chain_crate_keep1t_b_2_reduce",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_1_repair.glb",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_2_reduce.glb",
+  "learn/research/blender-stages-trial/runs/chain_crate_keep1t_b_2_reduce.facts.json",
+  "target=20000",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:02:46",
+ "wall_seconds": 29.62,
+ "user_seconds": 31.9,
+ "system_seconds": 1.76,
+ "peak_rss_mb": 2437.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10868,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

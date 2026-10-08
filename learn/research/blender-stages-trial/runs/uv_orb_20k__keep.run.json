@@ -1,0 +1,23 @@
+{
+ "name": "uv_orb_20k__keep",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_orb_20k__keep.glb",
+  "learn/research/blender-stages-trial/runs/uv_orb_20k__keep.facts.json",
+  "bake=false",
+  "uv=keep"
+ ],
+ "started": "2026-10-08 16:59:21",
+ "wall_seconds": 1.31,
+ "user_seconds": 1.34,
+ "system_seconds": 0.37,
+ "peak_rss_mb": 670.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15203,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

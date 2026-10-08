@@ -1,0 +1,27 @@
+{
+ "name": "tripo_crate_p2_tri_req20000__repaired_bake_cage30mm",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/tripo_crate_p2_tri_req20000__repaired.glb",
+  "learn/research/blender-stages-trial/models/tripo_crate_p2_tri_req20000__repaired_bake_cage30mm.glb",
+  "learn/research/blender-stages-trial/runs/tripo_crate_p2_tri_req20000__repaired_bake_cage30mm.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "fit=bbox",
+  "size=2048",
+  "margin=8",
+  "cage_extrusion=0.03",
+  "max_ray_distance=0.06"
+ ],
+ "started": "2026-10-08 17:31:38",
+ "wall_seconds": 16.88,
+ "user_seconds": 50.75,
+ "system_seconds": 5.68,
+ "peak_rss_mb": 3593.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10931,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

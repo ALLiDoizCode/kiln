@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/tripo_orb_p1_tri_req20000__repaired_bake_autocage.glb",
+ "bytes": 8381796,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "c555cc5c48f5ad8fa2c6275e9c60ab3fdfd1c54f3517f177cabb78d2b7a9ab27",
+ "triangles": 18538,
+ "vertices_stored": 22184,
+ "welded_points": 9584,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 528,
+ "triangle_areas": {
+  "surface_area": 2.5816719660023875,
+  "share_holding_99pc_of_area": 0.8115222785629518,
+  "share_under_100th_of_mean": 0.0009170352788866113,
+  "zero_area": 11
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 4182399,
+   "sha256": "d980ef1b5cc5de869582f7a7e807715f246b43f28f8179add9e125f56b6a0251"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1732179,
+   "sha256": "d7bc2eaa8b81dbaec2c4be1bee0bb131eb8037379688f4ee6f490665fe02128f"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1644450,
+   "sha256": "5e2e857f2a6c7d3bcb1def204d1d7280c5589a560d418ef35aee1462ec217bcf"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

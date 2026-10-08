@@ -1,0 +1,23 @@
+{
+ "name": "chain_crate_keep1t_b_5_place",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/place.py",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_4_scale.glb",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_5_place.glb",
+  "learn/research/blender-stages-trial/runs/chain_crate_keep1t_b_5_place.facts.json",
+  "turn=180",
+  "origin=bottom_centre"
+ ],
+ "started": "2026-10-08 18:26:49",
+ "wall_seconds": 0.77,
+ "user_seconds": 0.8,
+ "system_seconds": 0.24,
+ "peak_rss_mb": 509.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 16361,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

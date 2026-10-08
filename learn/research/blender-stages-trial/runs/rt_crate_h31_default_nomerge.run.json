@@ -1,0 +1,22 @@
+{
+ "name": "rt_crate_h31_default_nomerge",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/roundtrip.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/rt_crate_h31_default_nomerge.glb",
+  "learn/research/blender-stages-trial/runs/rt_crate_h31_default_nomerge.facts.json",
+  "merge_vertices=false"
+ ],
+ "started": "2026-10-08 16:05:27",
+ "wall_seconds": 7.51,
+ "user_seconds": 8.42,
+ "system_seconds": 2.85,
+ "peak_rss_mb": 1950.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 17450,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

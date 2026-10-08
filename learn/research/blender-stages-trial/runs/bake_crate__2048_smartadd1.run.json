@@ -1,0 +1,29 @@
+{
+ "name": "bake_crate__2048_smartadd1",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/bake_crate__2048_smartadd1.glb",
+  "learn/research/blender-stages-trial/runs/bake_crate__2048_smartadd1.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=2",
+  "cage=auto",
+  "margin_method=ADD",
+  "island_margin=0.001",
+  "pack=concave",
+  "pack_margin=0.001"
+ ],
+ "started": "2026-10-08 17:13:17",
+ "wall_seconds": 22.8,
+ "user_seconds": 56.85,
+ "system_seconds": 7.29,
+ "peak_rss_mb": 3802.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 9721,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,84 @@
+{
+  "file": {
+    "path": "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000__pieces_tri1pc.glb",
+    "bytes": 178152,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 9671,
+    "vertices": 4963,
+    "materials": 1,
+    "textures": 0
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 9671,
+      "vertices": 4963,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "material",
+          "triangles": 9671,
+          "vertices": 4963,
+          "indexed": true,
+          "has_uvs": false,
+          "attributes": [
+            "NORMAL",
+            "POSITION"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.2731933891773224,
+      0.00732421875,
+      -0.499755859375
+    ],
+    "max": [
+      0.260009765625,
+      0.98291015625,
+      0.409423828125
+    ],
+    "dimensions": [
+      0.5332031548023224,
+      0.9755859375,
+      0.9091796875
+    ],
+    "largest_dimension": 0.9755859375
+  },
+  "size": {
+    "in_file": 0.9755859375,
+    "given": 0.8,
+    "scale_factor": 0.8200200200200201
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "material",
+      "textures": {}
+    }
+  ],
+  "textures": [],
+  "uvs": null,
+  "texel_density": null,
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 0,
+    "infos": 0,
+    "hints": 0,
+    "truncated": false,
+    "messages": []
+  },
+  "notes": []
+}

@@ -1,0 +1,78 @@
+{
+ "stage": "roundtrip",
+ "source": "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+ "settings": {
+  "merge_vertices": true,
+  "shading": "SMOOTH",
+  "image_format": "AUTO",
+  "tangents": false,
+  "clear_custom_normals": false
+ },
+ "objects": [
+  {
+   "vertices": 900728,
+   "faces": 1801451,
+   "triangles": 1801451,
+   "uv_layers": [
+    "UVMap"
+   ],
+   "has_custom_normals": false,
+   "normals_domain": "POINT",
+   "smooth_faces": 1801451,
+   "sharp_edges": 0,
+   "materials": [
+    "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"
+   ],
+   "attributes": [
+    "UVMap",
+    "material_index",
+    "position",
+    "sharp_face"
+   ],
+   "name": "tripo_node_0582d435-7945-4be0-bc61-d29fc1979aab"
+  }
+ ],
+ "images": [
+  {
+   "name": "crate_h31_default_basecolor.jpg",
+   "size": [
+    4096,
+    4096
+   ],
+   "file_format": "JPEG",
+   "colorspace": "sRGB",
+   "packed": true,
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  {
+   "name": "crate_h31_default_normal.png",
+   "size": [
+    4096,
+    4096
+   ],
+   "file_format": "PNG",
+   "colorspace": "Non-Color",
+   "packed": true,
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  {
+   "name": "crate_h31_default_rm.jpg",
+   "size": [
+    4096,
+    4096
+   ],
+   "file_format": "JPEG",
+   "colorspace": "Non-Color",
+   "packed": true,
+   "is_dirty": false,
+   "source": "FILE"
+  }
+ ],
+ "seconds": {
+  "import": 1.584,
+  "export": 4.079
+ },
+ "blender": "5.2.2 LTS"
+}

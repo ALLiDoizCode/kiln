@@ -1,0 +1,286 @@
+{
+ "stage": "repair",
+ "source": "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+ "settings": {
+  "weld": 0.0001,
+  "degenerate": 0.0001,
+  "loose": true,
+  "small_pieces": 0.0,
+  "small_pieces_by": "area",
+  "hidden_pieces": true,
+  "recalc_normals": true,
+  "fill_holes": 0,
+  "normals": "clear",
+  "sharp_angle": 30.0,
+  "count_each": true,
+  "count": true
+ },
+ "before_object": {
+  "vertices": 9904,
+  "faces": 19796,
+  "triangles": 19796,
+  "uv_layers": [],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 19783,
+  "sharp_edges": 0,
+  "materials": [
+   "material"
+  ],
+  "attributes": [
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "bounds_before": [
+  [
+   -0.49902352690696716,
+   -0.49902352690696716,
+   0.0
+  ],
+  [
+   0.49902352690696716,
+   0.49902352690696716,
+   0.9980469942092896
+  ]
+ ],
+ "before": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ]
+ },
+ "surface_area_before": 8.182108449217594,
+ "after_weld": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ],
+  "vertices_joined": 0
+ },
+ "after_degenerate": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ],
+  "faces_removed": 0,
+  "vertices_removed": 0
+ },
+ "after_loose": {
+  "vertices": 9904,
+  "edges": 29702,
+  "faces": 19796,
+  "triangles": 19796,
+  "boundary_edges": 18,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 6,
+  "pieces": 4,
+  "largest_pieces": [
+   8517,
+   7437,
+   3732,
+   110
+  ],
+  "wire_edges_removed": 0,
+  "vertices_removed": 0
+ },
+ "after_hidden_pieces": {
+  "vertices": 4313,
+  "edges": 12944,
+  "faces": 8627,
+  "triangles": 8627,
+  "boundary_edges": 9,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 3,
+  "pieces": 2,
+  "largest_pieces": [
+   8517,
+   110
+  ],
+  "pieces_removed": 2,
+  "triangles_removed": 11169,
+  "share_of_surface_removed": 0.0981619211416049
+ },
+ "after_recalc_normals": {
+  "vertices": 4313,
+  "edges": 12944,
+  "faces": 8627,
+  "triangles": 8627,
+  "boundary_edges": 9,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 3,
+  "pieces": 2,
+  "largest_pieces": [
+   8517,
+   110
+  ],
+  "faces_turned": 0
+ },
+ "after_fill_holes": {
+  "vertices": 4313,
+  "edges": 12944,
+  "faces": 8630,
+  "triangles": 8630,
+  "boundary_edges": 0,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 2,
+  "zero_length_edges": 0,
+  "boundary_loops": 0,
+  "pieces": 2,
+  "largest_pieces": [
+   8520,
+   110
+  ],
+  "holes_filled": 3,
+  "sides_of_largest": [
+   3,
+   3,
+   3
+  ],
+  "faces_added": 3
+ },
+ "surface_area_after": 7.3789369648570755,
+ "custom_normals_after_edit": true,
+ "steps_done": [
+  "weld",
+  "degenerate",
+  "loose",
+  "hidden_pieces",
+  "recalc_normals",
+  "fill_holes"
+ ],
+ "after_object": {
+  "vertices": 4313,
+  "faces": 8630,
+  "triangles": 8630,
+  "uv_layers": [],
+  "has_custom_normals": false,
+  "normals_domain": "CORNER",
+  "smooth_faces": 8630,
+  "sharp_edges": 1163,
+  "materials": [
+   "material"
+  ],
+  "attributes": [
+   "position",
+   "sharp_edge"
+  ]
+ },
+ "after": {
+  "vertices": 4313,
+  "edges": 12944,
+  "faces": 8630,
+  "triangles": 8630,
+  "boundary_edges": 0,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 2,
+  "zero_length_edges": 0,
+  "boundary_loops": 0,
+  "pieces": 2,
+  "largest_pieces": [
+   8520,
+   110
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.49902352690696716,
+   -0.49902352690696716,
+   0.0
+  ],
+  [
+   0.49902352690696716,
+   0.49902352690696716,
+   0.9980469942092896
+  ]
+ ],
+ "seconds": {
+  "import": 0.107,
+  "count_before": 0.113,
+  "weld": 0.009,
+  "count_after_weld": 0.083,
+  "degenerate": 0.006,
+  "count_after_degenerate": 0.08,
+  "loose": 0.015,
+  "count_after_loose": 0.082,
+  "hidden_pieces": 0.062,
+  "count_after_hidden_pieces": 0.034,
+  "recalc_normals": 0.008,
+  "count_after_recalc_normals": 0.033,
+  "fill_holes": 0.005,
+  "count_after_fill_holes": 0.033,
+  "clear_normals": 0.002,
+  "count_after": 0.043,
+  "export": 0.022
+ },
+ "blender": "5.2.2 LTS"
+}

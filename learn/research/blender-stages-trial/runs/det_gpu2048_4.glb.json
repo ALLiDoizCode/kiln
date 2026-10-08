@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/det_gpu2048_4.glb",
+ "bytes": 3009744,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "38d024bc05f46168f9afe8904f38b7465ec77236f982ed274bb58e4ce8ee1692",
+ "triangles": 20000,
+ "vertices_stored": 12388,
+ "welded_points": 10002,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 45,
+ "triangle_areas": {
+  "surface_area": 6.523600997313343,
+  "share_holding_99pc_of_area": 0.8427,
+  "share_under_100th_of_mean": 0.02595,
+  "zero_area": 4
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 2063799,
+   "sha256": "a48dfb8780990a7113249cefb3745573bcc28358a7dc0de5ef348aa8466a6dee"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 202659,
+   "sha256": "ce8094d070ed717a3c491c1da3c9d0fd902a27399731987263db091d32a102bb"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 225170,
+   "sha256": "59842ce33633b61c6a9d4844a7929ff408745b326449a92fef1e041629e21b32"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

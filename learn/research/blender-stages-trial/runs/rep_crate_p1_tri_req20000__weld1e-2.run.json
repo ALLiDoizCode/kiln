@@ -1,0 +1,22 @@
+{
+ "name": "rep_crate_p1_tri_req20000__weld1e-2",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_p1_tri_req20000__weld1e-2.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_p1_tri_req20000__weld1e-2.facts.json",
+  "weld=1e-2"
+ ],
+ "started": "2026-10-08 16:10:21",
+ "wall_seconds": 0.82,
+ "user_seconds": 0.89,
+ "system_seconds": 0.31,
+ "peak_rss_mb": 475.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18875,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

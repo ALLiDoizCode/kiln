@@ -1,0 +1,40 @@
+{
+ "stage": "roundtrip",
+ "source": "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+ "settings": {
+  "merge_vertices": false,
+  "shading": "NORMALS",
+  "image_format": "AUTO",
+  "tangents": false,
+  "clear_custom_normals": false
+ },
+ "objects": [
+  {
+   "vertices": 9904,
+   "faces": 19796,
+   "triangles": 19796,
+   "uv_layers": [],
+   "has_custom_normals": true,
+   "normals_domain": "CORNER",
+   "smooth_faces": 19732,
+   "sharp_edges": 0,
+   "materials": [
+    "material"
+   ],
+   "attributes": [
+    "custom_normal",
+    "material_index",
+    "position",
+    "sharp_edge",
+    "sharp_face"
+   ],
+   "name": "tripo_node_bcd9652a-92a5-4c7e-9904-72ebb19d9c99"
+  }
+ ],
+ "images": [],
+ "seconds": {
+  "import": 0.098,
+  "export": 0.042
+ },
+ "blender": "5.2.2 LTS"
+}

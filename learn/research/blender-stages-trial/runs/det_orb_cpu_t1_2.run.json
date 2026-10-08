@@ -1,0 +1,30 @@
+{
+ "name": "det_orb_cpu_t1_2",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_a_2_reduce.glb",
+  "learn/research/blender-stages-trial/models/det_orb_cpu_t1_2.glb",
+  "learn/research/blender-stages-trial/runs/det_orb_cpu_t1_2.facts.json",
+  "high=learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "cage=auto",
+  "uv=keep",
+  "pack=concave",
+  "margin_method=ADD",
+  "pack_margin=0.001",
+  "device=CPU"
+ ],
+ "started": "2026-10-08 17:50:20",
+ "wall_seconds": 54.56,
+ "user_seconds": 49.97,
+ "system_seconds": 4.32,
+ "peak_rss_mb": 3472.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 11120,
+ "stopped_for_memory": false,
+ "threads": "1"
+}

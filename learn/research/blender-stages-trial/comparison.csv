@@ -1,0 +1,28 @@
+subject,model,triangles,vertices_stored,file_mb,maps,uv_islands,uv_seam_share,uv_coverage,texel_px_per_m,open_edges,non_manifold_edges,zero_area_faces,pieces,validator_errors,validator_warnings,share_holding_99pc_area,sliver_share,largest_dimension,lowest_point,under_budget_20000
+crate,stages_crate_chain,19999,13807,4.79,normal 2048 png 3.20 MB; base colour 2048 jpeg 0.47 MB; metallic-roughness 2048 jpeg 0.55 MB,251,0.109,0.67,804,2,1,0,1,0,1,0.843,0.026,0.8,0.0,True
+crate,stages_crate_chain_fast,19999,13807,4.79,normal 2048 png 3.20 MB; base colour 2048 jpeg 0.47 MB; metallic-roughness 2048 jpeg 0.55 MB,251,0.109,0.67,804,2,1,0,1,0,1,0.843,0.026,0.8,0.0,True
+crate,stages_crate_chain_smart_uv,19999,12703,3.0,normal 2048 png 2.05 MB; base colour 2048 jpeg 0.20 MB; metallic-roughness 2048 jpeg 0.23 MB,70,0.078,0.558,733,2,1,0,1,0,1,0.843,0.026,0.8,0.0,True
+crate,stages_crate_baked1024,20000,13514,2.07,normal 1024 png 0.96 MB; base colour 1024 jpeg 0.24 MB; metallic-roughness 1024 jpeg 0.32 MB,250,0.109,0.622,388,0,0,4,1,0,1,0.843,0.026,0.9805,-2e-05,True
+crate,stages_crate_baked4096,20000,13514,12.65,normal 4096 png 8.72 MB; base colour 4096 jpeg 1.53 MB; metallic-roughness 4096 jpeg 1.84 MB,250,0.109,0.669,1608,0,0,4,1,0,1,0.843,0.026,0.9805,-2e-05,True
+crate,stages_crate_reduced20k_own_uvs,20000,15597,6.18,normal 4096 png 3.08 MB; base colour 4096 jpeg 1.40 MB; metallic-roughness 4096 jpeg 1.07 MB,250,0.109,0.56,1471,0,0,4,1,0,1,0.843,0.026,0.9805,-2e-05,True
+crate,stages_crate_reduced5k_baked,5000,4321,4.49,normal 2048 png 2.93 MB; base colour 2048 jpeg 0.61 MB; metallic-roughness 2048 jpeg 0.77 MB,233,0.212,0.662,800,0,0,4,1,0,1,0.886,0.024,0.9807,9e-05,True
+crate,stages_crate_p1_rebaked,8630,6338,2.91,normal 2048 png 2.24 MB; base colour 2048 jpeg 0.21 MB; metallic-roughness 2048 jpeg 0.21 MB,373,0.14,0.548,696,0,1,2,2,0,1,0.24,0.391,0.998,0.0,True
+crate,stages_crate_p2_rebaked,108,168,2.55,normal 2048 png 2.18 MB; base colour 2048 jpeg 0.18 MB; metallic-roughness 2048 jpeg 0.18 MB,36,0.519,0.584,728,0,0,0,1,0,1,0.981,0.0,0.9995,0.0,True
+crate,crate_h31_default,1801451,926464,56.83,base colour 4096 jpeg 1.40 MB; metallic-roughness 4096 jpeg 1.07 MB; normal 4096 png 3.08 MB,190,0.009,0.63,1558,2,1,21,1,0,1,0.909,0.001,0.9806,0.0,False
+crate,crate_h31_req20000,17080,10219,6.2,base colour 4096 jpeg 1.36 MB; metallic-roughness 4096 jpeg 1.11 MB; normal 4096 png 3.20 MB,73,0.063,0.623,1544,8,4,0,1,0,1,0.818,0.044,0.9787,0.0,True
+crate,crate_p1_tri_req20000,19796,9904,0.48,none,,,,,18,1,0,4,0,0,0.557,0.036,0.998,0.0,True
+crate,crate_p2_tri_req20000_textured,19958,22499,2.97,base colour 4096 jpeg 2.01 MB,3105,0.322,0.724,1380,97,87,58,28,2,0,0.185,0.727,0.9995,0.0,False
+crate,crate_p2_tri_req20000_smartuv,19958,11684,0.61,none,220,0.047,0.607,,97,87,58,28,1,0,0.185,0.727,0.9995,0.0,False
+orb,stages_orb_chain,20000,18739,8.35,normal 2048 png 5.72 MB; base colour 2048 jpeg 1.19 MB; metallic-roughness 2048 jpeg 0.72 MB,1401,0.245,0.559,1176,0,1,0,1,0,1,0.911,0.0,0.8,0.0,True
+orb,stages_orb_chain_fast,20000,18739,8.35,normal 2048 png 5.72 MB; base colour 2048 jpeg 1.19 MB; metallic-roughness 2048 jpeg 0.72 MB,1401,0.245,0.559,1176,0,1,0,1,0,1,0.911,0.0,0.8,0.0,True
+orb,stages_orb_baked1024,20000,18724,3.29,normal 1024 png 1.47 MB; base colour 1024 jpeg 0.55 MB; metallic-roughness 1024 jpeg 0.55 MB,1395,0.245,0.446,525,0,0,0,1,0,1,0.911,0.0,0.9802,0.0003,True
+orb,stages_orb_baked4096,20000,18724,22.82,normal 4096 png 14.70 MB; base colour 4096 jpeg 3.75 MB; metallic-roughness 4096 jpeg 3.65 MB,1395,0.245,0.556,2346,0,0,0,1,0,1,0.911,0.0,0.9802,0.0003,True
+orb,stages_orb_reduced20k_own_uvs,20000,34847,10.5,normal 4096 png 4.69 MB; base colour 4096 jpeg 3.18 MB; metallic-roughness 4096 jpeg 1.39 MB,1395,0.245,0.389,1962,0,0,0,1,0,1,0.911,0.0,0.9802,0.0003,True
+orb,stages_orb_reduced5k_baked,5000,6992,8.06,normal 2048 png 4.90 MB; base colour 2048 jpeg 1.46 MB; metallic-roughness 2048 jpeg 1.44 MB,1170,0.444,0.554,1188,0,0,0,1,0,1,0.917,0.002,0.985,0.0009,True
+orb,stages_orb_p1_rebaked,18538,22184,8.38,normal 2048 png 4.18 MB; base colour 2048 jpeg 1.73 MB; metallic-roughness 2048 jpeg 1.64 MB,2860,0.367,0.177,671,19,20,12,157,0,1,0.812,0.001,0.998,0.0,True
+orb,stages_orb_p2_rebaked,21044,25258,8.85,normal 2048 png 4.31 MB; base colour 2048 jpeg 1.84 MB; metallic-roughness 2048 jpeg 1.76 MB,2889,0.377,0.15,648,44,12,0,236,0,1,0.865,0.0,0.9995,0.0,False
+orb,orb_h31_default,1951822,1034900,65.8,base colour 4096 jpeg 3.18 MB; metallic-roughness 4096 jpeg 1.39 MB; normal 4096 png 4.69 MB,1067,0.02,0.498,2220,0,1,0,1,0,1,0.939,0.0,0.9808,0.0,False
+orb,orb_h31_req20000,19007,14957,9.86,base colour 4096 jpeg 2.94 MB; metallic-roughness 4096 jpeg 1.56 MB; normal 4096 png 4.64 MB,718,0.166,0.499,2297,2,2,0,1,0,1,0.919,0.0,0.9827,0.0,True
+orb,orb_spiked_h31_req20000,19188,20548,10.44,base colour 4096 jpeg 3.62 MB; metallic-roughness 4096 jpeg 2.44 MB; normal 4096 png 3.49 MB,2299,0.3,0.309,1417,19,21,0,1,0,1,0.94,0.0,0.9826,0.0,True
+orb,orb_p1_tri_req20000_textured,18438,27419,4.34,base colour 4096 jpeg 3.24 MB,4893,0.478,0.415,2062,157,20,0,157,2,0,0.814,0.0,0.998,0.0,False
+orb,orb_p2_tri_req20000_textured,20389,28210,4.44,base colour 4096 jpeg 3.29 MB,4208,0.426,0.397,2119,1169,12,0,236,2,0,0.864,0.0,0.9995,0.0,False

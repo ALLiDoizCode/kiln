@@ -1,0 +1,79 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000__weld1e-2.glb",
+ "bytes": 173396,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "03dca8eb54aed514eea4fc8b6b291f1d0294558a1cffd5df5b06c4979bef2aaa",
+ "triangles": 7380,
+ "vertices_stored": 5338,
+ "welded_points": 4248,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 240,
+ "triangle_areas": {
+  "surface_area": 2.0342917638414497,
+  "share_holding_99pc_of_area": 0.939159891598916,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/orb_p2_tri_req20000.glb",
+  "reference_bytes": 510152,
+  "reference_vertices_stored": 11011,
+  "reference_triangles": 20389,
+  "reference_welded_points": 11011,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [],
+  "reference_images": [],
+  "reference_materials": [
+   {
+    "name": "material",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": null,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 4248,
+   "keys_in_reference": 11011,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 175.9785070256118,
+   "share_over_1_degree": 0.7146892655367232
+  }
+ }
+}

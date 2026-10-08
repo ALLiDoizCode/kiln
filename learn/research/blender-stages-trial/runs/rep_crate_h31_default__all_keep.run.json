@@ -1,0 +1,27 @@
+{
+ "name": "rep_crate_h31_default__all_keep",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_h31_default__all_keep.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_h31_default__all_keep.facts.json",
+  "weld=1e-4",
+  "degenerate=1e-4",
+  "loose=true",
+  "recalc_normals=true",
+  "fill_holes=0",
+  "normals=keep"
+ ],
+ "started": "2026-10-08 16:13:22",
+ "wall_seconds": 94.45,
+ "user_seconds": 117.9,
+ "system_seconds": 6.52,
+ "peak_rss_mb": 4286.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14779,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

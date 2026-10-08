@@ -1,0 +1,15 @@
+16:05:45 | INFO: Data are loaded, start creating Blender stuff
+16:05:45 | INFO: Blender create Mesh node meshes[0]
+16:05:47 | INFO: glTF import finished in 1.50s
+STEP import: 1.58 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:05:48 | INFO: Starting glTF 2.0 export
+16:05:49 | INFO: Extracting primitive: meshes[0]
+16:05:50 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:05:51 | INFO: Primitives created: 1
+16:05:51 | INFO: Finished glTF 2.0 export in 2.6458239555358887 s
+
+STEP export: 4.08 s
+FACTS {"stage": "roundtrip", "source": "learn/research/tripo-api-trial/models/crate_h31_default.glb", "settings": {"merge_vertices": true, "shading": "SMOOTH", "image_format": "AUTO", "tangents": false, "clear_custom_normals": false}, "objects": [{"vertices": 900728, "faces": 1801451, "triangles": 1801451, "uv_layers": ["UVMap"], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 1801451, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "material_index", "position", "sharp_face"], "name": "tripo_node_0582d435-7945-4be0-bc61-d29fc1979aab"}], "images": [{"name": "crate_h31_default_basecolor.jpg", "size": [4096, 4096], "file_format": "JPEG", "colorspace": "sRGB", "packed": true, "is_dirty": false, "source": "FILE"}, {"name": "crate_h31_default_normal.png", "size": [4096, 4096], "file_format": "PNG", "colorspace": "Non-Color", "packed": true, "is_dirty": false, "source": "FILE"}, {"name": "crate_h31_default_rm.jpg", "size": [4096, 4096], "file_format": "JPEG", "colorspace": "Non-Color", "packed": true, "is_dirty": false, "source": "FILE"}], "seconds": {"import": 1.584, "export": 4.079}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

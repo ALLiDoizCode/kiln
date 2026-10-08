@@ -1,0 +1,103 @@
+{
+ "stage": "reduce",
+ "source": "learn/research/blender-stages-trial/models/red_orb__voxel4mm.glb",
+ "settings": {
+  "method": "quadriflow",
+  "target": 20000,
+  "steps": 1,
+  "protect_seams": 0.0,
+  "planar_angle": 5.0,
+  "planar_delimit": "UV",
+  "unsubdiv_iterations": 2,
+  "voxel_size": 0.004,
+  "merge_vertices": true,
+  "weld": 0.0,
+  "normals": "keep",
+  "sharp_angle": 30.0,
+  "exact": true,
+  "count_before": false,
+  "quadriflow_seed": 0
+ },
+ "before_object": {
+  "vertices": 9994,
+  "faces": 19995,
+  "triangles": 19995,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 19995,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "faces_after_quadriflow": 7649,
+ "passes": [],
+ "extra_passes": 0,
+ "triangles_reached": 15298,
+ "custom_normals_after_reduce": false,
+ "after_object": {
+  "vertices": 7654,
+  "faces": 7649,
+  "triangles": 15298,
+  "uv_layers": [],
+  "has_custom_normals": false,
+  "normals_domain": "FACE",
+  "smooth_faces": 0,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "position",
+   "sharp_face"
+  ]
+ },
+ "after": {
+  "vertices": 7651,
+  "edges": 15303,
+  "faces": 7649,
+  "triangles": 15295,
+  "boundary_edges": 13,
+  "non_manifold_edges": 0,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 3,
+  "pieces": 1,
+  "largest_pieces": [
+   15295
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.31846705079078674,
+   -0.48805004358291626,
+   -0.00029383337823674083
+  ],
+  [
+   0.34611737728118896,
+   0.43071338534355164,
+   0.9084330797195435
+  ]
+ ],
+ "seconds": {
+  "import": 0.084,
+  "quadriflow": 6.874,
+  "count_after": 0.056,
+  "export": 0.329
+ },
+ "blender": "5.2.2 LTS"
+}

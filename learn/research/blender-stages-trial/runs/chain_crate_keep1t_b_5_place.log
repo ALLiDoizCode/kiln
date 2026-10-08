@@ -1,0 +1,16 @@
+18:26:50 | INFO: Data are loaded, start creating Blender stuff
+18:26:50 | INFO: Blender create Mesh node meshes[0]
+18:26:50 | INFO: glTF import finished in 0.03s
+STEP import: 0.07 s
+STEP place: 0.02 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+18:26:50 | INFO: Starting glTF 2.0 export
+18:26:50 | INFO: Extracting primitive: meshes[0]
+18:26:50 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+18:26:50 | INFO: Primitives created: 1
+18:26:50 | INFO: Finished glTF 2.0 export in 0.1380910873413086 s
+
+STEP export: 0.15 s
+FACTS {"stage": "place", "source": "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_4_scale.glb", "settings": {"turn": 180.0, "origin": "bottom_centre"}, "objects": [{"name": "low", "had_custom_normals": true, "has_custom_normals_after": true, "normals_largest_angle_from_turned_degrees": 0.7535541653633118, "bounds_after_blender_zup": [[-0.3999999761581421, -0.39454466104507446, 0.0], [0.3999999761581421, 0.39454466104507446, 0.7580714821815491]]}], "bounds_before_move_blender_zup": [[-0.39999985694885254, -0.3945367932319641, -1.321275340160355e-05], [0.40000012516975403, 0.3945524990558624, 0.7580582499504089]], "seconds": {"import": 0.073, "place": 0.019, "export": 0.15}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

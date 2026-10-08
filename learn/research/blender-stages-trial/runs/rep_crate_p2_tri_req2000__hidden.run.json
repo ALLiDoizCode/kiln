@@ -1,0 +1,22 @@
+{
+ "name": "rep_crate_p2_tri_req2000__hidden",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req2000.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_p2_tri_req2000__hidden.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_p2_tri_req2000__hidden.facts.json",
+  "hidden_pieces=true"
+ ],
+ "started": "2026-10-08 17:27:27",
+ "wall_seconds": 0.67,
+ "user_seconds": 0.68,
+ "system_seconds": 0.23,
+ "peak_rss_mb": 377.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13482,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

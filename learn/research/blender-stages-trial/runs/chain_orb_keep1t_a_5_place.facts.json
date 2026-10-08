@@ -1,0 +1,46 @@
+{
+ "stage": "place",
+ "source": "learn/research/blender-stages-trial/models/chain_orb_keep1t_a_4_scale.glb",
+ "settings": {
+  "turn": 180.0,
+  "origin": "bottom_centre"
+ },
+ "objects": [
+  {
+   "name": "low",
+   "had_custom_normals": true,
+   "has_custom_normals_after": true,
+   "normals_largest_angle_from_turned_degrees": 0.048456642776727676,
+   "bounds_after_blender_zup": [
+    [
+     -0.3073910176753998,
+     -0.39952582120895386,
+     0.0
+    ],
+    [
+     0.3073910176753998,
+     0.39952582120895386,
+     0.800000011920929
+    ]
+   ]
+  }
+ ],
+ "bounds_before_move_blender_zup": [
+  [
+   -0.307481974363327,
+   -0.39969149231910706,
+   0.0002457866503391415
+  ],
+  [
+   0.30730006098747253,
+   0.39936012029647827,
+   0.8002458214759827
+  ]
+ ],
+ "seconds": {
+  "import": 0.077,
+  "place": 0.019,
+  "export": 0.168
+ },
+ "blender": "5.2.2 LTS"
+}

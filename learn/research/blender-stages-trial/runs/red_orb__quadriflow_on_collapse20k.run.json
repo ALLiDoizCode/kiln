@@ -1,0 +1,23 @@
+{
+ "name": "red_orb__quadriflow_on_collapse20k",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/red_orb__quadriflow_on_collapse20k.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__quadriflow_on_collapse20k.facts.json",
+  "method=quadriflow",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:04:29",
+ "wall_seconds": 8.81,
+ "user_seconds": 8.66,
+ "system_seconds": 0.4,
+ "peak_rss_mb": 893.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13758,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

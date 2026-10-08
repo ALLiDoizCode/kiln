@@ -1,0 +1,24 @@
+{
+ "name": "red_crate__voxel4mm",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_crate__voxel4mm.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__voxel4mm.facts.json",
+  "count_before=false",
+  "method=voxel",
+  "voxel_size=0.004"
+ ],
+ "started": "2026-10-08 17:13:05",
+ "wall_seconds": 19.66,
+ "user_seconds": 36.95,
+ "system_seconds": 2.55,
+ "peak_rss_mb": 1473.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 9824,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

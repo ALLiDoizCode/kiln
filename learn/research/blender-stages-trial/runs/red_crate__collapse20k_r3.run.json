@@ -1,0 +1,22 @@
+{
+ "name": "red_crate__collapse20k_r3",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r3.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__collapse20k_r3.facts.json",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 16:25:09",
+ "wall_seconds": 26.23,
+ "user_seconds": 27.97,
+ "system_seconds": 2.66,
+ "peak_rss_mb": 2319.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15880,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

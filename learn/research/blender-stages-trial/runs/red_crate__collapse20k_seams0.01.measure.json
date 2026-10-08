@@ -1,0 +1,164 @@
+{
+  "file": {
+    "path": "learn/research/blender-stages-trial/models/red_crate__collapse20k_seams0.01.glb",
+    "bytes": 6472512,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 20000,
+    "vertices": 24689,
+    "materials": 1,
+    "textures": 3
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 20000,
+      "vertices": 24689,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab",
+          "triangles": 20000,
+          "vertices": 24689,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "NORMAL",
+            "POSITION",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.48995688557624817,
+      7.784282206557691e-05,
+      -0.48349902033805847
+    ],
+    "max": [
+      0.4900970757007599,
+      0.9313086867332458,
+      0.4835926592350006
+    ],
+    "dimensions": [
+      0.9800539612770081,
+      0.9312308439111803,
+      0.9670916795730591
+    ],
+    "largest_dimension": 0.9800539612770081
+  },
+  "size": {
+    "in_file": 0.9800539612770081,
+    "given": 0.8,
+    "scale_factor": 0.8162815840850252
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab",
+      "textures": {
+        "baseColorTexture": 1,
+        "metallicRoughnessTexture": 2,
+        "normalTexture": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "crate_h31_default_normal",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 3083272,
+      "used_as": [
+        "normalTexture of tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "crate_h31_default_basecolor",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 1403694,
+      "used_as": [
+        "baseColorTexture of tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "crate_h31_default_rm",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 1073668,
+      "used_as": [
+        "metallicRoughnessTexture of tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"
+      ]
+    }
+  ],
+  "uvs": {
+    "triangles": 20000,
+    "islands": 194,
+    "edges": 30000,
+    "seam_edges": 8962,
+    "open_edges": 0,
+    "seam_share": 0.29873333333333335,
+    "coverage": 0.6148738861083984,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.615453379711537,
+    "triangles_outside_square": 2,
+    "triangles_without_area": 0
+  },
+  "texel_density": {
+    "size": 0.8,
+    "pixels_per_metre": 1541.9237839897178,
+    "p05": 1155.7671710882594,
+    "median": 1536.568718758577,
+    "p95": 1827.944510806498,
+    "surface_area": 4.342994126269484,
+    "by_primitive": [
+      {
+        "node": 0,
+        "mesh": 0,
+        "primitive": 0,
+        "material": 0,
+        "texture": 1,
+        "texture_pixels": [
+          4096,
+          4096
+        ],
+        "surface_area": 4.342994126269484,
+        "pixels_per_metre": 1541.9237839897178
+      }
+    ]
+  },
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 1,
+    "infos": 0,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "warning",
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "pointer": "/meshes/0/primitives/0/material"
+      }
+    ]
+  },
+  "notes": []
+}

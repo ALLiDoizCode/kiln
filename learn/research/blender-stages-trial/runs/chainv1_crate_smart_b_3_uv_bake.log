@@ -1,0 +1,28 @@
+17:47:08 | INFO: Data are loaded, start creating Blender stuff
+17:47:08 | INFO: Blender create Mesh node meshes[0]
+17:47:09 | INFO: glTF import finished in 0.08s
+STEP import_low: 0.17 s
+STEP weld: 0.06 s
+STEP uvs: 0.09 s
+STEP normals: 0.00 s
+17:47:09 | INFO: Data are loaded, start creating Blender stuff
+17:47:09 | INFO: Blender create Mesh node meshes[0]
+17:47:13 | INFO: glTF import finished in 3.78s
+STEP import_high: 3.79 s
+STEP ray_check: 6.08 s
+00:10.544  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+STEP bake_normal: 3.81 s
+STEP bake_basecolor: 4.44 s
+STEP bake_metallic_roughness: 4.11 s
+STEP material: 0.24 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+17:47:31 | INFO: Starting glTF 2.0 export
+17:47:31 | INFO: Extracting primitive: meshes[0]
+17:47:31 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+17:47:31 | INFO: Primitives created: 1
+17:47:31 | INFO: Finished glTF 2.0 export in 0.025473594665527344 s
+
+STEP export: 0.19 s
+FACTS {"stage": "uv_bake", "source": "learn/research/blender-stages-trial/models/chain_crate_smart_b_2_reduce.glb", "settings": {"high": "learn/research/tripo-api-trial/models/crate_h31_default.glb", "weld": 1e-06, "uv": "smart", "angle": 66.0, "island_margin": 0.003, "seam_angle": 60.0, "pack": "none", "pack_margin": 0.003, "margin_method": "SCALED", "normals": "clear", "sharp_angle": 0.0, "size": 2048, "samples": 1, "device": "GPU", "cage_extrusion": 0.001, "max_ray_distance": 0.002, "cage": "auto", "margin": 8, "margin_type": "ADJACENT_FACES", "colour": "emit", "fit": "none", "jpeg": true, "jpeg_quality": 90, "bake": true}, "low_before": {"vertices": 38684, "faces": 19999, "triangles": 19999, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 13852, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "weld_joined": 26329, "high": {"vertices": 900730, "faces": 1801451, "triangles": 1801451, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1375189, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab.001"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "cage_chosen": {"cage_extrusion": 0.001, "max_ray_distance": 0.002}, "ray_check": {"points": 20000, "missed": 0, "missed_share": 0.0, "hit_distance_from_low_surface": {"median": 1.6210648231208304e-05, "p95": 0.00010261456575244663, "p99": 0.00016337370127439497, "largest": 0.0008290055082179606}, "nearest_dense_surface": {"median": 1.621246337890625e-05, "p95": 0.0001025134333758615, "p99": 0.00016301624418701977, "largest": 0.0008270534453913569}, "hits_further_than_twice_p99_nearest": 0.00075}, "device_wanted": "GPU", "device": "OPTIX", "device_names": ["NVIDIA GeForce RTX 3080"], "high_textures": {"basecolor": "crate_h31_default_basecolor.jpg", "metallic_roughness": "crate_h31_default_rm.jpg", "normal": "crate_h31_default_normal.png"}, "images": {"basecolor": {"size": [2048, 2048], "file_format": "JPEG", "colorspace": "sRGB", "is_dirty": false, "source": "FILE"}, "metallic_roughness": {"size": [2048, 2048], "file_format": "JPEG", "colorspace": "Non-Color", "is_dirty": false, "source": "FILE"}, "normal": {"size": [2048, 2048], "file_format": "PNG", "colorspace": "Non-Color", "is_dirty": false, "source": "FILE"}}, "low_after": {"vertices": 12355, "faces": 19999, "triangles": 19999, "uv_layers": ["UVMap"], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 19999, "sharp_edges": 0, "materials": ["baked"], "attributes": ["UVMap", "position"]}, "after": {"vertices": 12355, "edges": 35122, "faces": 19999, "triangles": 19999, "boundary_edges": 10248, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 2116, "pieces": 99, "largest_pieces": [19897, 2, 2, 2, 2, 1, 1, 1]}, "seconds": {"import_low": 0.167, "weld": 0.063, "uvs": 0.091, "normals": 0.0, "import_high": 3.788, "ray_check": 6.076, "bake_normal": 3.81, "bake_basecolor": 4.441, "bake_metallic_roughness": 4.108, "material": 0.238, "export": 0.192}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

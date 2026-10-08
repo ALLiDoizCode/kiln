@@ -1,0 +1,130 @@
+model,variant,seconds,peak_rss_mb,exit,triangles_before,triangles_after,boundary_edges_before,boundary_edges_after,boundary_loops_before,boundary_loops_after,non_manifold_edges_before,non_manifold_edges_after,flipped_edges_before,flipped_edges_after,degenerate_faces_before,degenerate_faces_after,pieces_before,pieces_after,surface_area_change_pc,bounds_changed,custom_normals_after,step_facts,vertices_stored_out,backward_normal_corners_out,normals_share_over_1deg,uv_islands_out,uv_coverage_out,uv_triangles_without_area,validator_errors_out
+crate_h31_default,all_keep,94.45,4286.1,0,1801451,1800579,2,2,1,1,1,1,18,0,21,0,1,1,-0.002,False,True,"{""vertices_joined"": 315, ""faces_removed"": 4664, ""faces_turned"": 10, ""holes_filled"": 0, ""sides_of_largest"": [], ""faces_added"": 0}",937426,370,0.0045,191,0.6304,0,0
+crate_h31_default,hidden,17.48,2786.4,0,,,,,,,,,,,,,,,,,,,937286,261,,190,0.6305,0,0
+crate_h31_default,recalc_clear,36.5,3828.2,0,1801451,1801451,2,2,1,1,1,1,18,0,21,21,1,1,0.0,False,False,"{""faces_turned"": 10}",948015,0,0.0666,190,0.6305,0,0
+crate_h31_default,weld_degen1e-5,40.44,3625.6,0,1801451,1801450,2,0,1,0,1,0,18,0,21,0,1,1,-0.0,False,True,"{""vertices_joined"": 3, ""faces_removed"": 46, ""faces_turned"": 10, ""holes_filled"": 0, ""sides_of_largest"": [], ""faces_added"": 0}",937293,273,0.0001,189,0.6305,0,0
+crate_p1_tri_req20000,all,1.29,440.6,0,19796,19802,18,0,6,0,1,1,0,0,0,5,4,4,0.0,False,False,"{""vertices_joined"": 0, ""faces_removed"": 0, ""faces_turned"": 0, ""holes_filled"": 6, ""sides_of_largest"": [3, 3, 3, 3, 3, 3], ""faces_added"": 6}",11255,0,0.0916,,,,0
+crate_p1_tri_req20000,clear0,0.88,447.2,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,False,{},9904,4,0.0,,,,0
+crate_p1_tri_req20000,clear30,0.84,466.2,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,False,{},11239,0,0.0909,,,,0
+crate_p1_tri_req20000,degen1e-3,1.02,468.4,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,-0.001,False,True,"{""faces_removed"": 80}",9913,1,0.015,,,,0
+crate_p1_tri_req20000,degen1e-4,0.91,442.3,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,"{""faces_removed"": 0}",9913,4,0.0,,,,0
+crate_p1_tri_req20000,hidden,0.88,447.9,0,19796,8627,18,9,6,3,1,1,0,0,0,0,4,2,-9.816,False,True,"{""pieces_removed"": 2, ""triangles_removed"": 11169, ""share_of_surface_removed"": 0.0981619211416049}",4321,1,,,,,0
+crate_p1_tri_req20000,holes4,0.95,435.9,0,19796,19802,18,0,6,0,1,1,0,0,0,5,4,4,0.0,False,True,"{""holes_filled"": 6, ""sides_of_largest"": [3, 3, 3, 3, 3, 3], ""faces_added"": 6}",9913,9,0.0006,,,,0
+crate_p1_tri_req20000,holes_all,0.95,439.8,0,19796,19802,18,0,6,0,1,1,0,0,0,5,4,4,0.0,False,True,"{""holes_filled"": 6, ""sides_of_largest"": [3, 3, 3, 3, 3, 3], ""faces_added"": 6}",9913,9,0.0006,,,,0
+crate_p1_tri_req20000,loose,0.95,437.3,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,{},9913,4,0.0,,,,0
+crate_p1_tri_req20000,pieces_area01pc,0.97,444.4,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",9913,4,0.0,,,,0
+crate_p1_tri_req20000,pieces_area1pc,0.98,421.8,0,19796,16064,18,18,6,6,1,1,0,0,0,0,4,3,-0.838,False,True,"{""pieces_removed"": 1, ""triangles_removed"": 3732, ""share_of_surface_removed"": 0.008376188911939024}",8045,4,0.0,,,,0
+crate_p1_tri_req20000,pieces_tri1pc,1.03,421.8,0,19796,19686,18,18,6,6,1,1,0,0,0,0,4,3,-88.142,True,True,"{""pieces_removed"": 1, ""triangles_removed"": 110, ""share_of_surface_removed"": 0.8814204452021591}",9856,4,0.0,,,,0
+crate_p1_tri_req20000,recalc_clear,0.93,423.5,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,False,"{""faces_turned"": 0}",11239,0,0.0909,,,,0
+crate_p1_tri_req20000,recalc_keep,0.95,456.4,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,"{""faces_turned"": 0}",9913,4,0.0,,,,0
+crate_p1_tri_req20000,weld1e-2,0.82,475.2,0,19796,6565,18,39,6,35,1,173,0,0,0,2,4,2,0.005,False,True,"{""vertices_joined"": 6736}",3622,35,0.5363,,,,0
+crate_p1_tri_req20000,weld1e-3,0.93,424.6,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,"{""vertices_joined"": 0}",9913,4,0.0,,,,0
+crate_p1_tri_req20000,weld1e-4,0.91,442.2,0,19796,19796,18,18,6,6,1,1,0,0,0,0,4,4,0.0,False,True,"{""vertices_joined"": 0}",9913,4,0.0,,,,0
+crate_p2_tri_req10000,hidden,0.8,404.7,0,9794,120,17,0,5,0,18,0,21,0,3,0,29,2,-23.655,False,True,"{""pieces_removed"": 27, ""triangles_removed"": 9674, ""share_of_surface_removed"": 0.2365502840207153}",64,0,,,,,0
+crate_p2_tri_req20000,all,1.39,451.0,0,19958,19968,97,66,22,19,87,86,4,1,58,2,28,28,2.411,False,False,"{""vertices_joined"": 0, ""faces_removed"": 68, ""faces_turned"": 55, ""holes_filled"": 10, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 12}",19155,0,0.4688,,,,0
+crate_p2_tri_req20000,clear0,0.86,467.2,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,False,{},10021,186,0.0073,,,,0
+crate_p2_tri_req20000,clear30,0.87,432.7,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,False,{},19248,0,0.4704,,,,0
+crate_p2_tri_req20000,degen1e-3,0.8,432.8,0,19958,5545,97,156,22,22,87,73,4,6,58,0,28,26,-0.044,False,True,"{""faces_removed"": 14413}",2998,84,0.0076,,,,0
+crate_p2_tri_req20000,degen1e-4,0.98,426.3,0,19958,19956,97,98,22,22,87,86,4,4,58,2,28,28,-0.0,False,True,"{""faces_removed"": 68}",10150,201,0.0072,,,,0
+crate_p2_tri_req20000,hidden,0.9,440.7,0,19958,108,97,0,22,0,87,0,4,0,58,0,28,1,-28.505,False,True,"{""pieces_removed"": 27, ""triangles_removed"": 19850, ""share_of_surface_removed"": 0.28505025869331196}",56,0,,,,,0
+crate_p2_tri_req20000,holes4,1.02,438.3,0,19958,19969,97,68,22,20,87,87,4,7,58,58,28,28,2.411,False,True,"{""holes_filled"": 9, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 11}",10159,167,0.0022,,,,0
+crate_p2_tri_req20000,holes_all,0.99,438.7,0,19958,19969,97,68,22,20,87,87,4,7,58,58,28,28,2.411,False,True,"{""holes_filled"": 9, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 11}",10159,167,0.0022,,,,0
+crate_p2_tri_req20000,loose,0.92,438.6,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,True,{},10148,166,0.0004,,,,0
+crate_p2_tri_req20000,pieces_area01pc,0.84,432.7,0,19958,5448,97,58,22,8,87,60,4,3,58,0,28,12,-0.05,False,True,"{""pieces_removed"": 16, ""triangles_removed"": 14510, ""share_of_surface_removed"": 0.000502178660077517}",2828,82,0.0,,,,0
+crate_p2_tri_req20000,pieces_area1pc,0.83,466.4,0,19958,2332,97,58,22,8,87,50,4,3,58,0,28,8,-3.185,False,True,"{""pieces_removed"": 20, ""triangles_removed"": 17626, ""share_of_surface_removed"": 0.03185384573022801}",1252,76,0.0,,,,0
+crate_p2_tri_req20000,pieces_tri1pc,1.02,425.5,0,19958,19648,97,39,22,14,87,27,4,1,58,58,28,21,-94.841,True,True,"{""pieces_removed"": 7, ""triangles_removed"": 310, ""share_of_surface_removed"": 0.9484059362537115}",9899,84,0.0004,,,,0
+crate_p2_tri_req20000,recalc_clear,0.96,449.0,0,19958,19958,97,97,22,22,87,87,4,0,58,58,28,28,-0.0,False,False,"{""faces_turned"": 55}",19254,0,0.4705,,,,0
+crate_p2_tri_req20000,recalc_keep,0.97,452.8,0,19958,19958,97,97,22,22,87,87,4,0,58,58,28,28,-0.0,False,True,"{""faces_turned"": 55}",10223,174,0.004,,,,0
+crate_p2_tri_req20000,weld1e-2,0.76,422.6,0,19958,4450,97,58,22,8,87,60,4,3,58,0,28,11,-0.055,False,True,"{""vertices_joined"": 7766}",2329,84,0.1811,,,,0
+crate_p2_tri_req20000,weld1e-3,0.86,416.5,0,19958,10780,97,161,22,95,87,234,4,6,58,23,28,28,-0.002,False,True,"{""vertices_joined"": 4631}",5934,160,0.4809,,,,0
+crate_p2_tri_req20000,weld1e-4,0.92,442.6,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,True,"{""vertices_joined"": 0}",10148,166,0.0004,,,,0
+crate_p2_tri_req20000_textured,all,1.37,509.8,0,19958,19968,97,66,22,19,87,86,4,2,58,2,28,28,2.411,False,False,"{""vertices_joined"": 0, ""faces_removed"": 68, ""faces_turned"": 56, ""holes_filled"": 10, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 12}",24774,0,0.6253,3044,0.7327,0,0
+crate_p2_tri_req20000_textured,clear0,0.91,498.6,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,False,{},22499,186,0.0121,3105,0.7239,0,0
+crate_p2_tri_req20000_textured,clear30,0.91,501.8,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,False,{},24876,0,0.6281,3105,0.7239,0,0
+crate_p2_tri_req20000_textured,degen1e-3,0.89,491.0,0,19958,5545,97,156,22,22,87,73,4,7,58,0,28,26,-0.044,False,True,"{""faces_removed"": 14413}",4546,84,0.0058,354,0.7231,0,0
+crate_p2_tri_req20000_textured,degen1e-4,1.0,522.9,0,19958,19956,97,98,22,22,87,86,4,4,58,2,28,28,-0.0,False,True,"{""faces_removed"": 68}",22454,212,0.0074,3044,0.7239,0,0
+crate_p2_tri_req20000_textured,hidden,0.97,510.1,0,19958,108,97,0,22,0,87,0,4,0,58,0,28,1,-28.505,False,True,"{""pieces_removed"": 27, ""triangles_removed"": 19850, ""share_of_surface_removed"": 0.2850502604820589}",168,0,,36,0.5337,0,0
+crate_p2_tri_req20000_textured,holes4,1.03,504.5,0,19958,19969,97,68,22,20,87,87,4,7,58,58,28,28,2.411,False,True,"{""holes_filled"": 9, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 11}",22586,172,0.0026,3105,0.7327,0,0
+crate_p2_tri_req20000_textured,holes_all,1.01,509.7,0,19958,19969,97,68,22,20,87,87,4,7,58,58,28,28,2.411,False,True,"{""holes_filled"": 9, ""sides_of_largest"": [4, 4, 3, 3, 3, 3, 3, 3], ""faces_added"": 11}",22586,172,0.0026,3105,0.7327,0,0
+crate_p2_tri_req20000_textured,loose,1.01,536.3,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,True,{},22576,171,0.0,3105,0.7239,0,0
+crate_p2_tri_req20000_textured,pieces_area01pc,0.89,494.2,0,19958,5448,97,58,22,8,87,60,4,3,58,0,28,12,-0.05,False,True,"{""pieces_removed"": 16, ""triangles_removed"": 14510, ""share_of_surface_removed"": 0.0005021786815429585}",4308,82,0.0,284,0.7231,0,0
+crate_p2_tri_req20000_textured,pieces_area1pc,0.88,497.3,0,19958,2332,97,58,22,8,87,50,4,3,58,0,28,8,-3.185,False,True,"{""pieces_removed"": 20, ""triangles_removed"": 17626, ""share_of_surface_removed"": 0.03185384680459765}",2095,76,0.0,207,0.7026,0,0
+crate_p2_tri_req20000_textured,pieces_tri1pc,1.08,504.9,0,19958,19648,97,39,22,14,87,27,4,1,58,58,28,21,-94.841,True,True,"{""pieces_removed"": 7, ""triangles_removed"": 310, ""share_of_surface_removed"": 0.948405934711942}",21901,89,0.0,2941,0.037,0,0
+crate_p2_tri_req20000_textured,recalc_clear,1.02,512.9,0,19958,19958,97,97,22,22,87,87,4,0,58,58,28,28,-0.0,False,False,"{""faces_turned"": 56}",24885,0,0.6282,3105,0.7239,0,0
+crate_p2_tri_req20000_textured,recalc_keep,1.05,499.5,0,19958,19958,97,97,22,22,87,87,4,0,58,58,28,28,-0.0,False,True,"{""faces_turned"": 56}",22611,179,0.0053,3105,0.7239,0,0
+crate_p2_tri_req20000_textured,weld1e-2,0.88,491.0,0,19958,4450,97,58,22,8,87,60,4,3,58,0,28,11,-0.055,False,True,"{""vertices_joined"": 7766}",4148,84,0.1424,425,0.7192,0,0
+crate_p2_tri_req20000_textured,weld1e-3,0.91,498.1,0,19958,10780,97,161,22,95,87,234,4,5,58,21,28,28,-0.002,False,True,"{""vertices_joined"": 4631}",13994,159,0.4625,2969,0.7236,0,0
+crate_p2_tri_req20000_textured,weld1e-4,1.06,509.6,0,19958,19958,97,97,22,22,87,87,4,4,58,58,28,28,0.0,False,True,"{""vertices_joined"": 0}",22576,171,0.0,3105,0.7239,0,0
+crate_p2_tri_req2000,hidden,0.67,377.8,0,2225,2225,1,1,1,1,6,6,0,0,0,0,7,7,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",1126,6,,,,,0
+crate_p2_tri_req5000,hidden,0.73,386.6,0,5854,5854,0,0,0,0,0,0,0,0,7,7,9,9,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",2945,7,,,,,0
+orb_h31_default,all_keep,102.96,4588.5,0,1951822,1951774,0,0,0,0,1,1,18,0,0,0,1,1,-0.0,False,True,"{""vertices_joined"": 9, ""faces_removed"": 303, ""faces_turned"": 9, ""holes_filled"": 0, ""sides_of_largest"": [], ""faces_added"": 0}",1034903,976,0.0005,1067,0.4976,0,0
+orb_h31_default,hidden,18.2,2978.1,0,,,,,,,,,,,,,,,,,,,1034900,1019,,1067,0.4976,0,0
+orb_h31_default,recalc_clear,41.79,4133.7,0,1951822,1951822,0,0,0,0,1,1,18,0,0,0,1,1,-0.0,False,False,"{""faces_turned"": 9}",1047318,0,0.2258,1067,0.4976,0,0
+orb_h31_default,weld_degen1e-5,46.95,4130.6,0,1951822,1951822,0,0,0,0,1,1,18,0,0,0,1,1,-0.0,False,True,"{""vertices_joined"": 3, ""faces_removed"": 0, ""faces_turned"": 9, ""holes_filled"": 0, ""sides_of_largest"": [], ""faces_added"": 0}",1034900,994,0.0,1067,0.4976,0,0
+orb_p1_tri_req20000,all,1.31,442.6,0,18438,18538,157,19,26,7,20,20,1,0,0,12,157,157,2.432,False,False,"{""vertices_joined"": 0, ""faces_removed"": 0, ""faces_turned"": 57, ""holes_filled"": 19, ""sides_of_largest"": [65, 22, 3, 3, 3, 3, 3, 3], ""faces_added"": 100}",22162,0,0.7985,,,,0
+orb_p1_tri_req20000,clear0,0.82,464.6,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,False,{},9584,512,0.0,,,,0
+orb_p1_tri_req20000,clear30,0.85,444.6,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,False,{},22024,0,0.7951,,,,0
+orb_p1_tri_req20000,degen1e-3,0.94,422.7,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,-0.01,False,True,"{""faces_removed"": 142}",9622,495,0.0307,,,,0
+orb_p1_tri_req20000,degen1e-4,0.97,422.8,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""faces_removed"": 0}",9620,513,0.0,,,,0
+orb_p1_tri_req20000,hidden,1.07,488.3,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",9620,513,,,,,0
+orb_p1_tri_req20000,holes4,0.99,422.5,0,18438,18455,157,106,26,9,20,20,1,1,0,12,157,157,0.0,False,True,"{""holes_filled"": 17, ""sides_of_largest"": [3, 3, 3, 3, 3, 3, 3, 3], ""faces_added"": 17}",9620,526,0.0018,,,,0
+orb_p1_tri_req20000,holes_all,0.98,454.5,0,18438,18538,157,19,26,7,20,20,1,1,0,12,157,157,2.432,False,True,"{""holes_filled"": 19, ""sides_of_largest"": [65, 22, 3, 3, 3, 3, 3, 3], ""faces_added"": 100}",9620,529,0.0109,,,,0
+orb_p1_tri_req20000,loose,0.97,439.1,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,{},9620,513,0.0,,,,0
+orb_p1_tri_req20000,pieces_area01pc,0.99,449.5,0,18438,15523,157,143,26,21,20,19,1,1,0,0,157,93,-4.343,False,True,"{""pieces_removed"": 64, ""triangles_removed"": 2915, ""share_of_surface_removed"": 0.043427853670434086}",8031,470,0.0,,,,0
+orb_p1_tri_req20000,pieces_area1pc,0.89,443.5,0,18438,9443,157,121,26,20,20,17,1,1,0,0,157,2,-24.198,True,True,"{""pieces_removed"": 155, ""triangles_removed"": 8995, ""share_of_surface_removed"": 0.24198253735179734}",4793,404,0.0,,,,0
+orb_p1_tri_req20000,pieces_tri1pc,0.89,417.8,0,18438,10549,157,155,26,25,20,17,1,1,0,0,157,7,-22.567,True,True,"{""pieces_removed"": 150, ""triangles_removed"": 7889, ""share_of_surface_removed"": 0.22567088050319994}",5369,412,0.0,,,,0
+orb_p1_tri_req20000,recalc_clear,0.92,424.2,0,18438,18438,157,157,26,26,20,20,1,0,0,0,157,157,0.0,False,False,"{""faces_turned"": 57}",22023,0,0.7953,,,,0
+orb_p1_tri_req20000,recalc_keep,0.93,445.3,0,18438,18438,157,157,26,26,20,20,1,0,0,0,157,157,0.0,False,True,"{""faces_turned"": 57}",9624,513,0.0038,,,,0
+orb_p1_tri_req20000,weld1e-2,0.85,415.8,0,18438,7333,157,678,26,213,20,403,1,54,0,0,157,73,-7.239,False,True,"{""vertices_joined"": 5424}",5115,285,0.7551,,,,0
+orb_p1_tri_req20000,weld1e-3,0.93,423.0,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""vertices_joined"": 0}",9620,513,0.0,,,,0
+orb_p1_tri_req20000,weld1e-4,0.93,438.7,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""vertices_joined"": 0}",9620,513,0.0,,,,0
+orb_p1_tri_req20000_textured,all,1.5,512.2,0,18438,18538,157,19,26,7,20,20,1,0,0,12,157,157,2.432,False,False,"{""vertices_joined"": 1, ""faces_removed"": 0, ""faces_turned"": 57, ""holes_filled"": 19, ""sides_of_largest"": [65, 22, 3, 3, 3, 3, 3, 3], ""faces_added"": 100}",29009,0,0.8591,4879,0.7792,0,0
+orb_p1_tri_req20000_textured,clear0,0.98,511.6,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,False,{},27419,512,0.0003,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,clear30,0.94,510.3,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,False,{},28859,0,0.8579,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,degen1e-3,1.04,532.6,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,-0.01,False,True,"{""faces_removed"": 142}",27331,495,0.0345,4840,0.4151,0,0
+orb_p1_tri_req20000_textured,degen1e-4,1.07,510.3,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""faces_removed"": 0}",27436,513,0.0,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,holes4,1.03,509.9,0,18438,18455,157,106,26,9,20,20,1,1,0,12,157,157,0.0,False,True,"{""holes_filled"": 17, ""sides_of_largest"": [3, 3, 3, 3, 3, 3, 3, 3], ""faces_added"": 17}",27436,526,0.0015,4893,0.4191,0,0
+orb_p1_tri_req20000_textured,holes_all,1.07,513.0,0,18438,18538,157,19,26,7,20,20,1,1,0,12,157,157,2.432,False,True,"{""holes_filled"": 19, ""sides_of_largest"": [65, 22, 3, 3, 3, 3, 3, 3], ""faces_added"": 100}",27436,528,0.0088,4879,0.7792,0,0
+orb_p1_tri_req20000_textured,loose,1.04,510.5,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,{},27436,513,0.0,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,pieces_area01pc,1.05,510.3,0,18438,15523,157,143,26,21,20,19,1,1,0,0,157,93,-4.343,False,True,"{""pieces_removed"": 64, ""triangles_removed"": 2915, ""share_of_surface_removed"": 0.043427854594863854}",22896,470,0.0,4063,0.3967,0,0
+orb_p1_tri_req20000_textured,pieces_area1pc,0.97,550.2,0,18438,9443,157,121,26,20,20,17,1,1,0,0,157,2,-24.198,True,True,"{""pieces_removed"": 155, ""triangles_removed"": 8995, ""share_of_surface_removed"": 0.2419825390387968}",14007,404,0.0,2554,0.3137,0,0
+orb_p1_tri_req20000_textured,pieces_tri1pc,1.01,505.8,0,18438,10549,157,155,26,25,20,17,1,1,0,0,157,7,-22.567,True,True,"{""pieces_removed"": 150, ""triangles_removed"": 7889, ""share_of_surface_removed"": 0.22567088207942682}",15477,412,0.0,2796,0.3206,0,0
+orb_p1_tri_req20000_textured,recalc_clear,1.1,523.4,0,18438,18438,157,157,26,26,20,20,1,0,0,0,157,157,0.0,False,False,"{""faces_turned"": 57}",28859,0,0.8579,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,recalc_keep,1.03,513.3,0,18438,18438,157,157,26,26,20,20,1,0,0,0,157,157,0.0,False,True,"{""faces_turned"": 57}",27436,513,0.0037,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,weld1e-2,0.91,503.1,0,18438,7331,157,674,26,210,20,406,1,49,0,0,157,71,-7.242,False,True,"{""vertices_joined"": 5431}",12736,275,0.6663,2731,0.3579,0,0
+orb_p1_tri_req20000_textured,weld1e-3,1.03,514.3,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""vertices_joined"": 1}",27436,513,0.0002,4893,0.4153,0,0
+orb_p1_tri_req20000_textured,weld1e-4,1.03,512.3,0,18438,18438,157,157,26,26,20,20,1,1,0,0,157,157,0.0,False,True,"{""vertices_joined"": 1}",27436,513,0.0002,4893,0.4153,0,0
+orb_p2_tri_req20000,all,1.42,438.8,0,20389,21044,1169,44,239,5,12,12,0,0,0,0,236,236,3.045,False,False,"{""vertices_joined"": 0, ""faces_removed"": 0, ""faces_turned"": 2, ""holes_filled"": 235, ""sides_of_largest"": [38, 38, 36, 36, 18, 7, 7, 7], ""faces_added"": 655}",24821,0,0.8929,,,,0
+orb_p2_tri_req20000,clear0,0.96,454.3,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,{},11011,208,0.0,,,,0
+orb_p2_tri_req20000,clear30,0.96,451.5,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,{},23706,0,0.8865,,,,0
+orb_p2_tri_req20000,degen1e-3,1.07,428.2,0,20389,20369,1169,1169,239,239,12,12,0,0,0,0,236,236,-0.003,False,True,"{""faces_removed"": 33}",11022,210,0.0038,,,,0
+orb_p2_tri_req20000,degen1e-4,0.95,427.5,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""faces_removed"": 0}",11032,207,0.0,,,,0
+orb_p2_tri_req20000,hidden,1.01,426.0,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",11032,207,,,,,0
+orb_p2_tri_req20000,holes4,1.03,431.6,0,20389,20796,1169,350,239,34,12,12,0,0,0,0,236,236,1.085,False,True,"{""holes_filled"": 206, ""sides_of_largest"": [4, 4, 4, 4, 4, 4, 4, 4], ""faces_added"": 407}",11032,208,0.0737,,,,0
+orb_p2_tri_req20000,holes_all,1.08,439.0,0,20389,21044,1169,44,239,5,12,12,0,0,0,0,236,236,3.045,False,True,"{""holes_filled"": 235, ""sides_of_largest"": [38, 38, 36, 36, 18, 7, 7, 7], ""faces_added"": 655}",11033,208,0.1014,,,,0
+orb_p2_tri_req20000,loose,1.02,428.6,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,{},11032,207,0.0,,,,0
+orb_p2_tri_req20000,pieces_area01pc,0.98,421.8,0,20389,14081,1169,557,239,86,12,12,0,0,0,0,236,80,-8.765,True,True,"{""pieces_removed"": 156, ""triangles_removed"": 6308, ""share_of_surface_removed"": 0.08765165480176215}",7413,205,0.0,,,,0
+orb_p2_tri_req20000,pieces_area1pc,0.95,417.5,0,20389,9671,1169,245,239,17,12,12,0,0,0,0,236,1,-23.256,True,True,"{""pieces_removed"": 235, ""triangles_removed"": 10718, ""share_of_surface_removed"": 0.23255777198250535}",4963,205,0.0,,,,0
+orb_p2_tri_req20000,pieces_tri1pc,0.92,461.5,0,20389,9671,1169,245,239,17,12,12,0,0,0,0,236,1,-23.256,True,True,"{""pieces_removed"": 235, ""triangles_removed"": 10718, ""share_of_surface_removed"": 0.23255777198250535}",4963,205,0.0,,,,0
+orb_p2_tri_req20000,recalc_clear,1.03,450.3,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,"{""faces_turned"": 2}",23706,0,0.8867,,,,0
+orb_p2_tri_req20000,recalc_keep,1.04,444.1,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""faces_turned"": 2}",11033,207,0.0005,,,,0
+orb_p2_tri_req20000,weld1e-2,0.87,450.5,0,20389,7380,1169,1296,239,329,12,376,0,58,0,0,236,100,-11.09,True,True,"{""vertices_joined"": 6210}",5338,240,0.7147,,,,0
+orb_p2_tri_req20000,weld1e-3,1.02,426.6,0,20389,20381,1169,1150,239,236,12,23,0,0,0,0,236,236,0.0,False,True,"{""vertices_joined"": 20}",11042,208,0.0035,,,,0
+orb_p2_tri_req20000,weld1e-4,1.0,496.7,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""vertices_joined"": 0}",11032,207,0.0,,,,0
+orb_p2_tri_req20000_textured,all,1.56,531.9,0,20389,21044,1169,44,239,5,12,12,0,0,0,0,236,236,3.045,False,False,"{""vertices_joined"": 0, ""faces_removed"": 0, ""faces_turned"": 2, ""holes_filled"": 235, ""sides_of_largest"": [38, 38, 36, 36, 18, 7, 7, 7], ""faces_added"": 655}",30316,0,0.92,4159,0.9142,0,0
+orb_p2_tri_req20000_textured,clear0,1.02,507.8,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,{},28210,208,0.0,4208,0.397,0,0
+orb_p2_tri_req20000_textured,clear30,0.99,510.1,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,{},29179,0,0.9172,4208,0.397,0,0
+orb_p2_tri_req20000_textured,degen1e-3,1.11,532.9,0,20389,20367,1169,1169,239,239,12,12,0,0,0,0,236,236,-0.003,False,True,"{""faces_removed"": 34}",28175,210,0.0054,4199,0.3969,0,0
+orb_p2_tri_req20000_textured,degen1e-4,1.1,514.4,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""faces_removed"": 0}",28213,207,0.0,4208,0.397,0,0
+orb_p2_tri_req20000_textured,hidden,1.13,509.1,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""pieces_removed"": 0, ""triangles_removed"": 0, ""share_of_surface_removed"": 0.0}",28213,207,,4208,0.397,0,0
+orb_p2_tri_req20000_textured,holes4,1.09,508.9,0,20389,20796,1169,350,239,34,12,12,0,0,0,0,236,236,1.085,False,True,"{""holes_filled"": 206, ""sides_of_largest"": [4, 4, 4, 4, 4, 4, 4, 4], ""faces_added"": 407}",28213,208,0.0598,4207,0.9051,0,0
+orb_p2_tri_req20000_textured,holes_all,1.17,521.3,0,20389,21044,1169,44,239,5,12,12,0,0,0,0,236,236,3.045,False,True,"{""holes_filled"": 235, ""sides_of_largest"": [38, 38, 36, 36, 18, 7, 7, 7], ""faces_added"": 655}",28213,208,0.0814,4159,0.9142,0,0
+orb_p2_tri_req20000_textured,loose,1.15,522.4,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,{},28213,207,0.0,4208,0.397,0,0
+orb_p2_tri_req20000_textured,pieces_area01pc,1.05,508.8,0,20389,14081,1169,557,239,86,12,12,0,0,0,0,236,80,-8.765,True,True,"{""pieces_removed"": 156, ""triangles_removed"": 6308, ""share_of_surface_removed"": 0.08765165646636075}",19317,205,0.0,2914,0.3612,0,0
+orb_p2_tri_req20000_textured,pieces_area1pc,1.03,515.4,0,20389,9671,1169,245,239,17,12,12,0,0,0,0,236,1,-23.256,True,True,"{""pieces_removed"": 235, ""triangles_removed"": 10718, ""share_of_surface_removed"": 0.23255777530908495}",13556,205,0.0,2192,0.3036,0,0
+orb_p2_tri_req20000_textured,pieces_tri1pc,0.98,502.3,0,20389,9671,1169,245,239,17,12,12,0,0,0,0,236,1,-23.256,True,True,"{""pieces_removed"": 235, ""triangles_removed"": 10718, ""share_of_surface_removed"": 0.23255777530908495}",13556,205,0.0,2192,0.3036,0,0
+orb_p2_tri_req20000_textured,recalc_clear,1.1,513.1,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,False,"{""faces_turned"": 2}",29179,0,0.9173,4208,0.397,0,0
+orb_p2_tri_req20000_textured,recalc_keep,1.13,517.6,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""faces_turned"": 2}",28213,207,0.0002,4208,0.397,0,0
+orb_p2_tri_req20000_textured,weld1e-2,0.98,518.0,0,20389,7380,1169,1296,239,329,12,376,0,56,0,0,236,100,-11.09,True,True,"{""vertices_joined"": 6210}",11764,237,0.6182,2248,0.3264,0,0
+orb_p2_tri_req20000_textured,weld1e-3,1.09,525.2,0,20389,20381,1169,1150,239,236,12,23,0,0,0,0,236,236,0.0,False,True,"{""vertices_joined"": 20}",28212,208,0.003,4207,0.3969,0,0
+orb_p2_tri_req20000_textured,weld1e-4,1.13,514.3,0,20389,20389,1169,1169,239,239,12,12,0,0,0,0,236,236,0.0,False,True,"{""vertices_joined"": 0}",28213,207,0.0,4208,0.397,0,0

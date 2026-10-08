@@ -1,0 +1,149 @@
+{
+  "file": {
+    "path": "learn/research/blender-stages-trial/models/red_orb__quadriflow_on_voxel4mm_again.glb",
+    "bytes": 10091768,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 15298,
+    "vertices": 30587,
+    "materials": 1,
+    "textures": 3
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 15298,
+      "vertices": 30587,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+          "triangles": 15298,
+          "vertices": 30587,
+          "indexed": true,
+          "has_uvs": false,
+          "attributes": [
+            "NORMAL",
+            "POSITION"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.31846705079078674,
+      -0.00029383337823674083,
+      -0.43071338534355164
+    ],
+    "max": [
+      0.34611737728118896,
+      0.9084330797195435,
+      0.48805004358291626
+    ],
+    "dimensions": [
+      0.6645844280719757,
+      0.9087269130977802,
+      0.9187634289264679
+    ],
+    "largest_dimension": 0.9187634289264679
+  },
+  "size": {
+    "in_file": 0.9187634289264679,
+    "given": 0.8,
+    "scale_factor": 0.8707355721970373
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+      "textures": {
+        "baseColorTexture": 1,
+        "metallicRoughnessTexture": 2,
+        "normalTexture": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "orb_h31_default_normal",
+      "format": "png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 4691100,
+      "used_as": [
+        "normalTexture of tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "orb_h31_default_basecolor",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 3179246,
+      "used_as": [
+        "baseColorTexture of tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "orb_h31_default_rm",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 1393822,
+      "used_as": [
+        "metallicRoughnessTexture of tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+      ]
+    }
+  ],
+  "uvs": null,
+  "texel_density": null,
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 3,
+    "warnings": 1,
+    "infos": 0,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "error",
+        "code": "VALUE_NOT_IN_RANGE",
+        "message": "Value -1 is out of range.",
+        "pointer": "/materials/0/pbrMetallicRoughness/baseColorTexture/texCoord"
+      },
+      {
+        "severity": "error",
+        "code": "VALUE_NOT_IN_RANGE",
+        "message": "Value -1 is out of range.",
+        "pointer": "/materials/0/pbrMetallicRoughness/metallicRoughnessTexture/texCoord"
+      },
+      {
+        "severity": "error",
+        "code": "VALUE_NOT_IN_RANGE",
+        "message": "Value -1 is out of range.",
+        "pointer": "/materials/0/normalTexture/texCoord"
+      },
+      {
+        "severity": "warning",
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "pointer": "/meshes/0/primitives/0/material"
+      }
+    ]
+  },
+  "notes": [
+    "A material reads a texture through a UV set other than the first; only the first set (TEXCOORD_0) is measured."
+  ]
+}

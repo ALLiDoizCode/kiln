@@ -1,0 +1,79 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_crate_p2_tri_req20000__weld1e-3.glb",
+ "bytes": 208116,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "c7c3fd460f43c17d1dc13d109a6cfd5cedc85e00bc5146a43524e75bed5225d6",
+ "triangles": 10780,
+ "vertices_stored": 5934,
+ "welded_points": 5390,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 160,
+ "triangle_areas": {
+  "surface_area": 10.042736759332819,
+  "share_holding_99pc_of_area": 0.34183673469387754,
+  "share_under_100th_of_mean": 0.4948051948051948,
+  "zero_area": 23
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/crate_p2_tri_req20000.glb",
+  "reference_bytes": 481172,
+  "reference_vertices_stored": 10021,
+  "reference_triangles": 19958,
+  "reference_welded_points": 10021,
+  "reference_zero_length_normals": 4,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [],
+  "reference_images": [],
+  "reference_materials": [
+   {
+    "name": "material",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": null,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 5390,
+   "keys_in_reference": 10021,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 179.9999965849054,
+   "share_over_1_degree": 0.48089053803339515
+  }
+ }
+}

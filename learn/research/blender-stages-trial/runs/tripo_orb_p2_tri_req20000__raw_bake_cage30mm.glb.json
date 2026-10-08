@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/tripo_orb_p2_tri_req20000__raw_bake_cage30mm.glb",
+ "bytes": 4236584,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "d8f8ad12195cebc94ae3f2e5a688e98dd1a00be84c6d5d3cb197547060ca1049",
+ "triangles": 20389,
+ "vertices_stored": 23816,
+ "welded_points": 11011,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 208,
+ "triangle_areas": {
+  "surface_area": 2.288039916105351,
+  "share_holding_99pc_of_area": 0.8641424297415273,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1781111,
+   "sha256": "808679a14f164cdb98064cafd8123d54ab64f41fb9f531b0876a9314b92036b9"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 757522,
+   "sha256": "6c40b0bf963fabd4b5cb640e374303bc2d784848b1086a62ba0545bf59fcee75"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 811844,
+   "sha256": "d8efae65dbc39949f0a06c28abdf6e22c116c54a4970f141c693d6c0796cccb4"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "name": "rep_crate_p1_tri_req20000__pieces_tri1pc",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_p1_tri_req20000__pieces_tri1pc.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_p1_tri_req20000__pieces_tri1pc.facts.json",
+  "small_pieces=0.01",
+  "small_pieces_by=triangles"
+ ],
+ "started": "2026-10-08 16:10:26",
+ "wall_seconds": 1.03,
+ "user_seconds": 1.17,
+ "system_seconds": 0.29,
+ "peak_rss_mb": 421.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18778,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

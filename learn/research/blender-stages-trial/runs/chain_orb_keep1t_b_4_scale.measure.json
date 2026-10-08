@@ -1,0 +1,164 @@
+{
+  "file": {
+    "path": "learn/research/blender-stages-trial/models/chain_orb_keep1t_b_4_scale.glb",
+    "bytes": 8350020,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 20000,
+    "vertices": 18739,
+    "materials": 1,
+    "textures": 3
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 20000,
+      "vertices": 18739,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "baked",
+          "triangles": 20000,
+          "vertices": 18739,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "NORMAL",
+            "POSITION",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.30730003118515015,
+      0.0002457866503391415,
+      -0.39969149231910706
+    ],
+    "max": [
+      0.3074820041656494,
+      0.8002458214759827,
+      0.39936012029647827
+    ],
+    "dimensions": [
+      0.6147820353507996,
+      0.8000000348256435,
+      0.7990516126155853
+    ],
+    "largest_dimension": 0.8000000348256435
+  },
+  "size": {
+    "in_file": 0.8000000348256435,
+    "given": 0.8,
+    "scale_factor": 0.9999999564679476
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "baked",
+      "textures": {
+        "baseColorTexture": 1,
+        "metallicRoughnessTexture": 2,
+        "normalTexture": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "normal",
+      "format": "png",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 5722772,
+      "used_as": [
+        "normalTexture of baked"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "basecolor",
+      "format": "jpeg",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1186419,
+      "used_as": [
+        "baseColorTexture of baked"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "metallic_roughness",
+      "format": "jpeg",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 719478,
+      "used_as": [
+        "metallicRoughnessTexture of baked"
+      ]
+    }
+  ],
+  "uvs": {
+    "triangles": 20000,
+    "islands": 1401,
+    "edges": 29999,
+    "seam_edges": 7348,
+    "open_edges": 0,
+    "seam_share": 0.244941498049935,
+    "coverage": 0.5592622756958008,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.5604372561699186,
+    "triangles_outside_square": 0,
+    "triangles_without_area": 0
+  },
+  "texel_density": {
+    "size": 0.8,
+    "pixels_per_metre": 1176.0942470066614,
+    "p05": 695.3571459791772,
+    "median": 1176.1031830859804,
+    "p95": 1500.05121041295,
+    "surface_area": 1.6994275387807163,
+    "by_primitive": [
+      {
+        "node": 0,
+        "mesh": 0,
+        "primitive": 0,
+        "material": 0,
+        "texture": 1,
+        "texture_pixels": [
+          2048,
+          2048
+        ],
+        "surface_area": 1.6994275387807163,
+        "pixels_per_metre": 1176.0942470066614
+      }
+    ]
+  },
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 1,
+    "infos": 0,
+    "hints": 0,
+    "truncated": false,
+    "messages": [
+      {
+        "severity": "warning",
+        "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+        "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+        "pointer": "/meshes/0/primitives/0/material"
+      }
+    ]
+  },
+  "notes": []
+}

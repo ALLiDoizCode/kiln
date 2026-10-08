@@ -1,0 +1,23 @@
+{
+ "name": "red_orb__quadriflow_on_voxel4mm_again",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/red_orb__voxel4mm.glb",
+  "learn/research/blender-stages-trial/models/red_orb__quadriflow_on_voxel4mm_again.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__quadriflow_on_voxel4mm_again.facts.json",
+  "method=quadriflow",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:04:46",
+ "wall_seconds": 7.98,
+ "user_seconds": 7.93,
+ "system_seconds": 0.39,
+ "peak_rss_mb": 912.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12385,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

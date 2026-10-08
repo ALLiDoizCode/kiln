@@ -1,0 +1,23 @@
+{
+ "name": "red_orb__quadriflow",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_orb__quadriflow.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__quadriflow.facts.json",
+  "count_before=false",
+  "method=quadriflow"
+ ],
+ "started": "2026-10-08 17:10:19",
+ "wall_seconds": 5.49,
+ "user_seconds": 7.67,
+ "system_seconds": 0.92,
+ "peak_rss_mb": 1377.5,
+ "exit_status": 1,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12487,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

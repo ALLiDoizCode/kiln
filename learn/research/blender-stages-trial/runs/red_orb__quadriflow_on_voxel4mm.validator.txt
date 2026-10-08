@@ -1,0 +1,35 @@
+{
+ "ran": true,
+ "version": "2.0.0-dev.3.10",
+ "errors": 3,
+ "warnings": 1,
+ "infos": 0,
+ "hints": 0,
+ "truncated": false,
+ "messages": [
+  {
+   "severity": "error",
+   "code": "VALUE_NOT_IN_RANGE",
+   "message": "Value -1 is out of range.",
+   "pointer": "/materials/0/pbrMetallicRoughness/baseColorTexture/texCoord"
+  },
+  {
+   "severity": "error",
+   "code": "VALUE_NOT_IN_RANGE",
+   "message": "Value -1 is out of range.",
+   "pointer": "/materials/0/pbrMetallicRoughness/metallicRoughnessTexture/texCoord"
+  },
+  {
+   "severity": "error",
+   "code": "VALUE_NOT_IN_RANGE",
+   "message": "Value -1 is out of range.",
+   "pointer": "/materials/0/normalTexture/texCoord"
+  },
+  {
+   "severity": "warning",
+   "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+   "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+   "pointer": "/meshes/0/primitives/0/material"
+  }
+ ]
+}

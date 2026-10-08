@@ -1,0 +1,28 @@
+{
+ "name": "tripo_orb_p1_tri_req20000__repaired",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p1_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/tripo_orb_p1_tri_req20000__repaired.glb",
+  "learn/research/blender-stages-trial/runs/tripo_orb_p1_tri_req20000__repaired.facts.json",
+  "weld=1e-4",
+  "degenerate=1e-4",
+  "loose=true",
+  "hidden_pieces=true",
+  "recalc_normals=true",
+  "fill_holes=0",
+  "normals=clear"
+ ],
+ "started": "2026-10-08 17:33:20",
+ "wall_seconds": 1.45,
+ "user_seconds": 1.81,
+ "system_seconds": 0.57,
+ "peak_rss_mb": 441.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13810,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

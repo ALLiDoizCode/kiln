@@ -1,0 +1,25 @@
+{
+ "name": "red_crate__planar5_uv",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_crate__planar5_uv.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__planar5_uv.facts.json",
+  "count_before=false",
+  "method=planar",
+  "planar_angle=5",
+  "planar_delimit=UV"
+ ],
+ "started": "2026-10-08 16:30:54",
+ "wall_seconds": 858.92,
+ "user_seconds": 836.75,
+ "system_seconds": 3.57,
+ "peak_rss_mb": 2235.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10263,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

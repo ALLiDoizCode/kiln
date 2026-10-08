@@ -1,0 +1,190 @@
+{
+ "stage": "uv_bake",
+ "source": "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_2_reduce.glb",
+ "settings": {
+  "high": "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "weld": 1e-06,
+  "uv": "keep",
+  "angle": 66.0,
+  "island_margin": 0.003,
+  "seam_angle": 60.0,
+  "pack": "concave",
+  "pack_margin": 0.001,
+  "margin_method": "ADD",
+  "normals": "clear",
+  "sharp_angle": 0.0,
+  "size": 2048,
+  "samples": 1,
+  "device": "CPU",
+  "cage_extrusion": 0.001,
+  "max_ray_distance": 0.002,
+  "cage": "auto",
+  "margin": 8,
+  "margin_type": "ADJACENT_FACES",
+  "colour": "emit",
+  "fit": "none",
+  "one_thread_normal": false,
+  "jpeg": true,
+  "jpeg_quality": 90,
+  "bake": true
+ },
+ "low_before": {
+  "vertices": 20606,
+  "faces": 19999,
+  "triangles": 19999,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 18781,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "weld_joined": 10604,
+ "high": {
+  "vertices": 900730,
+  "faces": 1801451,
+  "triangles": 1801451,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1375189,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab.001"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "cage_chosen": {
+  "cage_extrusion": 0.001,
+  "max_ray_distance": 0.002
+ },
+ "ray_check": {
+  "points": 20000,
+  "missed": 0,
+  "missed_share": 0.0,
+  "hit_distance_from_low_surface": {
+   "median": 8.265302516520003e-06,
+   "p95": 2.9723091050982454e-05,
+   "p99": 4.394811205565927e-05,
+   "largest": 0.00011119719035923483
+  },
+  "nearest_dense_surface": {
+   "median": 8.255700777226593e-06,
+   "p95": 2.9683906177524477e-05,
+   "p99": 4.394143252284266e-05,
+   "largest": 0.00010608521552057937
+  },
+  "hits_further_than_twice_p99_nearest": 0.0002
+ },
+ "device_wanted": "CPU",
+ "device": "CPU",
+ "high_textures": {
+  "basecolor": "crate_h31_default_basecolor.jpg",
+  "metallic_roughness": "crate_h31_default_rm.jpg",
+  "normal": "crate_h31_default_normal.png"
+ },
+ "images": {
+  "basecolor": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "JPEG",
+   "colorspace": "sRGB",
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  "metallic_roughness": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "JPEG",
+   "colorspace": "Non-Color",
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  "normal": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "PNG",
+   "colorspace": "Non-Color",
+   "is_dirty": false,
+   "source": "FILE"
+  }
+ },
+ "low_after": {
+  "vertices": 10002,
+  "faces": 19999,
+  "triangles": 19999,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": false,
+  "normals_domain": "POINT",
+  "smooth_faces": 19999,
+  "sharp_edges": 0,
+  "materials": [
+   "baked"
+  ],
+  "attributes": [
+   "UVMap",
+   "position"
+  ]
+ },
+ "after": {
+  "vertices": 10002,
+  "edges": 29999,
+  "faces": 19999,
+  "triangles": 19999,
+  "boundary_edges": 2,
+  "non_manifold_edges": 1,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 1,
+  "pieces": 1,
+  "largest_pieces": [
+   19999
+  ]
+ },
+ "seconds": {
+  "import_low": 0.122,
+  "weld": 0.04,
+  "uvs": 2.884,
+  "normals": 0.0,
+  "import_high": 3.54,
+  "ray_check": 5.531,
+  "bake_normal": 10.193,
+  "bake_basecolor": 12.19,
+  "bake_metallic_roughness": 11.946,
+  "material": 0.3,
+  "export": 0.121
+ },
+ "blender": "5.2.2 LTS"
+}

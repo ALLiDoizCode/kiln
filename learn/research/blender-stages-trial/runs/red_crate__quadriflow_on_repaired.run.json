@@ -1,0 +1,23 @@
+{
+ "name": "red_crate__quadriflow_on_repaired",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/chain_crate_keep_a_1_repair.glb",
+  "learn/research/blender-stages-trial/models/red_crate__quadriflow_on_repaired.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__quadriflow_on_repaired.facts.json",
+  "method=quadriflow",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:04:22",
+ "wall_seconds": 4.9,
+ "user_seconds": 7.49,
+ "system_seconds": 0.94,
+ "peak_rss_mb": 1577.7,
+ "exit_status": 1,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13736,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

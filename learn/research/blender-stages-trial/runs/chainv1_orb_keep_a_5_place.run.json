@@ -1,0 +1,23 @@
+{
+ "name": "chain_orb_keep_a_5_place",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/place.py",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_a_4_scale.glb",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_a_5_place.glb",
+  "learn/research/blender-stages-trial/runs/chain_orb_keep_a_5_place.facts.json",
+  "turn=180",
+  "origin=bottom_centre"
+ ],
+ "started": "2026-10-08 17:41:30",
+ "wall_seconds": 0.85,
+ "user_seconds": 0.86,
+ "system_seconds": 0.23,
+ "peak_rss_mb": 516.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12791,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

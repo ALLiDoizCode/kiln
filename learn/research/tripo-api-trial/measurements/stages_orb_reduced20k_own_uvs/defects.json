@@ -1,0 +1,251 @@
+{
+  "file": "learn/research/blender-stages-trial/models/red_orb__collapse20k_clear30.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "tripo_node_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 19991,
+      "flat_faces": 9,
+      "as_imported": {
+        "vertices": 29398,
+        "edges": 44101,
+        "faces": 20000,
+        "triangles": 20000,
+        "face_sides": {
+          "3": 20000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 28202,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 5793,
+        "pieces": 5545,
+        "piece_triangles_largest_first": [
+          8106,
+          879,
+          238,
+          55,
+          55,
+          55,
+          50,
+          46,
+          43,
+          41,
+          40,
+          37,
+          35,
+          34,
+          32,
+          31,
+          31,
+          31,
+          29,
+          28
+        ],
+        "small_pieces": 5542,
+        "small_piece_triangles": 10777
+      },
+      "welded": {
+        "vertices": 9974,
+        "edges": 30000,
+        "faces": 20000,
+        "triangles": 20000,
+        "face_sides": {
+          "3": 20000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          20000
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 29398,
+    "edges": 44101,
+    "faces": 20000,
+    "triangles": 20000,
+    "face_sides": {
+      "3": 20000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 28202,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 5793,
+    "pieces": 5545,
+    "piece_triangles_largest_first": [
+      8106,
+      879,
+      238,
+      55,
+      55,
+      55,
+      50,
+      46,
+      43,
+      41,
+      40,
+      37,
+      35,
+      34,
+      32,
+      31,
+      31,
+      31,
+      29,
+      28
+    ],
+    "small_pieces": 5542,
+    "small_piece_triangles": 10777
+  },
+  "welded": {
+    "vertices": 9974,
+    "edges": 30000,
+    "faces": 20000,
+    "triangles": 20000,
+    "face_sides": {
+      "3": 20000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      20000
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.376525,
+      -0.489324,
+      0.000301
+    ],
+    "max": [
+      0.376748,
+      0.48973,
+      0.980516
+    ],
+    "dimensions": [
+      0.753273,
+      0.979053,
+      0.980215
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.376525,
+      0.000301,
+      -0.48973
+    ],
+    "max": [
+      0.376748,
+      0.980516,
+      0.489324
+    ],
+    "dimensions": [
+      0.753273,
+      0.980215,
+      0.979053
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.000111,
+    0.000203,
+    0.490409
+  ],
+  "lowest_point_blender_z": 0.000301,
+  "materials": [
+    "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "images": [
+    {
+      "name": "orb_h31_default_basecolor",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "orb_h31_default_normal",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "orb_h31_default_rm",
+      "size": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

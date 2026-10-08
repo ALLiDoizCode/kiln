@@ -1,0 +1,41 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000__hidden.glb",
+ "bytes": 388104,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "8d083ab34a5f10b05a585143928066b765f52f339e5ed364f4f04a0a83d7217e",
+ "triangles": 20389,
+ "vertices_stored": 11032,
+ "welded_points": 11011,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 207,
+ "triangle_areas": {
+  "surface_area": 2.288039916105351,
+  "share_holding_99pc_of_area": 0.8641424297415273,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

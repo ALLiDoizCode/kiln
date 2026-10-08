@@ -1,0 +1,26 @@
+{
+ "name": "bake_crate__2048_cage5mm",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/bake_crate__2048_cage5mm.glb",
+  "learn/research/blender-stages-trial/runs/bake_crate__2048_cage5mm.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "cage_extrusion=0.005",
+  "max_ray_distance=0.01"
+ ],
+ "started": "2026-10-08 16:38:20",
+ "wall_seconds": 17.25,
+ "user_seconds": 50.21,
+ "system_seconds": 6.66,
+ "peak_rss_mb": 3679.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13615,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

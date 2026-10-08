@@ -1,0 +1,78 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rt_orb_p1_tri_req20000_clear.glb",
+ "bytes": 341632,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "95bee034271a63bdde1c90190468b3abf08ddd08de22d68e214015cb252388d8",
+ "triangles": 18438,
+ "vertices_stored": 9584,
+ "welded_points": 9584,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "triangle_areas": {
+  "surface_area": 2.5203808265263152,
+  "share_holding_99pc_of_area": 0.8141880898145135,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/orb_p1_tri_req20000.glb",
+  "reference_bytes": 452404,
+  "reference_vertices_stored": 9584,
+  "reference_triangles": 18438,
+  "reference_welded_points": 9584,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [],
+  "reference_images": [],
+  "reference_materials": [
+   {
+    "name": "material",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": null,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 9584,
+   "keys_in_reference": 9584,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 0.37438983645356433,
+   "share_over_1_degree": 0.0
+  }
+ }
+}

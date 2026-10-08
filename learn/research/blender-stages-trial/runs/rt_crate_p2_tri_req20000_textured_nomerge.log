@@ -1,0 +1,14 @@
+16:04:10 | INFO: Data are loaded, start creating Blender stuff
+16:04:10 | INFO: Blender create Mesh node meshes[0]
+16:04:10 | INFO: glTF import finished in 0.05s
+STEP import: 0.12 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:04:10 | INFO: Starting glTF 2.0 export
+16:04:10 | INFO: Extracting primitive: meshes[0]
+16:04:10 | INFO: Primitives created: 1
+16:04:10 | INFO: Finished glTF 2.0 export in 0.027295827865600586 s
+
+STEP export: 0.12 s
+FACTS {"stage": "roundtrip", "source": "learn/research/tripo-api-trial/models/crate_p2_tri_req20000_textured.glb", "settings": {"merge_vertices": false, "shading": "NORMALS", "image_format": "AUTO", "tangents": false, "clear_custom_normals": false}, "objects": [{"vertices": 22499, "faces": 19958, "triangles": 19958, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 19858, "sharp_edges": 0, "materials": ["tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09_material"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"], "name": "tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09"}], "images": [{"name": "crate_p2_tri_req20000_textured_basecolor.jpg", "size": [4096, 4096], "file_format": "JPEG", "colorspace": "sRGB", "packed": true, "is_dirty": false, "source": "FILE"}], "seconds": {"import": 0.119, "export": 0.125}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

@@ -1,0 +1,38 @@
+{
+ "stage": "roundtrip",
+ "source": "learn/research/tripo-api-trial/models/orb_p1_tri_req20000.glb",
+ "settings": {
+  "merge_vertices": true,
+  "shading": "SMOOTH",
+  "image_format": "AUTO",
+  "tangents": false,
+  "clear_custom_normals": false
+ },
+ "objects": [
+  {
+   "vertices": 9584,
+   "faces": 18438,
+   "triangles": 18438,
+   "uv_layers": [],
+   "has_custom_normals": false,
+   "normals_domain": "POINT",
+   "smooth_faces": 18438,
+   "sharp_edges": 0,
+   "materials": [
+    "material"
+   ],
+   "attributes": [
+    "material_index",
+    "position",
+    "sharp_face"
+   ],
+   "name": "tripo_node_3e23aca3-9fe5-461c-8b99-59d99513fd95"
+  }
+ ],
+ "images": [],
+ "seconds": {
+  "import": 0.083,
+  "export": 0.043
+ },
+ "blender": "5.2.2 LTS"
+}

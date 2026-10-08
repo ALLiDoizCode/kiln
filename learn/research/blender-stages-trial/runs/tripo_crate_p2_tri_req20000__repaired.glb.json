@@ -1,0 +1,41 @@
+{
+ "file": "learn/research/blender-stages-trial/models/tripo_crate_p2_tri_req20000__repaired.glb",
+ "bytes": 5688,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "05d0d367f3bb13077b8c6cc24c69c72d1b1947c47049600e0610ad9f358a3abf",
+ "triangles": 108,
+ "vertices_stored": 168,
+ "welded_points": 56,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 0,
+ "triangle_areas": {
+  "surface_area": 7.18021345138564,
+  "share_holding_99pc_of_area": 0.9814814814814815,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

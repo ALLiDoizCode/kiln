@@ -1,0 +1,18 @@
+16:30:00 | INFO: Data are loaded, start creating Blender stuff
+16:30:00 | INFO: Blender create Mesh node meshes[0]
+16:30:00 | INFO: glTF import finished in 0.05s
+STEP import_low: 0.12 s
+STEP weld: 0.04 s
+STEP uvs: 0.53 s
+STEP normals: 0.00 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:30:01 | INFO: Starting glTF 2.0 export
+16:30:01 | INFO: Extracting primitive: meshes[0]
+16:30:01 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:30:01 | INFO: Primitives created: 1
+16:30:01 | INFO: Finished glTF 2.0 export in 0.2870059013366699 s
+
+STEP export: 0.41 s
+FACTS {"stage": "uv_bake", "source": "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb", "settings": {"high": null, "weld": 1e-06, "uv": "sharp_unwrap", "angle": 66.0, "island_margin": 0.003, "seam_angle": 60.0, "pack": "concave", "pack_margin": 0.003, "normals": "clear", "sharp_angle": 0.0, "size": 2048, "samples": 1, "device": "GPU", "cage_extrusion": 0.02, "max_ray_distance": 0.04, "margin": 8, "margin_type": "ADJACENT_FACES", "colour": "emit", "fit": "none", "jpeg": true, "jpeg_quality": 90, "bake": false}, "low_before": {"vertices": 20612, "faces": 20000, "triangles": 20000, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 18768, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "weld_joined": 10610, "seams_marked": 1903, "low_after": {"vertices": 10002, "faces": 20000, "triangles": 20000, "uv_layers": ["UVMap"], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 20000, "sharp_edges": 0, "materials": ["tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"], "attributes": ["UVMap", "position", "uv_seam"]}, "after": {"vertices": 10002, "edges": 30000, "faces": 20000, "triangles": 20000, "boundary_edges": 0, "non_manifold_edges": 0, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 4, "zero_length_edges": 0, "boundary_loops": 0, "pieces": 1, "largest_pieces": [20000]}, "seconds": {"import_low": 0.122, "weld": 0.037, "uvs": 0.533, "normals": 0.0, "export": 0.407}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

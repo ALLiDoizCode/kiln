@@ -1,0 +1,41 @@
+{
+ "ran": true,
+ "version": "2.0.0-dev.3.10",
+ "errors": 5,
+ "warnings": 0,
+ "infos": 0,
+ "hints": 0,
+ "truncated": false,
+ "messages": [
+  {
+   "severity": "error",
+   "code": "ACCESSOR_VECTOR3_NON_UNIT",
+   "message": "Vector3 at accessor indices 912292..912294 is not of unit length: 0.0.",
+   "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+  },
+  {
+   "severity": "error",
+   "code": "ACCESSOR_VECTOR3_NON_UNIT",
+   "message": "Vector3 at accessor indices 917256..917258 is not of unit length: 0.0.",
+   "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+  },
+  {
+   "severity": "error",
+   "code": "ACCESSOR_VECTOR3_NON_UNIT",
+   "message": "Vector3 at accessor indices 1153216..1153218 is not of unit length: 0.0.",
+   "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+  },
+  {
+   "severity": "error",
+   "code": "ACCESSOR_VECTOR3_NON_UNIT",
+   "message": "Vector3 at accessor indices 1159472..1159474 is not of unit length: 0.0.",
+   "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+  },
+  {
+   "severity": "error",
+   "code": "ACCESSOR_VECTOR3_NON_UNIT",
+   "message": "Vector3 at accessor indices 2171516..2171518 is not of unit length: 0.0.",
+   "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+  }
+ ]
+}

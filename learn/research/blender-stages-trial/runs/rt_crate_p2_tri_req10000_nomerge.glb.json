@@ -1,0 +1,78 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rt_crate_p2_tri_req10000_nomerge.glb",
+ "bytes": 179832,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "e2bfc4cb9bf82f79dd060b7706505cae4b4abf11e15036823750ebc058301db6",
+ "triangles": 9794,
+ "vertices_stored": 5002,
+ "welded_points": 4949,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "triangle_areas": {
+  "surface_area": 15.334387999468353,
+  "share_holding_99pc_of_area": 0.0783132530120482,
+  "share_under_100th_of_mean": 0.6835817847661834,
+  "zero_area": 3
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/crate_p2_tri_req10000.glb",
+  "reference_bytes": 237468,
+  "reference_vertices_stored": 4949,
+  "reference_triangles": 9794,
+  "reference_welded_points": 4949,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [],
+  "reference_images": [],
+  "reference_materials": [
+   {
+    "name": "material",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": null,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 4949,
+   "keys_in_reference": 4949,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 0.19552354873434893,
+   "share_over_1_degree": 0.0
+  }
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "name": "bake_crate__2048_again",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/bake_crate__2048_again.glb",
+  "learn/research/blender-stages-trial/runs/bake_crate__2048_again.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=8"
+ ],
+ "started": "2026-10-08 16:36:11",
+ "wall_seconds": 17.83,
+ "user_seconds": 49.88,
+ "system_seconds": 7.29,
+ "peak_rss_mb": 3640.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13603,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

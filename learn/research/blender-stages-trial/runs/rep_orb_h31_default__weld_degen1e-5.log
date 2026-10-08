@@ -1,0 +1,22 @@
+16:20:05 | INFO: Data are loaded, start creating Blender stuff
+16:20:05 | INFO: Blender create Mesh node meshes[0]
+16:20:08 | INFO: glTF import finished in 3.85s
+STEP import: 3.94 s
+STEP count_before: 16.34 s
+STEP weld: 2.45 s
+STEP degenerate: 1.03 s
+STEP loose: 1.42 s
+STEP recalc_normals: 2.12 s
+STEP fill_holes: 0.83 s
+STEP count_after: 14.63 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:20:47 | INFO: Starting glTF 2.0 export
+16:20:48 | INFO: Extracting primitive: meshes[0]
+16:20:49 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:20:51 | INFO: Primitives created: 1
+16:20:51 | INFO: Finished glTF 2.0 export in 3.4229423999786377 s
+
+STEP export: 3.44 s
+FACTS {"stage": "repair", "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb", "settings": {"weld": 1e-05, "degenerate": 1e-05, "loose": true, "small_pieces": 0.0, "small_pieces_by": "area", "recalc_normals": true, "fill_holes": 0, "normals": "keep", "sharp_angle": 30.0, "count_each": false}, "before_object": {"vertices": 975885, "faces": 1951822, "triangles": 1951822, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1951822, "sharp_edges": 0, "materials": ["tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "bounds_before": [[-0.3774566650390625, -0.489654541015625, 0.0], [0.3774566650390625, 0.489654541015625, 0.980804443359375]], "before": {"vertices": 975882, "edges": 2927732, "faces": 1951822, "triangles": 1951822, "boundary_edges": 0, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 18, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 0, "pieces": 1, "largest_pieces": [1951822]}, "surface_area_before": 2.5185643299847422, "after_weld": {"vertices_joined": 3}, "after_degenerate": {"faces_removed": 0, "vertices_removed": 0}, "after_loose": {"wire_edges_removed": 0, "vertices_removed": 0}, "after_recalc_normals": {"faces_turned": 9}, "after_fill_holes": {"holes_filled": 0, "sides_of_largest": [], "faces_added": 0}, "surface_area_after": 2.518564329971384, "custom_normals_after_edit": true, "steps_done": ["weld", "degenerate", "loose", "recalc_normals", "fill_holes"], "after_object": {"vertices": 975882, "faces": 1951822, "triangles": 1951822, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1951822, "sharp_edges": 0, "materials": ["tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"], "attributes": ["UVMap", "custom_normal", "position"]}, "after": {"vertices": 975882, "edges": 2927732, "faces": 1951822, "triangles": 1951822, "boundary_edges": 0, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 0, "pieces": 1, "largest_pieces": [1951822]}, "bounds_after": [[-0.3774566650390625, -0.489654541015625, 0.0], [0.3774566650390625, 0.489654541015625, 0.980804443359375]], "seconds": {"import": 3.94, "count_before": 16.34, "weld": 2.446, "degenerate": 1.029, "loose": 1.422, "recalc_normals": 2.124, "fill_holes": 0.833, "count_after": 14.63, "export": 3.439}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

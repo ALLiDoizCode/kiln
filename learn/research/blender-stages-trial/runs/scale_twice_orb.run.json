@@ -1,0 +1,24 @@
+{
+ "name": "scale_twice_orb",
+ "command": [
+  "python3",
+  "-c",
+  "\nimport json, shutil, sys\nsys.path.insert(0, \".\")\nfrom kiln.run import scale_to_size\nfrom kiln.profile import load_profile\nsource, work, size, out, facts = sys.argv[1:6]\nmodel, stage_facts = scale_to_size(source, work, {\"size\": float(size)}, load_profile(\"pit\"))\nshutil.copyfile(model, out)\njson.dump({\"stage\": \"scale_to_size\", \"source\": source, \"settings\": {\"size\": float(size)}, **stage_facts,\n           \"script_result\": json.load(open(work + \"/scale_to_size.json\"))}, open(facts, \"w\"), indent=1)\n",
+  "learn/research/blender-stages-trial/models/scale_orb_collapse20k.glb",
+  "learn/research/blender-stages-trial/work/scale_scale_twice_orb",
+  "0.8",
+  "learn/research/blender-stages-trial/models/scale_twice_orb.glb",
+  "learn/research/blender-stages-trial/runs/scale_twice_orb.facts.json"
+ ],
+ "started": "2026-10-08 18:10:25",
+ "wall_seconds": 1.25,
+ "user_seconds": 1.21,
+ "system_seconds": 0.3,
+ "peak_rss_mb": 659.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14840,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,24 @@
+{
+ "name": "red_crate__collapse5k_seams10",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_crate__collapse5k_seams10.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__collapse5k_seams10.facts.json",
+  "count_before=false",
+  "target=5000",
+  "protect_seams=10"
+ ],
+ "started": "2026-10-08 16:29:04",
+ "wall_seconds": 29.85,
+ "user_seconds": 34.28,
+ "system_seconds": 2.87,
+ "peak_rss_mb": 2375.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15405,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,198 @@
+{
+ "stage": "uv_bake",
+ "source": "learn/research/blender-stages-trial/models/tripo_orb_p2_tri_req20000__repaired.glb",
+ "settings": {
+  "high": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "weld": 1e-06,
+  "uv": "smart",
+  "angle": 66.0,
+  "island_margin": 0.003,
+  "seam_angle": 60.0,
+  "pack": "none",
+  "pack_margin": 0.003,
+  "margin_method": "SCALED",
+  "normals": "clear",
+  "sharp_angle": 0.0,
+  "size": 2048,
+  "samples": 1,
+  "device": "GPU",
+  "cage_extrusion": 0.03,
+  "max_ray_distance": 0.06,
+  "cage": "fixed",
+  "margin": 8,
+  "margin_type": "ADJACENT_FACES",
+  "colour": "emit",
+  "fit": "bbox",
+  "jpeg": true,
+  "jpeg_quality": 90,
+  "bake": true
+ },
+ "low_before": {
+  "vertices": 24821,
+  "faces": 21044,
+  "triangles": 21044,
+  "uv_layers": [],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 21029,
+  "sharp_edges": 0,
+  "materials": [
+   "material"
+  ],
+  "attributes": [
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "weld_joined": 13810,
+ "high": {
+  "vertices": 975885,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "fit_scale": [
+  0.8169139345919069,
+  1.0206294795886568,
+  1.0021469242975825
+ ],
+ "ray_check": {
+  "points": 20000,
+  "missed": 12828,
+  "missed_share": 0.6414,
+  "hit_distance_from_low_surface": {
+   "median": 0.012042613029479982,
+   "p95": 0.028287236839532853,
+   "p99": 0.029698337604058905,
+   "largest": 0.029999395161867143
+  },
+  "nearest_dense_surface": {
+   "median": 0.025989308953285217,
+   "p95": 0.09781566262245178,
+   "p99": 0.13279679417610168,
+   "largest": 0.23357626795768738
+  },
+  "hits_further_than_twice_p99_nearest": 0.0
+ },
+ "device_wanted": "GPU",
+ "device": "OPTIX",
+ "device_names": [
+  "NVIDIA GeForce RTX 3080"
+ ],
+ "high_textures": {
+  "basecolor": "orb_h31_default_basecolor.jpg",
+  "metallic_roughness": "orb_h31_default_rm.jpg",
+  "normal": "orb_h31_default_normal.png"
+ },
+ "images": {
+  "basecolor": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "JPEG",
+   "colorspace": "sRGB",
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  "metallic_roughness": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "JPEG",
+   "colorspace": "Non-Color",
+   "is_dirty": false,
+   "source": "FILE"
+  },
+  "normal": {
+   "size": [
+    2048,
+    2048
+   ],
+   "file_format": "PNG",
+   "colorspace": "Non-Color",
+   "is_dirty": false,
+   "source": "FILE"
+  }
+ },
+ "low_after": {
+  "vertices": 11011,
+  "faces": 21044,
+  "triangles": 21044,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": false,
+  "normals_domain": "POINT",
+  "smooth_faces": 21044,
+  "sharp_edges": 0,
+  "materials": [
+   "baked"
+  ],
+  "attributes": [
+   "UVMap",
+   "position"
+  ]
+ },
+ "after": {
+  "vertices": 11011,
+  "edges": 31582,
+  "faces": 21044,
+  "triangles": 21044,
+  "boundary_edges": 44,
+  "non_manifold_edges": 12,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 5,
+  "pieces": 236,
+  "largest_pieces": [
+   9846,
+   118,
+   108,
+   108,
+   94,
+   94,
+   88,
+   80
+  ]
+ },
+ "seconds": {
+  "import_low": 0.118,
+  "weld": 0.042,
+  "uvs": 0.127,
+  "normals": 0.0,
+  "import_high": 2.819,
+  "fit": 1.904,
+  "ray_check": 2.733,
+  "bake_normal": 3.129,
+  "bake_basecolor": 3.61,
+  "bake_metallic_roughness": 3.614,
+  "material": 0.209,
+  "export": 0.141
+ },
+ "blender": "5.2.2 LTS"
+}

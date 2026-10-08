@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/bake_orb__2048_smart66_concave.glb",
+ "bytes": 8800160,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "30b6bfe9210a3ae442f1004190cc56b6e92608d1a82e357fb9ff2cbbbbdc8c5d",
+ "triangles": 20000,
+ "vertices_stored": 26105,
+ "welded_points": 9974,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 1447,
+ "triangle_areas": {
+  "surface_area": 2.551239824001254,
+  "share_holding_99pc_of_area": 0.91145,
+  "share_under_100th_of_mean": 0.00015,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 4042203,
+   "sha256": "d1e4f233a0a98bf657ca50c704f65cd607cf8adbf4f351aa90e50a3d114bc7d8"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1841903,
+   "sha256": "c4fbb75206865da15f93c5a56ec83e2e05ffbd4c5e4dc8adb0144cd0421c17d6"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1958989,
+   "sha256": "6be26a7167ba975f0b7d9c59b3ed2fd7e7bccaf5201d3bdc496bafa5a3661fc4"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.8156569899499051,
+ "script_result": {
+  "factor": 0.8156569899499051,
+  "largest_dimension_before": 0.980804443359375,
+  "blender": "5.2.2 LTS"
+ }
+}

@@ -1,0 +1,43 @@
+learn/research/blender-stages-trial/models/bake_crate__5k_2048_keeppack.glb
+  4,487,924 bytes, glTF 2.0, written by Khronos glTF Blender I/O v5.2.40
+
+COUNTS
+  triangles         5,000   what the graphics card draws
+  vertices          4,321   rows stored in the file; a point on the surface is stored again wherever its normal or UV changes
+  mesh 0 "meshes[0]": 5,000 triangles, 4,321 vertices
+    primitive 0: 5,000 triangles, 4,321 vertices, material "baked", indexed, has UVs
+
+BOUNDING BOX   the smallest upright box that holds the model as the scene places it, in metres
+  x     -0.4903 to 0.4903     = 0.9807 m
+  y   9.485e-05 to 0.9291     = 0.929 m
+  z     -0.4834 to 0.4836     = 0.967 m
+  size in file  0.9807 m   the largest of the three dimensions
+  size given    0.8 m   so the model must be scaled by 0.8158
+
+MATERIALS   1; each one is a separate draw
+  0  "baked"  baseColorTexture = texture 1, metallicRoughnessTexture = texture 2, normalTexture = texture 0
+
+TEXTURES   3 image(s) stored in the file
+  0  "normal"  2048 x 2048 pixels, png, 2,932,588 bytes
+       used as normalTexture of baked
+  1  "basecolor"  2048 x 2048 pixels, jpeg, 611,928 bytes
+       used as baseColorTexture of baked
+  2  "metallic_roughness"  2048 x 2048 pixels, jpeg, 773,441 bytes
+       used as metallicRoughnessTexture of baked
+
+UVS   how the surface is laid flat on the texture
+  islands            233   separate pieces the surface is cut into
+  seam edges       1,588   of 7,500 edges = 21.2%; an edge where the surface is joined but the UVs are cut
+  open edges           0   edges with a triangle on one side only: holes or rims in the surface, not seams
+  coverage         66.2%   share of the UV square under at least one triangle; the rest of the texture is unused
+  area sum         66.3%   UV triangle areas added up; more than coverage means triangles overlap or lie outside the square
+
+TEXEL DENSITY   base colour texture pixels per metre of surface
+  at size 0.8 m
+  overall       800.0 px/m   over the whole textured surface
+  spread        510.3 to 954.6 px/m   the middle 90% of the surface; median 822.9
+  mesh 0 primitive 0: 800.0 px/m from texture 1 (2048 x 2048)
+
+KHRONOS GLTF VALIDATOR   whether the file obeys the glTF format
+  0 errors, 1 warnings, 0 infos, 0 hints   (validator 2.0.0-dev.3.10)
+  warning: Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.  [MESH_PRIMITIVE_GENERATED_TANGENT_SPACE at /meshes/0/primitives/0/material]

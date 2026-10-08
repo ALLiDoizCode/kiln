@@ -1,0 +1,24 @@
+{
+ "name": "uv_crate_5k__smart45_concave",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse5k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_5k__smart45_concave.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_5k__smart45_concave.facts.json",
+  "bake=false",
+  "angle=45",
+  "pack=concave"
+ ],
+ "started": "2026-10-08 16:30:21",
+ "wall_seconds": 2.42,
+ "user_seconds": 2.36,
+ "system_seconds": 0.51,
+ "peak_rss_mb": 585.9,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 16090,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

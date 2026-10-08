@@ -1,0 +1,11 @@
+learn/research/blender-stages-trial/models/red_crate__collapse20k_clear30.glb  (glTF 2, generator: Khronos glTF Blender I/O v5.2.40)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 15597
+    NORMAL      VEC3  x 15597
+    TEXCOORD_0  VEC2  x 15597
+    indices     60000  = 20000 triangles
+    material    "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

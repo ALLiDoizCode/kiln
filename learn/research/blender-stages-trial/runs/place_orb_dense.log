@@ -1,0 +1,16 @@
+18:10:31 | INFO: Data are loaded, start creating Blender stuff
+18:10:31 | INFO: Blender create Mesh node meshes[0]
+18:10:35 | INFO: glTF import finished in 3.14s
+STEP import: 3.21 s
+STEP place: 1.91 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+18:10:36 | INFO: Starting glTF 2.0 export
+18:10:37 | INFO: Extracting primitive: meshes[0]
+18:10:38 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+18:10:40 | INFO: Primitives created: 1
+18:10:40 | INFO: Finished glTF 2.0 export in 3.403235673904419 s
+
+STEP export: 3.42 s
+FACTS {"stage": "place", "source": "learn/research/blender-stages-trial/models/scale_orb_dense.glb", "settings": {"turn": 180.0, "origin": "bottom_centre"}, "objects": [{"name": "tripo_node_2fd72e19-ce80-43bb-a68b-793ab6abe00c", "had_custom_normals": true, "has_custom_normals_after": true, "normals_largest_angle_from_turned_degrees": 0.7760688662528992, "bounds_after_blender_zup": [[-0.3078751862049103, -0.39939016103744507, 0.0], [0.3078751862049103, 0.39939016103744507, 0.800000011920929]]}], "bounds_before_move_blender_zup": [[-0.3078751564025879, -0.39939016103744507, 0.0], [0.30787521600723267, 0.39939016103744507, 0.800000011920929]], "seconds": {"import": 3.205, "place": 1.91, "export": 3.42}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

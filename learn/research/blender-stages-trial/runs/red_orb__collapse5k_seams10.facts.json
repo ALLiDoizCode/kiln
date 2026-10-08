@@ -1,0 +1,119 @@
+{
+ "stage": "reduce",
+ "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+ "settings": {
+  "method": "collapse",
+  "target": 5000,
+  "steps": 1,
+  "protect_seams": 10.0,
+  "planar_angle": 5.0,
+  "planar_delimit": "UV",
+  "unsubdiv_iterations": 2,
+  "voxel_size": 0.004,
+  "merge_vertices": true,
+  "weld": 0.0,
+  "normals": "keep",
+  "sharp_angle": 30.0,
+  "exact": true,
+  "count_before": false,
+  "quadriflow_seed": 0
+ },
+ "before_object": {
+  "vertices": 975885,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "seam_vertices_protected": 56829,
+ "seam_edges_marked": 57922,
+ "passes": [
+  {
+   "ratio": 0.002561709008300962,
+   "triangles": 124028
+  },
+  {
+   "ratio": 0.04031347760183184,
+   "triangles": 5000
+  }
+ ],
+ "extra_passes": 1,
+ "triangles_reached": 5000,
+ "custom_normals_after_reduce": true,
+ "after_object": {
+  "vertices": 2474,
+  "faces": 5000,
+  "triangles": 5000,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 5000,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "position",
+   "uv_seam"
+  ]
+ },
+ "after": {
+  "vertices": 2474,
+  "edges": 7500,
+  "faces": 5000,
+  "triangles": 5000,
+  "boundary_edges": 0,
+  "non_manifold_edges": 0,
+  "wire_edges": 0,
+  "loose_vertices": 0,
+  "flipped_edges": 0,
+  "degenerate_faces": 0,
+  "zero_length_edges": 0,
+  "boundary_loops": 0,
+  "pieces": 1,
+  "largest_pieces": [
+   5000
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.3774568438529968,
+   -0.485840380191803,
+   -5.7449224186711945e-06
+  ],
+  [
+   0.37529420852661133,
+   0.4897400736808777,
+   0.9815168976783752
+  ]
+ ],
+ "seconds": {
+  "import": 3.435,
+  "mark_seams": 4.305,
+  "collapse": 29.118,
+  "collapse_again": 1.03,
+  "count_after": 0.028,
+  "export": 0.338
+ },
+ "blender": "5.2.2 LTS"
+}

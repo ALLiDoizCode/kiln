@@ -1,0 +1,23 @@
+{
+ "name": "uv_crate_5k__smart66_m03",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse5k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_5k__smart66_m03.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_5k__smart66_m03.facts.json",
+  "bake=false",
+  "island_margin=0.03"
+ ],
+ "started": "2026-10-08 16:30:15",
+ "wall_seconds": 1.07,
+ "user_seconds": 1.03,
+ "system_seconds": 0.43,
+ "peak_rss_mb": 598.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 16347,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

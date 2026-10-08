@@ -1,0 +1,15 @@
+16:08:01 | INFO: Data are loaded, start creating Blender stuff
+16:08:01 | INFO: Blender create Mesh node meshes[0]
+16:08:02 | INFO: glTF import finished in 1.68s
+STEP import: 1.77 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:08:04 | INFO: Starting glTF 2.0 export
+16:08:04 | INFO: Extracting primitive: meshes[0]
+16:08:06 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:08:07 | INFO: Primitives created: 1
+16:08:07 | INFO: Finished glTF 2.0 export in 3.4307210445404053 s
+
+STEP export: 4.93 s
+FACTS {"stage": "roundtrip", "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb", "settings": {"merge_vertices": true, "shading": "SMOOTH", "image_format": "AUTO", "tangents": false, "clear_custom_normals": false}, "objects": [{"vertices": 975882, "faces": 1951822, "triangles": 1951822, "uv_layers": ["UVMap"], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 1951822, "sharp_edges": 0, "materials": ["tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"], "attributes": ["UVMap", "material_index", "position", "sharp_face"], "name": "tripo_node_2fd72e19-ce80-43bb-a68b-793ab6abe00c"}], "images": [{"name": "orb_h31_default_basecolor.jpg", "size": [4096, 4096], "file_format": "JPEG", "colorspace": "sRGB", "packed": true, "is_dirty": false, "source": "FILE"}, {"name": "orb_h31_default_normal.png", "size": [4096, 4096], "file_format": "PNG", "colorspace": "Non-Color", "packed": true, "is_dirty": false, "source": "FILE"}, {"name": "orb_h31_default_rm.jpg", "size": [4096, 4096], "file_format": "JPEG", "colorspace": "Non-Color", "packed": true, "is_dirty": false, "source": "FILE"}], "seconds": {"import": 1.766, "export": 4.933}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

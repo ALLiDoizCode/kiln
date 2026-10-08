@@ -1,0 +1,23 @@
+{
+ "name": "red_crate__quadriflow_on_voxel4mm",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/red_crate__voxel4mm.glb",
+  "learn/research/blender-stages-trial/models/red_crate__quadriflow_on_voxel4mm.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__quadriflow_on_voxel4mm.facts.json",
+  "method=quadriflow",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:04:28",
+ "wall_seconds": 0.71,
+ "user_seconds": 0.68,
+ "system_seconds": 0.21,
+ "peak_rss_mb": 445.4,
+ "exit_status": 1,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14985,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

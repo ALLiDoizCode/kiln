@@ -1,0 +1,70 @@
+== orb collapse20k_r1 16:56:56
+TIMED red_orb__collapse20k_r1: 27.7 s, peak 2629 MB, exit 0
+== orb collapse20k_r2 16:57:24
+TIMED red_orb__collapse20k_r2: 27.5 s, peak 2628 MB, exit 0
+== orb collapse20k_r3 16:57:52
+TIMED red_orb__collapse20k_r3: 27.6 s, peak 2637 MB, exit 0
+== orb collapse5k_r1 16:58:20
+TIMED red_orb__collapse5k_r1: 27.4 s, peak 2642 MB, exit 0
+== orb collapse5k_r2 16:58:48
+TIMED red_orb__collapse5k_r2: 29.2 s, peak 2634 MB, exit 0
+== orb collapse20k_steps3 16:59:18
+TIMED red_orb__collapse20k_steps3: 30.2 s, peak 2693 MB, exit 0
+== orb collapse20k_steps6 16:59:48
+TIMED red_orb__collapse20k_steps6: 35.4 s, peak 2649 MB, exit 0
+== orb collapse20k_seams1 17:00:24
+TIMED red_orb__collapse20k_seams1: 40.1 s, peak 2677 MB, exit 0
+== orb collapse20k_seams10 17:01:05
+TIMED red_orb__collapse20k_seams10: 34.6 s, peak 2698 MB, exit 0
+== orb collapse20k_seams100 17:01:40
+TIMED red_orb__collapse20k_seams100: 36.4 s, peak 2654 MB, exit 0
+== orb collapse5k_seams10 17:02:17
+TIMED red_orb__collapse5k_seams10: 38.9 s, peak 2642 MB, exit 0
+== orb collapse20k_nomerge 17:02:56
+TIMED red_orb__collapse20k_nomerge: 30.4 s, peak 2604 MB, exit 0
+== orb collapse20k_clear30 17:03:28
+TIMED red_orb__collapse20k_clear30: 39.6 s, peak 2516 MB, exit 0
+== orb collapse20k_weld1e-4 17:04:08
+TIMED red_orb__collapse20k_weld1e-4: 37.0 s, peak 2591 MB, exit 0
+== orb collapse20k_seams0.01 17:04:45
+TIMED red_orb__collapse20k_seams0.01: 35.0 s, peak 2626 MB, exit 0
+== orb collapse20k_seams0.1 17:05:21
+TIMED red_orb__collapse20k_seams0.1: 38.7 s, peak 2632 MB, exit 0
+== orb collapse20k_r4 17:06:00
+TIMED red_orb__collapse20k_r4: 37.0 s, peak 2552 MB, exit 0
+== orb collapse20k_r5 17:06:38
+TIMED red_orb__collapse20k_r5: 38.0 s, peak 2544 MB, exit 0
+== orb unsubdiv2 17:07:17
+TIMED red_orb__unsubdiv2: 43.1 s, peak 2676 MB, exit 0
+== orb voxel4mm 17:08:00
+TIMED red_orb__voxel4mm: 15.7 s, peak 1459 MB, exit 0
+== orb voxel4mm_r2 17:08:22
+TIMED red_orb__voxel4mm_r2: 15.5 s, peak 1478 MB, exit 0
+== orb voxel2mm 17:08:43
+TIMED red_orb__voxel2mm: 35.5 s, peak 2180 MB, exit 0
+== orb planar5_uv 17:09:23
+TIMED red_orb__planar5_uv: 55.4 s, peak 2515 MB, exit 0
+== orb quadriflow 17:10:19
+red_orb__quadriflow: no model written (exit 1)
+== crate collapse20k_seams0.01 17:10:25
+TIMED red_crate__collapse20k_seams0.01: 32.2 s, peak 2468 MB, exit 0
+== crate collapse20k_seams0.1 17:10:58
+TIMED red_crate__collapse20k_seams0.1: 35.2 s, peak 2467 MB, exit 0
+== crate collapse20k_r4 17:11:34
+TIMED red_crate__collapse20k_r4: 27.2 s, peak 2431 MB, exit 0
+== crate collapse20k_r5 17:12:02
+TIMED red_crate__collapse20k_r5: 27.5 s, peak 2441 MB, exit 0
+== crate unsubdiv2 17:12:30
+TIMED red_crate__unsubdiv2: 34.8 s, peak 2545 MB, exit 0
+== crate voxel4mm 17:13:05
+TIMED red_crate__voxel4mm: 19.7 s, peak 1473 MB, exit 0
+== crate voxel4mm_r2 17:13:27
+TIMED red_crate__voxel4mm_r2: 17.8 s, peak 1510 MB, exit 0
+== crate voxel2mm 17:13:47
+TIMED red_crate__voxel2mm: 72.3 s, peak 3389 MB, exit 0
+== crate planar5_none 17:15:02
+== crate planar1_uv 17:45:02
+TIMED red_crate__planar1_uv: 397.9 s, peak 2270 MB, exit 0
+== crate quadriflow 17:51:40
+red_crate__quadriflow: no model written (exit 1)
+== done 17:51:45

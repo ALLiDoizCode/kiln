@@ -1,0 +1,17 @@
+16:10:32 | INFO: Data are loaded, start creating Blender stuff
+16:10:32 | INFO: Blender create Mesh node meshes[0]
+16:10:32 | INFO: glTF import finished in 0.03s
+STEP import: 0.10 s
+STEP count_before: 0.11 s
+STEP clear_normals: 0.00 s
+STEP count_after: 0.10 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:10:32 | INFO: Starting glTF 2.0 export
+16:10:32 | INFO: Extracting primitive: meshes[0]
+16:10:32 | INFO: Primitives created: 1
+16:10:32 | INFO: Finished glTF 2.0 export in 0.016559839248657227 s
+
+STEP export: 0.03 s
+FACTS {"stage": "repair", "source": "learn/research/tripo-api-trial/models/crate_p1_tri_req20000.glb", "settings": {"weld": 0.0, "degenerate": 0.0, "loose": false, "small_pieces": 0.0, "small_pieces_by": "area", "recalc_normals": false, "fill_holes": -1, "normals": "clear", "sharp_angle": 30.0, "count_each": true}, "before_object": {"vertices": 9904, "faces": 19796, "triangles": 19796, "uv_layers": [], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 19783, "sharp_edges": 0, "materials": ["material"], "attributes": ["custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "bounds_before": [[-0.49902352690696716, -0.49902352690696716, 0.0], [0.49902352690696716, 0.49902352690696716, 0.9980469942092896]], "before": {"vertices": 9904, "edges": 29702, "faces": 19796, "triangles": 19796, "boundary_edges": 18, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 6, "pieces": 4, "largest_pieces": [8517, 7437, 3732, 110]}, "surface_area_before": 8.182108449217594, "surface_area_after": 8.182108449217594, "custom_normals_after_edit": true, "steps_done": [], "after_object": {"vertices": 9904, "faces": 19796, "triangles": 19796, "uv_layers": [], "has_custom_normals": false, "normals_domain": "CORNER", "smooth_faces": 19796, "sharp_edges": 1519, "materials": ["material"], "attributes": ["position", "sharp_edge"]}, "after": {"vertices": 9904, "edges": 29702, "faces": 19796, "triangles": 19796, "boundary_edges": 18, "non_manifold_edges": 1, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 6, "pieces": 4, "largest_pieces": [8517, 7437, 3732, 110]}, "bounds_after": [[-0.49902352690696716, -0.49902352690696716, 0.0], [0.49902352690696716, 0.49902352690696716, 0.9980469942092896]], "seconds": {"import": 0.097, "count_before": 0.106, "clear_normals": 0.003, "count_after": 0.097, "export": 0.028}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

@@ -1,0 +1,25 @@
+{
+ "name": "uv_crate_20k__sharp30",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_20k__sharp30.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_20k__sharp30.facts.json",
+  "bake=false",
+  "uv=sharp_unwrap",
+  "seam_angle=30",
+  "pack=concave"
+ ],
+ "started": "2026-10-08 16:29:56",
+ "wall_seconds": 3.19,
+ "user_seconds": 3.35,
+ "system_seconds": 0.57,
+ "peak_rss_mb": 639.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15964,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

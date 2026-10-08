@@ -1,0 +1,14 @@
+16:04:27 | INFO: Data are loaded, start creating Blender stuff
+16:04:27 | INFO: Blender create Mesh node meshes[0]
+16:04:27 | INFO: glTF import finished in 0.00s
+STEP import: 0.08 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+16:04:27 | INFO: Starting glTF 2.0 export
+16:04:27 | INFO: Extracting primitive: meshes[0]
+16:04:27 | INFO: Primitives created: 1
+16:04:27 | INFO: Finished glTF 2.0 export in 0.01183176040649414 s
+
+STEP export: 0.03 s
+FACTS {"stage": "roundtrip", "source": "learn/research/tripo-api-trial/models/crate_p2_tri_req10000.glb", "settings": {"merge_vertices": true, "shading": "SMOOTH", "image_format": "AUTO", "tangents": false, "clear_custom_normals": false}, "objects": [{"vertices": 4949, "faces": 9794, "triangles": 9794, "uv_layers": [], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 9794, "sharp_edges": 0, "materials": ["material"], "attributes": ["material_index", "position", "sharp_face"], "name": "tripo_node_49f0a4f0-7c1c-405a-9d5c-e7faf631ace8"}], "images": [], "seconds": {"import": 0.08, "export": 0.03}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

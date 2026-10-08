@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/chain_orb_keep1t_a_3_uv_bake.glb",
+ "bytes": 8350020,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "515775ab6668cc1665d360a2fe845760b3c4a7a092aa5809abc6d36a45122ce2",
+ "triangles": 20000,
+ "vertices_stored": 18739,
+ "welded_points": 9971,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 1454,
+ "triangle_areas": {
+  "surface_area": 2.551324428933669,
+  "share_holding_99pc_of_area": 0.91095,
+  "share_under_100th_of_mean": 0.00045,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 5722772,
+   "sha256": "b8f6610907d12fd37d30fbfed0f1b4b43cc7c18937d62e46c3e210736c6b1ce9"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 1186419,
+   "sha256": "b599454efb776989a084f4561f5108f71301a420b85f90687f2060654642ef92"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 719478,
+   "sha256": "fa0512924ea29bda77ea5481eadc0bc7bdbcf58e6e163fec268a2ca6646152c6"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

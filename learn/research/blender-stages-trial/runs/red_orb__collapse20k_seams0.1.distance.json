@@ -1,0 +1,25 @@
+{
+ "model": "learn/research/blender-stages-trial/models/red_orb__collapse20k_seams0.1.glb",
+ "reference": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+ "reference_size": 0.980804443359375,
+ "model_to_reference": {
+  "samples": 20000,
+  "mean": 0.0006625592793564859,
+  "median": 0.00040585894021205604,
+  "p95": 0.0021842774003744125,
+  "p99": 0.0038519296795129776,
+  "largest": 0.008481843397021294,
+  "p95_share_of_size": 0.0022270264120062464,
+  "largest_share_of_size": 0.008647843568051082
+ },
+ "reference_to_model": {
+  "samples": 20122,
+  "mean": 0.0008657268956059662,
+  "median": 0.0004403974744491279,
+  "p95": 0.00319582037627697,
+  "p99": 0.0058300066739320755,
+  "largest": 0.013691430911421776,
+  "p95_share_of_size": 0.003258366535668308,
+  "largest_share_of_size": 0.013959389156646714
+ }
+}

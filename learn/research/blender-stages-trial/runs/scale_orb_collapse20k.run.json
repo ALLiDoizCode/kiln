@@ -1,0 +1,24 @@
+{
+ "name": "scale_orb_collapse20k",
+ "command": [
+  "python3",
+  "-c",
+  "\nimport json, shutil, sys\nsys.path.insert(0, \".\")\nfrom kiln.run import scale_to_size\nfrom kiln.profile import load_profile\nsource, work, size, out, facts = sys.argv[1:6]\nmodel, stage_facts = scale_to_size(source, work, {\"size\": float(size)}, load_profile(\"pit\"))\nshutil.copyfile(model, out)\njson.dump({\"stage\": \"scale_to_size\", \"source\": source, \"settings\": {\"size\": float(size)}, **stage_facts,\n           \"script_result\": json.load(open(work + \"/scale_to_size.json\"))}, open(facts, \"w\"), indent=1)\n",
+  "learn/research/blender-stages-trial/models/red_orb__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/work/scale_scale_orb_collapse20k",
+  "0.8",
+  "learn/research/blender-stages-trial/models/scale_orb_collapse20k.glb",
+  "learn/research/blender-stages-trial/runs/scale_orb_collapse20k.facts.json"
+ ],
+ "started": "2026-10-08 18:10:22",
+ "wall_seconds": 1.31,
+ "user_seconds": 1.25,
+ "system_seconds": 0.32,
+ "peak_rss_mb": 656.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14757,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,22 @@
+{
+ "name": "rep_orb_p1_tri_req20000_textured__degen1e-4",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p1_tri_req20000_textured.glb",
+  "learn/research/blender-stages-trial/models/rep_orb_p1_tri_req20000_textured__degen1e-4.glb",
+  "learn/research/blender-stages-trial/runs/rep_orb_p1_tri_req20000_textured__degen1e-4.facts.json",
+  "degenerate=1e-4"
+ ],
+ "started": "2026-10-08 16:12:33",
+ "wall_seconds": 1.07,
+ "user_seconds": 1.13,
+ "system_seconds": 0.35,
+ "peak_rss_mb": 510.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18778,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

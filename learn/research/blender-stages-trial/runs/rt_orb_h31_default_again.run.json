@@ -1,0 +1,21 @@
+{
+ "name": "rt_orb_h31_default_again",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/roundtrip.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/rt_orb_h31_default_again.glb",
+  "learn/research/blender-stages-trial/runs/rt_orb_h31_default_again.facts.json"
+ ],
+ "started": "2026-10-08 16:07:13",
+ "wall_seconds": 13.56,
+ "user_seconds": 12.44,
+ "system_seconds": 3.39,
+ "peak_rss_mb": 2031.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 16854,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,52 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_crate_p2_tri_req20000_textured__hidden.glb",
+ "bytes": 2012804,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "6bfc868ea0ffb9041433830e1e84087b4c8d477d562a36a3a31151925709bb9b",
+ "triangles": 108,
+ "vertices_stored": 168,
+ "welded_points": 56,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 0,
+ "triangle_areas": {
+  "surface_area": 7.18021345138564,
+  "share_holding_99pc_of_area": 0.9814814814814815,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "crate_p2_tri_req20000_textured_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 2005285,
+   "sha256": "588812d952f9cee7df6f26c3452ad41c7a639698770259f932393eb5a0f3640b"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_node_0c1fb951-4d65-4ec6-9f5f-e70175711e09_material",
+   "double_sided": true,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": 0,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

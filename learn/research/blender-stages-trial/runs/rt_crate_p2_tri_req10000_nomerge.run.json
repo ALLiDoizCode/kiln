@@ -1,0 +1,22 @@
+{
+ "name": "rt_crate_p2_tri_req10000_nomerge",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/roundtrip.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req10000.glb",
+  "learn/research/blender-stages-trial/models/rt_crate_p2_tri_req10000_nomerge.glb",
+  "learn/research/blender-stages-trial/runs/rt_crate_p2_tri_req10000_nomerge.facts.json",
+  "merge_vertices=false"
+ ],
+ "started": "2026-10-08 16:04:26",
+ "wall_seconds": 0.65,
+ "user_seconds": 0.61,
+ "system_seconds": 0.2,
+ "peak_rss_mb": 391.0,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18712,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

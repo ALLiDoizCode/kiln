@@ -1,0 +1,24 @@
+{
+ "name": "red_orb__voxel4mm",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_orb__voxel4mm.glb",
+  "learn/research/blender-stages-trial/runs/red_orb__voxel4mm.facts.json",
+  "count_before=false",
+  "method=voxel",
+  "voxel_size=0.004"
+ ],
+ "started": "2026-10-08 17:08:00",
+ "wall_seconds": 15.69,
+ "user_seconds": 30.61,
+ "system_seconds": 1.81,
+ "peak_rss_mb": 1458.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10490,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

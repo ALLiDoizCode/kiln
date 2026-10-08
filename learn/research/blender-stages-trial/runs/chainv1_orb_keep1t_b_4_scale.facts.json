@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/blender-stages-trial/models/chain_orb_keep1t_b_3_uv_bake.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.8161471959868344,
+ "script_result": {
+  "factor": 0.8161471959868344,
+  "largest_dimension_before": 0.980215338524431,
+  "blender": "5.2.2 LTS"
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "name": "rep_crate_p2_tri_req20000_textured__hidden",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req20000_textured.glb",
+  "learn/research/blender-stages-trial/models/rep_crate_p2_tri_req20000_textured__hidden.glb",
+  "learn/research/blender-stages-trial/runs/rep_crate_p2_tri_req20000_textured__hidden.facts.json",
+  "hidden_pieces=true"
+ ],
+ "started": "2026-10-08 17:27:30",
+ "wall_seconds": 0.97,
+ "user_seconds": 1.0,
+ "system_seconds": 0.24,
+ "peak_rss_mb": 510.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13393,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

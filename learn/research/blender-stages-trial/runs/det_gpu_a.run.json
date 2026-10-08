@@ -1,0 +1,24 @@
+{
+ "name": "det_gpu_a",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/det_gpu_a.glb",
+  "learn/research/blender-stages-trial/runs/det_gpu_a.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=1024",
+  "margin=4"
+ ],
+ "started": "2026-10-08 16:49:01",
+ "wall_seconds": 17.4,
+ "user_seconds": 43.15,
+ "system_seconds": 6.55,
+ "peak_rss_mb": 3118.8,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12570,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,23 @@
+{
+ "name": "chain_crate_smart_a_2_reduce",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/chain_crate_smart_a_1_repair.glb",
+  "learn/research/blender-stages-trial/models/chain_crate_smart_a_2_reduce.glb",
+  "learn/research/blender-stages-trial/runs/chain_crate_smart_a_2_reduce.facts.json",
+  "target=20000",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 17:45:09",
+ "wall_seconds": 29.76,
+ "user_seconds": 31.1,
+ "system_seconds": 3.07,
+ "peak_rss_mb": 2326.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 9412,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

@@ -1,0 +1,28 @@
+{
+ "name": "chain_orb_keep1t_b_1_repair",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "learn/research/blender-stages-trial/models/chain_orb_keep1t_b_1_repair.glb",
+  "learn/research/blender-stages-trial/runs/chain_orb_keep1t_b_1_repair.facts.json",
+  "weld=1e-5",
+  "degenerate=1e-5",
+  "loose=true",
+  "hidden_pieces=true",
+  "recalc_normals=true",
+  "normals=keep",
+  "count=false"
+ ],
+ "started": "2026-10-08 17:58:26",
+ "wall_seconds": 24.91,
+ "user_seconds": 40.27,
+ "system_seconds": 2.68,
+ "peak_rss_mb": 3491.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12979,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

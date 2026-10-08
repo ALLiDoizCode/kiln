@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/chain_crate_smart_a_2_reduce.glb",
+ "bytes": 6974336,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "91a133b5893ab4bc8c9810b7cfbb14320355a8d492b3e5e515deda9a4d6ce8ad",
+ "triangles": 19999,
+ "vertices_stored": 40371,
+ "welded_points": 12398,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 100,
+ "triangle_areas": {
+  "surface_area": 6.518063520046254,
+  "share_holding_99pc_of_area": 0.5571778588929447,
+  "share_under_100th_of_mean": 0.11380569028451423,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "crate_h31_default_normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 3083272,
+   "sha256": "571a40ee2fa9a8320bca764e7e1438547884d4f12cd888c5e6bb886c1c5e285a"
+  },
+  {
+   "name": "crate_h31_default_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1403694,
+   "sha256": "4db1cce4e07d51c7afa0150773551e0dbe8aa0183b0c93a94422adfa859542cb"
+  },
+  {
+   "name": "crate_h31_default_rm",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1073668,
+   "sha256": "e679320c3d98c9945438a5bc330eff8122f92c7271146c78c4d19d30ac07a41f"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_0582d435-7945-4be0-bc61-d29fc1979aab",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

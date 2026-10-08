@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/tripo-api-trial/models/orb_p2_tri_req20000_textured.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.8003908158280411,
+ "script_result": {
+  "factor": 0.8003908158280411,
+  "largest_dimension_before": 0.99951171875,
+  "blender": "5.2.2 LTS"
+ }
+}

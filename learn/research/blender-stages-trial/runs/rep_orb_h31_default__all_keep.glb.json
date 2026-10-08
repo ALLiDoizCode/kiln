@@ -1,0 +1,134 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rep_orb_h31_default__all_keep.glb",
+ "bytes": 65804180,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "c777a923de20b8b32a95a1224f987adffc5b1bf4c9f6953d68020965df90261f",
+ "triangles": 1951774,
+ "vertices_stored": 1034903,
+ "welded_points": 975858,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 976,
+ "triangle_areas": {
+  "surface_area": 2.5185604263506667,
+  "share_holding_99pc_of_area": 0.9394991428310859,
+  "share_under_100th_of_mean": 2.1518884870891813e-05,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "orb_h31_default_normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 4691100,
+   "sha256": "073801ac19b07f09d71e970c22a9b1f013f4af35a9c1347bcdcededbfdb6cb01"
+  },
+  {
+   "name": "orb_h31_default_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 3179246,
+   "sha256": "93da9168a9195ab5e513ff337710ee8405faf6025433e101f56ba71597f1c09a"
+  },
+  {
+   "name": "orb_h31_default_rm",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1393822,
+   "sha256": "9eeccfc027ed7ee1fcb4fd7bcf12248019b721ee4059538fd769ce3f89424fd5"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "reference_bytes": 65804832,
+  "reference_vertices_stored": 1034900,
+  "reference_triangles": 1951822,
+  "reference_welded_points": 975882,
+  "reference_zero_length_normals": 0,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [
+   true,
+   true,
+   true
+  ],
+  "reference_images": [
+   {
+    "name": "orb_h31_default_basecolor.jpg",
+    "format": "jpeg",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 3179246
+   },
+   {
+    "name": "orb_h31_default_rm.jpg",
+    "format": "jpeg",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 1393822
+   },
+   {
+    "name": "orb_h31_default_normal.png",
+    "format": "png",
+    "width": 4096,
+    "height": 4096,
+    "bytes": 4691100
+   }
+  ],
+  "reference_materials": [
+   {
+    "name": "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": null,
+    "roughness_factor": null,
+    "base_colour_image": 0,
+    "metallic_roughness_image": 1,
+    "normal_image": 2,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 1034903,
+   "keys_in_reference": 1034900,
+   "matched_share": 0.9996434448445893,
+   "largest_angle_degrees": 154.75679037513905,
+   "share_over_1_degree": 0.0005219741448806903
+  }
+ }
+}

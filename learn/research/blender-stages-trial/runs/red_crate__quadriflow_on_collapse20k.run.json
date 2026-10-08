@@ -1,0 +1,23 @@
+{
+ "name": "red_crate__quadriflow_on_collapse20k",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/red_crate__quadriflow_on_collapse20k.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__quadriflow_on_collapse20k.facts.json",
+  "method=quadriflow",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 18:04:27",
+ "wall_seconds": 0.71,
+ "user_seconds": 0.67,
+ "system_seconds": 0.21,
+ "peak_rss_mb": 446.8,
+ "exit_status": 1,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15042,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

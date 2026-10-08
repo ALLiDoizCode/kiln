@@ -1,0 +1,22 @@
+{
+ "name": "rep_orb_p2_tri_req20000__weld1e-4",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p2_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_orb_p2_tri_req20000__weld1e-4.glb",
+  "learn/research/blender-stages-trial/runs/rep_orb_p2_tri_req20000__weld1e-4.facts.json",
+  "weld=1e-4"
+ ],
+ "started": "2026-10-08 16:11:39",
+ "wall_seconds": 1.0,
+ "user_seconds": 1.11,
+ "system_seconds": 0.35,
+ "peak_rss_mb": 496.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18923,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

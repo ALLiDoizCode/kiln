@@ -1,0 +1,54 @@
+{
+ "stage": "roundtrip",
+ "source": "learn/research/tripo-api-trial/models/orb_p2_tri_req20000_textured.glb",
+ "settings": {
+  "merge_vertices": true,
+  "shading": "SMOOTH",
+  "image_format": "AUTO",
+  "tangents": false,
+  "clear_custom_normals": false
+ },
+ "objects": [
+  {
+   "vertices": 11011,
+   "faces": 20389,
+   "triangles": 20389,
+   "uv_layers": [
+    "UVMap"
+   ],
+   "has_custom_normals": false,
+   "normals_domain": "POINT",
+   "smooth_faces": 20389,
+   "sharp_edges": 0,
+   "materials": [
+    "tripo_node_1b5f2153-d68f-4c6c-ba1d-2c892299d5db_material"
+   ],
+   "attributes": [
+    "UVMap",
+    "material_index",
+    "position",
+    "sharp_face"
+   ],
+   "name": "tripo_node_1b5f2153-d68f-4c6c-ba1d-2c892299d5db"
+  }
+ ],
+ "images": [
+  {
+   "name": "orb_p2_tri_req20000_textured_basecolor.jpg",
+   "size": [
+    4096,
+    4096
+   ],
+   "file_format": "JPEG",
+   "colorspace": "sRGB",
+   "packed": true,
+   "is_dirty": false,
+   "source": "FILE"
+  }
+ ],
+ "seconds": {
+  "import": 0.089,
+  "export": 0.13
+ },
+ "blender": "5.2.2 LTS"
+}

@@ -1,0 +1,23 @@
+{
+ "name": "chain_orb_keep_b_2_reduce",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_b_1_repair.glb",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_b_2_reduce.glb",
+  "learn/research/blender-stages-trial/runs/chain_orb_keep_b_2_reduce.facts.json",
+  "target=20000",
+  "count_before=false"
+ ],
+ "started": "2026-10-08 17:42:08",
+ "wall_seconds": 31.43,
+ "user_seconds": 32.96,
+ "system_seconds": 2.33,
+ "peak_rss_mb": 2568.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 8236,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

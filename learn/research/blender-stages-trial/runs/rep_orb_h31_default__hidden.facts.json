@@ -1,0 +1,104 @@
+{
+ "stage": "repair",
+ "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+ "settings": {
+  "weld": 0.0,
+  "degenerate": 0.0,
+  "loose": false,
+  "small_pieces": 0.0,
+  "small_pieces_by": "area",
+  "hidden_pieces": true,
+  "recalc_normals": false,
+  "fill_holes": -1,
+  "normals": "keep",
+  "sharp_angle": 30.0,
+  "count_each": false,
+  "count": false
+ },
+ "before_object": {
+  "vertices": 975885,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "bounds_before": [
+  [
+   -0.3774566650390625,
+   -0.489654541015625,
+   0.0
+  ],
+  [
+   0.3774566650390625,
+   0.489654541015625,
+   0.980804443359375
+  ]
+ ],
+ "surface_area_before": 2.5185643299847422,
+ "after_hidden_pieces": {
+  "pieces_removed": 0,
+  "triangles_removed": 0,
+  "share_of_surface_removed": 0.0
+ },
+ "surface_area_after": 2.5185643299847422,
+ "custom_normals_after_edit": true,
+ "steps_done": [
+  "hidden_pieces"
+ ],
+ "after_object": {
+  "vertices": 975885,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "position"
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.3774566650390625,
+   -0.489654541015625,
+   0.0
+  ],
+  [
+   0.3774566650390625,
+   0.489654541015625,
+   0.980804443359375
+  ]
+ ],
+ "seconds": {
+  "import": 3.023,
+  "count_before": 3.39,
+  "hidden_pieces": 6.246,
+  "count_after": 2.269,
+  "export": 2.639
+ },
+ "blender": "5.2.2 LTS"
+}

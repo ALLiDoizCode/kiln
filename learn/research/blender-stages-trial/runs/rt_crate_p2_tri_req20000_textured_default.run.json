@@ -1,0 +1,21 @@
+{
+ "name": "rt_crate_p2_tri_req20000_textured_default",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/roundtrip.py",
+  "learn/research/tripo-api-trial/models/crate_p2_tri_req20000_textured.glb",
+  "learn/research/blender-stages-trial/models/rt_crate_p2_tri_req20000_textured_default.glb",
+  "learn/research/blender-stages-trial/runs/rt_crate_p2_tri_req20000_textured_default.facts.json"
+ ],
+ "started": "2026-10-08 16:04:09",
+ "wall_seconds": 0.73,
+ "user_seconds": 0.69,
+ "system_seconds": 0.26,
+ "peak_rss_mb": 464.1,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18633,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

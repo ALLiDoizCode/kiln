@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/chain_crate_smart_a_5_place.glb",
+ "bytes": 3002028,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "ada5d822e75aee2924cf29b6fae2fb1e35ae10f2931f83c4cbdf9a6056f3dec5",
+ "triangles": 19999,
+ "vertices_stored": 12703,
+ "welded_points": 10002,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 49,
+ "triangle_areas": {
+  "surface_area": 4.342616200197692,
+  "share_holding_99pc_of_area": 0.8425921296064803,
+  "share_under_100th_of_mean": 0.02590129506475324,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 2045030,
+   "sha256": "0da0f7c774496824022453d04b6b4706644c35b1db6afd5a7990a2ca5f05a6c0"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 203317,
+   "sha256": "466b592ddece06ecf82c4591290d4d33488cf7631172c298185624e10668074a"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 225503,
+   "sha256": "fbf42485f4f58269c474e4f6a4cb91bbf2710ee4814008b4a10802aecb2c58db"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/tripo_crate_p2_tri_req20000__repaired_bake_autocage.glb",
+ "bytes": 2552176,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "efc171b16b67c0f344a345520120f3a84a99086272c1e033c04bab9ed5d4c35d",
+ "triangles": 108,
+ "vertices_stored": 168,
+ "welded_points": 56,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 0,
+ "triangle_areas": {
+  "surface_area": 7.18021345138564,
+  "share_holding_99pc_of_area": 0.9814814814814815,
+  "share_under_100th_of_mean": 0.0,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 2180503,
+   "sha256": "1e08c6b7de6f3c8bbc66a29d2e4801cd75109772818c4080f61381bcfc3d873c"
+  },
+  {
+   "name": "basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 180525,
+   "sha256": "8868a3204b8ce29065c194828071559580d83b32f5f1ce8f6bd6f3f8d744bfba"
+  },
+  {
+   "name": "metallic_roughness",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 2048,
+   "height": 2048,
+   "bytes": 183462,
+   "sha256": "d42157fe9b895966e62038e49bc0df0f2ef56c9ae1ccceaa9e285da8b7fdc38b"
+  }
+ ],
+ "materials": [
+  {
+   "name": "baked",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

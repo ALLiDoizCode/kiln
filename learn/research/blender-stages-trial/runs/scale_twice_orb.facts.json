@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/blender-stages-trial/models/scale_orb_collapse20k.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.9999999564679476,
+ "script_result": {
+  "factor": 0.9999999564679476,
+  "largest_dimension_before": 0.8000000348256435,
+  "blender": "5.2.2 LTS"
+ }
+}

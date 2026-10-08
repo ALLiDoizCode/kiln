@@ -1,0 +1,4 @@
+[2m2026-10-08T22:38:09.015925Z[0m [32m INFO[0m [2mbevy_diagnostic::system_information_diagnostics_plugin::internal[0m[2m:[0m SystemInfo { os: "Linux (Omarchy 4.0.4)", kernel: "7.2.5-3-omarchy", cpu: "AMD Ryzen 7 5800X 8-Core Processor", core_count: "8", memory: "31.3 GiB" }
+[2m2026-10-08T22:38:09.068552Z[0m [32m INFO[0m [2mbevy_render::renderer[0m[2m:[0m AdapterInfo { name: "NVIDIA GeForce RTX 3080", vendor: 4318, device: 8710, device_type: DiscreteGpu, device_pci_bus_id: "0000:0a:00.0", driver: "NVIDIA", driver_info: "610.57.04", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: false }
+[2m2026-10-08T22:38:09.325221Z[0m [32m INFO[0m [2mbevy_pbr::cluster[0m[2m:[0m GPU clustering is supported on this device.
+[2m2026-10-08T22:38:09.325269Z[0m [32m INFO[0m [2mbevy_render::batching::gpu_preprocessing[0m[2m:[0m GPU preprocessing is fully supported on this device.

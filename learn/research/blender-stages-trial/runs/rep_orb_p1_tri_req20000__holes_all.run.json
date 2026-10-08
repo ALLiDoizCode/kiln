@@ -1,0 +1,22 @@
+{
+ "name": "rep_orb_p1_tri_req20000__holes_all",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/repair.py",
+  "learn/research/tripo-api-trial/models/orb_p1_tri_req20000.glb",
+  "learn/research/blender-stages-trial/models/rep_orb_p1_tri_req20000__holes_all.glb",
+  "learn/research/blender-stages-trial/runs/rep_orb_p1_tri_req20000__holes_all.facts.json",
+  "fill_holes=0"
+ ],
+ "started": "2026-10-08 16:11:36",
+ "wall_seconds": 0.98,
+ "user_seconds": 1.01,
+ "system_seconds": 0.46,
+ "peak_rss_mb": 454.5,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 18904,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

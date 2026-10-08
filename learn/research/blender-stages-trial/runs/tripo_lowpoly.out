@@ -1,0 +1,45 @@
+== crate_p1_tri_req20000 raw_bake_cage30mm 17:29:13
+TIMED tripo_crate_p1_tri_req20000__raw_bake_cage30mm: 18.6 s, peak 3638 MB, exit 0
+== crate_p1_tri_req20000 raw_bake_autocage 17:29:33
+TIMED tripo_crate_p1_tri_req20000__raw_bake_autocage: 21.2 s, peak 3656 MB, exit 0
+TIMED tripo_crate_p1_tri_req20000__repaired: 1.3 s, peak 453 MB, exit 0
+== crate_p1_tri_req20000 repaired_bake_cage30mm 17:29:57
+TIMED tripo_crate_p1_tri_req20000__repaired_bake_cage30mm: 17.4 s, peak 3589 MB, exit 0
+== crate_p1_tri_req20000 repaired_bake_autocage 17:30:16
+TIMED tripo_crate_p1_tri_req20000__repaired_bake_autocage: 19.4 s, peak 3666 MB, exit 0
+== crate_p1_tri_req20000 repaired_bake_autocage_sharp30 17:30:36
+TIMED tripo_crate_p1_tri_req20000__repaired_bake_autocage_sharp30: 19.2 s, peak 3664 MB, exit 0
+== crate_p2_tri_req20000 raw_bake_cage30mm 17:30:57
+TIMED tripo_crate_p2_tri_req20000__raw_bake_cage30mm: 17.4 s, peak 3601 MB, exit 0
+== crate_p2_tri_req20000 raw_bake_autocage 17:31:15
+TIMED tripo_crate_p2_tri_req20000__raw_bake_autocage: 20.1 s, peak 3644 MB, exit 0
+TIMED tripo_crate_p2_tri_req20000__repaired: 1.1 s, peak 456 MB, exit 0
+== crate_p2_tri_req20000 repaired_bake_cage30mm 17:31:38
+TIMED tripo_crate_p2_tri_req20000__repaired_bake_cage30mm: 16.9 s, peak 3594 MB, exit 0
+== crate_p2_tri_req20000 repaired_bake_autocage 17:31:56
+TIMED tripo_crate_p2_tri_req20000__repaired_bake_autocage: 18.9 s, peak 3662 MB, exit 0
+== crate_p2_tri_req20000 repaired_bake_autocage_sharp30 17:32:16
+TIMED tripo_crate_p2_tri_req20000__repaired_bake_autocage_sharp30: 19.1 s, peak 3672 MB, exit 0
+== orb_p1_tri_req20000 raw_bake_cage30mm 17:32:36
+TIMED tripo_orb_p1_tri_req20000__raw_bake_cage30mm: 18.6 s, peak 3838 MB, exit 0
+== orb_p1_tri_req20000 raw_bake_autocage 17:32:56
+TIMED tripo_orb_p1_tri_req20000__raw_bake_autocage: 22.3 s, peak 3892 MB, exit 0
+TIMED tripo_orb_p1_tri_req20000__repaired: 1.4 s, peak 441 MB, exit 0
+== orb_p1_tri_req20000 repaired_bake_cage30mm 17:33:22
+TIMED tripo_orb_p1_tri_req20000__repaired_bake_cage30mm: 18.9 s, peak 3909 MB, exit 0
+== orb_p1_tri_req20000 repaired_bake_autocage 17:33:42
+TIMED tripo_orb_p1_tri_req20000__repaired_bake_autocage: 23.4 s, peak 3945 MB, exit 0
+== orb_p1_tri_req20000 repaired_bake_autocage_sharp30 17:34:07
+TIMED tripo_orb_p1_tri_req20000__repaired_bake_autocage_sharp30: 22.9 s, peak 3969 MB, exit 0
+== orb_p2_tri_req20000 raw_bake_cage30mm 17:34:31
+TIMED tripo_orb_p2_tri_req20000__raw_bake_cage30mm: 18.6 s, peak 3873 MB, exit 0
+== orb_p2_tri_req20000 raw_bake_autocage 17:34:51
+TIMED tripo_orb_p2_tri_req20000__raw_bake_autocage: 22.0 s, peak 3944 MB, exit 0
+TIMED tripo_orb_p2_tri_req20000__repaired: 1.5 s, peak 460 MB, exit 0
+== orb_p2_tri_req20000 repaired_bake_cage30mm 17:35:16
+TIMED tripo_orb_p2_tri_req20000__repaired_bake_cage30mm: 19.1 s, peak 3841 MB, exit 0
+== orb_p2_tri_req20000 repaired_bake_autocage 17:35:37
+TIMED tripo_orb_p2_tri_req20000__repaired_bake_autocage: 22.9 s, peak 3864 MB, exit 0
+== orb_p2_tri_req20000 repaired_bake_autocage_sharp30 17:36:01
+TIMED tripo_orb_p2_tri_req20000__repaired_bake_autocage_sharp30: 25.1 s, peak 3907 MB, exit 0
+== done 17:36:28

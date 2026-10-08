@@ -1,0 +1,78 @@
+{
+ "file": "learn/research/blender-stages-trial/models/rt_crate_p2_tri_req20000_default.glb",
+ "bytes": 364328,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "4d554a329644d4c3095fe96b19d32c922d0729ad34ad257b711ec95f38b50446",
+ "triangles": 19958,
+ "vertices_stored": 10148,
+ "welded_points": 10021,
+ "attributes": [
+  "NORMAL",
+  "POSITION"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "triangle_areas": {
+  "surface_area": 10.04296250086777,
+  "share_holding_99pc_of_area": 0.1848381601362862,
+  "share_under_100th_of_mean": 0.7271269666299228,
+  "zero_area": 71
+ },
+ "images": [],
+ "materials": [
+  {
+   "name": "material",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": 0,
+   "roughness_factor": 0.5,
+   "base_colour_image": null,
+   "metallic_roughness_image": null,
+   "normal_image": null,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ],
+ "against_reference": {
+  "reference": "learn/research/tripo-api-trial/models/crate_p2_tri_req20000.glb",
+  "reference_bytes": 481172,
+  "reference_vertices_stored": 10021,
+  "reference_triangles": 19958,
+  "reference_welded_points": 10021,
+  "reference_zero_length_normals": 4,
+  "extensions_dropped": [
+   "FB_ngon_encoding",
+   "KHR_materials_volume"
+  ],
+  "extensions_added": [],
+  "same_images": [],
+  "reference_images": [],
+  "reference_materials": [
+   {
+    "name": "material",
+    "double_sided": false,
+    "alpha_mode": "OPAQUE",
+    "base_colour_factor": null,
+    "metallic_factor": 0.0,
+    "roughness_factor": 0.5,
+    "base_colour_image": null,
+    "metallic_roughness_image": null,
+    "normal_image": null,
+    "normal_scale": null,
+    "occlusion_image": null,
+    "extensions": []
+   }
+  ],
+  "normals": {
+   "keys_here": 10021,
+   "keys_in_reference": 10021,
+   "matched_share": 1.0,
+   "largest_angle_degrees": 90.0,
+   "share_over_1_degree": 0.00039916176030336295
+  }
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "name": "chain_orb_keep_c_4_scale",
+ "command": [
+  "python3",
+  "-c",
+  "\nimport json, shutil, sys\nsys.path.insert(0, \".\")\nfrom kiln.run import scale_to_size\nfrom kiln.profile import load_profile\nsource, work, size, out, facts = sys.argv[1:6]\nmodel, stage_facts = scale_to_size(source, work, {\"size\": float(size)}, load_profile(\"pit\"))\nshutil.copyfile(model, out)\njson.dump({\"stage\": \"scale_to_size\", \"source\": source, \"settings\": {\"size\": float(size)}, **stage_facts,\n           \"script_result\": json.load(open(work + \"/scale_to_size.json\"))}, open(facts, \"w\"), indent=1)\n",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_c_3_uv_bake.glb",
+  "learn/research/blender-stages-trial/work/scale_chain_orb_keep_c_4_scale",
+  "0.8",
+  "learn/research/blender-stages-trial/models/chain_orb_keep_c_4_scale.glb",
+  "learn/research/blender-stages-trial/runs/chain_orb_keep_c_4_scale.facts.json"
+ ],
+ "started": "2026-10-08 17:44:34",
+ "wall_seconds": 1.27,
+ "user_seconds": 0.99,
+ "system_seconds": 0.27,
+ "peak_rss_mb": 503.3,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 13088,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

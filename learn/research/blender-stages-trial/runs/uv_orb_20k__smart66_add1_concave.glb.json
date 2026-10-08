@@ -1,0 +1,70 @@
+{
+ "file": "learn/research/blender-stages-trial/models/uv_orb_20k__smart66_add1_concave.glb",
+ "bytes": 10221312,
+ "extensions_used": [],
+ "extensions_required": [],
+ "generator": "Khronos glTF Blender I/O v5.2.40",
+ "sha256": "cbb7bbba5c961a2b51d5fe4355e5a206758689252e2ee47978551f20260acfca",
+ "triangles": 20000,
+ "vertices_stored": 26105,
+ "welded_points": 9974,
+ "attributes": [
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ],
+ "zero_length_normals": 0,
+ "non_unit_normals": 0,
+ "backward_normal_corners": 1447,
+ "triangle_areas": {
+  "surface_area": 2.551239824001254,
+  "share_holding_99pc_of_area": 0.91145,
+  "share_under_100th_of_mean": 0.00015,
+  "zero_area": 0
+ },
+ "images": [
+  {
+   "name": "orb_h31_default_normal",
+   "mime": "image/png",
+   "format": "png",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 4691100,
+   "sha256": "073801ac19b07f09d71e970c22a9b1f013f4af35a9c1347bcdcededbfdb6cb01"
+  },
+  {
+   "name": "orb_h31_default_basecolor",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 3179246,
+   "sha256": "93da9168a9195ab5e513ff337710ee8405faf6025433e101f56ba71597f1c09a"
+  },
+  {
+   "name": "orb_h31_default_rm",
+   "mime": "image/jpeg",
+   "format": "jpeg",
+   "width": 4096,
+   "height": 4096,
+   "bytes": 1393822,
+   "sha256": "9eeccfc027ed7ee1fcb4fd7bcf12248019b721ee4059538fd769ce3f89424fd5"
+  }
+ ],
+ "materials": [
+  {
+   "name": "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c",
+   "double_sided": false,
+   "alpha_mode": "OPAQUE",
+   "base_colour_factor": null,
+   "metallic_factor": null,
+   "roughness_factor": null,
+   "base_colour_image": 1,
+   "metallic_roughness_image": 2,
+   "normal_image": 0,
+   "normal_scale": null,
+   "occlusion_image": null,
+   "extensions": []
+  }
+ ]
+}

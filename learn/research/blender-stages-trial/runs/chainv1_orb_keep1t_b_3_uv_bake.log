@@ -1,0 +1,27 @@
+17:59:27 | INFO: Data are loaded, start creating Blender stuff
+17:59:27 | INFO: Blender create Mesh node meshes[0]
+17:59:27 | INFO: glTF import finished in 0.04s
+STEP import_low: 0.12 s
+STEP weld: 0.03 s
+STEP uvs: 1.68 s
+STEP normals: 0.00 s
+17:59:29 | INFO: Data are loaded, start creating Blender stuff
+17:59:29 | INFO: Blender create Mesh node meshes[0]
+17:59:33 | INFO: glTF import finished in 4.13s
+STEP import_high: 4.14 s
+STEP ray_check: 6.68 s
+STEP bake_normal: 11.45 s
+STEP bake_basecolor: 14.79 s
+STEP bake_metallic_roughness: 14.80 s
+STEP material: 0.40 s
+INFO Draco is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_draco_bridge.so
+INFO MeshOptimizer is available, use library at .tools/blender-5.2.2-linux-x64/lib/libbf_intern_meshopt_bridge.so
+18:00:21 | INFO: Starting glTF 2.0 export
+18:00:21 | INFO: Extracting primitive: meshes[0]
+18:00:21 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+18:00:21 | INFO: Primitives created: 1
+18:00:21 | INFO: Finished glTF 2.0 export in 0.027878999710083008 s
+
+STEP export: 0.13 s
+FACTS {"stage": "uv_bake", "source": "learn/research/blender-stages-trial/models/chain_orb_keep1t_b_2_reduce.glb", "settings": {"high": "learn/research/tripo-api-trial/models/orb_h31_default.glb", "weld": 1e-06, "uv": "keep", "angle": 66.0, "island_margin": 0.003, "seam_angle": 60.0, "pack": "concave", "pack_margin": 0.001, "margin_method": "ADD", "normals": "clear", "sharp_angle": 0.0, "size": 2048, "samples": 1, "device": "CPU", "cage_extrusion": 0.004571560304611921, "max_ray_distance": 0.009143120609223843, "cage": "auto", "margin": 8, "margin_type": "ADJACENT_FACES", "colour": "emit", "fit": "none", "one_thread_normal": false, "jpeg": true, "jpeg_quality": 90, "bake": true}, "low_before": {"vertices": 9974, "faces": 20000, "triangles": 20000, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 20000, "sharp_edges": 0, "materials": ["tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "weld_joined": 0, "high": {"vertices": 975885, "faces": 1951822, "triangles": 1951822, "uv_layers": ["UVMap"], "has_custom_normals": true, "normals_domain": "CORNER", "smooth_faces": 1951822, "sharp_edges": 0, "materials": ["tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c.001"], "attributes": ["UVMap", "custom_normal", "material_index", "position", "sharp_edge", "sharp_face"]}, "cage_chosen": {"cage_extrusion": 0.004571560304611921, "max_ray_distance": 0.009143120609223843}, "ray_check": {"points": 20000, "missed": 77, "missed_share": 0.00385, "hit_distance_from_low_surface": {"median": 0.00024719443172216415, "p95": 0.0009118060115724802, "p99": 0.002259196015074849, "largest": 0.004571422347211751}, "nearest_dense_surface": {"median": 0.00023921963293105364, "p95": 0.0007973000756464899, "p99": 0.0011428900761529803, "largest": 0.0032290881499648094}, "hits_further_than_twice_p99_nearest": 0.00978768257792501}, "device_wanted": "CPU", "device": "CPU", "high_textures": {"basecolor": "orb_h31_default_basecolor.jpg", "metallic_roughness": "orb_h31_default_rm.jpg", "normal": "orb_h31_default_normal.png"}, "images": {"basecolor": {"size": [2048, 2048], "file_format": "JPEG", "colorspace": "sRGB", "is_dirty": false, "source": "FILE"}, "metallic_roughness": {"size": [2048, 2048], "file_format": "JPEG", "colorspace": "Non-Color", "is_dirty": false, "source": "FILE"}, "normal": {"size": [2048, 2048], "file_format": "PNG", "colorspace": "Non-Color", "is_dirty": false, "source": "FILE"}}, "low_after": {"vertices": 9974, "faces": 20000, "triangles": 20000, "uv_layers": ["UVMap"], "has_custom_normals": false, "normals_domain": "POINT", "smooth_faces": 20000, "sharp_edges": 0, "materials": ["baked"], "attributes": ["UVMap", "position"]}, "after": {"vertices": 9974, "edges": 30000, "faces": 20000, "triangles": 20000, "boundary_edges": 0, "non_manifold_edges": 0, "wire_edges": 0, "loose_vertices": 0, "flipped_edges": 0, "degenerate_faces": 0, "zero_length_edges": 0, "boundary_loops": 0, "pieces": 1, "largest_pieces": [20000]}, "seconds": {"import_low": 0.124, "weld": 0.033, "uvs": 1.682, "normals": 0.0, "import_high": 4.142, "ray_check": 6.681, "bake_normal": 11.447, "bake_basecolor": 14.791, "bake_metallic_roughness": 14.802, "material": 0.398, "export": 0.134}, "blender": "5.2.2 LTS"}
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

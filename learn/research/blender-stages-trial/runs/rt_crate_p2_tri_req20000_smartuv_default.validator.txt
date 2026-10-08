@@ -1,0 +1,17 @@
+{
+ "ran": true,
+ "version": "2.0.0-dev.3.10",
+ "errors": 0,
+ "warnings": 0,
+ "infos": 1,
+ "hints": 0,
+ "truncated": false,
+ "messages": [
+  {
+   "severity": "info",
+   "code": "UNUSED_OBJECT",
+   "message": "This object may be unused.",
+   "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+  }
+ ]
+}

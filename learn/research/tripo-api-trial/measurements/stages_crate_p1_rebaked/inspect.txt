@@ -1,0 +1,11 @@
+learn/research/blender-stages-trial/models/tripo_crate_p1_tri_req20000__repaired_bake_autocage.glb  (glTF 2, generator: Khronos glTF Blender I/O v5.2.40)
+
+mesh "meshes[0]"
+  primitive 0
+    POSITION    VEC3  x 6338
+    NORMAL      VEC3  x 6338
+    TEXCOORD_0  VEC2  x 6338
+    indices     25890  = 8630 triangles
+    material    "baked"  textures: baseColorTexture, metallicRoughnessTexture, normalTexture
+
+1 mesh(es), 1 material(s), 3 image(s)

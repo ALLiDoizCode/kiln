@@ -1,0 +1,26 @@
+{
+ "name": "tripo_orb_p1_tri_req20000__repaired_bake_autocage",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/tripo_orb_p1_tri_req20000__repaired.glb",
+  "learn/research/blender-stages-trial/models/tripo_orb_p1_tri_req20000__repaired_bake_autocage.glb",
+  "learn/research/blender-stages-trial/runs/tripo_orb_p1_tri_req20000__repaired_bake_autocage.facts.json",
+  "high=learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "fit=bbox",
+  "size=2048",
+  "margin=8",
+  "cage=auto"
+ ],
+ "started": "2026-10-08 17:33:42",
+ "wall_seconds": 23.36,
+ "user_seconds": 58.26,
+ "system_seconds": 6.54,
+ "peak_rss_mb": 3945.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10192,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

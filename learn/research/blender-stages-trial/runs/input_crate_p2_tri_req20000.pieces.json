@@ -1,0 +1,210 @@
+{
+ "file": "../tripo-api-trial/models/crate_p2_tri_req20000.glb",
+ "pieces": [
+  {
+   "triangles": 108,
+   "area": 7.180213451385498,
+   "min": [
+    -0.4998,
+    -0.4998,
+    0.0
+   ],
+   "max": [
+    0.4998,
+    0.4998,
+    0.9995
+   ],
+   "share_of_area": 0.7149,
+   "share_of_triangles": 0.0054,
+   "inside_largest_box": false
+  },
+  {
+   "triangles": 125,
+   "area": 1.6120880278467666,
+   "min": [
+    -0.1921,
+    -0.2454,
+    0.4023
+   ],
+   "max": [
+    0.2415,
+    0.4592,
+    0.8672
+   ],
+   "share_of_area": 0.1605,
+   "share_of_triangles": 0.0063,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 22,
+   "area": 0.24259726144373417,
+   "min": [
+    -0.0906,
+    -0.425,
+    0.4395
+   ],
+   "max": [
+    0.1335,
+    -0.1125,
+    0.7319
+   ],
+   "share_of_area": 0.0242,
+   "share_of_triangles": 0.0011,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 17,
+   "area": 0.1869384697638452,
+   "min": [
+    -0.1731,
+    -0.3796,
+    0.5273
+   ],
+   "max": [
+    0.1345,
+    -0.0901,
+    0.6646
+   ],
+   "share_of_area": 0.0186,
+   "share_of_triangles": 0.0009,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 1028,
+   "area": 0.1670290619924799,
+   "min": [
+    -0.158,
+    0.1169,
+    0.3716
+   ],
+   "max": [
+    0.074,
+    0.3479,
+    0.6016
+   ],
+   "share_of_area": 0.0166,
+   "share_of_triangles": 0.0515,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 1008,
+   "area": 0.12071997612292762,
+   "min": [
+    -0.095,
+    -0.0427,
+    0.5381
+   ],
+   "max": [
+    0.1013,
+    0.1526,
+    0.7344
+   ],
+   "share_of_area": 0.012,
+   "share_of_triangles": 0.0505,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 12,
+   "area": 0.11151912971399724,
+   "min": [
+    -0.0378,
+    -0.3,
+    0.4639
+   ],
+   "max": [
+    0.1335,
+    -0.1145,
+    0.7813
+   ],
+   "share_of_area": 0.0111,
+   "share_of_triangles": 0.0006,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 12,
+   "area": 0.1019501572009176,
+   "min": [
+    -0.1912,
+    0.0466,
+    0.522
+   ],
+   "max": [
+    -0.0173,
+    0.3894,
+    0.7549
+   ],
+   "share_of_area": 0.0102,
+   "share_of_triangles": 0.0006,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 14,
+   "area": 0.08949876856058836,
+   "min": [
+    -0.1287,
+    -0.3474,
+    0.4258
+   ],
+   "max": [
+    0.0623,
+    -0.1204,
+    0.5469
+   ],
+   "share_of_area": 0.0089,
+   "share_of_triangles": 0.0007,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 1068,
+   "area": 0.08175264218880329,
+   "min": [
+    -0.2,
+    -0.3093,
+    0.3945
+   ],
+   "max": [
+    -0.0383,
+    -0.1482,
+    0.5562
+   ],
+   "share_of_area": 0.0081,
+   "share_of_triangles": 0.0535,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 1006,
+   "area": 0.07388542999433412,
+   "min": [
+    0.092,
+    -0.0632,
+    0.6934
+   ],
+   "max": [
+    0.2463,
+    0.0906,
+    0.8462
+   ],
+   "share_of_area": 0.0074,
+   "share_of_triangles": 0.0504,
+   "inside_largest_box": true
+  },
+  {
+   "triangles": 1028,
+   "area": 0.06972677639532776,
+   "min": [
+    -0.0598,
+    -0.4006,
+    0.6616
+   ],
+   "max": [
+    0.0886,
+    -0.2512,
+    0.8105
+   ],
+   "share_of_area": 0.0069,
+   "share_of_triangles": 0.0515,
+   "inside_largest_box": true
+  }
+ ],
+ "piece_count": 28
+}

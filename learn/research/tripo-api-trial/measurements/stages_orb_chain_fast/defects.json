@@ -1,0 +1,213 @@
+{
+  "file": "learn/research/blender-stages-trial/models/chain_orb_keep_a_5_place.glb",
+  "importer": "gltf",
+  "blender": "5.2.2 LTS",
+  "objects": [
+    {
+      "name": "low",
+      "type": "MESH",
+      "parent": null,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mesh": "meshes[0]",
+      "materials": [
+        "baked"
+      ],
+      "uv_layers": [
+        "UVMap"
+      ],
+      "colour_attributes": [],
+      "has_custom_normals": true,
+      "smooth_faces": 20000,
+      "flat_faces": 0,
+      "as_imported": {
+        "vertices": 9974,
+        "edges": 30000,
+        "faces": 20000,
+        "triangles": 20000,
+        "face_sides": {
+          "3": 20000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 0,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          20000
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      },
+      "welded": {
+        "vertices": 9971,
+        "edges": 29999,
+        "faces": 20000,
+        "triangles": 20000,
+        "face_sides": {
+          "3": 20000,
+          "4": 0,
+          "5_or_more": 0
+        },
+        "boundary_edges": 0,
+        "non_manifold_edges": 1,
+        "wire_edges": 0,
+        "loose_vertices": 0,
+        "flipped_edges": 0,
+        "degenerate_faces": 0,
+        "zero_length_edges": 0,
+        "boundary_loops": 0,
+        "pieces": 1,
+        "piece_triangles_largest_first": [
+          20000
+        ],
+        "small_pieces": 0,
+        "small_piece_triangles": 0
+      }
+    }
+  ],
+  "as_imported": {
+    "vertices": 9974,
+    "edges": 30000,
+    "faces": 20000,
+    "triangles": 20000,
+    "face_sides": {
+      "3": 20000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      20000
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "welded": {
+    "vertices": 9971,
+    "edges": 29999,
+    "faces": 20000,
+    "triangles": 20000,
+    "face_sides": {
+      "3": 20000,
+      "4": 0,
+      "5_or_more": 0
+    },
+    "boundary_edges": 0,
+    "non_manifold_edges": 1,
+    "wire_edges": 0,
+    "loose_vertices": 0,
+    "flipped_edges": 0,
+    "degenerate_faces": 0,
+    "zero_length_edges": 0,
+    "boundary_loops": 0,
+    "pieces": 1,
+    "piece_triangles_largest_first": [
+      20000
+    ],
+    "small_pieces": 0,
+    "small_piece_triangles": 0
+  },
+  "bounding_box_blender_zup": {
+    "min": [
+      -0.307391,
+      -0.399526,
+      0.0
+    ],
+    "max": [
+      0.307391,
+      0.399526,
+      0.8
+    ],
+    "dimensions": [
+      0.614782,
+      0.799052,
+      0.8
+    ]
+  },
+  "bounding_box_gltf_yup": {
+    "min": [
+      -0.307391,
+      0.0,
+      -0.399526
+    ],
+    "max": [
+      0.307391,
+      0.8,
+      0.399526
+    ],
+    "dimensions": [
+      0.614782,
+      0.8,
+      0.799052
+    ]
+  },
+  "bounding_box_centre_blender": [
+    0.0,
+    0.0,
+    0.4
+  ],
+  "lowest_point_blender_z": 0.0,
+  "materials": [
+    "baked"
+  ],
+  "images": [
+    {
+      "name": "basecolor",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "sRGB"
+    },
+    {
+      "name": "metallic_roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "JPEG",
+      "colorspace": "Non-Color"
+    },
+    {
+      "name": "normal",
+      "size": [
+        2048,
+        2048
+      ],
+      "channels": 4,
+      "file_format": "PNG",
+      "colorspace": "Non-Color"
+    }
+  ]
+}

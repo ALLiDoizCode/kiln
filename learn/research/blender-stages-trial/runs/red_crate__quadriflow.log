@@ -1,0 +1,24 @@
+17:51:41 | INFO: Data are loaded, start creating Blender stuff
+17:51:41 | INFO: Blender create Mesh node meshes[0]
+17:51:44 | INFO: glTF import finished in 3.41s
+STEP import: 3.47 s
+Traceback (most recent call last):
+  File [35m"learn/research/blender-stages-trial/scripts/reduce.py"[0m, line [35m198[0m, in [35m<module>[0m
+    [31mmain[0m[1;31m()[0m
+    [31m~~~~[0m[1;31m^^[0m
+  File [35m"learn/research/blender-stages-trial/scripts/reduce.py"[0m, line [35m159[0m, in [35mmain[0m
+    [31mlib.finished[0m[1;31m(bpy.ops.object.quadriflow_remesh([0m
+    [31m~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+        [1;31mmode="FACES", target_faces=target // 2, seed=settings["quadriflow_seed"],[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+        [1;31muse_mesh_symmetry=False, use_preserve_sharp=False, use_preserve_boundary=False,[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+        [1;31mpreserve_attributes=False, smooth_normals=False), "QuadriFlow")[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"learn/research/blender-stages-trial/scripts/stagelib.py"[0m, line [35m57[0m, in [35mfinished[0m
+    raise RuntimeError(f"{what} did not finish: {result}")
+[1;35mRuntimeError[0m: [35mQuadriFlow did not finish: {'CANCELLED'}[0m
+Warning: QuadriFlow: The mesh needs to be manifold and have face normals that point in a consistent direction
+
+Error: script failed, file: 'learn/research/blender-stages-trial/scripts/reduce.py', exiting.
+Blender 5.2.2 LTS (hash d13f752e3b9c built 2026-09-15 01:34:58)

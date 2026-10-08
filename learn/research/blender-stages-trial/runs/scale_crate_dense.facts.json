@@ -1,0 +1,13 @@
+{
+ "stage": "scale_to_size",
+ "source": "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+ "settings": {
+  "size": 0.8
+ },
+ "scale_factor": 0.8158601224199933,
+ "script_result": {
+  "factor": 0.8158601224199933,
+  "largest_dimension_before": 0.9805602431297302,
+  "blender": "5.2.2 LTS"
+ }
+}

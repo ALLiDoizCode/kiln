@@ -1,0 +1,30 @@
+{
+ "name": "chain_crate_keep1t_b_3_uv_bake",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_2_reduce.glb",
+  "learn/research/blender-stages-trial/models/chain_crate_keep1t_b_3_uv_bake.glb",
+  "learn/research/blender-stages-trial/runs/chain_crate_keep1t_b_3_uv_bake.facts.json",
+  "high=learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "size=2048",
+  "margin=8",
+  "cage=auto",
+  "uv=keep",
+  "pack=concave",
+  "margin_method=ADD",
+  "pack_margin=0.001",
+  "device=CPU"
+ ],
+ "started": "2026-10-08 18:03:16",
+ "wall_seconds": 52.42,
+ "user_seconds": 48.43,
+ "system_seconds": 3.67,
+ "peak_rss_mb": 3228.0,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 11535,
+ "stopped_for_memory": false,
+ "threads": "1"
+}

@@ -1,0 +1,23 @@
+{
+ "name": "red_crate__quadriflow",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/reduce.py",
+  "learn/research/tripo-api-trial/models/crate_h31_default.glb",
+  "learn/research/blender-stages-trial/models/red_crate__quadriflow.glb",
+  "learn/research/blender-stages-trial/runs/red_crate__quadriflow.facts.json",
+  "count_before=false",
+  "method=quadriflow"
+ ],
+ "started": "2026-10-08 17:51:40",
+ "wall_seconds": 5.24,
+ "user_seconds": 7.11,
+ "system_seconds": 1.43,
+ "peak_rss_mb": 1470.2,
+ "exit_status": 1,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 12781,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

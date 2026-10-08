@@ -1,0 +1,24 @@
+{
+ "name": "bake_orb__5k_2048",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_orb__collapse5k_r1.glb",
+  "learn/research/blender-stages-trial/models/bake_orb__5k_2048.glb",
+  "learn/research/blender-stages-trial/runs/bake_orb__5k_2048.facts.json",
+  "high=learn/research/tripo-api-trial/models/orb_h31_default.glb",
+  "size=2048",
+  "margin=8"
+ ],
+ "started": "2026-10-08 17:09:54",
+ "wall_seconds": 20.72,
+ "user_seconds": 53.65,
+ "system_seconds": 6.82,
+ "peak_rss_mb": 4007.2,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 10192,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

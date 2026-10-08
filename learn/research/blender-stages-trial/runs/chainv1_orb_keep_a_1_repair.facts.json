@@ -1,0 +1,126 @@
+{
+ "stage": "repair",
+ "source": "learn/research/tripo-api-trial/models/orb_h31_default.glb",
+ "settings": {
+  "weld": 1e-05,
+  "degenerate": 1e-05,
+  "loose": true,
+  "small_pieces": 0.0,
+  "small_pieces_by": "area",
+  "hidden_pieces": true,
+  "recalc_normals": true,
+  "fill_holes": -1,
+  "normals": "keep",
+  "sharp_angle": 30.0,
+  "count_each": false,
+  "count": false
+ },
+ "before_object": {
+  "vertices": 975885,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "material_index",
+   "position",
+   "sharp_edge",
+   "sharp_face"
+  ]
+ },
+ "bounds_before": [
+  [
+   -0.3774566650390625,
+   -0.489654541015625,
+   0.0
+  ],
+  [
+   0.3774566650390625,
+   0.489654541015625,
+   0.980804443359375
+  ]
+ ],
+ "surface_area_before": 2.5185643299847422,
+ "after_weld": {
+  "vertices_joined": 3
+ },
+ "after_degenerate": {
+  "faces_removed": 0,
+  "vertices_removed": 0
+ },
+ "after_loose": {
+  "wire_edges_removed": 0,
+  "vertices_removed": 0
+ },
+ "after_hidden_pieces": {
+  "pieces_removed": 0,
+  "triangles_removed": 0,
+  "share_of_surface_removed": 0.0
+ },
+ "after_recalc_normals": {
+  "faces_turned": 9
+ },
+ "surface_area_after": 2.518564329971384,
+ "custom_normals_after_edit": true,
+ "steps_done": [
+  "weld",
+  "degenerate",
+  "loose",
+  "hidden_pieces",
+  "recalc_normals"
+ ],
+ "after_object": {
+  "vertices": 975882,
+  "faces": 1951822,
+  "triangles": 1951822,
+  "uv_layers": [
+   "UVMap"
+  ],
+  "has_custom_normals": true,
+  "normals_domain": "CORNER",
+  "smooth_faces": 1951822,
+  "sharp_edges": 0,
+  "materials": [
+   "tripo_material_2fd72e19-ce80-43bb-a68b-793ab6abe00c"
+  ],
+  "attributes": [
+   "UVMap",
+   "custom_normal",
+   "position"
+  ]
+ },
+ "bounds_after": [
+  [
+   -0.3774566650390625,
+   -0.489654541015625,
+   0.0
+  ],
+  [
+   0.3774566650390625,
+   0.489654541015625,
+   0.980804443359375
+  ]
+ ],
+ "seconds": {
+  "import": 3.12,
+  "count_before": 3.457,
+  "weld": 2.513,
+  "degenerate": 1.005,
+  "loose": 1.782,
+  "hidden_pieces": 7.467,
+  "recalc_normals": 2.96,
+  "count_after": 2.787,
+  "export": 3.421
+ },
+ "blender": "5.2.2 LTS"
+}

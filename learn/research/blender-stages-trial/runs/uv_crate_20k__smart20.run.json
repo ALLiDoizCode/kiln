@@ -1,0 +1,23 @@
+{
+ "name": "uv_crate_20k__smart20",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/uv_bake.py",
+  "learn/research/blender-stages-trial/models/red_crate__collapse20k_r1.glb",
+  "learn/research/blender-stages-trial/models/uv_crate_20k__smart20.glb",
+  "learn/research/blender-stages-trial/runs/uv_crate_20k__smart20.facts.json",
+  "bake=false",
+  "angle=20"
+ ],
+ "started": "2026-10-08 16:29:28",
+ "wall_seconds": 1.4,
+ "user_seconds": 1.38,
+ "system_seconds": 0.5,
+ "peak_rss_mb": 623.4,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 15664,
+ "stopped_for_memory": false,
+ "threads": "all"
+}

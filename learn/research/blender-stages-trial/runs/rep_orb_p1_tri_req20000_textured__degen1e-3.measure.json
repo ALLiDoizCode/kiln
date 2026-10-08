@@ -1,0 +1,133 @@
+{
+  "file": {
+    "path": "learn/research/blender-stages-trial/models/rep_orb_p1_tri_req20000_textured__degen1e-3.glb",
+    "bytes": 4226840,
+    "gltf_version": "2.0",
+    "generator": "Khronos glTF Blender I/O v5.2.40",
+    "extensions_used": []
+  },
+  "totals": {
+    "meshes": 1,
+    "triangles": 18438,
+    "vertices": 27331,
+    "materials": 1,
+    "textures": 1
+  },
+  "meshes": [
+    {
+      "index": 0,
+      "name": "meshes[0]",
+      "placed": 1,
+      "triangles": 18438,
+      "vertices": 27331,
+      "primitives": [
+        {
+          "index": 0,
+          "material": 0,
+          "material_name": "tripo_node_3e23aca3-9fe5-461c-8b99-59d99513fd95_material",
+          "triangles": 18438,
+          "vertices": 27331,
+          "indexed": true,
+          "has_uvs": true,
+          "attributes": [
+            "NORMAL",
+            "POSITION",
+            "TEXCOORD_0"
+          ]
+        }
+      ]
+    }
+  ],
+  "bounding_box": {
+    "min": [
+      -0.3369140625,
+      0.0,
+      -0.4990234375
+    ],
+    "max": [
+      0.3369140625,
+      0.939453125,
+      0.4990234375
+    ],
+    "dimensions": [
+      0.673828125,
+      0.939453125,
+      0.998046875
+    ],
+    "largest_dimension": 0.998046875
+  },
+  "size": {
+    "in_file": 0.998046875,
+    "given": 0.8,
+    "scale_factor": 0.8015655577299413
+  },
+  "materials": [
+    {
+      "index": 0,
+      "name": "tripo_node_3e23aca3-9fe5-461c-8b99-59d99513fd95_material",
+      "textures": {
+        "baseColorTexture": 0
+      }
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "orb_p1_tri_req20000_textured_basecolor",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 3240138,
+      "used_as": [
+        "baseColorTexture of tripo_node_3e23aca3-9fe5-461c-8b99-59d99513fd95_material"
+      ]
+    }
+  ],
+  "uvs": {
+    "triangles": 18438,
+    "islands": 4840,
+    "edges": 27722,
+    "seam_edges": 13214,
+    "open_edges": 157,
+    "seam_share": 0.4766611355602049,
+    "coverage": 0.41513919830322266,
+    "coverage_grid": 1024,
+    "triangle_area_sum": 0.41025549744381884,
+    "triangles_outside_square": 0,
+    "triangles_without_area": 0
+  },
+  "texel_density": {
+    "size": 0.8,
+    "pixels_per_metre": 2061.7425799974594,
+    "p05": 1960.6778477504477,
+    "median": 2066.9562001140443,
+    "p95": 2136.3131354806605,
+    "surface_area": 1.6192183793391304,
+    "by_primitive": [
+      {
+        "node": 0,
+        "mesh": 0,
+        "primitive": 0,
+        "material": 0,
+        "texture": 0,
+        "texture_pixels": [
+          4096,
+          4096
+        ],
+        "surface_area": 1.6192183793391304,
+        "pixels_per_metre": 2061.7425799974594
+      }
+    ]
+  },
+  "validator": {
+    "ran": true,
+    "version": "2.0.0-dev.3.10",
+    "errors": 0,
+    "warnings": 0,
+    "infos": 0,
+    "hints": 0,
+    "truncated": false,
+    "messages": []
+  },
+  "notes": []
+}

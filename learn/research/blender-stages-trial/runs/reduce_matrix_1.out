@@ -1,0 +1,31 @@
+== crate collapse20k_r2 16:24:43
+TIMED red_crate__collapse20k_r2: 25.9 s, peak 2327 MB, exit 0
+== crate collapse20k_r3 16:25:09
+TIMED red_crate__collapse20k_r3: 26.2 s, peak 2319 MB, exit 0
+== crate collapse5k_r1 16:25:36
+TIMED red_crate__collapse5k_r1: 25.8 s, peak 2328 MB, exit 0
+== crate collapse5k_r2 16:26:02
+TIMED red_crate__collapse5k_r2: 29.6 s, peak 2326 MB, exit 0
+== crate collapse20k_steps3 16:26:32
+TIMED red_crate__collapse20k_steps3: 28.5 s, peak 2359 MB, exit 0
+== crate collapse20k_steps6 16:27:01
+TIMED red_crate__collapse20k_steps6: 31.6 s, peak 2391 MB, exit 0
+== crate collapse20k_seams1 16:27:33
+TIMED red_crate__collapse20k_seams1: 30.5 s, peak 2373 MB, exit 0
+== crate collapse20k_seams10 16:28:04
+TIMED red_crate__collapse20k_seams10: 30.5 s, peak 2355 MB, exit 0
+== crate collapse20k_seams100 16:28:35
+TIMED red_crate__collapse20k_seams100: 27.8 s, peak 2374 MB, exit 0
+== crate collapse5k_seams10 16:29:04
+TIMED red_crate__collapse5k_seams10: 29.8 s, peak 2375 MB, exit 0
+== crate collapse20k_nomerge 16:29:34
+TIMED red_crate__collapse20k_nomerge: 25.9 s, peak 2326 MB, exit 0
+== crate collapse20k_clear30 16:30:00
+TIMED red_crate__collapse20k_clear30: 26.5 s, peak 2329 MB, exit 0
+== crate collapse20k_weld1e-4 16:30:27
+TIMED red_crate__collapse20k_weld1e-4: 26.2 s, peak 2338 MB, exit 0
+== crate planar5_uv 16:30:54
+TIMED red_crate__planar5_uv: 858.9 s, peak 2235 MB, exit 0
+== crate planar5_none 16:45:14
+Terminated                 python3 "$here/scripts/timed.py" "$name" "$here/runs" -- "$repo/tools/bl" "$here/scripts/$script" "$source" "$out" "$here/runs/$name.facts.json" "$@"
+red_crate__planar5_none: no model written (exit 143)

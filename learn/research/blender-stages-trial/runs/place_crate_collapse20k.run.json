@@ -1,0 +1,22 @@
+{
+ "name": "place_crate_collapse20k",
+ "command": [
+  "tools/bl",
+  "learn/research/blender-stages-trial/scripts/place.py",
+  "learn/research/blender-stages-trial/models/scale_crate_collapse20k.glb",
+  "learn/research/blender-stages-trial/models/place_crate_collapse20k.glb",
+  "learn/research/blender-stages-trial/runs/place_crate_collapse20k.facts.json",
+  "turn=180"
+ ],
+ "started": "2026-10-08 18:10:29",
+ "wall_seconds": 1.12,
+ "user_seconds": 1.15,
+ "system_seconds": 0.3,
+ "peak_rss_mb": 658.7,
+ "exit_status": 0,
+ "signal": null,
+ "core_dumped": false,
+ "least_available_mb": 14709,
+ "stopped_for_memory": false,
+ "threads": "all"
+}
