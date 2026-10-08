@@ -1,0 +1,276 @@
+{
+ "source": "a_fused_morph.glb",
+ "blender": "5.2.2 LTS",
+ "parent_set_result": [
+  "FINISHED"
+ ],
+ "bones": [
+  {
+   "name": "root",
+   "parent": null,
+   "deform": false,
+   "head": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tail": [
+    0.0,
+    0.0,
+    0.15
+   ]
+  },
+  {
+   "name": "body",
+   "parent": "root",
+   "deform": true,
+   "head": [
+    0.0,
+    0.19,
+    0.464
+   ],
+   "tail": [
+    0.0,
+    -0.189,
+    0.464
+   ]
+  },
+  {
+   "name": "head",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    0.0,
+    -0.189,
+    0.464
+   ],
+   "tail": [
+    0.0,
+    -0.491,
+    0.326
+   ]
+  },
+  {
+   "name": "tail_1",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    0.0,
+    0.21,
+    0.599
+   ],
+   "tail": [
+    0.013,
+    0.251,
+    0.783
+   ]
+  },
+  {
+   "name": "tail_2",
+   "parent": "tail_1",
+   "deform": true,
+   "head": [
+    0.013,
+    0.251,
+    0.783
+   ],
+   "tail": [
+    0.027,
+    0.292,
+    0.966
+   ]
+  },
+  {
+   "name": "upper_front_L",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    0.172,
+    -0.092,
+    0.348
+   ],
+   "tail": [
+    0.172,
+    -0.092,
+    0.174
+   ]
+  },
+  {
+   "name": "lower_front_L",
+   "parent": "upper_front_L",
+   "deform": true,
+   "head": [
+    0.172,
+    -0.092,
+    0.174
+   ],
+   "tail": [
+    0.172,
+    -0.092,
+    0.0
+   ]
+  },
+  {
+   "name": "upper_back_L",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    0.21,
+    0.141,
+    0.348
+   ],
+   "tail": [
+    0.21,
+    0.141,
+    0.174
+   ]
+  },
+  {
+   "name": "lower_back_L",
+   "parent": "upper_back_L",
+   "deform": true,
+   "head": [
+    0.21,
+    0.141,
+    0.174
+   ],
+   "tail": [
+    0.21,
+    0.141,
+    0.0
+   ]
+  },
+  {
+   "name": "upper_front_R",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    -0.205,
+    -0.189,
+    0.348
+   ],
+   "tail": [
+    -0.205,
+    -0.189,
+    0.174
+   ]
+  },
+  {
+   "name": "lower_front_R",
+   "parent": "upper_front_R",
+   "deform": true,
+   "head": [
+    -0.205,
+    -0.189,
+    0.174
+   ],
+   "tail": [
+    -0.205,
+    -0.189,
+    0.0
+   ]
+  },
+  {
+   "name": "upper_back_R",
+   "parent": "body",
+   "deform": true,
+   "head": [
+    -0.099,
+    0.19,
+    0.348
+   ],
+   "tail": [
+    -0.099,
+    0.19,
+    0.174
+   ]
+  },
+  {
+   "name": "lower_back_R",
+   "parent": "upper_back_R",
+   "deform": true,
+   "head": [
+    -0.099,
+    0.19,
+    0.174
+   ],
+   "tail": [
+    -0.099,
+    0.19,
+    0.0
+   ]
+  }
+ ],
+ "landmarks": {
+  "feet": {
+   "front_L": [
+    0.172,
+    -0.092,
+    0.025
+   ],
+   "back_L": [
+    0.21,
+    0.141,
+    0.027
+   ],
+   "front_R": [
+    -0.205,
+    -0.189,
+    0.029
+   ],
+   "back_R": [
+    -0.099,
+    0.19,
+    0.027
+   ]
+  },
+  "snout": [
+   0.026,
+   -0.491,
+   0.326
+  ],
+  "tail_tip": [
+   0.027,
+   0.292,
+   0.966
+  ]
+ },
+ "vertices": 9486,
+ "vertices_moved_by_bone": {
+  "body": 4984,
+  "head": 3987,
+  "tail_1": 2586,
+  "tail_2": 905,
+  "upper_front_L": 3805,
+  "lower_front_L": 1648,
+  "upper_back_L": 3231,
+  "lower_back_L": 1093,
+  "upper_front_R": 3401,
+  "lower_front_R": 1472,
+  "upper_back_R": 2612,
+  "lower_back_R": 1076
+ },
+ "bones_per_vertex": {
+  "1": 811,
+  "4": 3143,
+  "2": 1676,
+  "5": 1039,
+  "6": 90,
+  "3": 2677,
+  "9": 6,
+  "7": 27,
+  "8": 7,
+  "0": 10
+ },
+ "vertices_with_no_bone": 10,
+ "shape_keys_kept": [
+  "Basis",
+  "soft_all",
+  "soft_masked",
+  "spiked_push",
+  "spiked_axial"
+ ],
+ "actions": [
+  "walk_like"
+ ]
+}

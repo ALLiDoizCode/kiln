@@ -1,0 +1,3 @@
+RESULT orb_h31_req20000.glb: z from -0.491 to 0.491; mean z of all +0.015; mean z of top 15% -0.350; mean x of top 15% +0.063
+RESULT orb_h31_req20000_rigged_walk.glb: z from -1.000 to 1.000; mean z of all +0.336; mean z of top 15% +0.000; mean x of top 15% -0.000
+RESULT orb_spiked_h31_req20000.glb: z from -0.491 to 0.491; mean z of all -0.011; mean z of top 15% -0.056; mean x of top 15% -0.027

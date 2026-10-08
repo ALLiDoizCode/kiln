@@ -1,0 +1,2 @@
+5fd9408143db895916e9a21c0134bd050b0f0648bf6b2db37013633106ae1dd1  learn/research/tripo-api-trial/models/orb_h31_req20000_rigged_walk.glb
+09775de786f1bed140daa78359ae909eadc214b579bedf38ed520b47a29a5c78  learn/research/tripo-api-trial/models/orb_spiked_h31_req20000.glb

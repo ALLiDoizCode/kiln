@@ -1,0 +1,453 @@
+{
+ "file": "tripo_convert_4da605a7-512d-4fe1-8cf3-e4967531ae79.fbx",
+ "objects": [
+  [
+   "Armature",
+   "ARMATURE"
+  ],
+  [
+   "tripo_node_4da605a7",
+   "MESH"
+  ]
+ ],
+ "actions": [],
+ "armatures": [
+  {
+   "name": "Armature",
+   "bones": [
+    {
+     "name": "bone_0",
+     "parent": null,
+     "deform": true,
+     "head": [
+      0.0,
+      0.036,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      0.036,
+      -0.503
+     ]
+    },
+    {
+     "name": "bone_1",
+     "parent": "bone_0",
+     "deform": true,
+     "head": [
+      0.028,
+      0.516,
+      -0.147
+     ],
+     "tail": [
+      0.015,
+      0.439,
+      0.073
+     ]
+    },
+    {
+     "name": "bone_2",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.006,
+      0.474,
+      0.175
+     ],
+     "tail": [
+      0.006,
+      0.332,
+      0.266
+     ]
+    },
+    {
+     "name": "bone_3",
+     "parent": "bone_2",
+     "deform": true,
+     "head": [
+      0.006,
+      0.366,
+      0.255
+     ],
+     "tail": [
+      0.006,
+      0.231,
+      0.356
+     ]
+    },
+    {
+     "name": "bone_4",
+     "parent": "bone_2",
+     "deform": true,
+     "head": [
+      0.006,
+      0.278,
+      0.228
+     ],
+     "tail": [
+      0.006,
+      0.115,
+      0.273
+     ]
+    },
+    {
+     "name": "bone_5",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.029,
+      0.474,
+      0.175
+     ],
+     "tail": [
+      0.03,
+      0.443,
+      0.407
+     ]
+    },
+    {
+     "name": "bone_6",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.006,
+      0.351,
+      0.052
+     ],
+     "tail": [
+      -0.171,
+      0.239,
+      0.163
+     ]
+    },
+    {
+     "name": "bone_7",
+     "parent": "bone_6",
+     "deform": true,
+     "head": [
+      -0.171,
+      0.239,
+      0.163
+     ],
+     "tail": [
+      -0.186,
+      0.128,
+      0.144
+     ]
+    },
+    {
+     "name": "bone_8",
+     "parent": "bone_7",
+     "deform": true,
+     "head": [
+      -0.186,
+      0.128,
+      0.144
+     ],
+     "tail": [
+      -0.205,
+      0.036,
+      0.175
+     ]
+    },
+    {
+     "name": "bone_9",
+     "parent": "bone_8",
+     "deform": true,
+     "head": [
+      -0.205,
+      0.036,
+      0.175
+     ],
+     "tail": [
+      -0.225,
+      -0.056,
+      0.205
+     ]
+    },
+    {
+     "name": "bone_10",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.006,
+      0.351,
+      0.052
+     ],
+     "tail": [
+      0.194,
+      0.239,
+      -0.052
+     ]
+    },
+    {
+     "name": "bone_11",
+     "parent": "bone_10",
+     "deform": true,
+     "head": [
+      0.194,
+      0.239,
+      -0.052
+     ],
+     "tail": [
+      0.232,
+      0.166,
+      -0.129
+     ]
+    },
+    {
+     "name": "bone_12",
+     "parent": "bone_11",
+     "deform": true,
+     "head": [
+      0.232,
+      0.166,
+      -0.129
+     ],
+     "tail": [
+      0.228,
+      0.051,
+      -0.14
+     ]
+    },
+    {
+     "name": "bone_13",
+     "parent": "bone_12",
+     "deform": true,
+     "head": [
+      0.228,
+      0.051,
+      -0.14
+     ],
+     "tail": [
+      0.225,
+      -0.064,
+      -0.152
+     ]
+    },
+    {
+     "name": "bone_14",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.029,
+      0.516,
+      -0.148
+     ],
+     "tail": [
+      0.058,
+      0.516,
+      -0.214
+     ]
+    },
+    {
+     "name": "bone_15",
+     "parent": "bone_14",
+     "deform": true,
+     "head": [
+      0.086,
+      0.516,
+      -0.278
+     ],
+     "tail": [
+      0.098,
+      0.593,
+      -0.367
+     ]
+    },
+    {
+     "name": "bone_16",
+     "parent": "bone_15",
+     "deform": true,
+     "head": [
+      0.098,
+      0.593,
+      -0.367
+     ],
+     "tail": [
+      0.098,
+      0.715,
+      -0.39
+     ]
+    },
+    {
+     "name": "bone_17",
+     "parent": "bone_16",
+     "deform": true,
+     "head": [
+      0.098,
+      0.715,
+      -0.39
+     ],
+     "tail": [
+      0.079,
+      0.819,
+      -0.37
+     ]
+    },
+    {
+     "name": "bone_18",
+     "parent": "bone_17",
+     "deform": true,
+     "head": [
+      0.079,
+      0.819,
+      -0.37
+     ],
+     "tail": [
+      0.048,
+      0.896,
+      -0.336
+     ]
+    },
+    {
+     "name": "bone_19",
+     "parent": "bone_18",
+     "deform": true,
+     "head": [
+      0.048,
+      0.896,
+      -0.336
+     ],
+     "tail": [
+      0.017,
+      0.973,
+      -0.301
+     ]
+    },
+    {
+     "name": "bone_20",
+     "parent": "bone_14",
+     "deform": true,
+     "head": [
+      0.03,
+      0.514,
+      -0.146
+     ],
+     "tail": [
+      -0.044,
+      0.41,
+      -0.149
+     ]
+    },
+    {
+     "name": "bone_21",
+     "parent": "bone_20",
+     "deform": true,
+     "head": [
+      -0.117,
+      0.308,
+      -0.152
+     ],
+     "tail": [
+      -0.113,
+      0.159,
+      -0.178
+     ]
+    },
+    {
+     "name": "bone_22",
+     "parent": "bone_21",
+     "deform": true,
+     "head": [
+      -0.113,
+      0.159,
+      -0.178
+     ],
+     "tail": [
+      -0.106,
+      0.047,
+      -0.209
+     ]
+    },
+    {
+     "name": "bone_23",
+     "parent": "bone_22",
+     "deform": true,
+     "head": [
+      -0.106,
+      0.047,
+      -0.209
+     ],
+     "tail": [
+      -0.098,
+      -0.064,
+      -0.24
+     ]
+    },
+    {
+     "name": "bone_24",
+     "parent": "bone_20",
+     "deform": true,
+     "head": [
+      0.029,
+      0.516,
+      -0.148
+     ],
+     "tail": [
+      0.182,
+      0.308,
+      -0.152
+     ]
+    },
+    {
+     "name": "bone_25",
+     "parent": "bone_24",
+     "deform": true,
+     "head": [
+      0.182,
+      0.308,
+      -0.152
+     ],
+     "tail": [
+      0.209,
+      0.186,
+      -0.109
+     ]
+    },
+    {
+     "name": "bone_26",
+     "parent": "bone_25",
+     "deform": true,
+     "head": [
+      0.209,
+      0.186,
+      -0.109
+     ],
+     "tail": [
+      0.236,
+      0.063,
+      -0.067
+     ]
+    }
+   ]
+  }
+ ],
+ "meshes": [
+  {
+   "name": "tripo_node_4da605a7",
+   "vertices": 9486,
+   "parent": "Armature",
+   "modifiers": [
+    "ARMATURE"
+   ],
+   "vertices_moved_by_group": {
+    "bone_4": 795,
+    "bone_5": 4361,
+    "bone_15": 1116,
+    "bone_16": 856,
+    "bone_17": 620,
+    "bone_18": 360,
+    "bone_19": 58
+   },
+   "groups_per_vertex": {
+    "0": 3561,
+    "1": 4229,
+    "2": 1172,
+    "3": 503,
+    "4": 21
+   },
+   "shape_keys": []
+  }
+ ]
+}

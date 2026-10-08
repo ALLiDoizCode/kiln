@@ -1,0 +1,5 @@
+a_fused_morph: kiln.measure exit 0
+b_pieces_p1_morph: kiln.measure exit 0
+b_pieces_p2_morph: kiln.measure exit 0
+a_fused_anim: kiln.measure exit 0
+a_fused_pos_nrm_tan: kiln.measure exit 0

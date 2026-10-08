@@ -1,0 +1,282 @@
+{
+ "fbx": "tripo_convert_4da605a7-512d-4fe1-8cf3-e4967531ae79.fbx",
+ "as_imported": {
+  "armature_scale": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "armature_rotation_deg": [
+   -0.0,
+   0.0,
+   0.0
+  ],
+  "mesh_scale": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "mesh_rotation_deg": [
+   0.0,
+   -0.0,
+   0.0
+  ]
+ },
+ "skeleton": {
+  "bones": 27,
+  "deform_bones": 27,
+  "box_of_bone_heads": {
+   "min": [
+    -0.205,
+    -0.255,
+    0.036
+   ],
+   "max": [
+    0.232,
+    0.39,
+    0.896
+   ]
+  },
+  "box_of_mesh": {
+   "min": [
+    -0.367,
+    -0.491,
+    0.0
+   ],
+   "max": [
+    0.367,
+    0.491,
+    0.966
+   ]
+  },
+  "children": {
+   "bone_0": [
+    "bone_1"
+   ],
+   "bone_1": [
+    "bone_2",
+    "bone_5",
+    "bone_6",
+    "bone_10",
+    "bone_14"
+   ],
+   "bone_2": [
+    "bone_3",
+    "bone_4"
+   ],
+   "bone_6": [
+    "bone_7"
+   ],
+   "bone_7": [
+    "bone_8"
+   ],
+   "bone_8": [
+    "bone_9"
+   ],
+   "bone_10": [
+    "bone_11"
+   ],
+   "bone_11": [
+    "bone_12"
+   ],
+   "bone_12": [
+    "bone_13"
+   ],
+   "bone_14": [
+    "bone_15",
+    "bone_20"
+   ],
+   "bone_15": [
+    "bone_16"
+   ],
+   "bone_16": [
+    "bone_17"
+   ],
+   "bone_17": [
+    "bone_18"
+   ],
+   "bone_18": [
+    "bone_19"
+   ],
+   "bone_20": [
+    "bone_21",
+    "bone_24"
+   ],
+   "bone_21": [
+    "bone_22"
+   ],
+   "bone_22": [
+    "bone_23"
+   ],
+   "bone_24": [
+    "bone_25"
+   ],
+   "bone_25": [
+    "bone_26"
+   ]
+  }
+ },
+ "chains": {
+  "legs": {
+   "bone_23": [
+    "bone_21",
+    "bone_22",
+    "bone_23"
+   ],
+   "bone_13": [
+    "bone_10",
+    "bone_11",
+    "bone_12",
+    "bone_13"
+   ],
+   "bone_9": [
+    "bone_6",
+    "bone_7",
+    "bone_8",
+    "bone_9"
+   ],
+   "bone_26": [
+    "bone_24",
+    "bone_25",
+    "bone_26"
+   ]
+  },
+  "tail": [
+   "bone_15",
+   "bone_16",
+   "bone_17",
+   "bone_18",
+   "bone_19"
+  ],
+  "leg_feet_at": {
+   "bone_23": [
+    -0.098,
+    0.24,
+    -0.064
+   ],
+   "bone_13": [
+    0.225,
+    0.152,
+    -0.064
+   ],
+   "bone_9": [
+    -0.225,
+    -0.205,
+    -0.056
+   ],
+   "bone_26": [
+    0.236,
+    0.067,
+    0.063
+   ]
+  }
+ },
+ "tripo_weights": {
+  "vertices": 9486,
+  "vertex_groups": 7,
+  "groups_with_vertices": 7,
+  "vertices_in_no_group": 3561,
+  "vertices_per_group": {
+   "bone_4": 795,
+   "bone_5": 4361,
+   "bone_15": 1116,
+   "bone_16": 856,
+   "bone_17": 620,
+   "bone_18": 360,
+   "bone_19": 58
+  },
+  "leg_bones_with_vertices": 0,
+  "leg_bones": 14,
+  "bend_one_leg_30_degrees": {
+   "bone": "bone_21",
+   "vertices_moved_over_1mm": 0
+  },
+  "bend_tail_3_bones_15_degrees": {
+   "bones": [
+    "bone_15",
+    "bone_16",
+    "bone_17"
+   ],
+   "vertices_moved_over_1mm": 1563,
+   "largest_move_m": 0.246
+  },
+  "glb_bytes": 19020748
+ },
+ "glb_mesh_against_fbx_mesh": {
+  "same_vertex_count": true,
+  "box_of_glb_mesh": {
+   "min": [
+    -0.367,
+    -0.491,
+    0.0
+   ],
+   "max": [
+    0.367,
+    0.491,
+    0.966
+   ]
+  },
+  "largest_distance_by_index_m": 1.0778
+ },
+ "auto_weights_result": [
+  "FINISHED"
+ ],
+ "blender_auto_weights_on_tripo_skeleton": {
+  "vertices": 9486,
+  "vertex_groups": 27,
+  "groups_with_vertices": 27,
+  "vertices_in_no_group": 10,
+  "vertices_per_group": {
+   "bone_0": 137,
+   "bone_1": 2457,
+   "bone_2": 2811,
+   "bone_3": 2572,
+   "bone_4": 2459,
+   "bone_5": 3448,
+   "bone_6": 2258,
+   "bone_7": 1914,
+   "bone_8": 984,
+   "bone_9": 230,
+   "bone_10": 2335,
+   "bone_11": 2168,
+   "bone_12": 821,
+   "bone_13": 389,
+   "bone_14": 1191,
+   "bone_15": 2058,
+   "bone_16": 876,
+   "bone_17": 578,
+   "bone_18": 218,
+   "bone_19": 85,
+   "bone_20": 1890,
+   "bone_21": 2229,
+   "bone_22": 1035,
+   "bone_23": 335,
+   "bone_24": 2086,
+   "bone_25": 1351,
+   "bone_26": 1178
+  },
+  "leg_bones_with_vertices": 14,
+  "leg_bones": 14,
+  "bend_one_leg_30_degrees": {
+   "bone": "bone_21",
+   "vertices_moved_over_1mm": 2383
+  },
+  "bend_tail_3_bones_15_degrees": {
+   "bones": [
+    "bone_15",
+    "bone_16",
+    "bone_17"
+   ],
+   "vertices_moved_over_1mm": 2259,
+   "largest_move_m": 0.246
+  },
+  "shape_keys": [
+   "Basis",
+   "soft_all",
+   "soft_masked",
+   "spiked_push",
+   "spiked_axial"
+  ],
+  "glb_bytes": 10807140
+ }
+}

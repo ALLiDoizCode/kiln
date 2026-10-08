@@ -1,0 +1,5 @@
+# The creature is someone else's artwork, used for a private test: no model or picture made from it is committed.
+models/
+pictures/
+work/
+bevy_probe/target/

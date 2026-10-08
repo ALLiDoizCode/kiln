@@ -1,0 +1,97 @@
+{
+ "source": "orb_p1_tri_req20000_textured.glb",
+ "settings": {
+  "slender": 2.5,
+  "legs": 0.3,
+  "factor": 3.0,
+  "tail": 0.25,
+  "mask": "learn/research/fur-animation-trial/work/b_p1_mask.glb"
+ },
+ "vertices": 9585,
+ "triangles": 18438,
+ "pieces": 157,
+ "body_triangles": 8883,
+ "classes": {
+  "not slender": 54,
+  "spike": 84,
+  "slender, in the leg zone": 18
+ },
+ "spikes": {
+  "count": 84,
+  "in_tail": 0,
+  "triangles": 4055,
+  "length_m": {
+   "min": 0.0468,
+   "median": 0.08845,
+   "max": 0.2127
+  },
+  "roots_inside_body": 73
+ },
+ "base": {
+  "self_intersecting_pairs": 3631,
+  "box_size_m": [
+   0.673828125,
+   0.998046875,
+   0.939453125
+  ]
+ },
+ "shapes": {
+  "retracted": {
+   "vertices_moved_over_1mm": 2188,
+   "largest_move_m": 0.20503989865272793,
+   "box_size_m": [
+    0.673828125,
+    0.998046875,
+    0.939453125
+   ],
+   "self_intersecting_pairs": 2130,
+   "triangles_turned_over": 0,
+   "edge_stretch": {
+    "edges": 27724,
+    "over_1_5": 0,
+    "over_3": 0,
+    "under_0_5": 6081,
+    "max": 1.0,
+    "p99": 1.0
+   }
+  },
+  "extended": {
+   "vertices_moved_over_1mm": 2028,
+   "largest_move_m": 0.4184487727606692,
+   "box_size_m": [
+    1.24609375,
+    1.173828125,
+    0.95703125
+   ],
+   "self_intersecting_pairs": 3522,
+   "triangles_turned_over": 0,
+   "edge_stretch": {
+    "edges": 27724,
+    "over_1_5": 4106,
+    "over_3": 0,
+    "under_0_5": 0,
+    "max": 2.999999999999998,
+    "p99": 2.988686281406053
+   }
+  },
+  "tail_only": {
+   "vertices_moved_over_1mm": 0,
+   "largest_move_m": 0.0,
+   "box_size_m": [
+    0.673828125,
+    0.998046875,
+    0.939453125
+   ],
+   "self_intersecting_pairs": 3631,
+   "triangles_turned_over": 0,
+   "edge_stretch": {
+    "edges": 27724,
+    "over_1_5": 0,
+    "over_3": 0,
+    "under_0_5": 0,
+    "max": 1.0,
+    "p99": 1.0
+   }
+  }
+ }
+}

@@ -1,0 +1,306 @@
+{
+ "file": "orb_h31_req20000_walk2.glb",
+ "objects": [
+  [
+   "Armature",
+   "ARMATURE"
+  ],
+  [
+   "tripo_node_a8c76b08-baff-4bda-8827-7f442a177c78",
+   "MESH"
+  ],
+  [
+   "bone_3",
+   "EMPTY"
+  ],
+  [
+   "bone_6",
+   "EMPTY"
+  ],
+  [
+   "bone_7",
+   "EMPTY"
+  ],
+  [
+   "bone_8",
+   "EMPTY"
+  ],
+  [
+   "bone_9",
+   "EMPTY"
+  ],
+  [
+   "bone_10",
+   "EMPTY"
+  ],
+  [
+   "bone_11",
+   "EMPTY"
+  ],
+  [
+   "bone_12",
+   "EMPTY"
+  ],
+  [
+   "bone_13",
+   "EMPTY"
+  ],
+  [
+   "bone_20",
+   "EMPTY"
+  ],
+  [
+   "bone_21",
+   "EMPTY"
+  ],
+  [
+   "bone_22",
+   "EMPTY"
+  ],
+  [
+   "bone_23",
+   "EMPTY"
+  ],
+  [
+   "bone_24",
+   "EMPTY"
+  ],
+  [
+   "bone_25",
+   "EMPTY"
+  ],
+  [
+   "bone_26",
+   "EMPTY"
+  ],
+  [
+   "Icosphere",
+   "MESH"
+  ]
+ ],
+ "actions": [],
+ "armatures": [
+  {
+   "name": "Armature",
+   "bones": [
+    {
+     "name": "bone_0",
+     "parent": null,
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_1",
+     "parent": "bone_0",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_2",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_4",
+     "parent": "bone_2",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_5",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_14",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_15",
+     "parent": "bone_14",
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      0.118,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_16",
+     "parent": "bone_15",
+     "deform": true,
+     "head": [
+      0.0,
+      0.118,
+      0.0
+     ],
+     "tail": [
+      0.044,
+      0.215,
+      0.065
+     ]
+    },
+    {
+     "name": "bone_17",
+     "parent": "bone_16",
+     "deform": true,
+     "head": [
+      0.044,
+      0.215,
+      0.065
+     ],
+     "tail": [
+      0.085,
+      0.266,
+      0.149
+     ]
+    },
+    {
+     "name": "bone_18",
+     "parent": "bone_17",
+     "deform": true,
+     "head": [
+      0.085,
+      0.266,
+      0.149
+     ],
+     "tail": [
+      0.113,
+      0.288,
+      0.232
+     ]
+    },
+    {
+     "name": "bone_19",
+     "parent": "bone_18",
+     "deform": true,
+     "head": [
+      0.113,
+      0.288,
+      0.232
+     ],
+     "tail": [
+      0.141,
+      0.309,
+      0.314
+     ]
+    },
+    {
+     "name": "neutral_bone",
+     "parent": null,
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    }
+   ]
+  }
+ ],
+ "meshes": [
+  {
+   "name": "tripo_node_a8c76b08-baff-4bda-8827-7f442a177c78",
+   "vertices": 9487,
+   "parent": "Armature",
+   "modifiers": [
+    "ARMATURE"
+   ],
+   "vertices_moved_by_group": {
+    "bone_0": 9487,
+    "bone_4": 0,
+    "bone_5": 1,
+    "bone_15": 0,
+    "bone_16": 0,
+    "bone_17": 0,
+    "bone_18": 0,
+    "bone_19": 0,
+    "neutral_bone": 0
+   },
+   "groups_per_vertex": {
+    "1": 9486,
+    "2": 1
+   },
+   "shape_keys": []
+  },
+  {
+   "name": "Icosphere",
+   "vertices": 42,
+   "parent": null,
+   "modifiers": [],
+   "vertices_moved_by_group": {},
+   "groups_per_vertex": {
+    "0": 42
+   },
+   "shape_keys": []
+  }
+ ]
+}

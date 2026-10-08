@@ -1,0 +1,33 @@
+# A throwaway program for learn/research/fur-animation-trial.md: it is not part of kiln and is
+# not a member of the workspace. Build it with the workspace's target folder so Bevy is not
+# built twice:
+#   CARGO_TARGET_DIR=../../../../target cargo build --release
+[package]
+name = "morph_probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+# fur_view (src/bin/fur_view.rs) draws its keys and state in the window only with this feature.
+# It is off by default because it makes cargo build Bevy's UI crates and Bevy itself again.
+[features]
+overlay = ["bevy/bevy_ui", "bevy/bevy_ui_render"]
+# Only for scrgb/build.sh, which builds fur_strands against a bevy_render with one change so that
+# it can send an HDR signal to the screen (fur_strands --display-hdr). Turns nothing on in Bevy.
+scrgb = []
+
+[dependencies]
+# The same Bevy, with the same features, as crates/asset_view, and one more. "3d" already brings
+# morph targets ("morph"), skinning (always in bevy_pbr), and clip playback ("morph_animation",
+# "gltf_animation"). "bevy_solari" is Bevy's experimental ray-traced lighting, for fur_strands'
+# ray tracing key; it adds one crate, bevy_solari, to this project's own Cargo.lock.
+bevy = { version = "=0.19.1", default-features = false, features = ["3d", "bevy_solari", "file_watcher", "jpeg", "webp"] }
+# Already in Cargo.lock through Bevy. Named here only so fur_strands can ask a window's surface
+# which formats it offers (the HDR display question); no feature of it is turned on.
+wgpu = { version = "=29.0.4", default-features = false }
+# The viewer's own scene, light and glTF loader, so a frame here is lit like a review picture.
+asset_view = { path = "../../../../crates/asset_view" }
+serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["png"] }

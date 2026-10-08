@@ -1,0 +1,307 @@
+{
+ "file": "orb_h31_req20000_rigged_walk.glb",
+ "objects": [
+  [
+   "Armature",
+   "ARMATURE"
+  ],
+  [
+   "tripo_node_a8c76b08-baff-4bda-8827-7f442a177c78",
+   "MESH"
+  ],
+  [
+   "bone_4",
+   "EMPTY"
+  ],
+  [
+   "bone_6",
+   "EMPTY"
+  ],
+  [
+   "bone_7",
+   "EMPTY"
+  ],
+  [
+   "bone_8",
+   "EMPTY"
+  ],
+  [
+   "bone_9",
+   "EMPTY"
+  ],
+  [
+   "bone_10",
+   "EMPTY"
+  ],
+  [
+   "bone_11",
+   "EMPTY"
+  ],
+  [
+   "bone_12",
+   "EMPTY"
+  ],
+  [
+   "bone_13",
+   "EMPTY"
+  ],
+  [
+   "bone_20",
+   "EMPTY"
+  ],
+  [
+   "bone_21",
+   "EMPTY"
+  ],
+  [
+   "bone_22",
+   "EMPTY"
+  ],
+  [
+   "bone_23",
+   "EMPTY"
+  ],
+  [
+   "bone_24",
+   "EMPTY"
+  ],
+  [
+   "bone_25",
+   "EMPTY"
+  ],
+  [
+   "bone_26",
+   "EMPTY"
+  ],
+  [
+   "Icosphere",
+   "MESH"
+  ]
+ ],
+ "actions": [],
+ "armatures": [
+  {
+   "name": "Armature",
+   "bones": [
+    {
+     "name": "bone_0",
+     "parent": null,
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      0.503,
+      -0.0
+     ]
+    },
+    {
+     "name": "bone_1",
+     "parent": "bone_0",
+     "deform": true,
+     "head": [
+      0.028,
+      0.147,
+      0.48
+     ],
+     "tail": [
+      0.01,
+      -0.159,
+      0.373
+     ]
+    },
+    {
+     "name": "bone_2",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.006,
+      -0.175,
+      0.438
+     ],
+     "tail": [
+      0.006,
+      -0.248,
+      0.325
+     ]
+    },
+    {
+     "name": "bone_3",
+     "parent": "bone_2",
+     "deform": true,
+     "head": [
+      0.006,
+      -0.255,
+      0.33
+     ],
+     "tail": [
+      0.006,
+      -0.336,
+      0.223
+     ]
+    },
+    {
+     "name": "bone_5",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.029,
+      -0.175,
+      0.438
+     ],
+     "tail": [
+      0.03,
+      -0.497,
+      0.395
+     ]
+    },
+    {
+     "name": "bone_14",
+     "parent": "bone_1",
+     "deform": true,
+     "head": [
+      0.028,
+      0.147,
+      0.48
+     ],
+     "tail": [
+      0.01,
+      -0.159,
+      0.373
+     ]
+    },
+    {
+     "name": "bone_15",
+     "parent": "bone_14",
+     "deform": true,
+     "head": [
+      0.028,
+      0.147,
+      0.48
+     ],
+     "tail": [
+      0.021,
+      0.037,
+      0.441
+     ]
+    },
+    {
+     "name": "bone_16",
+     "parent": "bone_15",
+     "deform": true,
+     "head": [
+      0.021,
+      0.037,
+      0.441
+     ],
+     "tail": [
+      -0.004,
+      -0.079,
+      0.481
+     ]
+    },
+    {
+     "name": "bone_17",
+     "parent": "bone_16",
+     "deform": true,
+     "head": [
+      -0.004,
+      -0.079,
+      0.481
+     ],
+     "tail": [
+      -0.017,
+      -0.158,
+      0.552
+     ]
+    },
+    {
+     "name": "bone_18",
+     "parent": "bone_17",
+     "deform": true,
+     "head": [
+      -0.017,
+      -0.158,
+      0.552
+     ],
+     "tail": [
+      -0.018,
+      -0.207,
+      0.627
+     ]
+    },
+    {
+     "name": "bone_19",
+     "parent": "bone_18",
+     "deform": true,
+     "head": [
+      -0.018,
+      -0.207,
+      0.627
+     ],
+     "tail": [
+      -0.018,
+      -0.256,
+      0.702
+     ]
+    },
+    {
+     "name": "neutral_bone",
+     "parent": null,
+     "deform": true,
+     "head": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "tail": [
+      0.0,
+      1.0,
+      -0.0
+     ]
+    }
+   ]
+  }
+ ],
+ "meshes": [
+  {
+   "name": "tripo_node_a8c76b08-baff-4bda-8827-7f442a177c78",
+   "vertices": 9486,
+   "parent": "Armature",
+   "modifiers": [
+    "ARMATURE"
+   ],
+   "vertices_moved_by_group": {
+    "bone_0": 9486,
+    "bone_1": 0,
+    "bone_2": 0,
+    "bone_3": 0,
+    "bone_5": 0,
+    "bone_15": 0,
+    "bone_16": 0,
+    "bone_17": 0,
+    "bone_18": 0,
+    "bone_19": 0,
+    "neutral_bone": 0
+   },
+   "groups_per_vertex": {
+    "1": 9486
+   },
+   "shape_keys": []
+  },
+  {
+   "name": "Icosphere",
+   "vertices": 42,
+   "parent": null,
+   "modifiers": [],
+   "vertices_moved_by_group": {},
+   "groups_per_vertex": {
+    "0": 42
+   },
+   "shape_keys": []
+  }
+ ]
+}
