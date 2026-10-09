@@ -84,12 +84,25 @@ def measure(path, size=None, validator=DEFAULT_VALIDATOR):
         "size": {"in_file": largest, "given": size, "scale_factor": factor},
         "materials": materials,
         "textures": textures,
+        "surface": surface.surface_figures(),
         "uvs": surface.uv_figures(),
         "texel_density": surface.texel_density(factor or 1.0, size if factor else largest),
         "validator": run_validator(path, validator) if validator else None,
         "notes": notes,
     }
     return report
+
+
+def surface(path):
+    """Only the welded surface's figures of the model file at `path` (the "surface" part of
+    measure's report): quicker, for a caller that wants nothing else."""
+    model = load(path)
+    notes = []
+    textures = _textures(model)
+    gathered = _Surface()
+    _meshes(model, _materials(model.json, textures, notes), textures, gathered, notes,
+            with_uvs=False)
+    return gathered.surface_figures()
 
 
 # ---- materials and textures ----------------------------------------------------------------
@@ -174,8 +187,9 @@ def _triangle_corners(model, primitive, vertex_count, where, notes):
     return [], [], [], indexed
 
 
-def _meshes(model, materials, textures, surface, notes):
-    """Walk every mesh as the scene places it, feeding `surface`; return the per-mesh table."""
+def _meshes(model, materials, textures, surface, notes, with_uvs=True):
+    """Walk every mesh as the scene places it, feeding `surface`; return the per-mesh table.
+    With `with_uvs` off the UVs are not read, so `surface` has no UV figures to give."""
     doc = model.json
     table = []
     for index, mesh in enumerate(doc.get("meshes", [])):
@@ -216,7 +230,7 @@ def _meshes(model, materials, textures, surface, notes):
             vertex_count = len(flat) // 3
             a, b, c, _ = _triangle_corners(model, primitive, vertex_count, where, notes)
             uv = None
-            if "TEXCOORD_0" in attributes:
+            if with_uvs and "TEXCOORD_0" in attributes:
                 uv_flat, uv_per = model.accessor(attributes["TEXCOORD_0"])
                 if uv_per != 2 or len(uv_flat) // 2 != vertex_count:
                     raise GltfError(f"{where}: TEXCOORD_0 does not match the positions")
@@ -251,13 +265,17 @@ class _Surface:
     """Everything the scene draws, gathered primitive by primitive in world space.
 
     Vertices are welded by position as they arrive: two vertices at exactly the same place
-    are one point. Edges and UV islands are worked out on that welded surface.
+    are one point. Edges, pieces and UV islands are worked out on that welded surface.
     """
 
     def __init__(self):
         self.low = [math.inf] * 3
         self.high = [-math.inf] * 3
         self._points = {}        # world position -> point number
+        self._used = set()       # points that are a corner of some triangle
+        self._all_triangles = 0  # triangles with three distinct points, with UVs or without
+        self._all_edges = []     # per side of those: which edge of the welded surface
+        self._joins = []         # pairs of points that a triangle ties into one piece
         self._uv_points = {}     # (point number, u, v) -> number of that point-with-a-UV
         self._triangles = 0      # triangles that have UVs and three distinct points
         self._edges = []         # per triangle side: which edge of the welded surface
@@ -283,7 +301,23 @@ class _Surface:
             for axis, column in enumerate((xs, ys, zs)):
                 self.low[axis] = min(self.low[axis], min(column))
                 self.high[axis] = max(self.high[axis], max(column))
-        if uv is None or not a:
+        if not a:
+            return
+        # Weld: give every vertex the number of the point at its position.
+        points = self._points
+        point_of = [points.setdefault(k, len(points)) for k in zip(xs, ys, zs)]
+        pa, pb, pc = (list(map(point_of.__getitem__, idx)) for idx in (a, b, c))
+        # A triangle with two corners at the same point has no area and no three edges.
+        proper = [i != j and j != k and k != i for i, j, k in zip(pa, pb, pc)]
+        whole = all(proper)
+        sa, sb, sc = (pa, pb, pc) if whole else (list(compress(col, proper)) for col in (pa, pb, pc))
+        self._all_triangles += len(sa)
+        for p, q in ((sa, sb), (sb, sc), (sc, sa)):
+            self._all_edges += [(i << 32 | j) if i < j else (j << 32 | i) for i, j in zip(p, q)]
+        self._joins += zip(sa, sb)
+        self._joins += zip(sb, sc)
+        self._used.update(sa, sb, sc)
+        if uv is None:
             return
         us, vs = uv
 
@@ -307,20 +341,14 @@ class _Surface:
         if texture is not None and texture["width"] and texture["height"]:
             self._textured.append((where, texture, areas, uv_areas))
 
-        # Weld: give every vertex the number of the point at its position, and the number
-        # of that point taken together with its UV.
-        points = self._points
-        point_of = [points.setdefault(k, len(points)) for k in zip(xs, ys, zs)]
+        # Give every vertex the number of its point taken together with its UV.
         uv_points = self._uv_points
         uv_point_of = [uv_points.setdefault(k, len(uv_points)) for k in zip(point_of, us, vs)]
-        pa, pb, pc = (list(map(point_of.__getitem__, idx)) for idx in (a, b, c))
         qa, qb, qc = (list(map(uv_point_of.__getitem__, idx)) for idx in (a, b, c))
-        # A triangle with two corners at the same point has no area and no three edges.
-        proper = [i != j and j != k and k != i for i, j, k in zip(pa, pb, pc)]
-        if not all(proper):
+        pa, pb, pc = sa, sb, sc
+        if not whole:
             self._zero_area += proper.count(False)
-            pa, pb, pc, qa, qb, qc = (list(compress(col, proper))
-                                      for col in (pa, pb, pc, qa, qb, qc))
+            qa, qb, qc = (list(compress(col, proper)) for col in (qa, qb, qc))
         first = self._triangles
         self._triangles += len(pa)
         owners = range(first, first + len(pa))
@@ -335,6 +363,21 @@ class _Surface:
         dimensions = [h - l for l, h in zip(self.low, self.high)]
         return {"min": list(self.low), "max": list(self.high), "dimensions": dimensions,
                 "largest_dimension": max(dimensions)}
+
+    def surface_figures(self):
+        """The welded surface, whether or not it has UVs: its edges, the open ones, and how
+        many pieces it is in. Triangles that touch, even at one point, are in one piece."""
+        if not self._all_triangles:
+            return None
+        sides_per_edge = Counter(self._all_edges)
+        unused = len(self._points) - len(self._used)
+        return {
+            "triangles": self._all_triangles,
+            "points": len(self._used),
+            "edges": len(sides_per_edge),
+            "open_edges": sum(1 for n in sides_per_edge.values() if n == 1),
+            "pieces": _count_groups(len(self._points), self._joins) - unused,
+        }
 
     def uv_figures(self):
         if not self._uv_triangles_all:
@@ -585,6 +628,17 @@ def render_text(report):
         add(f"  {texture['index']}  \"{texture['name']}\"  {pixels}, {texture['format']}, {size}")
         for use in texture["used_as"]:
             add(f"       used as {use}")
+
+    add("")
+    add("SURFACE   the triangles joined wherever their corners are at the same place")
+    surface = report["surface"]
+    if surface is None:
+        add("  none: the scene draws no triangle with three separate corners")
+    else:
+        add(f"  pieces      {_n(surface['pieces']):>10}   parts of the surface that do not touch "
+            "each other")
+        add(f"  open edges  {_n(surface['open_edges']):>10}   of {_n(surface['edges'])} edges; "
+            "edges with a triangle on one side only: holes or rims in the surface")
 
     add("")
     add("UVS   how the surface is laid flat on the texture")

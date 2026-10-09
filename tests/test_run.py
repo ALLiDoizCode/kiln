@@ -17,13 +17,14 @@ import unittest
 from unittest import mock
 
 from kiln import KilnError, __main__ as kiln_command, review, run as kiln_run
-from kiln.checks import describe, run_checks, triangle_count, validator_errors
+from kiln.checks import (describe, open_edges, pieces, run_checks, triangle_count,
+                         validator_errors)
 from kiln.glb import load
 from kiln.measure import DEFAULT_VALIDATOR, measure
 from kiln.profile import load_profile
 from kiln.record import (RECORD_NAME, check_file, file_entry, read_record, sha256_of,
                          write_record)
-from tests.glb_fixture import GlbBuilder, cube_cross, cube_six_faces, jpeg, png, quad
+from tests.glb_fixture import GlbBuilder, ball, cube_cross, cube_six_faces, jpeg, png, quad
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPECIMENS = [os.path.join(REPO, "learn", "specimens", name)
@@ -39,6 +40,7 @@ SIZE_TOLERANCE = 1e-5
 # The day every test's shape review is decided on, so that records repeat.
 TODAY = "2026-10-07"
 CLOSEST = "closest_viewing_distance = 0.5\n"
+TEXTURE_SIZE = "texture_size = 64\n"
 
 
 def stand_in_renderer(model, size, closest, out_dir):
@@ -67,10 +69,11 @@ class RunCase(unittest.TestCase):
     def path(self, *parts):
         return os.path.join(self._dir.name, *parts)
 
-    def profile(self, name, text, closest=CLOSEST):
-        """Write a target profile: `text`, and the closest viewing distance unless told not to."""
+    def profile(self, name, text, closest=CLOSEST, texture_size=TEXTURE_SIZE):
+        """Write a target profile: `text`, and the closest viewing distance and the texture
+        size unless told not to."""
         with open(os.path.join(self.profiles, name + ".toml"), "w", encoding="utf-8") as f:
-            f.write(text + closest)
+            f.write(text + closest + texture_size)
 
     def cube(self, name="cube.glb"):
         """A unit cube of 12 triangles."""
@@ -200,11 +203,21 @@ class Profiles(RunCase):
                                 "closest_viewing_distance"),
                                ("triangle_budget = 5\nviewing_distance = 2\n" + CLOSEST,
                                 "viewing_distance"),
+                               ("triangle_budget = 5\ntexture_size = 0\n" + CLOSEST,
+                                "texture_size must be a whole number of pixels above zero"),
+                               ("triangle_budget = 5\ntexture_size = 512.5\n" + CLOSEST,
+                                "texture_size"),
                                ("triangle_budget = \n", "not valid TOML")):
-            self.profile("odd", text, closest="")
+            self.profile("odd", text, closest="",
+                         texture_size="" if "texture_size" in text else TEXTURE_SIZE)
             with self.assertRaises(KilnError, msg=text) as caught:
                 load_profile("odd", self.profiles)
             self.assertIn(expected, str(caught.exception))
+
+    def test_a_profile_with_no_texture_size_is_refused(self):
+        self.profile("odd", "triangle_budget = 5\n", texture_size="")
+        with self.assertRaisesRegex(KilnError, "texture_size must be .* but it is missing"):
+            load_profile("odd", self.profiles)
 
     def test_a_name_that_could_leave_the_folder_is_refused(self):
         with self.assertRaises(KilnError):
@@ -217,21 +230,44 @@ class Profiles(RunCase):
 
 # ---- checks --------------------------------------------------------------------------------
 
-def report_with(triangles=12, errors=0):
+def report_with(triangles=12, errors=0, surface=(1, 0), raw_surface=(1, 0)):
+    """A measurement report with what the checks read. A surface is (pieces, open edges);
+    None stands for a model that draws no triangle."""
+    def figures(surface):
+        return surface and {"pieces": surface[0], "open_edges": surface[1]}
     return {"totals": {"triangles": triangles},
-            "validator": {"ran": True, "version": "x", "errors": errors}}
+            "validator": {"ran": True, "version": "x", "errors": errors},
+            "surface": figures(surface), "raw_output": {"surface": figures(raw_surface)}}
 
 
 class Checks(unittest.TestCase):
     profile = {"name": "pit", "triangle_budget": 100}
 
-    def test_a_model_within_budget_with_no_errors_passes_both(self):
+    def test_a_model_within_budget_with_no_errors_and_a_whole_surface_passes_every_check(self):
         results = run_checks(report_with(triangles=100), self.profile)
         self.assertEqual(results, [
             {"name": "validator_errors", "measured": 0, "limit": 0, "unit": "errors",
              "passed": True},
             {"name": "triangle_count", "measured": 100, "limit": 100, "unit": "triangles",
-             "passed": True}])
+             "passed": True},
+            {"name": "pieces", "measured": 1, "limit": 1, "unit": "pieces", "passed": True},
+            {"name": "open_edges", "measured": 0, "limit": 0, "unit": "edges", "passed": True}])
+
+    def test_a_model_in_more_pieces_than_its_raw_output_fails(self):
+        # The crate the trial's first chain tore: one piece in, 94 out, inside the budget.
+        result = pieces(report_with(surface=(94, 10194), raw_surface=(1, 2)), self.profile)
+        self.assertEqual((result["measured"], result["limit"], result["passed"]), (94, 1, False))
+
+    def test_a_model_with_more_open_edges_than_its_raw_output_fails(self):
+        result = open_edges(report_with(surface=(94, 10194), raw_surface=(1, 2)), self.profile)
+        self.assertEqual((result["measured"], result["limit"], result["passed"]),
+                         (10194, 2, False))
+
+    def test_pieces_and_open_edges_the_raw_output_came_with_are_not_failed(self):
+        # A creature built of 236 open shells is meant to be; cleaning may leave it fewer.
+        report = report_with(surface=(230, 1100), raw_surface=(236, 1169))
+        self.assertTrue(pieces(report, self.profile)["passed"])
+        self.assertTrue(open_edges(report, self.profile)["passed"])
 
     def test_a_model_over_the_triangle_budget_fails_that_check(self):
         result = triangle_count(report_with(triangles=136), self.profile)
@@ -243,8 +279,8 @@ class Checks(unittest.TestCase):
         self.assertEqual((result["measured"], result["limit"], result["passed"]), (3, 0, False))
 
     def test_every_check_is_made_even_after_one_fails(self):
-        results = run_checks(report_with(triangles=101, errors=1), self.profile)
-        self.assertEqual([r["passed"] for r in results], [False, False])
+        results = run_checks(report_with(triangles=101, errors=1, surface=(2, 0)), self.profile)
+        self.assertEqual([r["passed"] for r in results], [False, False, False, True])
 
     def test_a_validator_that_did_not_run_is_not_a_pass(self):
         for verdict in (None, {"ran": False, "reason": "not installed"}):
@@ -317,7 +353,7 @@ class TakingIn(RunCase):
         self.assertEqual(read_bytes(raw), read_bytes(model))
         self.assertFalse(os.stat(raw).st_mode & 0o222, "the raw output can be written to")
         record = read_record(asset_dir)
-        self.assertEqual(list(record), ["name", "licence", "source", "size", "target_profile",
+        self.assertEqual(list(record), ["name", "licence", "source", "size", "turn", "target_profile",
                                         "reference_image", "raw_output", "shape_review",
                                         "tools", "stages", "checks", "passed", "model"])
         self.assertIsNone(record["reference_image"])
@@ -349,6 +385,12 @@ class TakingIn(RunCase):
             self.take_in(**inputs)
         self.assertIn(expected, str(caught.exception))
         self.assertFalse(os.path.exists(self.store), "a refused run wrote into the store")
+
+    def test_the_turn_is_kept_in_the_record_and_is_none_unless_given(self):
+        self.assertEqual(read_record(self.take_in())["turn"], 0.0)
+        self.assertEqual(read_record(self.take_in(name="turned", turn=180))["turn"], 180.0)
+        with self.assertRaisesRegex(KilnError, "turn"):
+            self.take_in(name="spun", turn=math.nan)
 
     def test_inputs_that_cannot_be_used_are_refused_and_nothing_is_written(self):
         self.refused("no model file", model=self.path("missing.glb"))
@@ -413,7 +455,7 @@ class Building(RunCase):
         self.assertEqual(record["tools"], {"blender": "stand-in", "gltf_validator": "stand-in"})
         self.assertEqual(record["stages"], [{"name": "copy_stage"}])
         self.assertEqual([c["name"] for c in record["checks"]],
-                         ["validator_errors", "triangle_count"])
+                         ["validator_errors", "triangle_count", "pieces", "open_edges"])
         self.assertEqual(record["checks"][1]["measured"], 12)
 
     def test_a_failed_check_leaves_the_record_and_the_raw_output_but_no_model(self):
@@ -490,6 +532,34 @@ class Building(RunCase):
         self.assertEqual(record["stages"], [{"name": "first", "note": 1}, {"name": "second"}])
         self.assertEqual(sorted(os.listdir(asset_dir)),
                          [RECORD_NAME, "cube.glb", "raw_output.glb", "review"])
+
+    def test_a_stage_that_tears_the_model_apart_fails_a_check_though_it_is_inside_the_budget(self):
+        def torn(source, work, record, profile):
+            # The cube's six faces pulled apart from each other: 12 triangles still.
+            b = GlbBuilder()
+            positions, _, indices = cube_six_faces()
+            b.node(b.mesh([b.primitive([(x + 3 * (n // 4), y, z)
+                                        for n, (x, y, z) in enumerate(positions)], None, indices)]))
+            return b.write(os.path.join(work, "torn.glb")), {}
+        asset_dir = self.approved(self.cube())
+        record = self.build(asset_dir, stages=(torn,))
+        self.assertFalse(record["passed"])
+        self.assertEqual({c["name"]: (c["measured"], c["limit"], c["passed"])
+                          for c in record["checks"][1:]},
+                         {"triangle_count": (12, 20000, True), "pieces": (6, 1, False),
+                          "open_edges": (24, 0, False)})
+        self.assertFalse(os.path.exists(os.path.join(asset_dir, "cube.glb")))
+
+    def test_stages_with_nothing_to_do_may_give_their_source_back_and_the_raw_output_stays(self):
+        def idle(source, work, record, profile):
+            return source, {"did": "nothing"}
+        asset_dir = self.approved(self.cube())
+        raw = os.path.join(asset_dir, "raw_output.glb")
+        record = self.build(asset_dir, stages=(idle, idle))
+        self.assertTrue(record["passed"])
+        self.assertEqual(record["stages"], [{"name": "idle", "did": "nothing"}] * 2)
+        self.assertEqual(sha256_of(raw), record["raw_output"]["sha256"])
+        self.assertEqual(record["model"]["sha256"], record["raw_output"]["sha256"])
 
     def test_a_stage_that_breaks_leaves_the_approval_and_the_raw_output_but_no_model(self):
         def broken(source, work, record, profile):
@@ -734,9 +804,9 @@ class ScalingToSize(RunCase):
         after = measure(path, validator=None)
         self.assert_size(path, 0.8)
         factor = 0.8 / before["bounding_box"]["largest_dimension"]
-        for key in ("min", "max"):
-            for was, now in zip(before["bounding_box"][key], after["bounding_box"][key]):
-                self.assertAlmostEqual(was * factor, now, places=6)
+        for was, now in zip(before["bounding_box"]["dimensions"],
+                            after["bounding_box"]["dimensions"]):
+            self.assertAlmostEqual(was * factor, now, places=6)
         self.assertEqual(after["totals"]["triangles"], before["totals"]["triangles"])
         self.assertEqual(after["uvs"]["islands"], before["uvs"]["islands"])
         self.assertEqual(after["uvs"]["seam_edges"], before["uvs"]["seam_edges"])
@@ -814,22 +884,41 @@ class WholeRuns(RunCase):
         return self.command("review", name, "--approve", "--store", self.store,
                             "--profiles", self.profiles)
 
-    def test_a_model_over_the_triangle_budget_stops_the_run(self):
-        self.profile("tight", "triangle_budget = 10\n")
+    def test_a_model_over_the_triangle_budget_is_reduced_to_it(self):
+        self.profile("tight", "triangle_budget = 300\n")
+        b = GlbBuilder()
+        b.node(b.mesh([b.primitive(*ball())]))
         code, out, err = self.run_then_approve(
-            "--model", self.cube(), "--size", "0.8", "--profile", "tight",
+            "--model", b.write(self.path("ball.glb")), "--size", "0.8", "--profile", "tight",
             "--licence", "CC0 1.0", "--source", "modelled by a test")
+        self.assertEqual((code, err), (0, ""))
+        self.assertIn("triangle_count: measured 300 triangles, limit 300, passed", out)
+        record = read_record(os.path.join(self.store, "ball"))
+        self.assertEqual([stage["name"] for stage in record["stages"]],
+                         ["scale_to_size", "clean", "reduce", "place"])
+        self.assertTrue(all(check["passed"] for check in record["checks"]))
+
+    def test_a_model_torn_by_a_stage_stops_the_run(self):
+        # Reducing without joining the six faces first is what tore the trial's first crate.
+        def tearing(source, work, record, profile):
+            b = GlbBuilder()
+            positions, _, indices = cube_six_faces()
+            b.node(b.mesh([b.primitive([(x + 3 * (n // 4), y, z)
+                                        for n, (x, y, z) in enumerate(positions)], None, indices)]))
+            return b.write(os.path.join(work, "torn.glb")), {}
+        with mock.patch.object(kiln_run, "STAGES", (tearing, kiln_run.scale_to_size)):
+            code, out, err = self.run_then_approve(
+                "--model", self.cube(), "--size", "0.8", "--profile", "pit",
+                "--licence", "CC0 1.0", "--source", "modelled by a test")
         self.assertEqual(code, 1)
-        for part in ("triangle_count", "measured 12 triangles", "limit 10", "over by 2"):
+        for part in ("pieces: measured 6 pieces, limit 1, over by 5",
+                     "open_edges: measured 24 edges, limit 0, over by 24"):
             self.assertIn(part, err)
         asset_dir = os.path.join(self.store, "cube")
         self.assertEqual(sorted(os.listdir(asset_dir)), [RECORD_NAME, "raw_output.glb", "review"])
         record = read_record(asset_dir)
         self.assertFalse(record["passed"])
         self.assertIsNone(record["model"])
-        self.assertEqual(record["checks"][0]["passed"], True)
-        self.assertEqual(record["checks"][1], {"name": "triangle_count", "measured": 12,
-                                               "limit": 10, "unit": "triangles", "passed": False})
 
     def test_both_specimens_run_and_come_out_as_they_went_in_but_for_their_size(self):
         for specimen in SPECIMENS:

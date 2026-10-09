@@ -46,7 +46,7 @@ _Avoid_: Library (which is where a bought asset comes from), output folder
 ### Where an asset comes from
 
 **Generator**:
-An external AI service or model that produces a first shape from a reference image and a prompt. Kiln calls one and owns every stage after it.
+An external AI service or model that produces a first shape from a reference image and a prompt. A person runs it and hands kiln the raw output; kiln owns every stage after it.
 _Avoid_: Model (which means a 3D model elsewhere), AI tool
 
 **Generated asset**:

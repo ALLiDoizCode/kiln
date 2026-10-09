@@ -3,6 +3,7 @@
     profile = load_profile("pit")
     profile["triangle_budget"]             a field of the profile
     profile["closest_viewing_distance"]    another: metres, used to take the review pictures
+    profile["texture_size"]                another: pixels each way of a texture kiln bakes
     profile["name"], profile["sha256"]     which profile, and the checksum of its file
 
 The fields are placeholders until issue #11 settles what a target profile holds.
@@ -20,7 +21,8 @@ PROFILES_DIR = os.path.join(REPO_ROOT, "profiles")
 # Every field a profile must hold, and no other: field name -> (the types it may have, what
 # it must be). Every one is a number above zero.
 FIELDS = {"triangle_budget": ((int,), "a whole number above zero"),
-          "closest_viewing_distance": ((int, float), "a number of metres above zero")}
+          "closest_viewing_distance": ((int, float), "a number of metres above zero"),
+          "texture_size": ((int,), "a whole number of pixels above zero")}
 
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*\Z")
 

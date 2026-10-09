@@ -49,6 +49,13 @@ python3 -m kiln.measure &lt;file.glb&gt; --json          JSON, for comparing</co
 <h2>The welded surface</h2>
 <p>The UV numbers need one idea first. A model file stores a point on the surface more than once wherever its normal or UV differs between the triangles round it, so the file's own vertex numbers cannot say which triangles are neighbours. Kiln therefore <strong>welds</strong>: vertices at exactly the same position in the scene are treated as one point. An <strong>edge</strong> is a pair of such points joined by a side of at least one triangle. All of the UV numbers below are counted on this welded surface, over the triangles that have UVs.</p>
 <p>"Exactly the same" means equal stored numbers, with no tolerance. Vertices that an exporter split match exactly; vertices that are merely close do not, and the gap between them shows up as open edges.</p>
+<p>Two numbers are counted on the welded surface over every triangle, with UVs or without. A run compares them with the same two numbers of the raw output, to catch a stage that tears the surface.</p>
+<table>
+  <tr><th>Number</th><th>What it is</th><th>How it is worked out</th></tr>
+  <tr><td>Pieces (<code>surface.pieces</code>)</td><td>Parts of the surface that do not touch each other. A crate is one piece; a creature whose spikes are separate shells stuck into its body is many.</td><td>Two triangles are in the same piece if they share a point, directly or through a chain of triangles that do. Sharing one corner is enough.</td></tr>
+  <tr><td>Open edges (<code>surface.open_edges</code>)</td><td>Edges with a triangle on one side only: the rim of a hole, or of a surface that is not closed.</td><td>The same count as <code>uvs.open_edges</code>, but over all triangles, so a model with no UVs has it too.</td></tr>
+</table>
+<p>A triangle with two corners at the same point has no area and is left out of both.</p>
 
 <h2>UVs</h2>
 <table>

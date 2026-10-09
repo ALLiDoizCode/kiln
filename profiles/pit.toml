@@ -10,3 +10,9 @@ triangle_budget = 20000
 # the review pictures is taken from this far away. 0.5 m is what the budget measurement
 # assumed (learn/research/pit-budget-measurement.md, section 2).
 closest_viewing_distance = 0.5
+
+# Placeholder, not decided: how many pixels each way the textures are that kiln bakes for an
+# asset it has reduced. 2048 is where a larger texture stopped showing in the review pictures
+# of two subjects (learn/research/blender-stages-trial.md, section 6). Textures that arrive
+# on a model already inside the triangle budget are not resized or checked against this.
+texture_size = 2048

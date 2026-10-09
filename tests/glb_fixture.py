@@ -189,3 +189,30 @@ def cube_cross():
                       ((col, row), (col + 1, row), (col + 1, row + 1), (col, row + 1)))
         indices += [a, b, c, a, c, d]
     return positions, uvs, indices
+
+
+def ball(rows=30, columns=60, radius=1.0):
+    """A closed ball of latitude and longitude lines, with UVs in one island: the map of the
+    world, cut down one line from pole to pole. Each pole is a row of `columns` vertices at
+    one place, so welded the ball has (rows - 1) * columns + 2 points; it has
+    2 * columns * (rows - 1) triangles, 3,480 as given.
+    """
+    import math
+    positions, uvs, indices = [], [], []
+    for row in range(rows + 1):
+        across = math.pi * row / rows
+        for column in range(columns + 1):
+            around = 2.0 * math.pi * (column % columns) / columns
+            positions.append((radius * math.sin(across) * math.cos(around),
+                              radius * math.cos(across),
+                              radius * math.sin(across) * math.sin(around)))
+            uvs.append((column / columns, 1.0 - row / rows))
+    for row in range(rows):
+        for column in range(columns):
+            a = row * (columns + 1) + column
+            b, c, d = a + 1, a + columns + 2, a + columns + 1
+            if row > 0:
+                indices += [a, b, c]
+            if row < rows - 1:
+                indices += [a, c, d]
+    return positions, uvs, indices

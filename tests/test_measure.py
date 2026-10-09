@@ -12,7 +12,8 @@ import tempfile
 import unittest
 
 from kiln import glb
-from kiln.measure import DEFAULT_VALIDATOR, main, measure, render_text, run_validator
+from kiln.measure import (DEFAULT_VALIDATOR, main, measure, render_text, run_validator,
+                          surface)
 from tests.glb_fixture import (FLOAT, U8, U16, U32, GlbBuilder, cube_cross, cube_six_faces,
                                png, quad)
 
@@ -248,6 +249,96 @@ class Uvs(MeasureCase):
         uv = measure(b.write(self.path()), validator=None)["uvs"]
         self.assertEqual(uv["coverage"], 1.0)
         self.assertEqual(uv["triangle_area_sum"], 1.0)
+
+
+class Surface(MeasureCase):
+    """Pieces and open edges of the welded surface, counted with UVs or without."""
+
+    def surface(self, *primitives):
+        b = GlbBuilder()
+        b.node(b.mesh([b.primitive(*primitive) for primitive in primitives]))
+        path = b.write(self.path())
+        figures = measure(path, validator=None)["surface"]
+        self.assertEqual(surface(path), figures)   # the quick way gives the same
+        return figures
+
+    def test_a_closed_cube_is_one_piece_with_no_open_edge(self):
+        self.assertEqual(self.surface(cube_six_faces()),
+                         {"triangles": 12, "points": 8, "edges": 18, "open_edges": 0, "pieces": 1})
+
+    def test_a_flat_square_is_one_piece_with_its_rim_open(self):
+        figures = self.surface(quad())
+        self.assertEqual((figures["pieces"], figures["open_edges"], figures["edges"]), (1, 4, 5))
+
+    def test_cubes_apart_are_pieces_and_cubes_that_touch_at_a_corner_are_one(self):
+        positions, uvs, indices = cube_cross()
+        apart = [(x + 3, y, z) for x, y, z in positions]
+        at_a_corner = [(x + 1, y + 1, z + 1) for x, y, z in positions]
+        self.assertEqual(self.surface((positions, uvs, indices), (apart, uvs, indices))["pieces"], 2)
+        self.assertEqual(self.surface((positions, uvs, indices),
+                                      (at_a_corner, uvs, indices))["pieces"], 1)
+
+    def test_a_model_with_no_uvs_is_counted_too(self):
+        positions, _, indices = cube_six_faces()
+        del indices[-3:]   # one triangle of the bottom is missing
+        figures = self.surface((positions, None, indices))
+        self.assertEqual((figures["triangles"], figures["pieces"], figures["open_edges"]),
+                         (11, 1, 3))
+
+    def test_a_vertex_on_no_triangle_and_a_triangle_with_no_area_are_not_pieces(self):
+        positions, uvs, indices = quad()
+        positions = positions + [(9, 9, 9)]
+        uvs = uvs + [(0, 0)]
+        figures = self.surface((positions, uvs, indices + [0, 0, 1]))
+        self.assertEqual((figures["triangles"], figures["points"], figures["pieces"]), (2, 4, 1))
+
+    def test_a_scene_that_draws_no_triangle_has_no_surface(self):
+        b = GlbBuilder()
+        b.node()
+        self.assertIsNone(measure(b.write(self.path()), validator=None)["surface"])
+
+    def test_the_text_names_the_pieces_and_the_open_edges(self):
+        text = render_text(measure(self.one_mesh(*quad()), validator=None))
+        self.assertRegex(text, r"SURFACE[^\n]*\n  pieces +1 .*\n  open edges +4 +of 5 edges")
+
+
+class Tangents(MeasureCase):
+    def model(self, tangents, normals=((0, 0, 1),) * 4):
+        positions, uvs, indices = quad()
+        b = GlbBuilder()
+        primitive = b.primitive(positions, uvs, indices, normals=list(normals))
+        primitive["attributes"]["TANGENT"] = b.accessor(tangents)
+        b.node(b.mesh([primitive]))
+        return b.write(self.path())
+
+    def tangents(self, path):
+        model = glb.load(path)
+        flat, per = model.accessor(model.json["meshes"][0]["primitives"][0]["attributes"]["TANGENT"])
+        return [tuple(flat[i:i + per]) for i in range(0, len(flat), per)]
+
+    def test_a_tangent_of_no_length_is_given_one_at_right_angles_to_its_normal(self):
+        whole = (1.0, 0.0, 0.0, -1.0)
+        leaning = (0.6, 0.0, 0.8)
+        path = self.model([whole, (0, 0, 0, 1), (0, 0, 0, -1), whole],
+                          normals=[(0, 0, 1), (0, 0, 1), leaning, (0, 0, 1)])
+        size = os.path.getsize(path)
+        self.assertEqual(glb.mend_tangents(path), 2)
+        after = self.tangents(path)
+        self.assertEqual((after[0], after[3]), (whole, whole))
+        for tangent, normal, hand in ((after[1], (0, 0, 1), 1.0), (after[2], leaning, -1.0)):
+            self.assertAlmostEqual(math.hypot(*tangent[:3]), 1.0, places=6)
+            self.assertAlmostEqual(sum(t * n for t, n in zip(tangent, normal)), 0.0, places=6)
+            self.assertEqual(tangent[3], hand)
+        self.assertEqual(os.path.getsize(path), size)
+        self.assertEqual(glb.mend_tangents(path), 0)
+
+    def test_a_model_with_whole_tangents_or_none_is_left_as_it_is(self):
+        for path in (self.model([(1.0, 0.0, 0.0, 1.0)] * 4), self.one_mesh(*quad())):
+            with open(path, "rb") as f:
+                before = f.read()
+            self.assertEqual(glb.mend_tangents(path), 0)
+            with open(path, "rb") as f:
+                self.assertEqual(f.read(), before)
 
 
 class TexelDensity(MeasureCase):

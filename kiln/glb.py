@@ -9,6 +9,9 @@ This is the one place in kiln that knows the file layout. It gives back plain Py
     model.image_bytes(0)            -> the encoded image, or None if it is not in reach
     image_info(data)                -> (format, width, height)
 
+It writes one thing, in place: mend_tangents("crate.glb") gives a tangent to every vertex
+whose stored tangent has no length.
+
 Anything the reader cannot decode raises GltfError with a message that says what and where.
 """
 import array
@@ -212,6 +215,69 @@ def load(path):
             raise GltfError(f"{path}: mesh data is compressed with {name}, which kiln does "
                             "not decode; export the file without mesh compression")
     return Gltf(path, document, binary_chunk, version)
+
+
+# ---- tangents ------------------------------------------------------------------------------
+
+def mend_tangents(path):
+    """Give a tangent to every vertex of a .glb whose stored tangent has no length, and
+    return how many there were. The file is changed in place; nothing else in it moves.
+
+    Blender writes such a tangent for the corners of a triangle too thin to have a direction
+    of its own, and the glTF validator counts each as an error. The tangent given is any
+    unit vector at right angles to the vertex's normal: a triangle that thin shows nothing.
+    """
+    with open(path, "rb") as f:
+        data = bytearray(f.read())
+    model = load(path)
+    if data[:4] != b"glTF" or model._binary_chunk is None:
+        raise GltfError(f"{path}: tangents are mended only in a .glb that holds its own data")
+    json_length, = struct.unpack_from("<I", data, 12)
+    start = 12 + 8 + json_length + 8   # the first byte of the binary chunk
+    doc = model.json
+
+    def place_of(accessor_index, numbers):
+        accessor = doc["accessors"][accessor_index]
+        if (accessor["componentType"] != 5126 or "sparse" in accessor
+                or "bufferView" not in accessor or _ELEMENT_SIZES[accessor["type"]] != numbers):
+            raise GltfError(f"{path}: accessor {accessor_index} is not plain floats")
+        view = doc["bufferViews"][accessor["bufferView"]]
+        if view.get("buffer", 0) != 0 or "uri" in doc["buffers"][0]:
+            raise GltfError(f"{path}: accessor {accessor_index} is not in the file's own data")
+        return (start + view.get("byteOffset", 0) + accessor.get("byteOffset", 0),
+                view.get("byteStride", 4 * numbers), accessor["count"])
+
+    mended, done = 0, set()
+    for mesh in doc.get("meshes", []):
+        for primitive in mesh.get("primitives", []):
+            attributes = primitive.get("attributes", {})
+            if "TANGENT" not in attributes or attributes["TANGENT"] in done:
+                continue
+            done.add(attributes["TANGENT"])
+            if "NORMAL" not in attributes:
+                continue
+            at, step, count = place_of(attributes["TANGENT"], 4)
+            normal_at, normal_step, _ = place_of(attributes["NORMAL"], 3)
+            for n in range(count):
+                x, y, z, w = struct.unpack_from("<4f", data, at + n * step)
+                if x * x + y * y + z * z > 0.25:
+                    continue
+                normal = struct.unpack_from("<3f", data, normal_at + n * normal_step)
+                # Start from the axis the normal leans on least, and take out of it the
+                # part that lies along the normal.
+                axis = min(range(3), key=lambda k: abs(normal[k]))
+                tangent = [-normal[axis] * c for c in normal]
+                tangent[axis] += 1.0
+                length = sum(c * c for c in tangent) ** 0.5 or 1.0
+                struct.pack_into("<4f", data, at + n * step, *(c / length for c in tangent),
+                                 w if w in (1.0, -1.0) else 1.0)
+                mended += 1
+    if mended:
+        scratch = str(path) + ".part"
+        with open(scratch, "wb") as f:
+            f.write(data)
+        os.replace(scratch, path)
+    return mended
 
 
 # ---- transforms ----------------------------------------------------------------------------

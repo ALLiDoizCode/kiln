@@ -1,19 +1,22 @@
 """A run: from a model file to an asset, which is the finished model plus its asset record.
 
     python3 -m kiln run --model rock.glb --size 0.8 --profile pit \\
-        --licence "CC0 1.0" --source "modelled by J. Green" [--reference-image rock.png]
+        --licence "CC0 1.0" --source "modelled by J. Green" [--reference-image rock.png] \\
+        [--turn 180]
     python3 -m kiln review rock --approve          (or --reject)
 
 A run stops once, for the shape review, and a person's decision takes it further:
 
     take_in()                copies the model file into the store as the raw output and writes
                              the asset record with what only the caller knows: name, size,
-                             profile, licence, source, and the reference image if there is one.
+                             profile, licence, source, how far to turn the model, and the
+                             reference image if there is one.
     review.take_pictures()   renders the review pictures of the raw output. The run stops here.
     review.decide()          writes the person's decision into the record. A rejected run ends:
                              the raw output and the record stay, and nothing is built.
     build()                  for an approved asset only: reads the asset record, takes the raw
-                             output through STAGES in a work area, measures the result, makes
+                             output through STAGES in a work area (scale to the size, clean,
+                             reduce to the profile's budget, place), measures the result, makes
                              the profile's checks, and writes the finished model and the
                              completed record. It needs nothing but the asset's folder.
 
@@ -44,8 +47,8 @@ import tempfile
 
 from kiln import KilnError, review
 from kiln.checks import describe, run_checks
-from kiln.glb import GltfError, load
-from kiln.measure import DEFAULT_VALIDATOR, measure
+from kiln.glb import GltfError, load, mend_tangents
+from kiln.measure import DEFAULT_VALIDATOR, measure, surface
 from kiln.profile import PROFILES_DIR, load_profile
 from kiln.record import check_file, file_entry, read_record, record_path, write_record
 
@@ -64,12 +67,24 @@ REFERENCE_IMAGE_KINDS = (".png", ".jpg", ".jpeg", ".webp")
 # A stage is a function (source, work, record, profile) -> (path of the model it wrote, facts).
 # It reads `source`, writes only inside the folder `work`, and returns a small dict of facts
 # worth keeping in the asset record. STAGES is the order they run in; each one's output is
-# the next one's source, and the last one's output is the finished model.
+# the next one's source, and the last one's output is the finished model. A stage with nothing
+# to do gives its source back. The facts must be the same every time: no seconds, no dates.
+#
+# scale_to_size comes first, so that every later stage reads a model in metres at the asset's
+# size, with its meshes in the scene's own space: a length in a later stage is a real length.
+# Why these stages, in this order, with these settings: docs/adr/0001-kiln-reduces-the-mesh.md
+# and learn/research/blender-stages-trial.md.
 
 def run_blender(script, *args):
-    """Run one of kiln's Blender scripts in the pinned Blender; raise with its output if it fails."""
+    """Run one of kiln's Blender scripts in the pinned Blender; raise with its output if it
+    fails.
+
+    Blender is given one thread. With more, two things were seen to come out as different
+    bytes from one run to the next: a baked normal map (a few pixels of four million) and
+    the tangents written into a file. A build has to give the same bytes every time."""
     done = subprocess.run([BL, os.path.join(BLENDER_SCRIPTS, script), *map(str, args)],
-                          capture_output=True, text=True)
+                          capture_output=True, text=True,
+                          env=dict(os.environ, KILN_BLENDER_THREADS="1"))
     if done.returncode != 0:
         tail = "\n".join((done.stdout + done.stderr).strip().splitlines()[-15:])
         raise KilnError(f"the Blender script {script} failed:\n{tail}")
@@ -84,7 +99,53 @@ def scale_to_size(source, work, record, profile):
         return target, {"scale_factor": json.load(f)["factor"]}
 
 
-STAGES = (scale_to_size,)
+def _facts(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def clean(source, work, record, profile):
+    """Mend what a fixed rule can mend safely: doubled vertices, faces with no area, loose
+    bits, pieces hidden inside the model, faces turned inside out. See the script."""
+    target = os.path.join(work, "clean.glb")
+    result = os.path.join(work, "clean.json")
+    run_blender("clean.py", source, target, result)
+    return target, _facts(result)
+
+
+def reduce(source, work, record, profile):
+    """Bring a model over the profile's triangle budget down to it, and bake the look it had
+    into textures of the profile's texture size. A model inside the budget is passed on as
+    it is. See the script."""
+    target = os.path.join(work, "reduce.glb")
+    result = os.path.join(work, "reduce.json")
+    run_blender("reduce.py", source, target, result, profile["triangle_budget"],
+                profile["texture_size"], repr(record["size"]))
+    facts = _facts(result)
+    if not facts["reduced"]:
+        return source, facts
+    if facts["baked"]:
+        facts["tangents_mended"] = mend_tangents(target)
+    return target, facts
+
+
+def place(source, work, record, profile):
+    """Turn the model about the up axis by the run's turn, and put its origin at the bottom
+    centre. A model that comes with tangents, as one the reduce stage baked does, keeps them.
+    See the script."""
+    target = os.path.join(work, "place.glb")
+    result = os.path.join(work, "place.json")
+    tangents = any("TANGENT" in primitive.get("attributes", {})
+                   for mesh in load(source).json.get("meshes", [])
+                   for primitive in mesh.get("primitives", []))
+    run_blender("place.py", source, target, result, repr(record.get("turn", 0.0)),
+                "yes" if tangents else "no")
+    if tangents:
+        mend_tangents(target)
+    return target, _facts(result)
+
+
+STAGES = (scale_to_size, clean, reduce, place)
 
 
 # ---- tools ---------------------------------------------------------------------------------
@@ -107,17 +168,20 @@ def blender_version():
 # ---- the parts of a run --------------------------------------------------------------------
 
 def take_in(model, size, profile, licence, source, name=None, store=STORE,
-            profiles_dir=PROFILES_DIR, reference_image=None):
+            profiles_dir=PROFILES_DIR, reference_image=None, turn=0.0):
     """Start an asset from a model file: copy it into the store as the raw output and write
     the asset record with what the caller gave. Returns the asset's folder.
 
     A reference image, if given, is copied beside the record as reference_image.<its kind>.
+    `turn` is how many degrees the place stage turns the model about the up axis.
 
     Nothing is written unless every input is usable. An asset of the same name is never
     overwritten: the caller removes its folder first if it is to be made again.
     """
     if not (math.isfinite(size) and size > 0):
         raise KilnError(f"the size must be a positive number of metres, not {size}")
+    if not math.isfinite(turn):
+        raise KilnError(f"the turn must be a number of degrees, not {turn}")
     for value, what in ((licence, "licence"), (source, "source")):
         if not value or not value.strip():
             raise KilnError(f"the {what} must be given: kiln cannot know it")
@@ -164,6 +228,7 @@ def take_in(model, size, profile, licence, source, name=None, store=STORE,
         "licence": licence.strip(),
         "source": source.strip(),
         "size": float(size),
+        "turn": float(turn),
         "target_profile": {"name": profile, "sha256": None},
         "reference_image": file_entry(kept_image) if kept_image else None,
         "raw_output": file_entry(raw),
@@ -205,11 +270,14 @@ def build(asset_dir, profiles_dir=PROFILES_DIR, stages=None):
             done_stages.append({"name": stage.__name__, **facts})
         check_file(asset_dir, record["raw_output"], "raw output")
         report = measure(model, size=record["size"])
+        report["raw_output"] = {"surface": surface(raw)}
         checks = run_checks(report, profile)
         passed = all(check["passed"] for check in checks)
         # Only now is the folder touched, so a build that breaks part-way leaves the earlier
         # model and the record that describes it as they were.
-        if passed:
+        if passed and model == raw:
+            shutil.copyfile(raw, finished)  # no stage had anything to do; the raw output stays
+        elif passed:
             os.replace(model, finished)
         elif os.path.lexists(finished):
             os.remove(finished)  # an earlier build's model must not outlive a failed check
@@ -226,13 +294,13 @@ def build(asset_dir, profiles_dir=PROFILES_DIR, stages=None):
 
 
 def run(model, size, profile, licence, source, name=None, store=STORE,
-        profiles_dir=PROFILES_DIR, reference_image=None, renderer=None):
+        profiles_dir=PROFILES_DIR, reference_image=None, renderer=None, turn=0.0):
     """A run from a model file, as far as it goes without a person: the raw output is taken
     in and its review pictures are rendered. Returns (the asset's folder, its record), with
     the shape review waiting. `renderer` stands in for review.render_pictures in tests.
     """
     asset_dir = take_in(model, size, profile, licence, source, name, store, profiles_dir,
-                        reference_image)
+                        reference_image, turn)
     try:
         return asset_dir, review.take_pictures(asset_dir, profiles_dir, renderer)
     except BaseException:
@@ -317,6 +385,10 @@ def main(argv=None):
     parser.add_argument("--reference-image", metavar="FILE",
                         help="the picture that shows what the asset should look like, kept "
                              "beside the asset record (.png, .jpg or .webp)")
+    parser.add_argument("--turn", type=float, default=0.0, metavar="DEGREES",
+                        help="turn the model this far about the up axis, anticlockwise seen "
+                             "from above, when it is built (default: 0). Bevy's forward is -Z; "
+                             "a model that faces +Z, as Tripo's do, needs 180")
     parser.add_argument("--name", metavar="NAME",
                         help="the asset's name (default: the model file's name)")
     parser.add_argument("--store", default=STORE, metavar="DIR",
@@ -327,7 +399,7 @@ def main(argv=None):
     try:
         asset_dir, record = run(args.model, args.size, args.profile, args.licence, args.source,
                                 name=args.name, store=args.store, profiles_dir=args.profiles,
-                                reference_image=args.reference_image)
+                                reference_image=args.reference_image, turn=args.turn)
     except KilnError as error:
         print(f"kiln run: {error}", file=sys.stderr)
         return 2

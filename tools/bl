@@ -3,7 +3,9 @@
 # no user preferences or add-ons, no network, non-zero exit on any exception.
 # Usage: tools/bl <script.py> [script args...]
 # KILN_BLENDER_THREADS=<n> limits this Blender to n threads (default: every core). tests/run.sh
-# sets it to run several side by side; what a script builds, bakes or measures does not depend on it.
+# sets it to run several side by side. What a script writes can depend on it: a bake, and a
+# file written with tangents, gave the same bytes every time only with one thread. Kiln's
+# stages always set it to 1.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 script="$1"; shift
